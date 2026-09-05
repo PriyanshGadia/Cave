@@ -1,0 +1,210 @@
+Key Points:
+1. Design should be adaptable to any screen resolution and device without elements or any component of the UI looking misplaced, crowded or shabby.
+2. All the elements, designs, playground, etc. should be designed from scratch, novel, live 3D, and following real world optic and kinematic physics as if the website is actually a 3D space in the real world in front of your eyes.
+3. There is going to be a live backend as well so the project is not just fancy frontend
+4. There should by high, impregnable security system along.
+5. Device fingerprinting and facial recognition is a crucial part.
+
+Main Idea:
+We're going to model a novel landing page for my profile. The main inspiration here is going to be Tony Stark's Iron Man but we are NOT GOING TO COPY anything about it.
+
+Design:
+A cinematic, hyper-realistic shot of a massive, dark metallic sci-fi blast door, not too wide. embedded deep inside a rugged rocky cavern. A medium shot of a sci-fi metal bunker entrance built inside a dark stone cave. Viewer is standing exactly in front of the door as such that cave ceiling and 3/4th of the door from top are in view but the floor isn't. The metal panels look industrial with circuits, numbers, and faint green lights which are not prominent and barely visible but along the centre of the door, there exists a panel used to open the door; on the hi-tech panel is a biometric face scan with few soft buttons, that could be made out more clearly once up close to it. Warm orange lighting illuminates the left side of the metal wall, casting reflections and deep shadows. The entrance is framed by rough, textured cave rocks. Realistic 3D rendering. The metallic wall features intricate circuit line paneling, small mechanical grates, a circular vent, and tiny glowing green ledger lights. A powerful, warm amber light source from the side casts a dramatic golden reflection across the dark matte metal surfaces. The scene is framed by jagged, highly textured orange-brown cave walls with loose gravel at the base (not visible). Realism, dramatic contrast, high shadow depth, 8k resolution, Unreal Engine 5 render style.
+----
+The viewer steps closer to the door with the hi-tech panel right in front of his eyesight. He can clearly see the panel in all detailing.
+---
+1. Subject & Scene Layout
+Core Subject: A central vertical biometric security panel mounted on a close up massive, heavy-duty industrial sci-fi blast door embedded in cave entrance.
+
+Environment: Built directly into a dark, rough-textured subterranean rock/cave ceiling and surrounding arch.
+
+Central Control Terminal:
+
+Top LED: A horizontal strip light glowing cool white/cyan.
+
+Screen Display: A dark digital screen showing a cyan 3D point-cloud wireframe facial recognition scan, alongside UI elements like "SCANNING", "SCAN", and "BIOMETRIC SYSTEM ALPHA".
+
+Iris Scanner: A prominent circular camera lens inside a metallic housing positioned immediately below the display screen.
+
+Interactive Interface: A bottom row of backlit control buttons with text labels reading REGISTER, VERIFY, and RESET alongside small icon symbols (fingerprint, printer/card).
+
+2. Surface Textures & Detail Work
+Materials: Dark gunmetal grey steel, brushed titanium, matte black composite casing, and weathered iron plating.
+
+Greebles & Mechanical Details: Exposed hex bolts, heavy corner rivets, recessed panels, hydraulic tubes/conduits running along the left side, and heatsink cooling vents.
+
+Graphics & Graphics Decals: Crisp white stencil lettering ("RESTRICED ACCESS"), warning triangles, and subtle printed circuit trace line graphics.
+
+Status Indicators: Dotted with tiny glowing green LED lights positioned strategically across the metal paneling.
+
+Wear & Tear: Realistic micro-scratches on metal edges, subtle grime accumulating in recessed seams, and slight surface texture variations.
+
+3. Lighting & Color Palette
+Lighting Style: High-contrast dual-tone cinematic lighting (Chiaroscuro).
+
+Primary Key Light: Warm amber/golden side-lighting originating from the upper left, casting rich highlights on the rough cavern ceiling and left panel edges while throwing deep shadows across the right side.
+
+Secondary Accent Light: Cool cyan/teal electronic backlighting emanating from the central UI screen, status bar, and camera housing.
+
+Tone: Dark, atmospheric, claustrophobic, and grounded high-tech sci-fi.
+
+4. Camera & Rendering Technique
+Composition: Perfectly centered, eye-level, straight-on orthographic/architectural perspective. Very close to the door, surrounding environment is not visible properly.
+
+Framing & Aspect Ratio: Vertical framing (approx. 3:4 or 9:16 aspect ratio).
+
+Render Quality: Crisp, photorealistic hard-surface 3D render (Unreal Engine 5 / Octane Render aesthetic) with high dynamic range (HDR) light falloff.
+---
+
+The viewer enters the room after passing the biometric scan
+
+---
+Visual Deconstruction
+1. Subject & Scene Layout
+Foreground: Incomprehensible darkness following the entrance from a ballast door built in a cave
+
+Middle Ground: Pitch darkness. A dark silhouette of a long, cluttered workbench in a donut shape and a few hi-tech items, completely in darkness and unperceivable. A low-profile, circular central console or holo-table bulit on top of rocky surface in the, enclosed in the centre of the long, circular workbench surrounded by dark, metallic floor paneling.
+
+Background: A darkened scrapped sci-fi room built inside a cave featuring vaulted ceiling arches, exposed wall conduits, pipes, and recessed mechanical wall panels made from scraps among rocky surface.
+
+2. Lighting & Color Palette
+Lighting Style: Pitch Black darkness with deep, impenetrable shadows (chiaroscuro/noir).
+
+Key Accent Light: A non existent, cool cyan/teal soft light from the far-back wall, creating subtle rim lighting around the distant machinery and workbench.
+
+Color Palette: Pitch black with hints of dark slate grey, desaturated navy blue, dark cyan, and pitch black shadow tones.
+
+Mood: Eerie, claustrophobic, survival-horror, and tense (reminiscent of scenes from Iron Man stuck in cave with scraps trying to build his first suit).
+
+3. Camera & Rendering Technique
+Perspective: Front view, just entered a cavern room through a ballast door behind the viewer (ballast door not in view).
+
+Framing & Aspect Ratio: Vertical framing (approx. 3:4 aspect ratio).
+
+Render Quality: Atmospheric 3D video game screenshot render (Unreal Engine 5 style) with realistic volumetric atmospheric haze/fog.
+---
+
+Holographic light blue sparks emanate from the holo-table before a light shoots up and maps the entire room in holographic light grid
+
+---
+
+1. Subject & Scene Layout
+Framing/Foreground: The scene is framed through the rough, silhouette edge of a dark, unlit rock cave aperture, creating a natural vignette that draws focus inward.
+
+Central Focal Point: A raised, circular holographic projector/table enclosed by a circluar workbench emitting a powerful vertical beam of bright blue light.
+
+Holographic Imagery:
+
+Above the table, the beam projects a detailed 3D wireframe topographic terrain map / mountain mesh.
+
+A glowing cyan grid extends across the uneven, rocky cavern floor, contouring to the ground's shape.
+
+Background & Architecture:
+
+An arched subterranean cavern tunnel with heavy cables and conduits suspended along the top arch.
+
+Structural wireframe grids, digital telemetry data, and HUD interface elements are projected directly onto the curved cave walls and ceiling.
+
+Workbenches, crates, and technical equipment line the left side, covered in blue overlay lighting.
+
+2. Lighting & Color Palette
+Color Palette: Near-monochromatic neon electric blue, glowing cyan, deep navy blue, and pitch-black framing.
+
+Lighting Style: Dramatic internal illumination where the glowing holograms act as the primary light source, casting soft blue reflections onto surrounding stone surfaces and equipment.
+
+Volumetric FX: A intense central glow at the hologram projector core creating faint atmospheric light bloom.
+
+3. Camera & Rendering Technique
+Composition: Center-focused perspective looking deep down the length of the tunnel from an outer viewing point.
+
+Framing & Aspect Ratio: Vertical orientation (approx. 3:4 aspect ratio).
+
+Render Quality: High-tech sci-fi concept art / 3D environment render (Unreal Engine 5 style) with crisp glowing vector lines and high-contrast shadows.
+
+---
+
+The mapped light gets re-absorbed in the holo-table and now slowly a holographic, intelligent, higher dimensional entity builds up from the holo-table.
+
+---
+
+1. Subject & Scene Layout
+Framing/Foreground: The scene is viewed through the dark silhouette of a jagged, unlit rock cave opening, creating a natural vignette frame around the perimeter.
+
+Setting: A dark, subterranean cave laboratory or hidden underground command post with a rugged stone arch ceiling and uneven dirt/rock floor.
+
+Background Props: Dark technical workbenches, crates, and equipment line the left cavern wall. Thick, heavy power conduits and cables hang and sag along the vaulted cave ceiling.
+
+2. Holographic Projection Details
+Holotable: A low-profile, circular metallic pedestal with illuminated blue accents along its outer rim.
+
+Workbench: A circular architectured bench surrounding the holo table with various drawers, tools and other interactable items (locked for now).
+
+Central Hologram: Suspended directly above the table is a glowing geometric wireframe cube structure.
+
+Energy Effects: The central cube is enveloped in a swirling, fluid vortex of glowing cyan plasma ribbons, ethereal light trails, and smoke-like energy waves.
+
+Projector Beam: A sharp, cone-shaped beam of bright blue light shoots straight upward from the center of the base to anchor the hologram.
+
+3. Lighting & Color Palette
+Color Palette: Near-monochromatic palette dominated by vibrant electric cyan, cobalt blue, dark navy tones, and deep pitch-black shadows.
+
+Lighting Style: Extreme low-key illumination (chiaroscuro). The hologram acts as the sole light source in the room, casting soft cyan rim highlights onto the nearby stone walls, hanging cables, and furniture while leaving the outer edges heavily shadowed.
+
+Atmosphere: Eerie, secret, high-tech sci-fi mood with subtle atmospheric haze and glowing light bloom.
+
+4. Camera & Rendering Technique
+Composition: Centered, eye-level perspective looking directly at the central hologram through the cavern aperture.
+
+Framing & Aspect Ratio: Vertical orientation (approx. 3:4 aspect ratio).
+
+Render Quality: High-detail 3D sci-fi concept art render (Unreal Engine 5 / Octane Render aesthetic) featuring soft volumetric lighting and fluid particle dynamics.
+
+---
+
+The entity greets the viewer and retreats into the holo-table and powers on the entire cavern-garage/laboratory. Everything around is now active and working.
+
+---
+
+1. Subject & Scene Layout
+Framing/Foreground: Viewed through the dark, arched frame of a subterranean rock doorway with a metal threshold beam along the bottom edge.
+
+Environment: A fully operational underground cavern laboratory and command center featuring rough, exposed rock walls, vaulted ceilings, and a dirt-and-stone floor.
+
+Central Holo-Table: A heavy circular metallic pedestal projecting a bright cyan holographic HUD display—a vertical floating rectangular screen showing a detailed topographic map and tactical data. It is surrounded by a circular workbench with various drawers, tools and other interactable items.
+
+Left Workstation: Long industrial workbenches lined with tools and hardware, beneath three active wall-mounted monitors displaying green-and-white computer data, code, and telemetry.
+
+Right Wall: Heavy industrial metal plating, sealed pressure doors, thick pipes, and conduit lines running along the stone walls.
+
+2. Lighting & Color Palette
+Primary Ambient Light: Warm yellow illumination from overhead industrial pendant lamps and mounted wall floodlights, filling the cave with warm ambient glow.
+
+Secondary Lighting & Accents:
+
+Radiant cyan light from the central holographic map display.
+
+Bright green LED status indicators on servers, power generators, and equipment on the left.
+
+Color Palette: Warm amber and golden-yellow tones contrasted against electric cyan blue, vivid green LED accents, dark slate grey rock, and gunmetal steel.
+
+Mood: Active, fully powered high-tech secret base, functional and lived-in.
+
+3. Camera & Rendering Technique
+Composition: Centered, straight-on eye-level view through the cave aperture, establishing depth from the dark foreground threshold to the illuminated back walls.
+
+Framing & Aspect Ratio: Vertical orientation (approx. 3:4 aspect ratio).
+
+Render Quality: High-detail 3D environment concept art (Unreal Engine 5 style) with warm volumetric fog, atmospheric haze, and soft light spill across the rough stone surfaces.
+
+---
+
+The user steps closer to the work-bench and from here the actual interactable page begins.
+The page can be scrolled to move the viewer's view but the view moves horizontally instead of vertically along the circular table infintely. From here, they can access all the various functionalities of the table. The traversal along the circular table is continuous along with the scroll but for ease of access for now we shall divide the table into 9 sectors with the odd sector as sector 0 that is a hinged door like section allowing the user to walk in to the centre of the holo-table; taking the sector 0 as the reference point the remaining of the circular table is divided into equal right and left sectors (RS/LS). The functionalities available at the table should be:
+1. Beginning point: An entry point is like a hinged sector which can be opened to walk in to the central holo-table to interact with the AI
+2. RS 1 (Relative to beginning sector 0, scroll up): Cluttered blueprints of projects that are fetched in realtime from owner's websites like GitHub.
+3. RS 2: This part serves as a Resume station that will allow the viewers, especially if they're recruiters or HRs to collect a tailored resume of the user. A futuristic machine that contains details of all the Owner's projects, work, experiences, etc. and allows the viewer to select relavant fields from the available options to build a tailored resume. 
+4. RS 3: This part allows the viewers to view a holo-calendar, which is a hi-tech replica of the owner's google calander containing all the owner's upcoming schedule and dates. This is for everyone to view in case they want an update about user's schedule or may just want to check what time they might be free.
+5. RS 4 & LS 4: A combined long section that is a proper workstation area to assemble, build and use devices that can be found throughout the area in drawers, tabletops, surfaces, corners, on floors, etc. A fun area with deeper combinatorial purpose to be defined later
+6. LS 3: A holo-globe that is interactable. It is a full blown replica of Google Earth and shows the viewer's current location based on their i.p. address. However, it is further a digital album that contains photos and videos of/shot by the Owner with details of the date, venue, event etc. Hovering or moving around the globe will cause camera icons to pop up in various locations which on clicking reveal the location's photos shot by the user
+7. LS 2: A messy collection of infinite sticky notes, empty books and scratchpads lying free to be scribbled on or written on by the viewer for the Owner to see. It should be interactable by both Pen i.e. mouse/touch or Input i.e. keyboards. All editing gets updated and stored in the backend logs and remain there indefinitely for every new viewer who enters, unless removed by the user himself.
+8. LS 1 (Reached by complete scrolling up as the viewer moves right from sector 0 or directly by scrolling down from sector 0 to move leftwards or counter-clockwise): A holo panel that contains generic, publicly available and hosted details of the owner. It contains a mini web blog that can be updated only by the owner, tabs that allow to switch to holo-page replicas of the Owner's publicly available sites like LinkedIn, Instagram, YouTube, Spotify, Facebook, Snapchat, etc along with contact information like phone number or email addresses.

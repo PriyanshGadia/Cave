@@ -1,0 +1,103 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 48px;
+  background: var(--bg-surface-glass-heavy);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--mat-border-dark);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  z-index: 50;
+  font-family: var(--font-telemetry);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+}
+
+.leftGroup, .rightGroup {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.systemBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: var(--text-cyan);
+}
+
+.pulseDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-cyan-base);
+  box-shadow: var(--glow-cyan-sm);
+  animation: pulseGlow 2s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { transform: scale(0.9); opacity: 0.6; }
+  50% { transform: scale(1.3); opacity: 1; }
+}
+
+.telemetryItem {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--text-secondary);
+}
+
+.highlight {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.tierBadge {
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.tier0 {
+  background: rgba(148, 163, 184, 0.15);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: var(--text-secondary);
+}
+
+.tier1 {
+  background: var(--color-amber-dim);
+  border: 1px solid var(--mat-border-amber);
+  color: var(--text-amber);
+  box-shadow: var(--glow-amber-sm);
+}
+
+.tier2 {
+  background: var(--color-cyan-dim);
+  border: 1px solid var(--mat-border-cyan);
+  color: var(--text-cyan);
+  box-shadow: var(--glow-cyan-sm);
+}
+
+.audioBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--mat-border-dark);
+  color: var(--text-secondary);
+  transition: var(--trans-fast);
+}
+
+.audioBtn:hover {
+  border-color: var(--color-cyan-base);
+  color: var(--text-cyan);
+}

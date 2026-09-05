@@ -1,0 +1,16 @@
+name = "the-workshop"
+compatibility_date = "2026-08-01"
+pages_build_output_dir = "dist"
+
+[vars]
+ENVIRONMENT = "production"
+AI_FALLBACK_MODEL = "@cf/meta/llama-3-8b-instruct"
+
+[[d1_databases]]
+binding = "WORKSHOP_DB"
+database_name = "workshop_db"
+database_id = "local-workshop-db-id"
+
+[[kv_namespaces]]
+binding = "WORKSHOP_CACHE"
+id = "local-workshop-kv-id"
