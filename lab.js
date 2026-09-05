@@ -243,6 +243,10 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     const l = add(new THREE.PointLight(0xffb070, 0, 9.5, 2), 0, -.24, 0, g); return { light: l, disc: dm, t0: T.power[0] + 1.2 + j * .55, target: 13 * LK }; });
   const downSpot = new THREE.SpotLight(0xdff6ff, 0, 11, .78, .55, 1.6); downSpot.position.set(0, 5.4, 0); downSpot.target = table; lab.add(downSpot);
   const hemi = new THREE.HemisphereLight(0x5c6a78, 0x1c130c, 0); lab.add(hemi);
+  // Architectural cool fill: broad, shadowless blue laboratory illumination that rises only after the power-on beat.
+  const blueFillA = new THREE.PointLight(0x3d8fc7, 0, 8.5, 2); blueFillA.position.set(-5.8, 3.0, 1.2); lab.add(blueFillA);
+  const blueFillB = new THREE.PointLight(0x2e74b5, 0, 8.0, 2); blueFillB.position.set(5.2, 2.6, -1.8); lab.add(blueFillB);
+  const blueArch = new THREE.DirectionalLight(0x397ea8, 0); blueArch.position.set(0, 5.5, 2.5); blueArch.target.position.set(0, 0, 0); lab.add(blueArch, blueArch.target);
   const fogA = new THREE.Color(0x03050a), fogB = new THREE.Color(0x0c0906);
   { const tubes = [], clamps = [], up = new THREE.Vector3(0, 1, 0);                                                                                  // sagging ceiling cable runs
     for (let i = 0; i < 4; i++) { const a = i / 4 * TAU + .9, pts = [polar(a, .8, RK - .1), polar(a + .35, 4.2, RK - .9 - hash(i) * .5), polar(a + .7, 8.0, RK - .5), polar(a + .78, HR - .8, WH + .4)], c = new THREE.CatmullRomCurve3(pts);
@@ -376,7 +380,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       for (const L of pendants) { const a = ph(t, [L.t0, L.t0 + .4]), fl = a > 0 && a < 1 ? (hash(Math.floor(t * 47) + L.t0) > .35 ? 1 : .15) : 1; L.light.intensity = a * fl * L.target; L.disc.emissiveIntensity = a * fl * 3.4; cue('pd' + L.t0, t > L.t0, sfx.relay); }
       for (const s of screens) s.m.emissiveIntensity = ph(t, [s.t0, s.t0 + .3]) * s.i * (1 + .05 * Math.sin(t * 30 + s.t0)); for (const l of leds) l.m.emissiveIntensity = ph(t, [l.t0, l.t0 + .2]) * l.target; for (const h of holos) h.m.opacity = sm(ph(t, [h.t0, h.t0 + .8])) * h.target * (.93 + .07 * Math.sin(t * 9 + h.t0));
       labels.forEach((m, k) => m.emissiveIntensity = ph(t, [T.power[0] + 1.6 + k * .12, T.power[0] + 1.9 + k * .12]) * 1.3); greenE.emissiveIntensity = ph(t, [T.power[0] + 3.0, T.power[0] + 3.3]) * 2.2;
-      hemi.intensity = (0.16 + Ps * .79) * LKh; renderer.toneMappingExposure = EXP0 * (1 + .32 * Ps); lab.fog.density = lerp(.055, .02, Ps); lab.fog.color.copy(fogA).lerp(fogB, Ps);
+      hemi.intensity = (0.16 + Ps * .79) * LKh; blueFillA.intensity = Ps * (LOW ? 1.25 : 2.5); blueFillB.intensity = Ps * (LOW ? 1.0 : 2.0); blueArch.intensity = Ps * .22; renderer.toneMappingExposure = EXP0 * (1 + .32 * Ps); lab.fog.density = lerp(.055, .02, Ps); lab.fog.color.copy(fogA).lerp(fogB, Ps);
       const gone = sm(ph(t, T.collapse)), back = sm(ph(t, T.idle)); coreE.emissiveIntensity = Math.max(coreE.emissiveIntensity * (1 - .85 * gone), back * 5 * (1 + .1 * Math.sin(t * 1.7))); tableLight.intensity = Math.max(tableLight.intensity, (gone * .9 + back * .6) * LK * (.9 + .1 * Math.sin(t * 1.7))); }
     // S0 gate leaves swing out flat against the end caps once the room is live
     { const g = sm(ph(t, [T.power[1] - 1.6, T.power[1] + .2])); leaves.forEach(L => L.rotation.y = -L.userData.s * OPEN_A * g); cue('gate', t > T.power[1] - 1.6, () => sfx.servo(1.6, true)); cue('gate2', t > T.power[1] + .2, sfx.relay); }
