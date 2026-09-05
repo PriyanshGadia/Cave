@@ -316,13 +316,13 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   const OPEN_A = Math.PI / 2 - SEC / 2; leaves.forEach(L => L.position.copy(polar(L.userData.s * (SEC / 2 - .012), HR_, .16)));
 
   /* ── blackout we own from vault:entered; camera fit; input (movement / look / raycast / console kept separate) ── */
-  const bokeh = LOW ? null : new BokehPass(lab, cam, { focus: 6, aperture: 0.000035, maxblur: 0.006 }); bokeh && (bokeh.enabled = false); if (bokeh) composer.insertPass(bokeh, 1);
+  const bokeh = new BokehPass(lab, cam, { focus: 6, aperture: LOW ? 0.00002 : 0.000035, maxblur: LOW ? 0.0045 : 0.006 }); bokeh.enabled = false; if (bokeh) composer.insertPass(bokeh, 1);
   const focusPos = new THREE.Vector3(), focusLook = new THREE.Vector3(), focusDir = new THREE.Vector3(), focusRadial = new THREE.Vector3();
   const focus = id => { const h = heroGroups.find(x => x.id === id); if (!h || !S.ready || id === 'RS4' || id === 'LS4') return false; S.focus = id; S.focusT = 0; S.focusReady = true; S.vel = 0; S.magnet = null; dispatchEvent(new CustomEvent('lab:hero:focus', { detail: { id, sector: SECTORS.find(x => x.id === id) } })); return true; };
   const blurFocus = () => { if (!S.focus) return; const id = S.focus; S.focus = null; S.focusT = 0; S.focusReady = false; if (bokeh) bokeh.enabled = false; dispatchEvent(new CustomEvent('lab:hero:blur', { detail: { id } })); };
   const fade = document.createElement('div'); fade.id = 'labFade'; Object.assign(fade.style, { position: 'fixed', inset: 0, background: '#000', opacity: 0, pointerEvents: 'none', zIndex: 9990 }); document.body.appendChild(fade);
   const fit = () => { cam.aspect = innerWidth / innerHeight; cam.fov = clamp(THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(78) / 2) / cam.aspect)), 50, 100); cam.updateProjectionMatrix(); }; fit(); addEventListener('resize', fit);
-  const NAV = { wheel: .0075, drag: .004, damp: 5, max: 2 }, canMove = () => S.active && S.t >= T.power[0] && !S.inside && !S.wantIn, canLook = () => S.active && S.t > 1;
+  const NAV = { wheel: .0075, drag: .004, damp: 5, max: 2 }, canMove = () => S.active && S.t >= T.power[0] && !S.inside && !S.wantIn && !S.focus, canLook = () => S.active && S.t > 1;
   const nudge = v => { S.vel = clamp(S.vel + v, -NAV.max, NAV.max); S.lastInput = S.t; S.magnet = null; };
   function goTo(id) { const s = SECTORS.find(x => x.id === id); if (!s) return; let d = (s.theta - S.theta) % TAU; if (d > Math.PI) d -= TAU; if (d < -Math.PI) d += TAU; S.magnet = S.theta + d; S.lastInput = -9; }
   function enter() { if (!S.ready || S.inside || S.wantIn) return; S.wantIn = true; S.vel = 0; goTo('S0'); }
@@ -402,7 +402,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       fA.copy(polar(th, 3.98, DK_Y + .45)).lerp(tmp.set(0, EMIT_Y + 1.4, 0), .35); fA.lerp(tmp.set(0, entY - .1, 0), w);
       const fy = 1.3 + sm(ph(t, T.beam)) * .9 + S.entF * 1.2 + sm(ph(t, T.map)) * .3 * (1 - sm(ph(t, T.retract))); fA.lerp(tmp.set(0, fy, 0), bootW);
       if (!S.fInit) { fB.copy(fA); S.fInit = true; } else fB.lerp(fA, 1 - Math.exp(-dt * 3.2)); cam.lookAt(fB); cam.rotateY(S.look.x * (1 - .6 * w)); cam.rotateX(S.look.y * (1 - .6 * w));
-      if (S.focus) { const h = heroGroups.find(x => x.id === S.focus); if (h) { h.group.getWorldPosition(focusLook); focusRadial.set(focusLook.x, 0, focusLook.z).normalize(); focusPos.copy(focusLook).addScaledVector(focusRadial, 1.72); focusPos.y += .34; S.focusT += (1 - S.focusT) * (1 - Math.exp(-dt * 4.5)); cam.position.lerp(focusPos, 1 - Math.exp(-dt * 4.5)); cam.lookAt(focusLook); if (bokeh) { bokeh.enabled = true; bokeh.uniforms.focus.value = Math.max(.1, cam.position.distanceTo(focusLook)); bokeh.uniforms.aperture.value = .000055; bokeh.uniforms.maxblur.value = .008; } } } }
+      if (S.focus) { const h = heroGroups.find(x => x.id === S.focus); if (h) { h.group.getWorldPosition(focusLook); focusRadial.set(focusLook.x, 0, focusLook.z).normalize(); focusPos.copy(focusLook).addScaledVector(focusRadial, 1.72); focusPos.y += .34; S.focusT += (1 - S.focusT) * (1 - Math.exp(-dt * 4.5)); cam.position.lerp(focusPos, 1 - Math.exp(-dt * 4.5)); cam.lookAt(focusLook); if (bokeh) { bokeh.enabled = true; bokeh.uniforms.focus.value = Math.max(.1, cam.position.distanceTo(focusLook)); bokeh.uniforms.aperture.value = LOW ? .00003 : .000055; bokeh.uniforms.maxblur.value = LOW ? .0055 : .008; } } } }
     if (!S.ready && t >= T.ready) { S.ready = true; fade.style.opacity = '0'; dispatchEvent(new CustomEvent('lab:ready', { detail: { sector: SECTORS[S.sector] } })); }
   }
 
