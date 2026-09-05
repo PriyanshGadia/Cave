@@ -1,6 +1,7 @@
 // lab.js — VAULT-01 · Scene 2 · THE HALL  (rev C — document-aligned bench, AI entrance, lit end state)
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
 
 const TAU = Math.PI * 2, NSEC = 9, SEC = TAU / NSEC;
 export const SECTORS = [['S0','ENTRY GATE'],['RS1','BLUEPRINT DECK'],['RS2','RESUME FABRICATOR'],['RS3','HOLO-CALENDAR'],['RS4','WORKSTATION · SEALED'],
@@ -108,7 +109,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
 
   const lab = new THREE.Scene(); lab.background = new THREE.Color(0); lab.fog = new THREE.FogExp2(0x03050a, .055);
   const cam = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, .05, 80);
-  const S = { active: false, t: 0, theta: 0, vel: 0, magnet: null, lastInput: -9, sector: 0, stride: 0, look: { x: 0, y: 0, tx: 0, ty: 0 }, ready: false, entF: 0, insideT: 0, inside: 0, hover: null };
+  const S = { active: false, t: 0, theta: 0, vel: 0, magnet: null, lastInput: -9, sector: 0, stride: 0, look: { x: 0, y: 0, tx: 0, ty: 0 }, ready: false, entF: 0, insideT: 0, inside: 0, hover: null, focus: null, focusT: 0, focusReady: false };
   const disc = softDisc(), cues = new Set(), sfx = makeSfx(), cue = (n, c, f) => { if (c && !cues.has(n)) { cues.add(n); f(); } };
   const polar = (th, r, y = 0) => new THREE.Vector3(Math.sin(th) * r, y, Math.cos(th) * r);
   const mat = o => new THREE.MeshStandardMaterial(o), E = (c, i = 0) => mat({ color: 0, emissive: c, emissiveIntensity: i });
@@ -125,7 +126,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   const holoMat = t => new THREE.MeshBasicMaterial({ map: t, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false });
   const lineM = o => new THREE.LineBasicMaterial({ color: 0x5fe8ff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, ...o });
   const screenMat = t => mat({ map: t, emissiveMap: t, emissive: 0xffffff, emissiveIntensity: 0, color: 0x101010, roughness: .3 });
-  const hits = [], scanSrc = [], holos = [], screens = [], leds = [], labels = [], spin = [], mirrorPairs = [], mirror = new THREE.Group(); mirror.scale.y = -1; lab.add(mirror);
+  const hits = [], scanSrc = [], holos = [], screens = [], leds = [], labels = [], spin = [], heroGroups = [], mirrorPairs = [], mirror = new THREE.Group(); mirror.scale.y = -1; lab.add(mirror);
   const tag = (g, id) => { g.traverse(o => { if (o.isMesh) { o.userData.sector = id; hits.push(o); } }); return g; };
   const reflect = o => { o.updateWorldMatrix(true, true); const c = o.clone(true), a = [], b = []; o.traverse(x => a.push(x)); c.traverse(x => { if (x.material) x.material = x.material.clone(); b.push(x); }); c.matrixAutoUpdate = false; a.forEach((x, i) => mirrorPairs.push([x, b[i], i === 0])); mirror.add(c); return c; };
 
@@ -195,23 +196,23 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   const sectorGroup = (k, r, y = TOP) => { const g = new THREE.Group(); g.position.copy(polar(k * SEC, r, y)); g.rotation.y = k * SEC; table.add(g); return g; };
   { const g = sectorGroup(1, 3.95), bp = mat({ map: TEX.blueprint(), roughness: .92, metalness: 0 });          // RS1 · blueprints + clamp lamp
     for (let i = 0; i < 5; i++) { const p = new THREE.Mesh(new THREE.PlaneGeometry(.9, .62), bp); p.rotation.set(-Math.PI / 2, 0, (hash(i * 3) - .5) * .8); p.position.set((hash(i) - .5) * .7, .002 + i * .0015, (hash(i * 7) - .5) * .4); g.add(p); }
-    const arm = add(cyl(.014, .014, .7, tit, 8), -.7, .34, -.35, g); arm.rotation.z = .5; const head = add(new THREE.Mesh(new THREE.ConeGeometry(.09, .13, 14, 1, true), compD), -.38, .62, -.35, g); head.rotation.z = 1.9; const hl = E(0xffd39a); add(cyl(.06, .06, .01, hl, 14), -.33, .6, -.35, g).rotation.z = 1.9; leds.push({ m: hl, target: 3, t0: T.power[0] + 2.4 }); tag(g, 'RS1'); }
+    const arm = add(cyl(.014, .014, .7, tit, 8), -.7, .34, -.35, g); arm.rotation.z = .5; const head = add(new THREE.Mesh(new THREE.ConeGeometry(.09, .13, 14, 1, true), compD), -.38, .62, -.35, g); head.rotation.z = 1.9; const hl = E(0xffd39a); add(cyl(.06, .06, .01, hl, 14), -.33, .6, -.35, g).rotation.z = 1.9; leds.push({ m: hl, target: 3, t0: T.power[0] + 2.4 }); tag(g, 'RS1'); heroGroups.push({ id: 'RS1', group: g }); }
   { const g = sectorGroup(2, 4.0, TOP + .36); add(box(1.1, .72, .6, comp), 0, 0, 0, g); add(box(1.12, .05, .62, gunD), 0, .385, 0, g); add(box(1.12, .05, .62, gunD), 0, -.385, 0, g);   // RS2 · resume fabricator
     const smR = screenMat(TEX.resume()); add(new THREE.Mesh(new THREE.PlaneGeometry(.68, .42), smR), .12, .08, .302, g); screens.push({ m: smR, t0: T.power[0] + 2.9, i: 1.1 });
-    add(box(.7, .035, .06, mat({ color: 0x020202, roughness: 1 })), .08, -.22, .305, g); const al = E(0xffb55a); add(box(.64, .012, .01, al), .08, -.18, .306, g); leds.push({ m: al, target: 2.5, t0: T.power[0] + 3.1 }); for (let i = 0; i < 2; i++) add(cyl(.035, .035, .04, tit, 14), -.4, .1 - i * .16, .32, g).rotation.x = Math.PI / 2; tag(g, 'RS2'); }
+    add(box(.7, .035, .06, mat({ color: 0x020202, roughness: 1 })), .08, -.22, .305, g); const al = E(0xffb55a); add(box(.64, .012, .01, al), .08, -.18, .306, g); leds.push({ m: al, target: 2.5, t0: T.power[0] + 3.1 }); for (let i = 0; i < 2; i++) add(cyl(.035, .035, .04, tit, 14), -.4, .1 - i * .16, .32, g).rotation.x = Math.PI / 2; tag(g, 'RS2'); heroGroups.push({ id: 'RS2', group: g }); }
   { const g = sectorGroup(3, 3.95); add(cyl(.24, .28, .07, tit, 24), 0, .035, 0, g); const puck = E(0x3fe0ff); add(cyl(.16, .16, .006, puck, 24), 0, .074, 0, g); leds.push({ m: puck, target: 1.8, t0: T.power[0] + 3.4 });   // RS3 · holo-calendar
-    const hm = holoMat(TEX.calendar()); const p = add(new THREE.Mesh(new THREE.PlaneGeometry(1.25, .98), hm), 0, .78, 0, g); p.rotation.x = -.12; holos.push({ m: hm, target: .78, t0: T.power[0] + 3.6 }); tag(g, 'RS3'); }
+    const hm = holoMat(TEX.calendar()); const p = add(new THREE.Mesh(new THREE.PlaneGeometry(1.25, .98), hm), 0, .78, 0, g); p.rotation.x = -.12; holos.push({ m: hm, target: .78, t0: T.power[0] + 3.6 }); tag(g, 'RS3'); heroGroups.push({ id: 'RS3', group: g }); }
   for (const k of [4, 5]) { const g = sectorGroup(k, 3.98, TOP + .03); add(box(2.7, .06, 1.02, compD), 0, 0, 0, g); add(new THREE.Mesh(new THREE.PlaneGeometry(2.4, .62), mat({ map: TEX.sealed(), roughness: .85, metalness: .3 })).rotateX(-Math.PI / 2), 0, .031, 0, g);   // RS4/LS4 · sealed
-    for (const [x, z] of [[-1.25, -.4], [1.25, -.4], [-1.25, .4], [1.25, .4]]) add(cyl(.035, .035, .015, tit, 10), x, .036, z, g); tag(g, k === 4 ? 'RS4' : 'LS4'); }
+    for (const [x, z] of [[-1.25, -.4], [1.25, -.4], [-1.25, .4], [1.25, .4]]) add(cyl(.035, .035, .015, tit, 10), x, .036, z, g); tag(g, k === 4 ? 'RS4' : 'LS4'); heroGroups.push({ id: k === 4 ? 'RS4' : 'LS4', group: g }); }
   { const g = sectorGroup(6, 3.95); add(cyl(.26, .3, .07, tit, 24), 0, .035, 0, g); const puck = E(0x3fe0ff); add(cyl(.18, .18, .006, puck, 24), 0, .074, 0, g); leds.push({ m: puck, target: 1.8, t0: T.power[0] + 3.3 });   // LS3 · holo-globe
     const globe = new THREE.Group(); globe.position.y = .8; g.add(globe); spin.push(globe); const wf = new THREE.LineSegments(new THREE.WireframeGeometry(new THREE.IcosahedronGeometry(.5, 2)), lineM({})); globe.add(wf); holos.push({ m: wf.material, target: .16, t0: T.power[0] + 3.5 });
     const N = LOW ? 1100 : 2000, pos = new Float32Array(N * 3); let c = 0; for (let i = 0; i < 6000 && c < N; i++) { const u = hash(i * 1.3) * 2 - 1, a = hash(i * 2.7) * TAU, r = Math.sqrt(1 - u * u), x = r * Math.cos(a), z = r * Math.sin(a); if (fbm3(x * 2.2 + 3, u * 2.2, z * 2.2, 3) > .54) { pos.set([x * .505, u * .505, z * .505], c * 3); c++; } }
-    const gg = new THREE.BufferGeometry(); gg.setAttribute('position', new THREE.BufferAttribute(pos.slice(0, c * 3), 3)); const gp = new THREE.Points(gg, new THREE.PointsMaterial({ map: disc, color: 0x7ff0ff, size: .02, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending })); globe.add(gp); holos.push({ m: gp.material, target: .9, t0: T.power[0] + 3.5 }); tag(g, 'LS3'); }
+    const gg = new THREE.BufferGeometry(); gg.setAttribute('position', new THREE.BufferAttribute(pos.slice(0, c * 3), 3)); const gp = new THREE.Points(gg, new THREE.PointsMaterial({ map: disc, color: 0x7ff0ff, size: .02, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending })); globe.add(gp); holos.push({ m: gp.material, target: .9, t0: T.power[0] + 3.5 }); tag(g, 'LS3'); heroGroups.push({ id: 'LS3', group: g }); }
   { const g = sectorGroup(7, 3.55); add(box(1.9, 1.15, .05, compD), 0, .62, 0, g); for (const x of [-.85, .85]) add(cyl(.015, .015, 1.24, tit, 8), x, .62, -.04, g);   // LS2 · scratchpad wall
     const nt = TEX.note(), cols = [0xfff07a, 0xffb1c8, 0x9fe8ff, 0xc8ffb0], notes = []; for (let i = 0; i < 16; i++) { const n = new THREE.Mesh(new THREE.PlaneGeometry(.16, .16), mat({ map: nt, color: cols[i % 4], roughness: .95 })); n.position.set((hash(i * 1.9) - .5) * 1.6, .22 + hash(i * 3.3) * .8, .03); n.rotation.z = (hash(i * 5.1) - .5) * .4; notes.push(n); } notes.forEach(n => g.add(n));
-    add(box(.34, .035, .26, mat({ color: 0x2a2620, roughness: .9 })), .55, .018, .42, g); add(cyl(.007, .007, .16, tit, 6), .1, .007, .46, g).rotation.set(Math.PI / 2, 0, .6); tag(g, 'LS2'); }
+    add(box(.34, .035, .26, mat({ color: 0x2a2620, roughness: .9 })), .55, .018, .42, g); add(cyl(.007, .007, .16, tit, 6), .1, .007, .46, g).rotation.set(Math.PI / 2, 0, .6); tag(g, 'LS2'); heroGroups.push({ id: 'LS2', group: g }); }
   { const g = sectorGroup(8, 3.95); add(box(1.1, .04, .26, gunD), 0, .02, 0, g); for (const x of [-.5, .5]) add(cyl(.014, .014, 1.6, tit, 8), x, .82, 0, g);   // LS1 · profile panel
-    const pm = holoMat(TEX.profile()); add(new THREE.Mesh(new THREE.PlaneGeometry(1.05, 1.4), pm), 0, .85, 0, g); holos.push({ m: pm, target: .8, t0: T.power[0] + 3.2 }); tag(g, 'LS1'); }
+    const pm = holoMat(TEX.profile()); add(new THREE.Mesh(new THREE.PlaneGeometry(1.05, 1.4), pm), 0, .85, 0, g); holos.push({ m: pm, target: .8, t0: T.power[0] + 3.2 }); tag(g, 'LS1'); heroGroups.push({ id: 'LS1', group: g }); }
   { const cans = [], boxes = [], bars = []; for (const k of [1, 2, 3, 6, 7, 8]) for (let i = 0; i < 3; i++) { const side = i & 1 ? 1 : -1, th = k * SEC + side * (.29 + hash(k * 13 + i) * .03), r = 3.5 + hash(k * 7 + i * 3) * .7, kind = Math.floor(hash(k + i * 11) * 3);   // clutter at sector edges only — never under an installation
       const o = kind === 0 ? cyl(.04, .045, .14, tit, 12) : kind === 1 ? box(.18, .08, .1, comp) : box(.16, .012, .03, tit); o.position.copy(polar(th, r, TOP + (kind === 0 ? .07 : kind === 1 ? .04 : .006))); o.rotation.y = hash(i * k) * TAU; (kind === 0 ? cans : kind === 1 ? boxes : bars).push(o); }
     merged(cans, tit, table); merged(boxes, comp, table); merged(bars, tit, table); }
@@ -242,6 +243,10 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     const l = add(new THREE.PointLight(0xffb070, 0, 9.5, 2), 0, -.24, 0, g); return { light: l, disc: dm, t0: T.power[0] + 1.2 + j * .55, target: 13 * LK }; });
   const downSpot = new THREE.SpotLight(0xdff6ff, 0, 11, .78, .55, 1.6); downSpot.position.set(0, 5.4, 0); downSpot.target = table; lab.add(downSpot);
   const hemi = new THREE.HemisphereLight(0x5c6a78, 0x1c130c, 0); lab.add(hemi);
+  // Architectural cool fill: broad, shadowless blue laboratory illumination that rises only after the power-on beat.
+  const blueFillA = new THREE.PointLight(0x3d8fc7, 0, 8.5, 2); blueFillA.position.set(-5.8, 3.0, 1.2); lab.add(blueFillA);
+  const blueFillB = new THREE.PointLight(0x2e74b5, 0, 8.0, 2); blueFillB.position.set(5.2, 2.6, -1.8); lab.add(blueFillB);
+  const blueArch = new THREE.DirectionalLight(0x397ea8, 0); blueArch.position.set(0, 5.5, 2.5); blueArch.target.position.set(0, 0, 0); lab.add(blueArch, blueArch.target);
   const fogA = new THREE.Color(0x03050a), fogB = new THREE.Color(0x0c0906);
   { const tubes = [], clamps = [], up = new THREE.Vector3(0, 1, 0);                                                                                  // sagging ceiling cable runs
     for (let i = 0; i < 4; i++) { const a = i / 4 * TAU + .9, pts = [polar(a, .8, RK - .1), polar(a + .35, 4.2, RK - .9 - hash(i) * .5), polar(a + .7, 8.0, RK - .5), polar(a + .78, HR - .8, WH + .4)], c = new THREE.CatmullRomCurve3(pts);
@@ -311,24 +316,28 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   const OPEN_A = Math.PI / 2 - SEC / 2; leaves.forEach(L => L.position.copy(polar(L.userData.s * (SEC / 2 - .012), HR_, .16)));
 
   /* ── blackout we own from vault:entered; camera fit; input (movement / look / raycast / console kept separate) ── */
+  const bokeh = new BokehPass(lab, cam, { focus: 6, aperture: LOW ? 0.00002 : 0.000035, maxblur: LOW ? 0.0045 : 0.006 }); bokeh.enabled = false; if (bokeh) composer.insertPass(bokeh, 1);
+  const focusPos = new THREE.Vector3(), focusLook = new THREE.Vector3(), focusDir = new THREE.Vector3(), focusRadial = new THREE.Vector3();
+  const focus = id => { const h = heroGroups.find(x => x.id === id); if (!h || !S.ready || id === 'RS4' || id === 'LS4') return false; S.focus = id; S.focusT = 0; S.focusReady = true; S.vel = 0; S.magnet = null; dispatchEvent(new CustomEvent('lab:hero:focus', { detail: { id, sector: SECTORS.find(x => x.id === id) } })); return true; };
+  const blurFocus = () => { if (!S.focus) return; const id = S.focus; S.focus = null; S.focusT = 0; S.focusReady = false; if (bokeh) bokeh.enabled = false; dispatchEvent(new CustomEvent('lab:hero:blur', { detail: { id } })); };
   const fade = document.createElement('div'); fade.id = 'labFade'; Object.assign(fade.style, { position: 'fixed', inset: 0, background: '#000', opacity: 0, pointerEvents: 'none', zIndex: 9990 }); document.body.appendChild(fade);
   const fit = () => { cam.aspect = innerWidth / innerHeight; cam.fov = clamp(THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(78) / 2) / cam.aspect)), 50, 100); cam.updateProjectionMatrix(); }; fit(); addEventListener('resize', fit);
-  const NAV = { wheel: .0075, drag: .004, damp: 5, max: 2 }, canMove = () => S.active && S.t >= T.power[0] && !S.inside && !S.wantIn, canLook = () => S.active && S.t > 1;
+  const NAV = { wheel: .0075, drag: .004, damp: 5, max: 2 }, canMove = () => S.active && S.t >= T.power[0] && !S.inside && !S.wantIn && !S.focus, canLook = () => S.active && S.t > 1;
   const nudge = v => { S.vel = clamp(S.vel + v, -NAV.max, NAV.max); S.lastInput = S.t; S.magnet = null; };
   function goTo(id) { const s = SECTORS.find(x => x.id === id); if (!s) return; let d = (s.theta - S.theta) % TAU; if (d > Math.PI) d -= TAU; if (d < -Math.PI) d += TAU; S.magnet = S.theta + d; S.lastInput = -9; }
   function enter() { if (!S.ready || S.inside || S.wantIn) return; S.wantIn = true; S.vel = 0; goTo('S0'); }
   function exit() { if (!S.inside && !S.wantIn) return; S.inside = 0; S.wantIn = false; S.lastInput = -9; sfx.servo(1.0, false); dispatchEvent(new CustomEvent('lab:ai:exit')); }
-  addEventListener('wheel', e => { if (!S.active || S.t < T.power[0]) return; e.preventDefault(); if (S.inside || S.wantIn) { exit(); return; } const d = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * innerHeight : e.deltaY; nudge(clamp(d, -140, 140) * NAV.wheel); }, { passive: false });
+  addEventListener('wheel', e => { if (!S.active || S.t < T.power[0]) return; e.preventDefault(); if (S.focus) { blurFocus(); return; } if (S.inside || S.wantIn) { exit(); return; } const d = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * innerHeight : e.deltaY; nudge(clamp(d, -140, 140) * NAV.wheel); }, { passive: false });
   addEventListener('mousemove', e => { if (!canLook()) return; S.look.tx = -((e.clientX / innerWidth) * 2 - 1) * .32; S.look.ty = -((e.clientY / innerHeight) * 2 - 1) * .18; });
   let touch = null; addEventListener('touchstart', e => { if (S.active) { const t = e.touches[0]; touch = { x: t.clientX, y: t.clientY, vy: 0, moved: 0 }; } }, { passive: true });
   addEventListener('touchmove', e => { if (!touch || !S.active) return; const t = e.touches[0], dx = t.clientX - touch.x, dy = t.clientY - touch.y; touch.moved += Math.abs(dx) + Math.abs(dy); if (canMove()) { S.theta += dy * NAV.drag; touch.vy = dy; S.lastInput = S.t; S.magnet = null; } if (canLook()) S.look.tx = clamp(S.look.tx - dx * .0025, -.5, .5); touch.x = t.clientX; touch.y = t.clientY; e.preventDefault(); }, { passive: false });
   addEventListener('touchend', () => { if (touch && canMove()) nudge(clamp(touch.vy * .22, -1.4, 1.4)); if (touch && touch.moved > 40 && (S.inside || S.wantIn)) exit(); touch = null; }, { passive: true });
-  addEventListener('keydown', e => { if (!S.active) return;
+  addEventListener('keydown', e => { if (!S.active) return; if (S.focus && (e.key === 'Escape' || e.key === 'Backspace')) { blurFocus(); e.preventDefault(); return; }
     if (S.inside) { if (e.key === 'Escape') exit(); else if (e.key === 'Enter') ask(AI.input); else if (e.key === 'Backspace') AI.input = AI.input.slice(0, -1); else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && AI.input.length < 140) AI.input += e.key; else return; AI.dirty = true; e.preventDefault(); return; }
     if (!canMove()) return; if (e.key === 'Enter' && S.sector === 0) { enter(); return; } if (['ArrowRight', 'd', 'ArrowDown', 's'].includes(e.key)) nudge(.65); else if (['ArrowLeft', 'a', 'ArrowUp', 'w'].includes(e.key)) nudge(-.65); else if (/^[1-9]$/.test(e.key)) goTo(SECTORS[+e.key - 1].id); });
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(); let lastHover = 0; const pick = (x, y) => { ndc.set((x / innerWidth) * 2 - 1, -(y / innerHeight) * 2 + 1); ray.setFromCamera(ndc, cam); const h = ray.intersectObjects(hits, false)[0]; return h ? h.object.userData.sector : null; };
   addEventListener('pointermove', e => { if (!S.ready || S.inside || e.pointerType === 'touch') return; const now = performance.now(); if (now - lastHover < 90) return; lastHover = now; S.hover = pick(e.clientX, e.clientY); renderer.domElement.style.cursor = S.hover ? 'pointer' : ''; });
-  addEventListener('click', e => { if (!S.ready) return; if (S.inside || S.wantIn) { exit(); return; } const id = pick(e.clientX, e.clientY); if (!id) return; sfx.blip(1320, .07); dispatchEvent(new CustomEvent('lab:interact', { detail: { id } })); if (id === 'S0') enter(); else goTo(id); });
+  addEventListener('click', e => { if (!S.ready) return; if (S.inside || S.wantIn) { exit(); return; } const id = pick(e.clientX, e.clientY); if (!id) return; sfx.blip(1320, .07); dispatchEvent(new CustomEvent('lab:interact', { detail: { id } })); if (id === 'S0') enter(); else if (S.focus) dispatchEvent(new CustomEvent('lab:hero:action', { detail: { id, action: 'interact' } })); else if (!focus(id)) goTo(id); });
 
   /* ── update: every visual is a pure function of t (+ the visitor's θ and inside-state) ── */
   const fA = new THREE.Vector3(), fB = new THREE.Vector3(), tmp = new THREE.Vector3();
@@ -371,7 +380,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       for (const L of pendants) { const a = ph(t, [L.t0, L.t0 + .4]), fl = a > 0 && a < 1 ? (hash(Math.floor(t * 47) + L.t0) > .35 ? 1 : .15) : 1; L.light.intensity = a * fl * L.target; L.disc.emissiveIntensity = a * fl * 3.4; cue('pd' + L.t0, t > L.t0, sfx.relay); }
       for (const s of screens) s.m.emissiveIntensity = ph(t, [s.t0, s.t0 + .3]) * s.i * (1 + .05 * Math.sin(t * 30 + s.t0)); for (const l of leds) l.m.emissiveIntensity = ph(t, [l.t0, l.t0 + .2]) * l.target; for (const h of holos) h.m.opacity = sm(ph(t, [h.t0, h.t0 + .8])) * h.target * (.93 + .07 * Math.sin(t * 9 + h.t0));
       labels.forEach((m, k) => m.emissiveIntensity = ph(t, [T.power[0] + 1.6 + k * .12, T.power[0] + 1.9 + k * .12]) * 1.3); greenE.emissiveIntensity = ph(t, [T.power[0] + 3.0, T.power[0] + 3.3]) * 2.2;
-      hemi.intensity = (0.16 + Ps * .79) * LKh; renderer.toneMappingExposure = EXP0 * (1 + .32 * Ps); lab.fog.density = lerp(.055, .02, Ps); lab.fog.color.copy(fogA).lerp(fogB, Ps);
+      hemi.intensity = (0.16 + Ps * .79) * LKh; blueFillA.intensity = Ps * (LOW ? 1.25 : 2.5); blueFillB.intensity = Ps * (LOW ? 1.0 : 2.0); blueArch.intensity = Ps * .22; renderer.toneMappingExposure = EXP0 * (1 + .32 * Ps); lab.fog.density = lerp(.055, .02, Ps); lab.fog.color.copy(fogA).lerp(fogB, Ps);
       const gone = sm(ph(t, T.collapse)), back = sm(ph(t, T.idle)); coreE.emissiveIntensity = Math.max(coreE.emissiveIntensity * (1 - .85 * gone), back * 5 * (1 + .1 * Math.sin(t * 1.7))); tableLight.intensity = Math.max(tableLight.intensity, (gone * .9 + back * .6) * LK * (.9 + .1 * Math.sin(t * 1.7))); }
     // S0 gate leaves swing out flat against the end caps once the room is live
     { const g = sm(ph(t, [T.power[1] - 1.6, T.power[1] + .2])); leaves.forEach(L => L.rotation.y = -L.userData.s * OPEN_A * g); cue('gate', t > T.power[1] - 1.6, () => sfx.servo(1.6, true)); cue('gate2', t > T.power[1] + .2, sfx.relay); }
@@ -383,7 +392,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       const ma = a.material, mb = b.material; if (!ma) continue; if (ma.isShaderMaterial) { for (const k in ma.uniforms) if (k !== 'uA') mb.uniforms[k].value = ma.uniforms[k].value; mb.uniforms.uA.value = ma.uniforms.uA.value * MIR; } else { if (mb.opacity !== undefined) mb.opacity = ma.opacity * MIR; if (mb.emissiveIntensity !== undefined) mb.emissiveIntensity = ma.emissiveIntensity * MIR; } }
     // camera: approach walk → orbit around the bench → (S0) walk through the bay to the inner floor and face the entity
     { const walk = sm(ph(t, T.approach)), approaching = t > T.approach[0] && walk < 1;
-      if (canMove()) { S.theta += S.vel * dt; S.vel *= Math.exp(-NAV.damp * dt); if (Math.abs(S.vel) < 1e-4) S.vel = 0; const idle = t - S.lastInput, near = Math.round(S.theta / SEC) * SEC;
+      if (canMove() && !S.focus) { S.theta += S.vel * dt; S.vel *= Math.exp(-NAV.damp * dt); if (Math.abs(S.vel) < 1e-4) S.vel = 0; const idle = t - S.lastInput, near = Math.round(S.theta / SEC) * SEC;
         if (S.magnet === null && idle > 1.4 && Math.abs(S.vel) < .05 && Math.abs(near - S.theta) > .0008) S.magnet = near; }
       if (S.magnet !== null) { const d = S.magnet - S.theta; S.theta += d * (1 - Math.exp(-2.6 * dt)); if (Math.abs(d) < .0006) { S.theta = S.magnet; S.magnet = null; S.lastInput = -9; } }
       const k = ((Math.round(S.theta / SEC) % NSEC) + NSEC) % NSEC; if (k !== S.sector && t >= T.power[0]) { S.sector = k; sfx.blip(1100, .05, .025); dispatchEvent(new CustomEvent('lab:sector', { detail: SECTORS[k] })); }
@@ -392,7 +401,8 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       S.look.x += (S.look.tx - S.look.x) * (1 - Math.exp(-dt * 4)); S.look.y += (S.look.ty - S.look.y) * (1 - Math.exp(-dt * 4)); const bootW = 1 - sm(ph(t, [T.power[0] + 1.5, T.power[0] + 4]));
       fA.copy(polar(th, 3.98, DK_Y + .45)).lerp(tmp.set(0, EMIT_Y + 1.4, 0), .35); fA.lerp(tmp.set(0, entY - .1, 0), w);
       const fy = 1.3 + sm(ph(t, T.beam)) * .9 + S.entF * 1.2 + sm(ph(t, T.map)) * .3 * (1 - sm(ph(t, T.retract))); fA.lerp(tmp.set(0, fy, 0), bootW);
-      if (!S.fInit) { fB.copy(fA); S.fInit = true; } else fB.lerp(fA, 1 - Math.exp(-dt * 3.2)); cam.lookAt(fB); cam.rotateY(S.look.x * (1 - .6 * w)); cam.rotateX(S.look.y * (1 - .6 * w)); }
+      if (!S.fInit) { fB.copy(fA); S.fInit = true; } else fB.lerp(fA, 1 - Math.exp(-dt * 3.2)); cam.lookAt(fB); cam.rotateY(S.look.x * (1 - .6 * w)); cam.rotateX(S.look.y * (1 - .6 * w));
+      if (S.focus) { const h = heroGroups.find(x => x.id === S.focus); if (h) { h.group.getWorldPosition(focusLook); focusRadial.set(focusLook.x, 0, focusLook.z).normalize(); focusPos.copy(focusLook).addScaledVector(focusRadial, 1.72); focusPos.y += .34; S.focusT += (1 - S.focusT) * (1 - Math.exp(-dt * 4.5)); cam.position.lerp(focusPos, 1 - Math.exp(-dt * 4.5)); cam.lookAt(focusLook); if (bokeh) { bokeh.enabled = true; bokeh.uniforms.focus.value = Math.max(.1, cam.position.distanceTo(focusLook)); bokeh.uniforms.aperture.value = LOW ? .00003 : .000055; bokeh.uniforms.maxblur.value = LOW ? .0055 : .008; } } } }
     if (!S.ready && t >= T.ready) { S.ready = true; fade.style.opacity = '0'; dispatchEvent(new CustomEvent('lab:ready', { detail: { sector: SECTORS[S.sector] } })); }
   }
 
@@ -408,14 +418,14 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       };
     }
     lab.environment = null; };
-  function activate(startAt = 0) { if (S.active) return; S.active = true; Object.assign(S, { t: 0, theta: 0, vel: 0, magnet: null, sector: 0, fInit: false, ready: false, inside: 0, insideT: 0, wantIn: false }); cues.clear(); fade.style.opacity = '1'; takeover(); fit();
+  function activate(startAt = 0) { if (S.active) return; S.active = true; Object.assign(S, { t: 0, theta: 0, vel: 0, magnet: null, sector: 0, fInit: false, ready: false, inside: 0, insideT: 0, wantIn: false, focus: null, focusT: 0, focusReady: false }); cues.clear(); fade.style.opacity = '1'; takeover(); fit();
     const b = q.get('boot'); if (b === 'skip') startAt = T.ready - .01; else if (b !== null && !isNaN(+b)) startAt = +b;
     if (startAt > 0) { S.t = startAt; const bk = {}; for (const k in sfx) if (typeof sfx[k] === 'function') { bk[k] = sfx[k]; sfx[k] = () => {}; } update(0); Object.assign(sfx, bk); if (S.t > T.table[0]) sfx.hum(S.t > T.power[0] ? .22 : .12, 1); }
     dispatchEvent(new CustomEvent('lab:activated', { detail: { t: S.t } })); }
   const stats = () => ({ t: +S.t.toFixed(2), theta: +S.theta.toFixed(3), sector: SECTORS[S.sector].id, ready: S.ready, active: S.active, inside: +S.insideT.toFixed(2), exposure: +renderer.toneMappingExposure.toFixed(3), calls: sceneCalls || renderer.info.render.calls, triangles: sceneTris || renderer.info.render.triangles, textures: renderer.info.memory.textures,
-    camera: { p: cam.position.toArray().map(v => +v.toFixed(3)), q: cam.quaternion.toArray().map(v => +v.toFixed(4)) } });
+    camera: { p: cam.position.toArray().map(v => +v.toFixed(3)), q: cam.quaternion.toArray().map(v => +v.toFixed(4)) }, focus: S.focus });
   const ai = { say, ask, get lines() { return AI.lines.slice(); }, get onAsk() { return AI.onAsk; }, set onAsk(f) { AI.onAsk = f; } };
-  return { scene: lab, camera: cam, state: S, T, SECTORS, update, activate, goTo, enter, exit, ai, stats, fade, pick };
+  return { scene: lab, camera: cam, state: S, T, SECTORS, update, activate, goTo, enter, exit, focus, blurFocus, ai, stats, fade, pick };
 }
 
 /* ── install: one call from index.html; hooks the existing composer loop, listens for vault:entered ── */
