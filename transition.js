@@ -13,7 +13,7 @@ export function installDoorSequence({scene,camera,composer,door,walk,look,canvas
     if(o.isPointLight&&Math.abs(o.position.z-(DOOR_Z+.6))<.01&&Math.abs(o.position.x)<.01) cyan=o;
     if(o.isMesh&&o.material?.emissive?.getHex?.()===0xff5a12) ember=o; });
   const door0=door.position.clone(), panel0=panel?panel.position.z:0, cyan0=cyan?cyan.position.y:0;
-  const PANEL_Y = 1.37, PANEL_Z = DOOR_Z + 0.13;
+  const EYE_WORLD_Y = -0.02, PANEL_Z = DOOR_Z + 0.13;
 
   /* iris fade pass (after the grade) */
   const fade=new ShaderPass({uniforms:{tDiffuse:{value:null},uFade:{value:0}},
@@ -54,7 +54,7 @@ export function installDoorSequence({scene,camera,composer,door,walk,look,canvas
   const TL={lock:[.55,1,1.45], panelIn:[1.5,1.9], retract:[2,3.6], rise:[3.9,8.4], push:[6.8,12.2], black:[11.2,12.8]};
   let T=-1, cam0=null, entered=false; const fired={}; const once=(k,fn)=>{ if(!fired[k]){ fired[k]=1; fn(); } };
   function begin(){ if(T>=0) return; T=0; canvas.style.pointerEvents='none'; walk.target=1; look.ty=0; look.tp=0;
-    cam0={z:camera.position.z,pitch:camera.rotation.x,yaw:camera.rotation.y};
+    cam0={z:camera.position.z,pitch:camera.rotation.x,yaw:camera.rotation.y,y:camera.position.y};
     const a=A().currentTime+.05;
     TL.lock.forEach((t,i)=>clunk(a+t,.5+i*.15)); hiss(a+TL.panelIn[0],.5,.15); hiss(a+TL.retract[0],TL.retract[1]-TL.retract[0]+.3,.3);
     rumble(a+TL.rise[0]-.2,TL.rise[1]-TL.rise[0]+1.2,.45); clunk(a+TL.rise[1]+.1,.7); drone(a+TL.push[0],TL.black[1]-TL.push[0]+3,.1); hiss(a+TL.push[0]+1.5,2.5,.06); }
@@ -62,7 +62,7 @@ export function installDoorSequence({scene,camera,composer,door,walk,look,canvas
 
   function cinematic(dt){ if(T<0) return; T+=dt;
     /* camera settles from the panel close-up to a centred view of the door */
-    const s=E.io(seg(T,0,1.2)); let pitch=lerp(cam0.pitch,.1,s), yaw=lerp(cam0.yaw,0,s), x=0,y=0,z=cam0.z;
+    const s=E.io(seg(T,0,1.2)); let pitch=lerp(cam0.pitch,.1,s), yaw=lerp(cam0.yaw,0,s), x=0,y=lerp(cam0.y??-0.02,-0.02,s),z=cam0.z;
     /* lock pins: jolts */
     let jolt=0; for(const lt of TL.lock){ const u=T-lt; if(u>0&&u<.5) jolt+=Math.sin(u*70)*Math.exp(-u*9)*.012; }
     if(panel) panel.position.z=panel0-.075*E.io(seg(T,...TL.panelIn));
@@ -78,7 +78,7 @@ export function installDoorSequence({scene,camera,composer,door,walk,look,canvas
     dustStep(dt);
     /* push-through: stride bob, level gaze, fog closes, iris to black */
     const uP=seg(T,...TL.push), pu=E.io(uP), env=Math.sin(Math.PI*uP), ph=(T-TL.push[0])*1.9*Math.PI*2;
-    z=lerp(cam0.z,DOOR_Z-2.3,pu); x=Math.sin(ph/2)*.01*env; y=Math.abs(Math.sin(ph/2))*.02*env-.006*pu; pitch=lerp(pitch,-.02,pu);
+    z=lerp(cam0.z,DOOR_Z-2.3,pu); x=Math.sin(ph/2)*.01*env; y=-0.02+Math.abs(Math.sin(ph/2))*.02*env-.006*pu; pitch=lerp(pitch,-.02,pu);
     if(T < TL.black[1]){
       camera.position.set(x+jolt*.4,y+jolt*.3,z); camera.rotation.set(pitch,yaw,0);
       scene.fog.density=.05+.28*E.ic(seg(T,TL.push[0]+1,TL.black[1]));

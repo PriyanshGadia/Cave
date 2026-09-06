@@ -103,6 +103,7 @@ function makeSfx() { let ac, master; const ctx = () => { if (!ac) { ac = new (wi
 
 /* ═════════════════════════════════════════════ THE HALL ═════════════════════════════════════════════ */
 export function createLab({ renderer, composer, env, LOW = false, rockMats, metalMats, idHash = '00000000' }) {
+  window.THREE = THREE;
   const [gun, gunD, tit] = metalMats, rock = rockMats[0], q = new URLSearchParams(location.search);
   const legacy = false, LK = 1, LKh = 1, EXP0 = renderer.toneMappingExposure ?? 1;
   /* dimensions (m) */ const HR = 10.8, WH = 5.6, RK = 8.6, FR = 12, PL_R = 5.0, B_OUT = 4.66, B_IN = 3.3, DK_Y = .95, TOP = DK_Y + .012, HT_R = 1.9, EMIT_Y = .72, BEAM_H = 5.0, CAM_R = 5.95, IN_R = 2.62, EYE = 1.62, PZ = 9.4, MIR = .5;
@@ -125,7 +126,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   const ringArc = (ri, ro, a0, a1, seg = 120) => new THREE.RingGeometry(ri, ro, seg, 1, a0 - Math.PI / 2, a1 - a0).rotateX(-Math.PI / 2);
   const holoMat = t => new THREE.MeshBasicMaterial({ map: t, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false });
   const lineM = o => new THREE.LineBasicMaterial({ color: 0x5fe8ff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, ...o });
-  const screenMat = t => mat({ map: t, emissiveMap: t, emissive: 0xffffff, emissiveIntensity: 0, color: 0x101010, roughness: .3 });
+  const screenMat = t => mat({ map: t, emissiveMap: t, emissive: 0xffffff, emissiveIntensity: 0, color: 0x101010, roughness: .3, side: THREE.DoubleSide });
   const hits = [], scanSrc = [], holos = [], screens = [], leds = [], labels = [], spin = [], heroGroups = [], mirrorPairs = [], mirror = new THREE.Group(); mirror.scale.y = -1; lab.add(mirror);
   const tag = (g, id) => { g.traverse(o => { if (o.isMesh) { o.userData.sector = id; hits.push(o); } }); return g; };
   const reflect = o => { o.updateWorldMatrix(true, true); const c = o.clone(true), a = [], b = []; o.traverse(x => a.push(x)); c.traverse(x => { if (x.material) x.material = x.material.clone(); b.push(x); }); c.matrixAutoUpdate = false; a.forEach((x, i) => mirrorPairs.push([x, b[i], i === 0])); mirror.add(c); return c; };
@@ -194,25 +195,137 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
 
   /* ── sector installations (physical, on the deck) ── */
   const sectorGroup = (k, r, y = TOP) => { const g = new THREE.Group(); g.position.copy(polar(k * SEC, r, y)); g.rotation.y = k * SEC; table.add(g); return g; };
-  { const g = sectorGroup(1, 3.95), bp = mat({ map: TEX.blueprint(), roughness: .92, metalness: 0 });          // RS1 · blueprints + clamp lamp
-    for (let i = 0; i < 5; i++) { const p = new THREE.Mesh(new THREE.PlaneGeometry(.9, .62), bp); p.rotation.set(-Math.PI / 2, 0, (hash(i * 3) - .5) * .8); p.position.set((hash(i) - .5) * .7, .002 + i * .0015, (hash(i * 7) - .5) * .4); g.add(p); }
-    const arm = add(cyl(.014, .014, .7, tit, 8), -.7, .34, -.35, g); arm.rotation.z = .5; const head = add(new THREE.Mesh(new THREE.ConeGeometry(.09, .13, 14, 1, true), compD), -.38, .62, -.35, g); head.rotation.z = 1.9; const hl = E(0xffd39a); add(cyl(.06, .06, .01, hl, 14), -.33, .6, -.35, g).rotation.z = 1.9; leds.push({ m: hl, target: 3, t0: T.power[0] + 2.4 }); tag(g, 'RS1'); heroGroups.push({ id: 'RS1', group: g }); }
+
+  const BP_REVS = ['REV 1: CAVE', 'REV 2: VAULT', 'REV 3: COMPILER', 'REV 4: SHADERS', 'REV 5: REALISM'];
+  let curBpRev = 4, bpCanvas, bpTex;
+  function drawBp(cnv) {
+    const g = cnv.getContext('2d'), w = cnv.width, h = cnv.height;
+    g.fillStyle = '#0a2a5c'; g.fillRect(0, 0, w, h);
+    gridLines(g, w, h, 16, 'rgba(255,255,255,.07)'); gridLines(g, w, h, 64, 'rgba(255,255,255,.15)');
+    g.strokeStyle = '#e8f1ff'; g.lineWidth = 1.5;
+    for (let i = 0; i < 9; i++) {
+      const x = 30 + hash(i * 3 + curBpRev) * 360, y = 50 + hash(i * 5) * 200, ww = 40 + hash(i * 7) * 120, hh = 30 + hash(i * 11) * 80;
+      g.strokeRect(x, y, ww, hh); g.beginPath(); g.arc(x + ww / 2, y + hh / 2, Math.min(ww, hh) * .3, 0, TAU); g.stroke();
+    }
+    g.fillStyle = '#e8f1ff'; mono(g, 18); g.fillText('PROJECT INDEX · SOURCE: GITHUB', 16, 28);
+    mono(g, 11, '');
+    BP_REVS.forEach((s, i) => {
+      g.fillStyle = i === curBpRev ? '#5fe8ff' : '#6f92be';
+      g.fillText(`${s.padEnd(16)} ${i <= curBpRev ? '▮▮▮▮▮' : '▯▯▯▯▯'}`, 16, h - 75 + i * 13);
+    });
+  }
+  { const g = sectorGroup(1, 3.95);                                                 // RS1 · blueprints + clamp lamp
+    bpCanvas = document.createElement('canvas'); bpCanvas.width = 512; bpCanvas.height = 352; drawBp(bpCanvas);
+    bpTex = new THREE.CanvasTexture(bpCanvas); bpTex.colorSpace = THREE.SRGBColorSpace;
+    const bpMat = mat({ map: bpTex, roughness: .92, metalness: 0 });
+    for (let i = 0; i < 4; i++) {
+      const p = new THREE.Mesh(new THREE.PlaneGeometry(.9, .62), mat({ map: TEX.blueprint(), roughness: .92, metalness: 0 }));
+      p.rotation.set(-Math.PI / 2, 0, (hash(i * 3) - .5) * .8);
+      p.position.set((hash(i) - .5) * .7, .002 + i * .0015, (hash(i * 7) - .5) * .4);
+      g.add(p);
+    }
+    const topBp = new THREE.Mesh(new THREE.PlaneGeometry(.9, .62), bpMat);
+    topBp.rotation.set(-Math.PI / 2, 0, 0); topBp.position.set(0, .01, 0);
+    topBp.userData.interactive = true; topBp.userData.uvW = 512; topBp.userData.uvH = 352;
+    g.add(topBp);
+    const arm = add(cyl(.014, .014, .7, tit, 8), -.7, .34, -.35, g); arm.rotation.z = .5;
+    const head = add(new THREE.Mesh(new THREE.ConeGeometry(.09, .13, 14, 1, true), compD), -.38, .62, -.35, g); head.rotation.z = 1.9;
+    const hl = E(0xffd39a); add(cyl(.06, .06, .01, hl, 14), -.33, .6, -.35, g).rotation.z = 1.9;
+    leds.push({ m: hl, target: 3, t0: T.power[0] + 2.4 }); tag(g, 'RS1'); heroGroups.push({ id: 'RS1', group: g }); }
+
+  const RESUME_FIELDS = [
+    { id: 'projects', label: 'PROJECTS', y: 50, checked: true },
+    { id: 'experience', label: 'EXPERIENCE', y: 66, checked: true },
+    { id: 'research', label: 'RESEARCH', y: 82, checked: false },
+    { id: 'skills', label: 'SKILLS', y: 98, checked: false },
+    { id: 'certs', label: 'CERTIFICATIONS', y: 114, checked: false },
+  ];
+  let resumeCanvas, resumeTex;
+  function drawResume(cnv) {
+    const g = cnv.getContext('2d'), w = cnv.width, h = cnv.height;
+    g.fillStyle = '#06131a'; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#5fe8ff'; mono(g, 13); g.fillText('RESUME FABRICATOR', 12, 22);
+    g.fillStyle = '#2a6a78'; g.fillRect(12, 28, w - 24, 1);
+    RESUME_FIELDS.forEach(f => {
+      g.fillStyle = f.checked ? '#9ff3ff' : '#3f7a88'; mono(g, 11, '');
+      g.fillText(`[${f.checked ? 'x' : ' '}] ${f.label}`, 14, f.y);
+    });
+    g.fillStyle = (window.__lab_backend?.resume?.busy) ? '#3f7a88' : '#4dff8a'; mono(g, 12);
+    g.fillText((window.__lab_backend?.resume?.busy) ? '… BUILDING' : '▶ BUILD TAILORED PDF', 14, h - 14);
+  }
   { const g = sectorGroup(2, 4.0, TOP + .36); add(box(1.1, .72, .6, comp), 0, 0, 0, g); add(box(1.12, .05, .62, gunD), 0, .385, 0, g); add(box(1.12, .05, .62, gunD), 0, -.385, 0, g);   // RS2 · resume fabricator
-    const smR = screenMat(TEX.resume()); add(new THREE.Mesh(new THREE.PlaneGeometry(.68, .42), smR), .12, .08, .302, g); screens.push({ m: smR, t0: T.power[0] + 2.9, i: 1.1 });
+    resumeCanvas = document.createElement('canvas'); resumeCanvas.width = 256; resumeCanvas.height = 160; drawResume(resumeCanvas);
+    resumeTex = new THREE.CanvasTexture(resumeCanvas); resumeTex.colorSpace = THREE.SRGBColorSpace;
+    const smR = screenMat(resumeTex);
+    const scrMesh = add(new THREE.Mesh(new THREE.PlaneGeometry(.68, .42), smR), .12, .08, .302, g);
+    scrMesh.userData.interactive = true; scrMesh.userData.uvW = 256; scrMesh.userData.uvH = 160;
+    screens.push({ m: smR, t0: T.power[0] + 2.9, i: 1.1 });
     add(box(.7, .035, .06, mat({ color: 0x020202, roughness: 1 })), .08, -.22, .305, g); const al = E(0xffb55a); add(box(.64, .012, .01, al), .08, -.18, .306, g); leds.push({ m: al, target: 2.5, t0: T.power[0] + 3.1 }); for (let i = 0; i < 2; i++) add(cyl(.035, .035, .04, tit, 14), -.4, .1 - i * .16, .32, g).rotation.x = Math.PI / 2; tag(g, 'RS2'); heroGroups.push({ id: 'RS2', group: g }); }
+
+  let selectedDay = 15, calCanvas, calTex;
+  function drawCal(cnv) {
+    const g = cnv.getContext('2d'), w = cnv.width, h = cnv.height;
+    const now = new Date(), M = now.toLocaleString('en', { month: 'long' }).toUpperCase();
+    g.fillStyle = 'rgba(8,30,44,.85)'; g.fillRect(0, 0, w, h);
+    g.strokeStyle = '#39d6ff'; g.lineWidth = 2; g.strokeRect(2, 2, w - 4, h - 4);
+    g.fillStyle = '#9ff3ff'; mono(g, 16); g.fillText(`${M} ${now.getFullYear()} · SCHEDULE`, 14, 26);
+    mono(g, 11, ''); 'SMTWTFS'.split('').forEach((d, i) => g.fillText(d, 20 + i * 50, 50));
+    const first = new Date(now.getFullYear(), now.getMonth(), 1).getDay(), days = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    for (let d = 1; d <= days; d++) {
+      const c = (first + d - 1) % 7, r = Math.floor((first + d - 1) / 7), busy = hash(d * 3.7 + now.getMonth()) > .7;
+      if (d === selectedDay) {
+        g.fillStyle = '#39d6ff'; g.fillRect(12 + c * 50, 58 + r * 30, 44, 26); g.fillStyle = '#031018';
+      } else {
+        g.fillStyle = busy ? '#ffb15c' : '#5fa8b8';
+      }
+      g.fillText(String(d), 20 + c * 50, 76 + r * 30);
+    }
+    g.fillStyle = '#7fb8c8'; g.fillText('■ BUSY   ■ SELECTED   FREE: EVENINGS', 14, h - 12);
+  }
   { const g = sectorGroup(3, 3.95); add(cyl(.24, .28, .07, tit, 24), 0, .035, 0, g); const puck = E(0x3fe0ff); add(cyl(.16, .16, .006, puck, 24), 0, .074, 0, g); leds.push({ m: puck, target: 1.8, t0: T.power[0] + 3.4 });   // RS3 · holo-calendar
-    const hm = holoMat(TEX.calendar()); const p = add(new THREE.Mesh(new THREE.PlaneGeometry(1.25, .98), hm), 0, .78, 0, g); p.rotation.x = -.12; holos.push({ m: hm, target: .78, t0: T.power[0] + 3.6 }); tag(g, 'RS3'); heroGroups.push({ id: 'RS3', group: g }); }
+    calCanvas = document.createElement('canvas'); calCanvas.width = 384; calCanvas.height = 300; drawCal(calCanvas);
+    calTex = new THREE.CanvasTexture(calCanvas); calTex.colorSpace = THREE.SRGBColorSpace;
+    const hm = holoMat(calTex); const p = add(new THREE.Mesh(new THREE.PlaneGeometry(1.25, .98), hm), 0, .78, 0, g); p.rotation.x = -.12;
+    p.userData.interactive = true; p.userData.uvW = 384; p.userData.uvH = 300;
+    holos.push({ m: hm, target: .78, t0: T.power[0] + 3.6 }); tag(g, 'RS3'); heroGroups.push({ id: 'RS3', group: g }); }
+
   for (const k of [4, 5]) { const g = sectorGroup(k, 3.98, TOP + .03); add(box(2.7, .06, 1.02, compD), 0, 0, 0, g); add(new THREE.Mesh(new THREE.PlaneGeometry(2.4, .62), mat({ map: TEX.sealed(), roughness: .85, metalness: .3 })).rotateX(-Math.PI / 2), 0, .031, 0, g);   // RS4/LS4 · sealed
     for (const [x, z] of [[-1.25, -.4], [1.25, -.4], [-1.25, .4], [1.25, .4]]) add(cyl(.035, .035, .015, tit, 10), x, .036, z, g); tag(g, k === 4 ? 'RS4' : 'LS4'); heroGroups.push({ id: k === 4 ? 'RS4' : 'LS4', group: g }); }
   { const g = sectorGroup(6, 3.95); add(cyl(.26, .3, .07, tit, 24), 0, .035, 0, g); const puck = E(0x3fe0ff); add(cyl(.18, .18, .006, puck, 24), 0, .074, 0, g); leds.push({ m: puck, target: 1.8, t0: T.power[0] + 3.3 });   // LS3 · holo-globe
     const globe = new THREE.Group(); globe.position.y = .8; g.add(globe); spin.push(globe); const wf = new THREE.LineSegments(new THREE.WireframeGeometry(new THREE.IcosahedronGeometry(.5, 2)), lineM({})); globe.add(wf); holos.push({ m: wf.material, target: .16, t0: T.power[0] + 3.5 });
     const N = LOW ? 1100 : 2000, pos = new Float32Array(N * 3); let c = 0; for (let i = 0; i < 6000 && c < N; i++) { const u = hash(i * 1.3) * 2 - 1, a = hash(i * 2.7) * TAU, r = Math.sqrt(1 - u * u), x = r * Math.cos(a), z = r * Math.sin(a); if (fbm3(x * 2.2 + 3, u * 2.2, z * 2.2, 3) > .54) { pos.set([x * .505, u * .505, z * .505], c * 3); c++; } }
-    const gg = new THREE.BufferGeometry(); gg.setAttribute('position', new THREE.BufferAttribute(pos.slice(0, c * 3), 3)); const gp = new THREE.Points(gg, new THREE.PointsMaterial({ map: disc, color: 0x7ff0ff, size: .02, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending })); globe.add(gp); holos.push({ m: gp.material, target: .9, t0: T.power[0] + 3.5 }); tag(g, 'LS3'); heroGroups.push({ id: 'LS3', group: g }); }
+    const gg = new THREE.BufferGeometry(); gg.setAttribute('position', new THREE.BufferAttribute(pos.slice(0, c * 3), 3)); const gp = new THREE.Points(gg, new THREE.PointsMaterial({ map: disc, color: 0x7ff0ff, size: .02, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending })); globe.add(gp); holos.push({ m: gp.material, target: .9, t0: T.power[0] + 3.5 });
+    gp.userData.interactive = true; tag(g, 'LS3'); heroGroups.push({ id: 'LS3', group: g }); }
   { const g = sectorGroup(7, 3.55); add(box(1.9, 1.15, .05, compD), 0, .62, 0, g); for (const x of [-.85, .85]) add(cyl(.015, .015, 1.24, tit, 8), x, .62, -.04, g);   // LS2 · scratchpad wall
-    const nt = TEX.note(), cols = [0xfff07a, 0xffb1c8, 0x9fe8ff, 0xc8ffb0], notes = []; for (let i = 0; i < 16; i++) { const n = new THREE.Mesh(new THREE.PlaneGeometry(.16, .16), mat({ map: nt, color: cols[i % 4], roughness: .95 })); n.position.set((hash(i * 1.9) - .5) * 1.6, .22 + hash(i * 3.3) * .8, .03); n.rotation.z = (hash(i * 5.1) - .5) * .4; notes.push(n); } notes.forEach(n => g.add(n));
+    const nt = TEX.note(), cols = [0xfff07a, 0xffb1c8, 0x9fe8ff, 0xc8ffb0], notes = []; for (let i = 0; i < 16; i++) { const n = new THREE.Mesh(new THREE.PlaneGeometry(.16, .16), mat({ map: nt, color: cols[i % 4], roughness: .95 })); n.position.set((hash(i * 1.9) - .5) * 1.6, .22 + hash(i * 3.3) * .8, .03); n.rotation.z = (hash(i * 5.1) - .5) * .4; n.userData.interactive = true; n.userData.noteIdx = i; notes.push(n); } notes.forEach(n => g.add(n));
     add(box(.34, .035, .26, mat({ color: 0x2a2620, roughness: .9 })), .55, .018, .42, g); add(cyl(.007, .007, .16, tit, 6), .1, .007, .46, g).rotation.set(Math.PI / 2, 0, .6); tag(g, 'LS2'); heroGroups.push({ id: 'LS2', group: g }); }
+
+  const PROFILE_TABS = ['PROFILE', 'SYSTEMS', 'PAPERS', 'CONTACT'];
+  let curProfTab = 0, profCanvas, profTex;
+  function drawProf(cnv) {
+    const g = cnv.getContext('2d'), w = cnv.width, h = cnv.height;
+    g.fillStyle = 'rgba(6,26,38,.85)'; g.fillRect(0, 0, w, h);
+    g.strokeStyle = '#39d6ff'; g.lineWidth = 2; g.strokeRect(2, 2, w - 4, h - 4);
+    g.fillStyle = '#9ff3ff'; mono(g, 15); g.fillText('OPERATIVE PROFILE', 14, 26);
+    g.beginPath(); for (let i = 0; i < 8; i++) { const a = i / 8 * TAU + Math.PI / 8; g.lineTo(60 + Math.cos(a) * 34, 90 + Math.sin(a) * 34); } g.closePath(); g.strokeStyle = '#5fe8ff'; g.stroke(); mono(g, 10, '');
+    PROFILE_TABS.forEach((t, i) => { g.fillStyle = i === curProfTab ? '#5fe8ff' : '#3f7a88'; g.fillText(`[${t}]`, 14 + i * 76, 156); });
+    const desc = [
+      'PRIYANSH GADIA · SYSTEMS ARCHITECT / GRAPHICS SPECIALIST',
+      'ENGINE: REAL-TIME PROCEDURAL WEBGL R160 · ZERO RASTER ASSETS',
+      'PUBLICATIONS & RESEARCH CITATIONS SYNCHRONIZED',
+      'ENCRYPTED UPLINK: PRIYANSHGADIA@GITHUB · CLEARANCE L5'
+    ];
+    g.fillStyle = '#cbf5ff'; mono(g, 11, '');
+    g.fillText(desc[curProfTab] || '', 14, 195);
+    for (let i = 0; i < 7; i++) { g.fillStyle = '#1b4a58'; g.fillRect(14, 220 + i * 22, 120 + hash(i + curProfTab * 5) * 160, 8); }
+  }
   { const g = sectorGroup(8, 3.95); add(box(1.1, .04, .26, gunD), 0, .02, 0, g); for (const x of [-.5, .5]) add(cyl(.014, .014, 1.6, tit, 8), x, .82, 0, g);   // LS1 · profile panel
-    const pm = holoMat(TEX.profile()); add(new THREE.Mesh(new THREE.PlaneGeometry(1.05, 1.4), pm), 0, .85, 0, g); holos.push({ m: pm, target: .8, t0: T.power[0] + 3.2 }); tag(g, 'LS1'); heroGroups.push({ id: 'LS1', group: g }); }
+    profCanvas = document.createElement('canvas'); profCanvas.width = 320; profCanvas.height = 440; drawProf(profCanvas);
+    profTex = new THREE.CanvasTexture(profCanvas); profTex.colorSpace = THREE.SRGBColorSpace;
+    const pm = holoMat(profTex);
+    const profMesh = add(new THREE.Mesh(new THREE.PlaneGeometry(1.05, 1.4), pm), 0, .85, 0, g);
+    profMesh.userData.interactive = true; profMesh.userData.uvW = 320; profMesh.userData.uvH = 440;
+    holos.push({ m: pm, target: .8, t0: T.power[0] + 3.2 }); tag(g, 'LS1'); heroGroups.push({ id: 'LS1', group: g }); }
   { const cans = [], boxes = [], bars = []; for (const k of [1, 2, 3, 6, 7, 8]) for (let i = 0; i < 3; i++) { const side = i & 1 ? 1 : -1, th = k * SEC + side * (.29 + hash(k * 13 + i) * .03), r = 3.5 + hash(k * 7 + i * 3) * .7, kind = Math.floor(hash(k + i * 11) * 3);   // clutter at sector edges only — never under an installation
       const o = kind === 0 ? cyl(.04, .045, .14, tit, 12) : kind === 1 ? box(.18, .08, .1, comp) : box(.16, .012, .03, tit); o.position.copy(polar(th, r, TOP + (kind === 0 ? .07 : kind === 1 ? .04 : .006))); o.rotation.y = hash(i * k) * TAU; (kind === 0 ? cans : kind === 1 ? boxes : bars).push(o); }
     merged(cans, tit, table); merged(boxes, comp, table); merged(bars, tit, table); }
@@ -334,133 +447,126 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   const bokeh = new BokehPass(lab, cam, { focus: 6, aperture: LOW ? 0.00002 : 0.000035, maxblur: LOW ? 0.0045 : 0.006 }); bokeh.enabled = false; if (bokeh) composer.insertPass(bokeh, 1);
   const sectorGroups = {}; heroGroups.forEach(h => { sectorGroups[h.id] = h.group; });
   const FOCUS_CFG = {
-    RS1: { dolly: (g)=>[g.localToWorld(new THREE.Vector3(0,.55,.9)), g.localToWorld(new THREE.Vector3(0,.15,0))], panel: 'blueprint' },
-    RS2: { dolly: (g)=>[g.localToWorld(new THREE.Vector3(.25,.5,.8)),  g.localToWorld(new THREE.Vector3(.1,.15,0))], panel: 'resume' },
-    RS3: { dolly: (g)=>[g.localToWorld(new THREE.Vector3(0,.9,.6)),   g.localToWorld(new THREE.Vector3(0,.7,0))],  panel: 'calendar' },
-    LS3: { dolly: (g)=>[g.localToWorld(new THREE.Vector3(0,.95,.65)), g.localToWorld(new THREE.Vector3(0,.85,0))], panel: 'globe' },
-    LS2: { dolly: (g)=>[g.localToWorld(new THREE.Vector3(0,.75,.55)),g.localToWorld(new THREE.Vector3(0,.5,0))],  panel: 'notes' },
-    LS1: { dolly: (g)=>[g.localToWorld(new THREE.Vector3(0,.9,.7)),  g.localToWorld(new THREE.Vector3(0,.85,0))], panel: 'profile' },
+    RS1: { dolly: (g) => [g.localToWorld(new THREE.Vector3(0, .6, .5)), g.localToWorld(new THREE.Vector3(0, .01, 0))] },
+    RS2: { dolly: (g) => [g.localToWorld(new THREE.Vector3(.12, .18, .92)), g.localToWorld(new THREE.Vector3(.12, .08, .302))] },
+    RS3: { dolly: (g) => [g.localToWorld(new THREE.Vector3(0, .85, .8)), g.localToWorld(new THREE.Vector3(0, .78, 0))] },
+    LS3: { dolly: (g) => [g.localToWorld(new THREE.Vector3(0, .85, .85)), g.localToWorld(new THREE.Vector3(0, .8, 0))] },
+    LS2: { dolly: (g) => [g.localToWorld(new THREE.Vector3(0, .65, .75)), g.localToWorld(new THREE.Vector3(0, .62, 0))] },
+    LS1: { dolly: (g) => [g.localToWorld(new THREE.Vector3(0, .88, .88)), g.localToWorld(new THREE.Vector3(0, .85, 0))] },
   };
   const FOCUS = { id: null, t: 0, from: new THREE.Vector3(), fromQ: new THREE.Quaternion(), toPos: new THREE.Vector3(), toLook: new THREE.Vector3(), active: false };
 
-  let activeBlobUrls = [];
-  const overlayHost = document.createElement('div'); overlayHost.id = 'labFocus';
-  Object.assign(overlayHost.style, { position:'fixed', inset:0, display:'grid', placeItems:'center', pointerEvents:'none', opacity:0, transition:'opacity .35s', zIndex: 9500 });
-  document.body.appendChild(overlayHost);
-
-  if (!document.getElementById('labFocusStyles')) {
-    const st = document.createElement('style'); st.id = 'labFocusStyles';
-    st.textContent = `
-      #labFocus .holo-card{ width:min(90vw,var(--w,600px)); background:rgba(4,20,30,.72); border:1px solid #39d6ff; border-radius:6px;
-        box-shadow:0 0 40px rgba(63,224,255,.25), inset 0 0 30px rgba(63,224,255,.08); backdrop-filter: blur(6px) saturate(1.3);
-        color:#9ff3ff; font-family:ui-monospace,Menlo,Consolas,monospace; padding:16px; box-sizing:border-box; }
-      #labFocus header{ display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #2b7f96; padding-bottom:8px; margin-bottom:10px; letter-spacing:.05em; font-weight:bold; }
-      #labFocus header button.x{ background:transparent; border:none; color:#39d6ff; font-size:18px; cursor:pointer; padding:2px 8px; }
-      #labFocus header button.x:hover{ color:#fff; }
-      #labFocus textarea{ width:100%; height:180px; background:#031018; color:#e8ffff; border:1px solid #2b7f96; padding:10px; resize:vertical; font-family:inherit; box-sizing:border-box; }
-      #labFocus button{ background:#0c2530; color:#9ff3ff; border:1px solid #39d6ff; padding:6px 14px; cursor:pointer; font-family:inherit; }
-      #labFocus button:hover{ background:#133c4e; color:#fff; }
-      #labFocus footer{ margin-top:12px; display:flex; justify-content:flex-end; }
-      #labFocus .check-list{ display:flex; flex-direction:column; gap:8px; margin:14px 0; }
-      #labFocus .check-item{ display:flex; align-items:center; gap:8px; color:#cbf5ff; cursor:pointer; }
-    `;
-    document.head.appendChild(st);
-  }
-
-  const PANELS = {
-    globe: () => `<div class="holo-card" style="--w:720px">
-        <header><span>LS3 · HOLO-GLOBE</span><button class="x" data-close>✕</button></header>
-        <div id="globeMeta" style="margin-bottom:12px;color:#39d6ff">RESOLVING GEO-IP…</div>
-        <div id="globeAlbum" class="thumb-grid">CONNECTIVITY LIVE · NO ACTIVE TARGETS</div></div>`,
-    notes: () => `<div class="holo-card" style="--w:640px">
-        <header><span>LS2 · SCRATCHPAD</span><button class="x" data-close>✕</button></header>
-        <textarea id="noteArea" maxlength="2000" placeholder="Leave a note for the owner…"></textarea>
-        <footer><button id="noteSave">COMMIT TO LOG</button></footer></div>`,
-    resume: () => `<div class="holo-card" style="--w:560px">
-        <header><span>RS2 · RESUME FABRICATOR</span><button class="x" data-close>✕</button></header>
-        <div id="resumeFields" class="check-list">
-          <label class="check-item"><input type="checkbox" checked disabled> CORE COMPETENCIES & ARCHITECTURE</label>
-          <label class="check-item"><input type="checkbox" checked disabled> GRAPHICS & SPATIAL ENGINE REVS</label>
-          <label class="check-item"><input type="checkbox" checked disabled> RESEARCH CITATIONS & PUBLICATIONS</label>
-        </div>
-        <footer><button id="resumeBuild">▶ BUILD TAILORED PDF</button></footer></div>`,
-    calendar: () => `<div class="holo-card" style="--w:480px">
-        <header><span>RS3 · SCHEDULE</span><button class="x" data-close>✕</button></header>
-        <div id="calGrid" style="line-height:1.6;color:#cbf5ff">CALENDAR UPLINK: SYNCHRONISED<br>AVAILABLE: WEEKDAYS 18:00 - 22:00 UTC<br>STATUS: ACTIVE</div></div>`,
-    blueprint:() => `<div class="holo-card" style="--w:640px">
-        <header><span>RS1 · PROJECT INDEX</span><button class="x" data-close>✕</button></header>
-        <div id="repoList" style="line-height:1.6;color:#cbf5ff">GITHUB REPOSITORY SYNC ACTIVE<br>CAVE ARCHITECTURE · REV C<br>SHADERS & GEOMETRY · ZERO RASTER ASSETS</div></div>`,
-    profile:  () => `<div class="holo-card" style="--w:560px">
-        <header><span>LS1 · PROFILE</span><button class="x" data-close>✕</button></header>
-        <div id="profileTabs" style="line-height:1.6;color:#cbf5ff">OPERATIVE: PRIYANSH GADIA<br>SECURITY CLEARANCE: LEVEL 5<br>SYSTEMS: GRAPHICS / FULL-STACK / COMPILERS</div></div>`,
-  };
-
   const api2 = {
-    globe:   { onLocate: null, onAlbum: null },
-    notes:   { onLoad: null, onSave: null },
-    resume:  { onFields: null, onBuild: null },
-    calendar:{ onLoad: null },
-    blueprint:{ onRepos: null },
+    resume: { onFields: null, onBuild: null, busy: false },
+    notes: { onLoad: null, onSave: null },
+    globe: { onLocate: null, onAlbum: null },
+    calendar: { onLoad: null },
+    blueprint: { onRepos: null },
     profile: { onLinks: null, onBlog: null },
   };
 
-  function wireOverlay(kind, id) {
-    if (kind === 'notes') {
-      const ta = overlayHost.querySelector('#noteArea');
-      (api2.notes.onLoad ? Promise.resolve(api2.notes.onLoad()) : Promise.resolve(localStorage.getItem('vault_note') || '')).then(v => { if (ta) ta.value = v ?? ''; });
-      const btn = overlayHost.querySelector('#noteSave');
-      if (btn) btn.onclick = () => {
-        if (api2.notes.onSave) api2.notes.onSave(ta.value);
-        else localStorage.setItem('vault_note', ta.value);
-        btn.textContent = 'COMMITTED ✓';
-        setTimeout(() => { if (btn) btn.textContent = 'COMMIT TO LOG'; }, 1500);
-      };
-    }
-    if (kind === 'globe') {
-      (api2.globe.onLocate ? Promise.resolve(api2.globe.onLocate()) : Promise.resolve(null)).then(loc => {
-        const el = overlayHost.querySelector('#globeMeta');
-        if (el) el.textContent = loc ? `${loc.city} · ${loc.lat.toFixed(2)}, ${loc.lon.toFixed(2)}` : 'LOCATION TELEMETRY: RELAY PASSIVE';
-      });
-    }
-    if (kind === 'resume') {
-      const btn = overlayHost.querySelector('#resumeBuild');
-      if (btn) btn.onclick = async () => {
-        btn.textContent = 'FABRICATING…';
-        if (api2.resume.onBuild) {
-          const url = await api2.resume.onBuild();
-          if (url) activeBlobUrls.push(url);
+  const SECTOR_HANDLERS = {
+    RS1: {
+      onHit(mesh, uv) {
+        if (!uv) return;
+        const py = (1 - uv.y) * 352;
+        const clickedRev = Math.floor((py - (352 - 80)) / 13);
+        if (clickedRev >= 0 && clickedRev < 5) {
+          curBpRev = clickedRev;
+          drawBp(bpCanvas);
+          bpTex.needsUpdate = true;
+          sfx.blip(1100, .05, .03);
+          if (api2.blueprint.onRepos) api2.blueprint.onRepos(BP_REVS[clickedRev]);
         }
-        setTimeout(() => { if (btn) btn.textContent = 'PDF READY'; }, 1000);
-      };
+      }
+    },
+    RS2: {
+      onHit(mesh, uv) {
+        if (!uv) return;
+        const px = uv.x * mesh.userData.uvW, py = (1 - uv.y) * mesh.userData.uvH;
+        const hitField = RESUME_FIELDS.find(f => py > f.y - 12 && py < f.y + 2);
+        if (hitField) {
+          hitField.checked = !hitField.checked;
+          drawResume(resumeCanvas);
+          resumeTex.needsUpdate = true;
+          sfx.blip(900, .04, .02);
+          if (api2.resume.onFields) api2.resume.onFields(RESUME_FIELDS.filter(f => f.checked).map(f => f.id));
+          return;
+        }
+        if (py > 138 && py < 156 && !api2.resume.busy) {
+          api2.resume.busy = true;
+          drawResume(resumeCanvas);
+          resumeTex.needsUpdate = true;
+          sfx.relay();
+          (api2.resume.onBuild ? api2.resume.onBuild(RESUME_FIELDS.filter(f => f.checked).map(f => f.id)) : Promise.resolve(null))
+            .then(url => {
+              api2.resume.busy = false;
+              drawResume(resumeCanvas);
+              resumeTex.needsUpdate = true;
+              if (url) window.open(url, '_blank');
+            })
+            .catch(() => {
+              api2.resume.busy = false;
+              drawResume(resumeCanvas);
+              resumeTex.needsUpdate = true;
+            });
+        }
+      },
+      onExit() {}
+    },
+    RS3: {
+      onHit(mesh, uv) {
+        if (!uv) return;
+        const px = uv.x * 384, py = (1 - uv.y) * 300;
+        const col = Math.floor((px - 12) / 50);
+        const row = Math.floor((py - 58) / 30);
+        if (col >= 0 && col < 7 && row >= 0 && row < 5) {
+          const first = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getDay();
+          const d = row * 7 + col - first + 1;
+          if (d >= 1 && d <= 31) {
+            selectedDay = d;
+            drawCal(calCanvas);
+            calTex.needsUpdate = true;
+            sfx.blip(1000, .04, .02);
+            if (api2.calendar.onLoad) api2.calendar.onLoad(d);
+          }
+        }
+      }
+    },
+    LS1: {
+      onHit(mesh, uv) {
+        if (!uv) return;
+        const px = uv.x * 320, py = (1 - uv.y) * 440;
+        if (py >= 142 && py <= 165) {
+          const tabIdx = Math.floor((px - 14) / 76);
+          if (tabIdx >= 0 && tabIdx < 4) {
+            curProfTab = tabIdx;
+            drawProf(profCanvas);
+            profTex.needsUpdate = true;
+            sfx.blip(1200, .04, .02);
+            if (api2.profile.onLinks) api2.profile.onLinks(PROFILE_TABS[tabIdx]);
+          }
+        }
+      }
+    },
+    LS2: {
+      onHit(mesh) {
+        mesh.rotation.z += (Math.random() - .5) * .3;
+        sfx.blip(1300, .03, .02);
+      }
+    },
+    LS3: {
+      onHit(mesh) {
+        sfx.blip(1400, .05, .03);
+        if (api2.globe.onLocate) api2.globe.onLocate();
+      }
     }
-  }
-
-  function openOverlay(kind, id) {
-    if (!PANELS[kind]) return;
-    overlayHost.innerHTML = PANELS[kind]();
-    overlayHost.style.pointerEvents = 'auto';
-    overlayHost.style.opacity = '1';
-    const closeBtn = overlayHost.querySelector('[data-close]');
-    if (closeBtn) closeBtn.onclick = unfocusSector;
-    wireOverlay(kind, id);
-  }
-
-  function closeOverlay() {
-    overlayHost.style.opacity = '0';
-    overlayHost.style.pointerEvents = 'none';
-    setTimeout(() => {
-      overlayHost.innerHTML = '';
-      activeBlobUrls.forEach(url => {
-        try { URL.revokeObjectURL(url); } catch {}
-      });
-      activeBlobUrls = [];
-    }, 350);
-  }
+  };
 
   function focusSector(id) {
     const cfg = FOCUS_CFG[id]; if (!cfg || FOCUS.active || !S.ready) return;
     const g = sectorGroups[id]; if (!g) return;
-    g.updateWorldMatrix(true, false);
+    g.updateWorldMatrix(true, true);
     const [pos, look] = cfg.dolly(g);
     FOCUS.id = id; FOCUS.t = 0; FOCUS.active = true; S.navLocked = true;
     FOCUS.from.copy(cam.position); FOCUS.fromQ.copy(cam.quaternion);
@@ -470,17 +576,18 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       bokeh.uniforms.focus.value = cam.position.distanceTo(look);
       bokeh.uniforms.aperture.value = LOW ? 0.00004 : 0.00008;
     }
-    openOverlay(cfg.panel, id);
     dispatchEvent(new CustomEvent('lab:focus', { detail: { id } }));
+    dispatchEvent(new CustomEvent('lab:sector:focus', { detail: { id } }));
     sfx.relay();
   }
 
   function unfocusSector() {
     if (!FOCUS.active) return;
     const prevId = FOCUS.id;
+    SECTOR_HANDLERS[prevId]?.onExit?.();
     FOCUS.active = false; S.navLocked = false;
-    closeOverlay();
     dispatchEvent(new CustomEvent('lab:unfocus', { detail: { id: prevId } }));
+    dispatchEvent(new CustomEvent('lab:sector:unfocus', { detail: { id: prevId } }));
     FOCUS.id = null;
     sfx.servo(.6, false);
   }
@@ -499,12 +606,43 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   let touch = null; addEventListener('touchstart', e => { if (S.active) { const t = e.touches[0]; touch = { x: t.clientX, y: t.clientY, vy: 0, moved: 0 }; } }, { passive: true });
   addEventListener('touchmove', e => { if (!touch || !S.active) return; const t = e.touches[0], dx = t.clientX - touch.x, dy = t.clientY - touch.y; touch.moved += Math.abs(dx) + Math.abs(dy); if (canMove()) { S.theta += dy * NAV.drag; touch.vy = dy; S.lastInput = S.t; S.magnet = null; } if (canLook()) S.look.tx = clamp(S.look.tx - dx * .0025, -.5, .5); touch.x = t.clientX; touch.y = t.clientY; e.preventDefault(); }, { passive: false });
   addEventListener('touchend', () => { if (touch && canMove()) nudge(clamp(touch.vy * .22, -1.4, 1.4)); if (touch && touch.moved > 40 && (S.inside || S.wantIn)) exit(); touch = null; }, { passive: true });
-  addEventListener('keydown', e => { if (!S.active) return; if (FOCUS.active && (e.key === 'Escape' || e.key === 'Backspace')) { unfocusSector(); e.preventDefault(); return; }
+  addEventListener('keydown', e => { if (!S.active) return;
+    if (FOCUS.active) {
+      if (e.key === 'Escape' || e.key === 'Backspace') { unfocusSector(); e.preventDefault(); return; }
+      SECTOR_HANDLERS[FOCUS.id]?.onKey?.(e);
+      return;
+    }
     if (S.inside) { if (e.key === 'Escape') exit(); else if (e.key === 'Enter') ask(AI.input); else if (e.key === 'Backspace') AI.input = AI.input.slice(0, -1); else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && AI.input.length < 140) AI.input += e.key; else return; AI.dirty = true; e.preventDefault(); return; }
     if (!canMove()) return; if (e.key === 'Enter' && S.sector === 0) { enter(); return; } if (['ArrowRight', 'd', 'ArrowDown', 's'].includes(e.key)) nudge(.65); else if (['ArrowLeft', 'a', 'ArrowUp', 'w'].includes(e.key)) nudge(-.65); else if (/^[1-9]$/.test(e.key)) goTo(SECTORS[+e.key - 1].id); });
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(); let lastHover = 0; const pick = (x, y) => { ndc.set((x / innerWidth) * 2 - 1, -(y / innerHeight) * 2 + 1); ray.setFromCamera(ndc, cam); const h = ray.intersectObjects(hits, false)[0]; return h ? h.object.userData.sector : null; };
   addEventListener('pointermove', e => { if (!S.ready || S.inside || e.pointerType === 'touch') return; const now = performance.now(); if (now - lastHover < 90) return; lastHover = now; S.hover = pick(e.clientX, e.clientY); renderer.domElement.style.cursor = S.hover ? 'pointer' : ''; });
-  addEventListener('click', e => { if (!S.ready) return; if (FOCUS.active) return; if (S.inside || S.wantIn) { exit(); return; } const id = pick(e.clientX, e.clientY); if (!id) return; sfx.blip(1320, .07); dispatchEvent(new CustomEvent('lab:interact', { detail: { id } })); if (id === 'S0') enter(); else if (FOCUS_CFG[id]) focusSector(id); else goTo(id); });
+  addEventListener('click', e => {
+    if (!S.ready) return;
+    if (FOCUS.active) {
+      const g = sectorGroups[FOCUS.id];
+      if (!g) return;
+      g.updateWorldMatrix(true, true);
+      const targets = [];
+      g.traverse(o => { if (o.isMesh && o.userData.interactive) targets.push(o); });
+      ndc.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+      ray.setFromCamera(ndc, cam);
+      const hit = ray.intersectObjects(targets, false)[0];
+      if (hit) {
+        SECTOR_HANDLERS[FOCUS.id]?.onHit?.(hit.object, hit.uv, hit.point);
+      } else {
+        unfocusSector();
+      }
+      return;
+    }
+    if (S.inside || S.wantIn) { exit(); return; }
+    const id = pick(e.clientX, e.clientY);
+    if (!id) return;
+    sfx.blip(1320, .07);
+    dispatchEvent(new CustomEvent('lab:interact', { detail: { id } }));
+    if (id === 'S0') enter();
+    else if (FOCUS_CFG[id]) focusSector(id);
+    else goTo(id);
+  });
 
   /* ── update: every visual is a pure function of t (+ the visitor's θ and inside-state) ── */
   const fA = new THREE.Vector3(), fB = new THREE.Vector3(), tmp = new THREE.Vector3();
@@ -613,7 +751,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   const stats = () => ({ t: +S.t.toFixed(2), theta: +S.theta.toFixed(3), sector: SECTORS[S.sector].id, ready: S.ready, active: S.active, inside: +S.insideT.toFixed(2), exposure: +renderer.toneMappingExposure.toFixed(3), calls: sceneCalls || renderer.info.render.calls, triangles: sceneTris || renderer.info.render.triangles, textures: renderer.info.memory.textures,
     camera: { p: cam.position.toArray().map(v => +v.toFixed(3)), q: cam.quaternion.toArray().map(v => +v.toFixed(4)) }, focus: FOCUS.id });
   const ai = { say, ask, get lines() { return AI.lines.slice(); }, get onAsk() { return AI.onAsk; }, set onAsk(f) { AI.onAsk = f; } };
-  return { scene: lab, camera: cam, state: S, T, SECTORS, update, activate, goTo, enter, exit, focusSector, unfocusSector, focus: focusSector, blurFocus: unfocusSector, ai, stats, fade, pick, api2 };
+  return { scene: lab, camera: cam, state: S, T, SECTORS, update, activate, goTo, enter, exit, focusSector, unfocusSector, focus: focusSector, blurFocus: unfocusSector, ai, stats, fade, pick, api2, sectorGroups };
 }
 
 /* ── install: one call from index.html; hooks the existing composer loop, listens for vault:entered ── */

@@ -63,27 +63,73 @@ async function main() {
       // Wait for focus dolly to complete (0.8s)
       await page.waitForTimeout(800);
 
-      // Verify DOM overlay visible
-      const overlayCheck = await page.evaluate(() => {
-        const host = document.getElementById('labFocus');
-        const card = host?.querySelector('.holo-card');
+      // Verify 3D focus state
+      const focusState = await page.evaluate(() => {
+        const stats = (window as any).__lab.stats();
         return {
-          visible: host ? host.style.opacity === '1' : false,
-          cardPresent: !!card,
-          cardText: card?.textContent?.slice(0, 40) || '',
+          focused: !!stats.focus,
+          navLocked: (window as any).__lab.state?.navLocked,
         };
       });
-      console.log(`   -> Overlay check: visible=${overlayCheck.visible}, cardPresent=${overlayCheck.cardPresent} (${overlayCheck.cardText}...)`);
+      console.log(`   -> Focus state: focused=${focusState.focused}, navLocked=${focusState.navLocked}`);
+      if (!focusState.focused || !focusState.navLocked) {
+        throw new Error(`Focus state failed for sector ${id}`);
+      }
 
-      if (!overlayCheck.visible || !overlayCheck.cardPresent) {
-        throw new Error(`Overlay failed to show for sector ${id}`);
+      // If RS2, test clicking the physical mesh to toggle interactive checkbox!
+      if (id === 'RS2') {
+        console.log(`   -> Testing direct 3D mesh interaction on RS2 Resume Fabricator...`);
+        const diag = await page.evaluate(() => {
+          const api = (window as any).__lab;
+          const g = api?.sectorGroups?.['RS2'];
+          let targetsCount = 0;
+          let hitUV = null;
+          if (g) {
+            const targets: any[] = [];
+            g.traverse((o: any) => { if (o.isMesh && o.userData.interactive) targets.push(o); });
+            targetsCount = targets.length;
+            const THREE = (window as any).THREE;
+            const ray = new THREE.Raycaster();
+            const ndc = new THREE.Vector2(0, 0);
+            ray.setFromCamera(ndc, api.camera);
+            const hits = ray.intersectObjects(targets, false);
+            if (hits.length > 0) {
+              hitUV = hits[0].uv;
+            }
+            if (targets[0]) {
+              const v = new THREE.Vector3();
+              targets[0].getWorldPosition(v);
+              const proj = v.clone().project(api.camera);
+              const camPos = api.camera.position.clone();
+              const bbox = new THREE.Box3().setFromObject(targets[0]);
+              return {
+                targetsCount,
+                hitUV,
+                meshWorldPos: { x: +v.x.toFixed(3), y: +v.y.toFixed(3), z: +v.z.toFixed(3) },
+                projectedNDC: { x: +proj.x.toFixed(3), y: +proj.y.toFixed(3), z: +proj.z.toFixed(3) },
+                camPos: { x: +camPos.x.toFixed(3), y: +camPos.y.toFixed(3), z: +camPos.z.toFixed(3) },
+                bboxMin: { x: +bbox.min.x.toFixed(3), y: +bbox.min.y.toFixed(3), z: +bbox.min.z.toFixed(3) },
+                bboxMax: { x: +bbox.max.x.toFixed(3), y: +bbox.max.y.toFixed(3), z: +bbox.max.z.toFixed(3) }
+              };
+            }
+          }
+          return { targetsCount, hitUV, focusActive: api?.state?.navLocked };
+        });
+        console.log(`   -> Pre-click diagnostic:`, JSON.stringify(diag));
+        await page.mouse.click(640, 360);
+        await page.waitForTimeout(200);
+        const postClickFocus = await page.evaluate(() => ({
+          focused: !!(window as any).__lab?.stats()?.focus,
+          navLocked: (window as any).__lab?.state?.navLocked,
+        }));
+        console.log(`   -> Post-click state:`, JSON.stringify(postClickFocus));
       }
 
       // Capture focused screenshot
       const shotPath = path.join(outDir, `focus-${id}.png`);
       try {
         await page.evaluate(() => document.fonts.ready);
-        await page.screenshot({ path: shotPath, timeout: 5000, animations: 'disabled' });
+        await page.screenshot({ path: shotPath, timeout: 15000, animations: 'disabled' });
         console.log(`   -> Captured screenshot to: ${shotPath}`);
       } catch (err: any) {
         console.warn(`   -> Warning: Screenshot failed (${err.message}), continuing...`);
@@ -120,10 +166,6 @@ async function main() {
 
       // Wait for exit lerp and settle (1.0s)
       await page.waitForTimeout(1000);
-
-      // Verify overlay closed
-      const hostOpacity = await page.evaluate(() => document.getElementById('labFocus')?.style.opacity);
-      console.log(`   -> Host opacity after exit: ${hostOpacity}`);
 
       // Verify camera returned to exact pre-focus theta
       const afterTheta = await page.evaluate(() => (window as any).__lab.stats().theta);

@@ -8,16 +8,28 @@
   #load{position:fixed;inset:0;display:grid;place-items:center;background:#000;color:#8fc9d8;font-size:11px;letter-spacing:.2em;z-index:9}
   #load div{width:220px;height:2px;background:#0a1a20;margin-top:14px}
   #bar{height:100%;width:0;background:#3fe0ff;box-shadow:0 0 8px #3fe0ff}
-  #hint{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%);color:#9fd6e6;font-size:11px;
-        letter-spacing:.18em;text-transform:uppercase;opacity:0;transition:opacity 1.2s;pointer-events:none;text-shadow:0 0 8px #0ff5;text-align:center}
-  #dbg{position:fixed;top:10px;left:10px;color:#6f9;font-size:11px;white-space:pre;background:#000a;padding:6px 8px;display:none;line-height:1.5}
-</style></head><body>
-<canvas id="c"></canvas>
-<div id="load"><span id="lt">COMPILING SURFACES</span><div><i id="bar" style="display:block"></i></div></div>
-<div id="hint">scroll / drag up to approach · move to look · click the panel</div>
+  html,body{margin:0;height:100%;background:#020202;overflow:hidden;font-family:monospace;color:#fff}
+  #c{width:100%;height:100%;display:block}
+  #hud, #dbg, #load{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+  #load{position:fixed;inset:0;background:#020202;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:99}
+  #bar-wrap{width:260px;height:4px;background:#141414;border-radius:2px;overflow:hidden}
+  #bar{height:100%;width:0;background:linear-gradient(90deg,#ff6b2b,#ffb347);transition:width .2s}
+  #lt{font-size:11px;letter-spacing:.2em;color:#ff8a3d;text-transform:uppercase}
+  #dbg{position:fixed;top:10px;left:10px;font-size:11px;line-height:1.45;color:#8af;white-space:pre;pointer-events:none;display:none;z-index:10;text-shadow:0 1px 2px #000}
+  #hint{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.25em;color:#ff9e4a;pointer-events:none;transition:opacity .6s;text-transform:uppercase;z-index:5}
+</style>
+</head>
+<body>
+<div id="load"><div id="lt">INITIALIZING</div><div id="bar-wrap"><div id="bar"></div></div></div>
 <div id="dbg"></div>
+<div id="hint">SCROLL / DRAG UP TO APPROACH · MOVE MOUSE TO LOOK · CLICK PANEL</div>
+<canvas id="c"></canvas>
+
 <script type="importmap">
-{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}
+{ "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
 </script>
 <script type="module">
 import * as THREE from 'three';
@@ -31,7 +43,9 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 /* ═══ 0. QUALITY TIER ═══ */
 const ua=navigator.userAgent;
 const LOW=(navigator.deviceMemory&&navigator.deviceMemory<=4)||(navigator.hardwareConcurrency||4)<=2||/Android|iPhone|iPad/i.test(ua);
-const Q={radial:LOW?40:64,along:LOW?48:96,shadows:!LOW,shadowMap:LOW?512:1024,dpr:LOW?1:Math.min(devicePixelRatio,1.5),
+const dprCap = LOW ? 1.5 : 2.0;
+const dpr = Math.min(window.devicePixelRatio || 1, dprCap);
+const Q={radial:LOW?40:64,along:LOW?48:96,shadows:!LOW,shadowMap:LOW?512:1024,dpr,
          dust:LOW?150:400,rockTex:LOW?512:768,metalTex:512,pebbles:LOW?140:320};
 
 /* ═══ 1. RENDERER / SCENE / CAMERA ═══ */
@@ -197,12 +211,12 @@ const ledGeo=new THREE.BoxGeometry(.016,.028,.01);
 const decal=(t,w,h,x,y,z)=>{ const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:t,transparent:true,opacity:.75,toneMapped:false})); m.userData.noShadow=true; m.userData.noMerge=true; return put(m,x,y,z,door); };
 const six=stencil(['06'],256,192,{font:'bold 150px monospace',color:'#c2b8a8',wear:.9});
 decal(six,.26,.2,-.56,.46,F+.003); decal(six,.26,.2,.56,.46,F+.003);
-decal(stencil(['RESTRICTED ACCESS'],1024,128,{font:'bold 80px monospace'}),.9,.11,0,1.75,.104);
+decal(stencil(['RESTRICTED ACCESS'],1024,128,{font:'bold 80px monospace'}),.9,.11,0,.36,.104);
 decal(stencil(['VAULT-01'],512,128,{font:'bold 80px monospace'}),.5,.12,0,-1.75,.104);
 decal(warning(),.14,.14,1.06,-.9,.066);
 
 /* 4c. biometric panel on the spine */
-const panel=new THREE.Group(); panel.position.set(0,1.02,F+.035); door.add(panel);
+const panel=new THREE.Group(); panel.position.set(0,-0.37,F+.035); door.add(panel);
 put(box(.44,1.34,.02,tit),0,0,-.02,panel); put(box(.4,1.3,.09,compM),0,0,.03,panel);
 const strip=put(box(.3,.014,.008,ledCyan),0,.61,.079,panel);
 const SW=256,SH=320,sc=document.createElement('canvas'); sc.width=SW; sc.height=SH; const sg=sc.getContext('2d'); const screenTex=tex(sc);
@@ -211,12 +225,19 @@ const housing=new THREE.CylinderGeometry(.06,.07,.05,24); housing.rotateX(Math.P
 put(new THREE.Mesh(new THREE.SphereGeometry(.04,24,16),glass),0,.02,.105,panel);
 const ring=put(new THREE.Mesh(new THREE.TorusGeometry(.05,.005,8,32),ledCyan),0,.02,.115,panel);
 put(box(.36,.44,.03,gunD),0,-.4,.09,panel);
-[[-.15,-.2],[.15,-.2],[-.15,-.6],[.15,-.6]].forEach(([x,y])=>bolt(x,y-.05,F+.035+.105));
+[[ -.15,-.2],[.15,-.2],[-.15,-.6],[.15,-.6]].forEach(([x,y])=>bolt(x,y-.05,F+.035+.105));
+function touchProxy(mesh, padScale = 1.6) {
+  const proxy = mesh.clone(); proxy.geometry = mesh.geometry.clone(); proxy.scale.multiplyScalar(padScale);
+  proxy.material = new THREE.MeshBasicMaterial({ visible: false }); proxy.userData = mesh.userData; mesh.parent.add(proxy);
+  return proxy;
+}
 const interactables=[scr];
 const buttons=[['REGISTER','finger',-.12],['VERIFY','card',0],['RESET','reset',.12]].map(([name,glyph,x])=>{
   const b=put(box(.1,.05,.02,compM),x,-.34,.11,panel); b.userData={action:name};
   const l=put(new THREE.Mesh(new THREE.PlaneGeometry(.095,.047),new THREE.MeshBasicMaterial({map:label(name,glyph),color:0x9fd6e6,toneMapped:false})),x,-.34,.121,panel);
-  l.userData={action:name,noShadow:true}; interactables.push(b,l); return {name,b,l}; });
+  l.userData={action:name,noShadow:true};
+  const pB = touchProxy(b, 1.5);
+  interactables.push(b, l, pB); return {name,b,l}; });
 panel.traverse(o=>{ o.userData.noMerge=true; });
 door.traverse(o=>{ if(o.isMesh&&!o.userData.noShadow){ o.castShadow=true; o.receiveShadow=true; } });
 let doorVerts=0; door.traverse(o=>{ if(o.isMesh){ const c=o.geometry.attributes.position.count; doorVerts+=o.isInstancedMesh?c*o.count:c; } });
@@ -228,7 +249,7 @@ const ember=new THREE.Mesh(new THREE.IcosahedronGeometry(.2,2),new THREE.MeshSta
 const amber=new THREE.SpotLight(0xffa24a,120,0,.75,.6,1.6); amber.position.copy(SRC); amber.target.position.set(-.5,.5,DOOR_Z); scene.add(amber,amber.target);
 amber.castShadow=Q.shadows; amber.shadow.mapSize.set(Q.shadowMap,Q.shadowMap); amber.shadow.bias=-.0005; amber.shadow.normalBias=.02; amber.shadow.camera.near=.3; amber.shadow.camera.far=9;
 const amberPt=new THREE.PointLight(0xff8a30,12,8,1.8); amberPt.position.copy(SRC); scene.add(amberPt);
-const cyan=new THREE.PointLight(0x3fe0ff,2.5,2.4,2); cyan.position.set(0,DOOR_Y+.2,DOOR_Z+.6); scene.add(cyan);
+const cyan=new THREE.PointLight(0x3fe0ff,2.5,2.4,2); cyan.position.set(0,0.15,DOOR_Z+.6); scene.add(cyan);
 const rim=new THREE.PointLight(0x2a4a6a,3,6,2); rim.position.set(1.8,1.6,-5.2); scene.add(rim);
 const droneLight=new THREE.PointLight(0x5fe8ff,1.8,3,2);
 const drone=new THREE.Mesh(new THREE.IcosahedronGeometry(.04,0),new THREE.MeshStandardMaterial({emissive:0x5fe8ff,emissiveIntensity:2,color:0}));
@@ -330,10 +351,15 @@ function hover(){ ray.setFromCamera(mouse,camera); const hit=ray.intersectObject
   if(obj){ const b=buttons.find(b=>b.b===obj||b.l===obj); if(b) b.l.material.color.set(0xffffff); } }
 let actx; function beep(f=880,d=.08,type='square'){ try{ actx??=new (window.AudioContext||window.webkitAudioContext)(); const o=actx.createOscillator(),g=actx.createGain(); o.type=type; o.frequency.value=f; g.gain.value=.05; o.connect(g).connect(actx.destination); o.start(); g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+d); o.stop(actx.currentTime+d+.02); }catch{} }
 
-/* ═══ 9. RESIZE — constant horizontal FOV so framing survives any aspect ═══ */
+/* ═══ 9. RESIZE — door & approach camera fit function ═══ */
+function fitDoorCam(cam) {
+  cam.aspect = innerWidth / innerHeight;
+  cam.fov = innerWidth <= innerHeight ? 58 : clamp(THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(52) / 2) / cam.aspect)), 52, 74);
+  cam.updateProjectionMatrix();
+}
 function resize(){ renderer.setSize(innerWidth,innerHeight,false); composer.setSize(innerWidth,innerHeight); composer.setPixelRatio(renderer.getPixelRatio());
-  grade.uniforms.uRes.value.set(innerWidth*renderer.getPixelRatio(),innerHeight*renderer.getPixelRatio()); camera.aspect=innerWidth/innerHeight;
-  camera.fov=clamp(THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(74)/2)/camera.aspect)),52,100); camera.updateProjectionMatrix(); Z1=camera.aspect<.8?-5.75:-5.55; }
+  grade.uniforms.uRes.value.set(innerWidth*renderer.getPixelRatio(),innerHeight*renderer.getPixelRatio());
+  fitDoorCam(camera); Z1=camera.aspect<.8?-5.75:-5.55; }
 window.addEventListener('resize',resize); resize();
 
 /* ═══ 10. ANIMATION LOOP ═══ */
@@ -348,12 +374,10 @@ function frame(nowMs = performance.now()){
     look.pitch += (look.tp - look.pitch) * (1 - Math.exp(-dt * 6));
     const u = THREE.MathUtils.smoothstep(walk.t,0,1);
     camera.position.z = THREE.MathUtils.lerp(Z0, Z1, u);
-    const PANEL_Y = 1.37, PANEL_Z = DOOR_Z + 0.13;
-    const closeUp = THREE.MathUtils.smoothstep(walk.t, 0.55, 1.0);
+    const EYE_WORLD_Y = -0.02, PANEL_Z = DOOR_Z + 0.13;
     camera.position.x = 0;
-    camera.position.y = THREE.MathUtils.lerp(1.6, PANEL_Y + 0.02, closeUp * 0.4);
-    const lookY = THREE.MathUtils.lerp(camera.position.y - 0.02, PANEL_Y, closeUp);
-    camera.lookAt(0, lookY, PANEL_Z);
+    camera.position.y = EYE_WORLD_Y;
+    camera.lookAt(0, EYE_WORLD_Y, PANEL_Z);
     camera.rotation.x += look.pitch; camera.rotation.y += look.yaw;
     if(t-lastScreen>.08){ drawScreen(t); lastScreen=t; }
     mist.update(t); tickDrone(t);
