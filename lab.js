@@ -115,7 +115,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   const mat = o => new THREE.MeshStandardMaterial(o), E = (c, i = 0) => mat({ color: 0, emissive: c, emissiveIntensity: i });
   const comp = mat({ color: 0x15171b, roughness: .8, metalness: .3, envMapIntensity: .4 }), compD = mat({ color: 0x0a0b0e, roughness: .9, metalness: .2 }), matte = mat({ color: 0x0e0f12, roughness: .95, metalness: .05 });
   const wallPanel = panelMaterial(18, 4), riserPanel = panelMaterial(14, 1, '#1c1f25'), deckMat = panelMaterial(.5, .5, '#22262c');
-  const chanE = E(0x3fe0ff), ringE = E(0x3fe0ff), coreE = E(0xb8f6ff), amberE = E(0xff9a3c), portalE = E(0xff9a3c), gantryE = E(0x9fe8ff), greenE = E(0x35ff7a), downE = E(0xdff6ff), sconceE = E(0xffb060);
+  const chanE = E(0x3fe0ff), ringE = E(0x3fe0ff), coreE = E(0xb8f6ff), amberE = E(0xff9a3c), portalE = E(0xff9a3c), gantryE = E(0x9fe8ff), greenE = E(0x35ff7a), downE = E(0xdff6ff), sconceE = E(0xffb060), railE = E(0x4fd0ff);
   const glass = mat({ color: 0x061014, roughness: .05, metalness: .1, transparent: true, opacity: .45, envMapIntensity: 1.2 });
   const box = (w, h, d, m) => new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m), cyl = (r1, r2, h, m, s = 20, open = false, a0 = 0, al = TAU) => new THREE.Mesh(new THREE.CylinderGeometry(r1, r2, h, s, 1, open, a0, al), m);
   const add = (o, x, y, z, p = lab) => { o.position.set(x, y, z); p.add(o); return o; };
@@ -143,7 +143,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       const b = box(.16, 1.5, .08, gunD); b.position.copy(polar(th, HR - .8, 3.0)); b.rotation.y = th; bk.push(b); const s = box(.05, 1.3, .05, sconceE); s.position.copy(polar(th, HR - .87, 3.0)); s.rotation.y = th; bars.push(s); }
     scanSrc.push(merged(cols, compD)); merged(bk, gunD); reflect(merged(bars, sconceE));
     scanSrc.push(add(new THREE.Mesh(arcGeo(HR + .1, 9.4, .24, 0, TAU, 72), gunD), 0, WH - 1.4, 0));
-    add(new THREE.Mesh(new THREE.TorusGeometry(9.42, .025, 6, 120).rotateX(Math.PI / 2), tit), 0, WH - .3, 0); add(new THREE.Mesh(new THREE.TorusGeometry(9.42, .018, 6, 120).rotateX(Math.PI / 2), tit), 0, WH - .78, 0);
+    add(new THREE.Mesh(new THREE.TorusGeometry(9.42, .025, 6, 120).rotateX(Math.PI / 2), tit), 0, WH - .3, 0); add(new THREE.Mesh(new THREE.TorusGeometry(9.41, .008, 6, 120).rotateX(Math.PI / 2), railE), 0, WH - .28, 0); add(new THREE.Mesh(new THREE.TorusGeometry(9.42, .018, 6, 120).rotateX(Math.PI / 2), tit), 0, WH - .78, 0);
     const im = new THREE.InstancedMesh(new THREE.CylinderGeometry(.02, .02, 1.1, 6), tit, 60), m = new THREE.Object3D(); for (let i = 0; i < 60; i++) { m.position.copy(polar(i / 60 * TAU, 9.42, WH - .85)); m.updateMatrix(); im.setMatrixAt(i, m.matrix); } lab.add(im);
     const arms = []; for (const s of [-1, 1]) { const th = Math.PI + s * .8, g = new THREE.Group(); g.position.copy(polar(th, 8.4)); g.rotation.y = th + Math.PI; lab.add(g); const P = (o, x, y, z, rx = 0, rz = 0) => { o.position.set(x, y, z); o.rotation.set(rx, 0, rz); g.add(o); arms.push(o); };
       P(cyl(.4, .48, .5, matte, 24), 0, .25, 0); P(box(.3, 1.5, .3, matte), 0, 1.2, 0, 0, s * .35); P(new THREE.Mesh(new THREE.SphereGeometry(.24, 12, 10), matte), s * .5, 1.9, 0); P(box(.22, 1.6, .22, matte), s * .8, 2.5, .3, .55, s * .95); P(box(.3, .3, .4, matte), s * 1.5, 3.0, .75); g.updateMatrixWorld(true); }
@@ -189,7 +189,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   add(box(3.1, .03, 1.3, mat({ map: TEX.gate(), roughness: .7, metalness: .5 })), 0, .175, 4.0, table);       // threshold plate in the bay
   const bay = new THREE.Mesh(new THREE.BoxGeometry(3.0, 1.2, 1.4), new THREE.MeshBasicMaterial({ visible: false })); bay.position.set(0, .8, 4.0); bay.userData.sector = 'S0'; table.add(bay); hits.push(bay);
   // hinged leaves: thin gate leaves on the end caps, swing outward flat against the bench
-  const HR_ = B_OUT + .1, leafL = 2 * HR_ * Math.sin(SEC / 2) / 2 - .03, OPEN = Math.PI - SEC * .62, leaves = [1, -1].map(s => { const g = new THREE.Group(); g.position.copy(polar(s * SEC / 2, HR_, .16)); table.add(g);
+  const HR_ = B_OUT + .1, leafL = 2 * HR_ * Math.sin(SEC / 2) / 2 - .03, leaves = [1, -1].map(s => { const g = new THREE.Group(); g.position.copy(polar(s * SEC / 2, HR_, .16)); table.add(g);
     add(box(leafL, .74, .07, gun), -s * leafL / 2, .43, 0, g); add(box(leafL - .2, .02, .012, portalE), -s * leafL / 2, .62, .04, g); add(new THREE.Mesh(new THREE.PlaneGeometry(leafL - .3, .24), mat({ map: TEX.gate(), roughness: .8, metalness: .4 })), -s * leafL / 2, .36, .037, g); for (let i = 0; i < 2; i++) add(cyl(.03, .03, .14, tit, 12), 0, .2 + i * .45, .05, g); g.userData.s = s; return g; });
 
   /* ── sector installations (physical, on the deck) ── */
@@ -242,7 +242,18 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     add(cyl(.008, .008, 2.55, compD, 6), 0, 1.3, 0, g); add(cyl(.05, .26, .24, mat({ color: 0x1c1e22, roughness: .55, metalness: .65 }), 20), 0, 0, 0, g); const dm = E(0xffc27a); add(cyl(.22, .22, .012, dm, 20), 0, -.125, 0, g);
     const l = add(new THREE.PointLight(0xffb070, 0, 9.5, 2), 0, -.24, 0, g); return { light: l, disc: dm, t0: T.power[0] + 1.2 + j * .55, target: 13 * LK }; });
   const downSpot = new THREE.SpotLight(0xdff6ff, 0, 11, .78, .55, 1.6); downSpot.position.set(0, 5.4, 0); downSpot.target = table; lab.add(downSpot);
-  const hemi = new THREE.HemisphereLight(0x5c6a78, 0x1c130c, 0); lab.add(hemi);
+  const hemi = new THREE.HemisphereLight(0x5c7a9a, 0x1c130c, 0); lab.add(hemi);
+  const crownWash = !LOW ? (() => {
+    const l = new THREE.SpotLight(0x3fa8ff, 0, 16, Math.PI / 2.6, 0.6, 1.5);
+    l.position.set(0, RK - 0.6, 0); l.target.position.set(0, 0, 0); lab.add(l, l.target);
+    return l;
+  })() : null;
+  const perimeterBlue = [0, 1].map(i => {
+    const th = Math.PI * 0.5 + i * Math.PI;
+    const l = new THREE.PointLight(0x2f6fff, 0, 10, 2);
+    l.position.copy(polar(th, HR - 1.2, 3.6)); lab.add(l);
+    return l;
+  });
   // Architectural cool fill: broad, shadowless blue laboratory illumination that rises only after the power-on beat.
   const blueFillA = new THREE.PointLight(0x3d8fc7, 0, 8.5, 2); blueFillA.position.set(-5.8, 3.0, 1.2); lab.add(blueFillA);
   const blueFillB = new THREE.PointLight(0x2e74b5, 0, 8.0, 2); blueFillB.position.set(5.2, 2.6, -1.8); lab.add(blueFillB);
@@ -261,7 +272,8 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       void main(){ if(vUv.y>uOpen) discard; float fres=pow(abs(dot(vN,vV)),1.6); float scan=.85+.15*sin(vUv.y*80.-uT*12.)*sin(vUv.y*19.+uT*3.); float fl=.93+.07*hh(floor(uT*40.));
         float tip=1.-smoothstep(0.,.12,uOpen-vUv.y); float a=(fres*scan*fl*(1.-vUv.y*.35)+tip*fres*.6)*uA; gl_FragColor=vec4(vec3(.35,.9,1.)*a,a); }` });
   const beamMats = [beamMat, beamMat.clone(), beamMat.clone()]; beamMats[1].uniforms.uA.value = .26; beamMats[2].uniforms.uA.value = .06;
-  const beams = [[.04, .055], [.11, .28], [1.3, .1]].map(([a, b], i) => { const m = add(new THREE.Mesh(new THREE.CylinderGeometry(a, b, BEAM_H, 24, 1, true), beamMats[i]), 0, EMIT_Y + BEAM_H / 2, 0, glow); m.visible = false; m.renderOrder = 6; return m; });
+  const beamSeg = LOW ? 14 : 24;
+  const beams = [[.04, .055], [.11, .28], [1.3, .1]].map(([a, b], i) => { const m = add(new THREE.Mesh(new THREE.CylinderGeometry(a, b, BEAM_H, beamSeg, 1, true), beamMats[i]), 0, EMIT_Y + BEAM_H / 2, 0, glow); m.visible = false; m.renderOrder = 6; return m; });
 
   /* ── room scan: sweep front + world-space triplanar grid drawn on clones of the real surfaces (visible only while scanning) ── */
   const scanMat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2, uniforms: { uR: { value: 0 }, uA: { value: 0 }, uT: { value: 0 } },
@@ -275,13 +287,16 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   /* ── THE ENTITY (document design): wireframe cube + nested octahedron/icosahedron, core, four plasma ribbons, energy haze, anchor cone ── */
   const ent = new THREE.Group(); ent.visible = false; ent.scale.setScalar(0); glow.add(ent);
   const wire = g => new THREE.LineSegments(g, lineM({}));
-  const shells = [wire(new THREE.EdgesGeometry(new THREE.BoxGeometry(.72, .72, .72))), wire(new THREE.WireframeGeometry(new THREE.OctahedronGeometry(.5, 0))), wire(new THREE.WireframeGeometry(new THREE.IcosahedronGeometry(1.02, 1)))];
-  [[.18, .27, .09], [-.35, .2, .42], [.06, -.12, .08]].forEach((w, i) => { shells[i].userData.w = w; ent.add(shells[i]); });
+  const shellsN = LOW ? 2 : 3;
+  const allShells = [wire(new THREE.EdgesGeometry(new THREE.BoxGeometry(.72, .72, .72))), wire(new THREE.WireframeGeometry(new THREE.OctahedronGeometry(.5, 0))), wire(new THREE.WireframeGeometry(new THREE.IcosahedronGeometry(1.02, 1)))];
+  const shells = allShells.slice(0, shellsN);
+  [[.18, .27, .09], [-.35, .2, .42], [.06, -.12, .08]].slice(0, shellsN).forEach((w, i) => { shells[i].userData.w = w; ent.add(shells[i]); });
   const entCore = add(new THREE.Mesh(new THREE.SphereGeometry(.09, 16, 12), E(0xb8f6ff)), 0, 0, 0, ent);
   const ribMat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false, uniforms: { uT: { value: 0 }, uA: { value: 0 }, uPh: { value: 0 } },
     vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
     fragmentShader: `uniform float uT,uA,uPh; varying vec2 vUv; void main(){ float s=fract(vUv.x-uT*.3-uPh); float band=smoothstep(0.,.38,s)*(1.-smoothstep(.38,.46,s)); float a=(band*1.3+.12)*uA; gl_FragColor=vec4(vec3(.4,.95,1.)*a,a); }` });
-  const ribbons = [0, 1, 2, 3].map(k => { const pts = [], [A, B, C] = [[1, 2, 3], [2, 1, 3], [3, 2, 1], [1, 3, 2]][k], f = .62 + k * .08;
+  const ribbonCount = LOW ? 3 : 4;
+  const ribbons = [0, 1, 2, 3].slice(0, ribbonCount).map(k => { const pts = [], [A, B, C] = [[1, 2, 3], [2, 1, 3], [3, 2, 1], [1, 3, 2]][k], f = .62 + k * .08;
     for (let i = 0; i < 64; i++) { const u = i / 64 * TAU; pts.push(new THREE.Vector3(Math.sin(A * u + k) * f, Math.sin(B * u) * f * .7, Math.cos(C * u + k * .7) * f)); }
     const m = ribMat.clone(); m.uniforms.uPh.value = k * .25; const tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), LOW ? 96 : 160, .012, 5, true), m); ent.add(tube); return tube; });
   const haze = (() => { const n = LOW ? 18 : 28, p = new Float32Array(n * 3); for (let i = 0; i < n; i++) { const a = hash(i * 3.3) * TAU, r = .35 + hash(i * 5.9) * .8; p.set([Math.cos(a) * r, (hash(i * 7.1) - .5) * 1.5, Math.sin(a) * r], i * 3); }
@@ -308,7 +323,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
 
   /* ── particles: first sparks (tiny cyan) + ambient dust (warm, near-invisible). Soft discs only. ── */
   const points = (n, fill, color, size, max) => { const pos = new Float32Array(n * 3); for (let i = 0; i < n; i++) fill(i, pos); const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); const p = new THREE.Points(g, new THREE.PointsMaterial({ map: disc, color, size, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending })); p.userData.max = max; lab.add(p); return p; };
-  const NSP = 40, sseed = new Float32Array(NSP * 3); for (let i = 0; i < NSP; i++) { sseed[i*3] = hash(i * 1.7); sseed[i*3+1] = hash(i * 2.9) * TAU; sseed[i*3+2] = .05 + hash(i * 4.3) * .3; }
+  const NSP = LOW ? 24 : 40, sseed = new Float32Array(NSP * 3); for (let i = 0; i < NSP; i++) { sseed[i*3] = hash(i * 1.7); sseed[i*3+1] = hash(i * 2.9) * TAU; sseed[i*3+2] = .05 + hash(i * 4.3) * .3; }
   const sparks = points(NSP, (i, p) => p.set([0, EMIT_Y, 0], i * 3), 0x8ff2ff, .018, .55);
   const dust = points(LOW ? 220 : 420, (i, p) => { const a = hash(i * 3.1) * TAU, r = Math.sqrt(hash(i * 5.3)) * 9; p.set([Math.cos(a) * r, .3 + hash(i * 7.7) * 5.5, Math.sin(a) * r], i * 3); }, 0xffb37a, .03, .06);
 
@@ -317,27 +332,179 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
 
   /* ── blackout we own from vault:entered; camera fit; input (movement / look / raycast / console kept separate) ── */
   const bokeh = new BokehPass(lab, cam, { focus: 6, aperture: LOW ? 0.00002 : 0.000035, maxblur: LOW ? 0.0045 : 0.006 }); bokeh.enabled = false; if (bokeh) composer.insertPass(bokeh, 1);
-  const focusPos = new THREE.Vector3(), focusLook = new THREE.Vector3(), focusDir = new THREE.Vector3(), focusRadial = new THREE.Vector3();
-  const focus = id => { const h = heroGroups.find(x => x.id === id); if (!h || !S.ready || id === 'RS4' || id === 'LS4') return false; S.focus = id; S.focusT = 0; S.focusReady = true; S.vel = 0; S.magnet = null; dispatchEvent(new CustomEvent('lab:hero:focus', { detail: { id, sector: SECTORS.find(x => x.id === id) } })); return true; };
-  const blurFocus = () => { if (!S.focus) return; const id = S.focus; S.focus = null; S.focusT = 0; S.focusReady = false; if (bokeh) bokeh.enabled = false; dispatchEvent(new CustomEvent('lab:hero:blur', { detail: { id } })); };
+  const sectorGroups = {}; heroGroups.forEach(h => { sectorGroups[h.id] = h.group; });
+  const FOCUS_CFG = {
+    RS1: { dolly: (g)=>[g.localToWorld(new THREE.Vector3(0,.55,.9)), g.localToWorld(new THREE.Vector3(0,.15,0))], panel: 'blueprint' },
+    RS2: { dolly: (g)=>[g.localToWorld(new THREE.Vector3(.25,.5,.8)),  g.localToWorld(new THREE.Vector3(.1,.15,0))], panel: 'resume' },
+    RS3: { dolly: (g)=>[g.localToWorld(new THREE.Vector3(0,.9,.6)),   g.localToWorld(new THREE.Vector3(0,.7,0))],  panel: 'calendar' },
+    LS3: { dolly: (g)=>[g.localToWorld(new THREE.Vector3(0,.95,.65)), g.localToWorld(new THREE.Vector3(0,.85,0))], panel: 'globe' },
+    LS2: { dolly: (g)=>[g.localToWorld(new THREE.Vector3(0,.75,.55)),g.localToWorld(new THREE.Vector3(0,.5,0))],  panel: 'notes' },
+    LS1: { dolly: (g)=>[g.localToWorld(new THREE.Vector3(0,.9,.7)),  g.localToWorld(new THREE.Vector3(0,.85,0))], panel: 'profile' },
+  };
+  const FOCUS = { id: null, t: 0, from: new THREE.Vector3(), fromQ: new THREE.Quaternion(), toPos: new THREE.Vector3(), toLook: new THREE.Vector3(), active: false };
+
+  let activeBlobUrls = [];
+  const overlayHost = document.createElement('div'); overlayHost.id = 'labFocus';
+  Object.assign(overlayHost.style, { position:'fixed', inset:0, display:'grid', placeItems:'center', pointerEvents:'none', opacity:0, transition:'opacity .35s', zIndex: 9500 });
+  document.body.appendChild(overlayHost);
+
+  if (!document.getElementById('labFocusStyles')) {
+    const st = document.createElement('style'); st.id = 'labFocusStyles';
+    st.textContent = `
+      #labFocus .holo-card{ width:min(90vw,var(--w,600px)); background:rgba(4,20,30,.72); border:1px solid #39d6ff; border-radius:6px;
+        box-shadow:0 0 40px rgba(63,224,255,.25), inset 0 0 30px rgba(63,224,255,.08); backdrop-filter: blur(6px) saturate(1.3);
+        color:#9ff3ff; font-family:ui-monospace,Menlo,Consolas,monospace; padding:16px; box-sizing:border-box; }
+      #labFocus header{ display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #2b7f96; padding-bottom:8px; margin-bottom:10px; letter-spacing:.05em; font-weight:bold; }
+      #labFocus header button.x{ background:transparent; border:none; color:#39d6ff; font-size:18px; cursor:pointer; padding:2px 8px; }
+      #labFocus header button.x:hover{ color:#fff; }
+      #labFocus textarea{ width:100%; height:180px; background:#031018; color:#e8ffff; border:1px solid #2b7f96; padding:10px; resize:vertical; font-family:inherit; box-sizing:border-box; }
+      #labFocus button{ background:#0c2530; color:#9ff3ff; border:1px solid #39d6ff; padding:6px 14px; cursor:pointer; font-family:inherit; }
+      #labFocus button:hover{ background:#133c4e; color:#fff; }
+      #labFocus footer{ margin-top:12px; display:flex; justify-content:flex-end; }
+      #labFocus .check-list{ display:flex; flex-direction:column; gap:8px; margin:14px 0; }
+      #labFocus .check-item{ display:flex; align-items:center; gap:8px; color:#cbf5ff; cursor:pointer; }
+    `;
+    document.head.appendChild(st);
+  }
+
+  const PANELS = {
+    globe: () => `<div class="holo-card" style="--w:720px">
+        <header><span>LS3 · HOLO-GLOBE</span><button class="x" data-close>✕</button></header>
+        <div id="globeMeta" style="margin-bottom:12px;color:#39d6ff">RESOLVING GEO-IP…</div>
+        <div id="globeAlbum" class="thumb-grid">CONNECTIVITY LIVE · NO ACTIVE TARGETS</div></div>`,
+    notes: () => `<div class="holo-card" style="--w:640px">
+        <header><span>LS2 · SCRATCHPAD</span><button class="x" data-close>✕</button></header>
+        <textarea id="noteArea" maxlength="2000" placeholder="Leave a note for the owner…"></textarea>
+        <footer><button id="noteSave">COMMIT TO LOG</button></footer></div>`,
+    resume: () => `<div class="holo-card" style="--w:560px">
+        <header><span>RS2 · RESUME FABRICATOR</span><button class="x" data-close>✕</button></header>
+        <div id="resumeFields" class="check-list">
+          <label class="check-item"><input type="checkbox" checked disabled> CORE COMPETENCIES & ARCHITECTURE</label>
+          <label class="check-item"><input type="checkbox" checked disabled> GRAPHICS & SPATIAL ENGINE REVS</label>
+          <label class="check-item"><input type="checkbox" checked disabled> RESEARCH CITATIONS & PUBLICATIONS</label>
+        </div>
+        <footer><button id="resumeBuild">▶ BUILD TAILORED PDF</button></footer></div>`,
+    calendar: () => `<div class="holo-card" style="--w:480px">
+        <header><span>RS3 · SCHEDULE</span><button class="x" data-close>✕</button></header>
+        <div id="calGrid" style="line-height:1.6;color:#cbf5ff">CALENDAR UPLINK: SYNCHRONISED<br>AVAILABLE: WEEKDAYS 18:00 - 22:00 UTC<br>STATUS: ACTIVE</div></div>`,
+    blueprint:() => `<div class="holo-card" style="--w:640px">
+        <header><span>RS1 · PROJECT INDEX</span><button class="x" data-close>✕</button></header>
+        <div id="repoList" style="line-height:1.6;color:#cbf5ff">GITHUB REPOSITORY SYNC ACTIVE<br>CAVE ARCHITECTURE · REV C<br>SHADERS & GEOMETRY · ZERO RASTER ASSETS</div></div>`,
+    profile:  () => `<div class="holo-card" style="--w:560px">
+        <header><span>LS1 · PROFILE</span><button class="x" data-close>✕</button></header>
+        <div id="profileTabs" style="line-height:1.6;color:#cbf5ff">OPERATIVE: PRIYANSH GADIA<br>SECURITY CLEARANCE: LEVEL 5<br>SYSTEMS: GRAPHICS / FULL-STACK / COMPILERS</div></div>`,
+  };
+
+  const api2 = {
+    globe:   { onLocate: null, onAlbum: null },
+    notes:   { onLoad: null, onSave: null },
+    resume:  { onFields: null, onBuild: null },
+    calendar:{ onLoad: null },
+    blueprint:{ onRepos: null },
+    profile: { onLinks: null, onBlog: null },
+  };
+
+  function wireOverlay(kind, id) {
+    if (kind === 'notes') {
+      const ta = overlayHost.querySelector('#noteArea');
+      (api2.notes.onLoad ? Promise.resolve(api2.notes.onLoad()) : Promise.resolve(localStorage.getItem('vault_note') || '')).then(v => { if (ta) ta.value = v ?? ''; });
+      const btn = overlayHost.querySelector('#noteSave');
+      if (btn) btn.onclick = () => {
+        if (api2.notes.onSave) api2.notes.onSave(ta.value);
+        else localStorage.setItem('vault_note', ta.value);
+        btn.textContent = 'COMMITTED ✓';
+        setTimeout(() => { if (btn) btn.textContent = 'COMMIT TO LOG'; }, 1500);
+      };
+    }
+    if (kind === 'globe') {
+      (api2.globe.onLocate ? Promise.resolve(api2.globe.onLocate()) : Promise.resolve(null)).then(loc => {
+        const el = overlayHost.querySelector('#globeMeta');
+        if (el) el.textContent = loc ? `${loc.city} · ${loc.lat.toFixed(2)}, ${loc.lon.toFixed(2)}` : 'LOCATION TELEMETRY: RELAY PASSIVE';
+      });
+    }
+    if (kind === 'resume') {
+      const btn = overlayHost.querySelector('#resumeBuild');
+      if (btn) btn.onclick = async () => {
+        btn.textContent = 'FABRICATING…';
+        if (api2.resume.onBuild) {
+          const url = await api2.resume.onBuild();
+          if (url) activeBlobUrls.push(url);
+        }
+        setTimeout(() => { if (btn) btn.textContent = 'PDF READY'; }, 1000);
+      };
+    }
+  }
+
+  function openOverlay(kind, id) {
+    if (!PANELS[kind]) return;
+    overlayHost.innerHTML = PANELS[kind]();
+    overlayHost.style.pointerEvents = 'auto';
+    overlayHost.style.opacity = '1';
+    const closeBtn = overlayHost.querySelector('[data-close]');
+    if (closeBtn) closeBtn.onclick = unfocusSector;
+    wireOverlay(kind, id);
+  }
+
+  function closeOverlay() {
+    overlayHost.style.opacity = '0';
+    overlayHost.style.pointerEvents = 'none';
+    setTimeout(() => {
+      overlayHost.innerHTML = '';
+      activeBlobUrls.forEach(url => {
+        try { URL.revokeObjectURL(url); } catch {}
+      });
+      activeBlobUrls = [];
+    }, 350);
+  }
+
+  function focusSector(id) {
+    const cfg = FOCUS_CFG[id]; if (!cfg || FOCUS.active || !S.ready) return;
+    const g = sectorGroups[id]; if (!g) return;
+    g.updateWorldMatrix(true, false);
+    const [pos, look] = cfg.dolly(g);
+    FOCUS.id = id; FOCUS.t = 0; FOCUS.active = true; S.navLocked = true;
+    FOCUS.from.copy(cam.position); FOCUS.fromQ.copy(cam.quaternion);
+    FOCUS.toPos.copy(pos); FOCUS.toLook.copy(look);
+    if (bokeh) {
+      bokeh.enabled = true;
+      bokeh.uniforms.focus.value = cam.position.distanceTo(look);
+      bokeh.uniforms.aperture.value = LOW ? 0.00004 : 0.00008;
+    }
+    openOverlay(cfg.panel, id);
+    dispatchEvent(new CustomEvent('lab:focus', { detail: { id } }));
+    sfx.relay();
+  }
+
+  function unfocusSector() {
+    if (!FOCUS.active) return;
+    const prevId = FOCUS.id;
+    FOCUS.active = false; S.navLocked = false;
+    closeOverlay();
+    dispatchEvent(new CustomEvent('lab:unfocus', { detail: { id: prevId } }));
+    FOCUS.id = null;
+    sfx.servo(.6, false);
+  }
+
+  window.__lab_backend = api2;
+
   const fade = document.createElement('div'); fade.id = 'labFade'; Object.assign(fade.style, { position: 'fixed', inset: 0, background: '#000', opacity: 0, pointerEvents: 'none', zIndex: 9990 }); document.body.appendChild(fade);
   const fit = () => { cam.aspect = innerWidth / innerHeight; cam.fov = clamp(THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(78) / 2) / cam.aspect)), 50, 100); cam.updateProjectionMatrix(); }; fit(); addEventListener('resize', fit);
-  const NAV = { wheel: .0075, drag: .004, damp: 5, max: 2 }, canMove = () => S.active && S.t >= T.power[0] && !S.inside && !S.wantIn && !S.focus, canLook = () => S.active && S.t > 1;
+  const NAV = { wheel: .0075, drag: .004, damp: 5, max: 2 }, canMove = () => S.active && S.t >= T.power[0] && !S.inside && !S.wantIn && !FOCUS.active && !S.navLocked, canLook = () => S.active && S.t > 1 && !FOCUS.active;
   const nudge = v => { S.vel = clamp(S.vel + v, -NAV.max, NAV.max); S.lastInput = S.t; S.magnet = null; };
   function goTo(id) { const s = SECTORS.find(x => x.id === id); if (!s) return; let d = (s.theta - S.theta) % TAU; if (d > Math.PI) d -= TAU; if (d < -Math.PI) d += TAU; S.magnet = S.theta + d; S.lastInput = -9; }
   function enter() { if (!S.ready || S.inside || S.wantIn) return; S.wantIn = true; S.vel = 0; goTo('S0'); }
   function exit() { if (!S.inside && !S.wantIn) return; S.inside = 0; S.wantIn = false; S.lastInput = -9; sfx.servo(1.0, false); dispatchEvent(new CustomEvent('lab:ai:exit')); }
-  addEventListener('wheel', e => { if (!S.active || S.t < T.power[0]) return; e.preventDefault(); if (S.focus) { blurFocus(); return; } if (S.inside || S.wantIn) { exit(); return; } const d = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * innerHeight : e.deltaY; nudge(clamp(d, -140, 140) * NAV.wheel); }, { passive: false });
+  addEventListener('wheel', e => { if (!S.active || S.t < T.power[0] || FOCUS.active || S.navLocked) return; e.preventDefault(); if (S.inside || S.wantIn) { exit(); return; } const d = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * innerHeight : e.deltaY; nudge(clamp(d, -140, 140) * NAV.wheel); }, { passive: false });
   addEventListener('mousemove', e => { if (!canLook()) return; S.look.tx = -((e.clientX / innerWidth) * 2 - 1) * .32; S.look.ty = -((e.clientY / innerHeight) * 2 - 1) * .18; });
   let touch = null; addEventListener('touchstart', e => { if (S.active) { const t = e.touches[0]; touch = { x: t.clientX, y: t.clientY, vy: 0, moved: 0 }; } }, { passive: true });
   addEventListener('touchmove', e => { if (!touch || !S.active) return; const t = e.touches[0], dx = t.clientX - touch.x, dy = t.clientY - touch.y; touch.moved += Math.abs(dx) + Math.abs(dy); if (canMove()) { S.theta += dy * NAV.drag; touch.vy = dy; S.lastInput = S.t; S.magnet = null; } if (canLook()) S.look.tx = clamp(S.look.tx - dx * .0025, -.5, .5); touch.x = t.clientX; touch.y = t.clientY; e.preventDefault(); }, { passive: false });
   addEventListener('touchend', () => { if (touch && canMove()) nudge(clamp(touch.vy * .22, -1.4, 1.4)); if (touch && touch.moved > 40 && (S.inside || S.wantIn)) exit(); touch = null; }, { passive: true });
-  addEventListener('keydown', e => { if (!S.active) return; if (S.focus && (e.key === 'Escape' || e.key === 'Backspace')) { blurFocus(); e.preventDefault(); return; }
+  addEventListener('keydown', e => { if (!S.active) return; if (FOCUS.active && (e.key === 'Escape' || e.key === 'Backspace')) { unfocusSector(); e.preventDefault(); return; }
     if (S.inside) { if (e.key === 'Escape') exit(); else if (e.key === 'Enter') ask(AI.input); else if (e.key === 'Backspace') AI.input = AI.input.slice(0, -1); else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && AI.input.length < 140) AI.input += e.key; else return; AI.dirty = true; e.preventDefault(); return; }
     if (!canMove()) return; if (e.key === 'Enter' && S.sector === 0) { enter(); return; } if (['ArrowRight', 'd', 'ArrowDown', 's'].includes(e.key)) nudge(.65); else if (['ArrowLeft', 'a', 'ArrowUp', 'w'].includes(e.key)) nudge(-.65); else if (/^[1-9]$/.test(e.key)) goTo(SECTORS[+e.key - 1].id); });
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(); let lastHover = 0; const pick = (x, y) => { ndc.set((x / innerWidth) * 2 - 1, -(y / innerHeight) * 2 + 1); ray.setFromCamera(ndc, cam); const h = ray.intersectObjects(hits, false)[0]; return h ? h.object.userData.sector : null; };
   addEventListener('pointermove', e => { if (!S.ready || S.inside || e.pointerType === 'touch') return; const now = performance.now(); if (now - lastHover < 90) return; lastHover = now; S.hover = pick(e.clientX, e.clientY); renderer.domElement.style.cursor = S.hover ? 'pointer' : ''; });
-  addEventListener('click', e => { if (!S.ready) return; if (S.inside || S.wantIn) { exit(); return; } const id = pick(e.clientX, e.clientY); if (!id) return; sfx.blip(1320, .07); dispatchEvent(new CustomEvent('lab:interact', { detail: { id } })); if (id === 'S0') enter(); else if (S.focus) dispatchEvent(new CustomEvent('lab:hero:action', { detail: { id, action: 'interact' } })); else if (!focus(id)) goTo(id); });
+  addEventListener('click', e => { if (!S.ready) return; if (FOCUS.active) return; if (S.inside || S.wantIn) { exit(); return; } const id = pick(e.clientX, e.clientY); if (!id) return; sfx.blip(1320, .07); dispatchEvent(new CustomEvent('lab:interact', { detail: { id } })); if (id === 'S0') enter(); else if (FOCUS_CFG[id]) focusSector(id); else goTo(id); });
 
   /* ── update: every visual is a pure function of t (+ the visitor's θ and inside-state) ── */
   const fA = new THREE.Vector3(), fB = new THREE.Vector3(), tmp = new THREE.Vector3();
@@ -381,6 +548,11 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       for (const s of screens) s.m.emissiveIntensity = ph(t, [s.t0, s.t0 + .3]) * s.i * (1 + .05 * Math.sin(t * 30 + s.t0)); for (const l of leds) l.m.emissiveIntensity = ph(t, [l.t0, l.t0 + .2]) * l.target; for (const h of holos) h.m.opacity = sm(ph(t, [h.t0, h.t0 + .8])) * h.target * (.93 + .07 * Math.sin(t * 9 + h.t0));
       labels.forEach((m, k) => m.emissiveIntensity = ph(t, [T.power[0] + 1.6 + k * .12, T.power[0] + 1.9 + k * .12]) * 1.3); greenE.emissiveIntensity = ph(t, [T.power[0] + 3.0, T.power[0] + 3.3]) * 2.2;
       hemi.intensity = (0.16 + Ps * .79) * LKh; blueFillA.intensity = Ps * (LOW ? 1.25 : 2.5); blueFillB.intensity = Ps * (LOW ? 1.0 : 2.0); blueArch.intensity = Ps * .22; renderer.toneMappingExposure = EXP0 * (1 + .32 * Ps); lab.fog.density = lerp(.055, .02, Ps); lab.fog.color.copy(fogA).lerp(fogB, Ps);
+      if (crownWash) crownWash.intensity = ph(t, [T.power[0] + 2.6, T.power[1]]) * 2.4;
+      perimeterBlue.forEach((l, i) => l.intensity = ph(t, [T.power[0] + 2.8 + i * .2, T.power[1] + .3]) * 3.4 * LK);
+      railE.emissiveIntensity = ph(t, [T.power[0] + 2.2, T.power[0] + 2.9]) * 2.8;
+      hemi.color.set(0x5c7a9a); hemi.groundColor.set(0x1c130c);
+      floor.material.envMapIntensity = lerp(0.6, 0.85, Ps);
       const gone = sm(ph(t, T.collapse)), back = sm(ph(t, T.idle)); coreE.emissiveIntensity = Math.max(coreE.emissiveIntensity * (1 - .85 * gone), back * 5 * (1 + .1 * Math.sin(t * 1.7))); tableLight.intensity = Math.max(tableLight.intensity, (gone * .9 + back * .6) * LK * (.9 + .1 * Math.sin(t * 1.7))); }
     // S0 gate leaves swing out flat against the end caps once the room is live
     { const g = sm(ph(t, [T.power[1] - 1.6, T.power[1] + .2])); leaves.forEach(L => L.rotation.y = -L.userData.s * OPEN_A * g); cue('gate', t > T.power[1] - 1.6, () => sfx.servo(1.6, true)); cue('gate2', t > T.power[1] + .2, sfx.relay); }
@@ -392,17 +564,33 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       const ma = a.material, mb = b.material; if (!ma) continue; if (ma.isShaderMaterial) { for (const k in ma.uniforms) if (k !== 'uA') mb.uniforms[k].value = ma.uniforms[k].value; mb.uniforms.uA.value = ma.uniforms.uA.value * MIR; } else { if (mb.opacity !== undefined) mb.opacity = ma.opacity * MIR; if (mb.emissiveIntensity !== undefined) mb.emissiveIntensity = ma.emissiveIntensity * MIR; } }
     // camera: approach walk → orbit around the bench → (S0) walk through the bay to the inner floor and face the entity
     { const walk = sm(ph(t, T.approach)), approaching = t > T.approach[0] && walk < 1;
-      if (canMove() && !S.focus) { S.theta += S.vel * dt; S.vel *= Math.exp(-NAV.damp * dt); if (Math.abs(S.vel) < 1e-4) S.vel = 0; const idle = t - S.lastInput, near = Math.round(S.theta / SEC) * SEC;
+      if (canMove() && !FOCUS.active) { S.theta += S.vel * dt; S.vel *= Math.exp(-NAV.damp * dt); if (Math.abs(S.vel) < 1e-4) S.vel = 0; const idle = t - S.lastInput, near = Math.round(S.theta / SEC) * SEC;
         if (S.magnet === null && idle > 1.4 && Math.abs(S.vel) < .05 && Math.abs(near - S.theta) > .0008) S.magnet = near; }
-      if (S.magnet !== null) { const d = S.magnet - S.theta; S.theta += d * (1 - Math.exp(-2.6 * dt)); if (Math.abs(d) < .0006) { S.theta = S.magnet; S.magnet = null; S.lastInput = -9; } }
+      if (S.magnet !== null && !FOCUS.active) { const d = S.magnet - S.theta; S.theta += d * (1 - Math.exp(-2.6 * dt)); if (Math.abs(d) < .0006) { S.theta = S.magnet; S.magnet = null; S.lastInput = -9; } }
       const k = ((Math.round(S.theta / SEC) % NSEC) + NSEC) % NSEC; if (k !== S.sector && t >= T.power[0]) { S.sector = k; sfx.blip(1100, .05, .025); dispatchEvent(new CustomEvent('lab:sector', { detail: SECTORS[k] })); }
       const spd = approaching ? .55 : Math.max(Math.abs(S.vel) * CAM_R, inSpd); S.stride += spd * dt * 3.4; const bw = clamp(spd / .6, 0, 1), th = S.theta, r = lerp(lerp(PZ + .5, CAM_R, eo(walk)), IN_R, w);
-      cam.position.copy(polar(th, r, EYE + Math.sin(S.stride * 2) * .012 * bw)); cam.position.add(tmp.set(Math.cos(th), 0, -Math.sin(th)).multiplyScalar(Math.sin(S.stride) * .009 * bw));
-      S.look.x += (S.look.tx - S.look.x) * (1 - Math.exp(-dt * 4)); S.look.y += (S.look.ty - S.look.y) * (1 - Math.exp(-dt * 4)); const bootW = 1 - sm(ph(t, [T.power[0] + 1.5, T.power[0] + 4]));
+      const F = FOCUS.active ? Math.min(1, FOCUS.t += dt * 1.8) : Math.max(0, (FOCUS.t -= dt * 2.2));
+      const e = sm(F);
       fA.copy(polar(th, 3.98, DK_Y + .45)).lerp(tmp.set(0, EMIT_Y + 1.4, 0), .35); fA.lerp(tmp.set(0, entY - .1, 0), w);
-      const fy = 1.3 + sm(ph(t, T.beam)) * .9 + S.entF * 1.2 + sm(ph(t, T.map)) * .3 * (1 - sm(ph(t, T.retract))); fA.lerp(tmp.set(0, fy, 0), bootW);
-      if (!S.fInit) { fB.copy(fA); S.fInit = true; } else fB.lerp(fA, 1 - Math.exp(-dt * 3.2)); cam.lookAt(fB); cam.rotateY(S.look.x * (1 - .6 * w)); cam.rotateX(S.look.y * (1 - .6 * w));
-      if (S.focus) { const h = heroGroups.find(x => x.id === S.focus); if (h) { h.group.getWorldPosition(focusLook); focusRadial.set(focusLook.x, 0, focusLook.z).normalize(); focusPos.copy(focusLook).addScaledVector(focusRadial, 1.72); focusPos.y += .34; S.focusT += (1 - S.focusT) * (1 - Math.exp(-dt * 4.5)); cam.position.lerp(focusPos, 1 - Math.exp(-dt * 4.5)); cam.lookAt(focusLook); if (bokeh) { bokeh.enabled = true; bokeh.uniforms.focus.value = Math.max(.1, cam.position.distanceTo(focusLook)); bokeh.uniforms.aperture.value = LOW ? .00003 : .000055; bokeh.uniforms.maxblur.value = LOW ? .0055 : .008; } } } }
+      const fy = 1.3 + sm(ph(t, T.beam)) * .9 + S.entF * 1.2 + sm(ph(t, T.map)) * .3 * (1 - sm(ph(t, T.retract))); fA.lerp(tmp.set(0, fy, 0), 1 - sm(ph(t, [T.power[0] + 1.5, T.power[0] + 4])));
+      if (!S.fInit) { fB.copy(fA); S.fInit = true; } else fB.lerp(fA, 1 - Math.exp(-dt * 3.2));
+      if (!FOCUS.active && F <= 0) {
+        cam.position.copy(polar(th, r, EYE + Math.sin(S.stride * 2) * .012 * bw)); cam.position.add(tmp.set(Math.cos(th), 0, -Math.sin(th)).multiplyScalar(Math.sin(S.stride) * .009 * bw));
+        S.look.x += (S.look.tx - S.look.x) * (1 - Math.exp(-dt * 4)); S.look.y += (S.look.ty - S.look.y) * (1 - Math.exp(-dt * 4));
+        cam.lookAt(fB); cam.rotateY(S.look.x * (1 - .6 * w)); cam.rotateX(S.look.y * (1 - .6 * w));
+      } else {
+        cam.position.lerpVectors(FOCUS.from, FOCUS.toPos, e);
+        cam.lookAt(FOCUS.toLook.clone().lerp(cam.position.clone().add(fB.clone().sub(cam.position)), 1 - e));
+      }
+      if (bokeh && (FOCUS.active || F > 0)) {
+        bokeh.uniforms.focus.value = FOCUS.active ? cam.position.distanceTo(FOCUS.toLook) : bokeh.uniforms.focus.value;
+        bokeh.uniforms.aperture.value = lerp(LOW ? 0.00004 : 0.00008, LOW ? 0.00035 : 0.0009, e);
+      }
+      if (F <= 0 && !FOCUS.active && bokeh && bokeh.enabled) {
+        bokeh.enabled = false;
+      }
+      S.focusE = e;
+    }
     if (!S.ready && t >= T.ready) { S.ready = true; fade.style.opacity = '0'; dispatchEvent(new CustomEvent('lab:ready', { detail: { sector: SECTORS[S.sector] } })); }
   }
 
@@ -418,14 +606,14 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       };
     }
     lab.environment = null; };
-  function activate(startAt = 0) { if (S.active) return; S.active = true; Object.assign(S, { t: 0, theta: 0, vel: 0, magnet: null, sector: 0, fInit: false, ready: false, inside: 0, insideT: 0, wantIn: false, focus: null, focusT: 0, focusReady: false }); cues.clear(); fade.style.opacity = '1'; takeover(); fit();
+  function activate(startAt = 0) { if (S.active) return; S.active = true; Object.assign(S, { t: 0, theta: 0, vel: 0, magnet: null, sector: 0, fInit: false, ready: false, inside: 0, insideT: 0, wantIn: false, navLocked: false }); FOCUS.active = false; FOCUS.id = null; FOCUS.t = 0; cues.clear(); fade.style.opacity = '1'; takeover(); fit();
     const b = q.get('boot'); if (b === 'skip') startAt = T.ready - .01; else if (b !== null && !isNaN(+b)) startAt = +b;
     if (startAt > 0) { S.t = startAt; const bk = {}; for (const k in sfx) if (typeof sfx[k] === 'function') { bk[k] = sfx[k]; sfx[k] = () => {}; } update(0); Object.assign(sfx, bk); if (S.t > T.table[0]) sfx.hum(S.t > T.power[0] ? .22 : .12, 1); }
     dispatchEvent(new CustomEvent('lab:activated', { detail: { t: S.t } })); }
   const stats = () => ({ t: +S.t.toFixed(2), theta: +S.theta.toFixed(3), sector: SECTORS[S.sector].id, ready: S.ready, active: S.active, inside: +S.insideT.toFixed(2), exposure: +renderer.toneMappingExposure.toFixed(3), calls: sceneCalls || renderer.info.render.calls, triangles: sceneTris || renderer.info.render.triangles, textures: renderer.info.memory.textures,
-    camera: { p: cam.position.toArray().map(v => +v.toFixed(3)), q: cam.quaternion.toArray().map(v => +v.toFixed(4)) }, focus: S.focus });
+    camera: { p: cam.position.toArray().map(v => +v.toFixed(3)), q: cam.quaternion.toArray().map(v => +v.toFixed(4)) }, focus: FOCUS.id });
   const ai = { say, ask, get lines() { return AI.lines.slice(); }, get onAsk() { return AI.onAsk; }, set onAsk(f) { AI.onAsk = f; } };
-  return { scene: lab, camera: cam, state: S, T, SECTORS, update, activate, goTo, enter, exit, focus, blurFocus, ai, stats, fade, pick };
+  return { scene: lab, camera: cam, state: S, T, SECTORS, update, activate, goTo, enter, exit, focusSector, unfocusSector, focus: focusSector, blurFocus: unfocusSector, ai, stats, fade, pick, api2 };
 }
 
 /* ── install: one call from index.html; hooks the existing composer loop, listens for vault:entered ── */

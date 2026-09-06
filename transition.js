@@ -13,6 +13,7 @@ export function installDoorSequence({scene,camera,composer,door,walk,look,canvas
     if(o.isPointLight&&Math.abs(o.position.z-(DOOR_Z+.6))<.01&&Math.abs(o.position.x)<.01) cyan=o;
     if(o.isMesh&&o.material?.emissive?.getHex?.()===0xff5a12) ember=o; });
   const door0=door.position.clone(), panel0=panel?panel.position.z:0, cyan0=cyan?cyan.position.y:0;
+  const PANEL_Y = 1.37, PANEL_Z = DOOR_Z + 0.13;
 
   /* iris fade pass (after the grade) */
   const fade=new ShaderPass({uniforms:{tDiffuse:{value:null},uFade:{value:0}},

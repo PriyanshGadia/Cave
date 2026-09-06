@@ -98,7 +98,7 @@ export async function applyRealism({ scene, renderer, camera, composer, LOW, MET
   report.triplanar = true;
 
   /* ── bounce light: warm from the ember side, cold from the dark side ── */
-  scene.add(new THREE.HemisphereLight(0x3a2416, 0x0c1218, .45));
+  const hemiBounce = new THREE.HemisphereLight(0x2a1a10, 0x080a0c, 0.12); scene.add(hemiBounce);
 
   /* ── 4. GTAO contact shadows (HIGH tier only, self-disables if it costs the frame rate) ── */
   const hud = document.createElement('div');
