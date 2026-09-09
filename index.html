@@ -2,6 +2,7 @@
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>VAULT-01 · Scene 1 · lookdev v2</title>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
 <style>
   html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:ui-monospace,Menlo,Consolas,monospace}
   #c{display:block;width:100vw;height:100vh;touch-action:none}
@@ -17,14 +18,380 @@
   #lt{font-size:11px;letter-spacing:.2em;color:#ff8a3d;text-transform:uppercase}
   #dbg{position:fixed;top:10px;left:10px;font-size:11px;line-height:1.45;color:#8af;white-space:pre;pointer-events:none;display:none;z-index:10;text-shadow:0 1px 2px #000}
   #hint{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.25em;color:#ff9e4a;pointer-events:none;transition:opacity .6s;text-transform:uppercase;z-index:5}
+  #btn-skip-anim{position:fixed;top:14px;left:14px;z-index:99999;background:rgba(8,28,44,.85);color:#38bdf8;border:1.5px solid #38bdf8;border-radius:4px;padding:8px 14px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;font-weight:bold;letter-spacing:.1em;cursor:pointer;box-shadow:0 0 12px rgba(56,189,248,.35);transition:all .2s ease}
+  #btn-skip-anim:hover{background:#38bdf8;color:#04101a;box-shadow:0 0 20px rgba(56,189,248,.7)}
+  #blueprint-hud{position:fixed;top:20px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:14px;background:rgba(4,16,30,.92);border:1.5px solid #38bdf8;border-radius:6px;padding:8px 18px;z-index:99998;box-shadow:0 0 25px rgba(56,189,248,.45);font-family:ui-monospace,Menlo,Consolas,monospace}
+  #blueprint-gh-link{color:#fff;text-decoration:none;font-size:12px;font-weight:bold;letter-spacing:.12em;display:flex;align-items:center;gap:8px;transition:color .15s}
+  #blueprint-gh-link:hover{color:#38bdf8}
+  #blueprint-close-btn{background:transparent;border:1px solid rgba(56,189,248,.4);color:#7dd3fc;border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer;font-family:inherit}
+  #blueprint-close-btn:hover{background:rgba(56,189,248,.2);color:#fff}
+
+  /* ═══ LS3 FOCUSED BOTTOM TASKBAR ═══ */
+  #ls3-taskbar{position:fixed;bottom:14px;left:50%;transform:translateX(-50%) translateY(130%);width:min(940px,calc(100vw - 28px));background:rgba(4,16,28,.95);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1.5px solid #38bdf8;border-radius:8px;padding:10px 16px;z-index:99990;box-shadow:0 0 35px rgba(56,189,248,.35),inset 0 0 15px rgba(56,189,248,.1);font-family:ui-monospace,Menlo,Consolas,monospace;color:#cbf5ff;transition:transform .32s cubic-bezier(.16,1,.3,1),opacity .25s ease;opacity:0;pointer-events:none;display:flex;flex-direction:column;gap:8px}
+  #ls3-taskbar.active{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto}
+  .ls3-tb-header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1a4455;padding-bottom:6px}
+  .ls3-tb-title{display:flex;align-items:center;gap:8px;font-weight:bold;font-size:11.5px;color:#fff}
+  .ls3-tb-dot{width:8px;height:8px;border-radius:50%;background:#00f0ff;box-shadow:0 0 8px #00f0ff;animation:ls3Pulse 1.8s infinite}
+  @keyframes ls3Pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.75)}}
+  .ls3-tb-badge{background:rgba(0,240,255,.18);border:1px solid #00f0ff;color:#00f0ff;padding:1px 6px;border-radius:3px;font-size:9.5px}
+  .ls3-tb-ctrls{display:flex;align-items:center;gap:8px}
+  #ls3-tb-zoom-level{font-size:11px;color:#7ec5df}
+  .ls3-btn-small{background:#0a2432;border:1px solid #225566;border-radius:3px;color:#a0e0f0;padding:3px 8px;font-family:inherit;font-size:10px;cursor:pointer;transition:all .15s}
+  .ls3-btn-small:hover{background:#154055;border-color:#38bdf8;color:#fff}
+  .ls3-btn-retract{background:rgba(56,189,248,.2);border:1px solid #38bdf8;border-radius:3px;color:#fff;padding:3px 10px;font-family:inherit;font-size:10px;font-weight:bold;cursor:pointer;transition:all .15s}
+  .ls3-btn-retract:hover{background:#38bdf8;color:#04101a}
+  .ls3-tb-modes{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .ls3-mode-btn{background:rgba(8,28,42,.7);border:1px solid #1e4858;border-radius:4px;color:#8acada;padding:6px;font-family:inherit;font-size:10.5px;font-weight:bold;cursor:pointer;text-align:center;transition:all .15s}
+  .ls3-mode-btn:hover{background:rgba(0,240,255,.15);border-color:#00f0ff;color:#fff}
+  .ls3-mode-btn.active{background:rgba(0,240,255,.3);border-color:#00f0ff;color:#fff;box-shadow:0 0 12px rgba(0,240,255,.4)}
+  .ls3-tb-row{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #143542;padding-top:6px;gap:8px}
+  .ls3-tb-presets{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+  .ls3-tb-label{font-size:9.5px;color:#5fb3cc;margin-right:2px}
+  .ls3-preset-btn{background:rgba(8,24,36,.7);border:1px solid #1e4858;border-radius:3px;color:#7ec5df;padding:2px 7px;font-family:inherit;font-size:10px;cursor:pointer;transition:all .15s}
+  .ls3-preset-btn:hover{background:rgba(56,189,248,.2);border-color:#38bdf8;color:#fff}
+  .ls3-preset-btn.active{background:rgba(255,176,64,.25);border-color:#ffb040;color:#ffdf99}
+  .ls3-tb-telemetry{font-size:10px;color:#9ff3ff;text-align:right;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:.03em}
+
+  /* ═══ LS3 DUAL HOLOGRAPHIC NEWS DISPLAY WINGS ═══ */
+  #ls3-news-holo{position:fixed;inset:0;z-index:99995;display:none;pointer-events:none;font-family:ui-monospace,Menlo,Consolas,monospace;--holo-border-opacity:0;--holo-disp-opacity:0}
+  #ls3-news-holo.active{display:block}
+
+  @keyframes holoFlicker{
+    0%,100%{filter:brightness(1.0) drop-shadow(0 0 16px rgba(0,240,255,.4))}
+    28%{filter:brightness(0.95) drop-shadow(0 0 13px rgba(0,240,255,.32))}
+    52%{filter:brightness(0.88) drop-shadow(0 0 9px rgba(0,240,255,.22))}
+    54%{filter:brightness(1.05) drop-shadow(0 0 20px rgba(0,240,255,.52))}
+    74%{filter:brightness(0.92) drop-shadow(0 0 14px rgba(0,240,255,.36))}
+    76%{filter:brightness(1.02) drop-shadow(0 0 18px rgba(0,240,255,.46))}
+  }
+
+  /* Hide finite duration scrub bars and timelines so live streams never show 0:53 / 1:18 */
+  #ls3-news-video::-webkit-media-controls-timeline,
+  #ls3-news-video::-webkit-media-controls-current-time-display,
+  #ls3-news-video::-webkit-media-controls-time-remaining-display,
+  #ls3-news-video::-webkit-media-controls-seek-back-button,
+  #ls3-news-video::-webkit-media-controls-seek-forward-button {
+    display: none !important;
+  }
+
+  #ls3-news-header{
+    position:fixed;
+    top:14px;
+    left:50%;
+    transform:translateX(-50%) translateY(calc(-8px * (1 - var(--holo-disp-opacity, 0))));
+    width:min(1060px,calc(100vw - 32px));
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:rgba(3,16,28,calc(0.85 * var(--holo-disp-opacity, 0)));
+    backdrop-filter:blur(calc(8px * var(--holo-disp-opacity, 0)));
+    -webkit-backdrop-filter:blur(calc(8px * var(--holo-disp-opacity, 0)));
+    border:1.5px solid rgba(0,240,255,var(--holo-disp-opacity, 0));
+    border-radius:6px;
+    padding:6px 14px;
+    box-shadow:0 0 calc(25px * var(--holo-disp-opacity, 0)) rgba(0,240,255,.3),inset 0 0 calc(12px * var(--holo-disp-opacity, 0)) rgba(0,240,255,.1);
+    pointer-events:auto;
+    opacity:var(--holo-disp-opacity, 0);
+    transition:opacity .15s linear, transform .15s ease-out;
+    animation:holoFlicker 6s infinite ease-in-out;
+    z-index:99997;
+  }
+  #ls3-news-header .ls3-nh-left,
+  #ls3-news-header .ls3-nh-channels,
+  #ls3-news-header .ls3-nh-right {
+    opacity: var(--holo-disp-opacity, 0);
+    transition: opacity .18s ease-out;
+  }
+
+  .ls3-nh-left{display:flex;align-items:center;gap:10px}
+  .ls3-nh-pulse{width:10px;height:10px;border-radius:50%;background:#ff3355;box-shadow:0 0 10px #ff3355;animation:ls3Pulse 1.4s infinite}
+  .ls3-nh-badge{font-size:10px;font-weight:bold;letter-spacing:.1em;padding:2px 8px;border-radius:3px;background:rgba(255,51,85,.2);border:1px solid #ff3355;color:#ff7a8a}
+  .ls3-nh-title{font-size:12.5px;font-weight:bold;color:#fff;letter-spacing:.08em;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ls3-nh-channels{display:flex;align-items:center;gap:6px;margin:0 12px;overflow-x:auto;max-width:440px}
+  .ls3-channel-tab{background:rgba(8,28,44,.75);border:1px solid rgba(56,189,248,.4);border-radius:3px;color:#7dd3fc;padding:3px 8px;font-size:10px;font-weight:bold;cursor:pointer;white-space:nowrap;transition:all .15s}
+  .ls3-channel-tab:hover{background:rgba(0,240,255,.25);border-color:#00f0ff;color:#fff}
+  .ls3-channel-tab.active{background:rgba(0,240,255,.35);border-color:#00f0ff;color:#fff;box-shadow:0 0 10px rgba(0,240,255,.4)}
+  .ls3-nh-right{display:flex;align-items:center;gap:12px}
+  .ls3-nh-coords{font-size:11px;color:#7dd3fc;letter-spacing:.05em}
+  .ls3-nh-close{background:rgba(255,51,85,.15);border:1px solid #ff3355;color:#ff99aa;border-radius:4px;padding:4px 12px;font-family:inherit;font-size:11px;font-weight:bold;cursor:pointer;transition:all .15s}
+  .ls3-nh-close:hover{background:#ff3355;color:#04101a;box-shadow:0 0 15px rgba(255,51,85,.6)}
+
+  /* Left & Right Sci-Fi Floating Wings (Formed by rays -> exact light border -> morphs into holographic display) */
+  #ls3-news-left,#ls3-news-right{
+    position:fixed;
+    top:50%;
+    transform:translateY(-48%) scale(calc(0.93 + 0.07 * var(--holo-border-opacity, 0)));
+    width:clamp(300px,33vw,490px);
+    height:clamp(360px,58vh,520px);
+    background:rgba(3,14,26,calc(0.75 * var(--holo-disp-opacity, 0)));
+    backdrop-filter:blur(calc(8px * var(--holo-disp-opacity, 0)));
+    -webkit-backdrop-filter:blur(calc(8px * var(--holo-disp-opacity, 0)));
+    border:2px solid rgba(0,240,255,calc(var(--holo-border-opacity, 0)));
+    border-radius:6px;
+    box-shadow:0 0 calc(32px * var(--holo-border-opacity, 0)) rgba(0,240,255,calc(0.55 * var(--holo-border-opacity, 0))),inset 0 0 calc(16px * var(--holo-border-opacity, 0)) rgba(0,240,255,calc(0.25 * var(--holo-border-opacity, 0)));
+    display:flex;
+    flex-direction:column;
+    pointer-events:auto;
+    overflow:hidden;
+    opacity:var(--holo-border-opacity, 0);
+    transition:opacity .12s linear, transform .15s ease-out;
+    animation:holoFlicker 7s infinite ease-in-out;
+    z-index:99996;
+  }
+  #ls3-news-left{left:2.5vw}
+  #ls3-news-right{right:2.5vw}
+  @media(max-width:860px){
+    #ls3-news-left,#ls3-news-right{position:fixed;left:12px;right:12px;width:calc(100vw - 24px);transform:none}
+    #ls3-news-left{top:60px;height:38vh}
+    #ls3-news-right{top:calc(60px + 39vh);height:42vh}
+  }
+
+  /* Hologram Corner Brackets */
+  .ls3-holo-bracket{position:absolute;width:12px;height:12px;border-color:#00f0ff;border-style:solid;pointer-events:none;z-index:5}
+  .ls3-holo-bracket.tl{top:2px;left:2px;border-width:2px 0 0 2px}
+  .ls3-holo-bracket.tr{top:2px;right:2px;border-width:2px 2px 0 0}
+  .ls3-holo-bracket.bl{bottom:2px;left:2px;border-width:0 0 2px 2px}
+  .ls3-holo-bracket.br{bottom:2px;right:2px;border-width:0 2px 2px 0}
+
+  /* Interior Display Content (Morphs in during Stage 3) */
+  #ls3-news-left .ls3-screen-bar,
+  #ls3-news-left .ls3-video-container,
+  #ls3-news-left .ls3-video-footer,
+  #ls3-news-right .ls3-screen-bar,
+  #ls3-news-right .ls3-dispatch-body {
+    opacity: var(--holo-disp-opacity, 0);
+    transition: opacity .18s ease-out;
+  }
+
+  .ls3-screen-bar{display:flex;justify-content:space-between;align-items:center;background:rgba(8,28,46,.85);border-bottom:1px solid rgba(56,189,248,.3);padding:6px 12px;font-size:10px;font-weight:bold;letter-spacing:.08em;color:#7dd3fc}
+  .ls3-screen-status{color:#38bdf8;font-size:9.5px}
+  .ls3-video-container{position:relative;flex:1;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .ls3-video-container video{width:100%;height:100%;object-fit:cover;display:none;background:#000}
+  .ls3-video-container iframe{width:100%;height:100%;border:none;display:none}
+  .ls3-video-scanline{position:absolute;inset:0;background:repeating-linear-gradient(to bottom,transparent 0px,transparent 3px,rgba(0,240,255,.03) 4px);pointer-events:none}
+  
+  .ls3-live-hud-badge{
+    position:absolute;
+    top:10px;
+    left:10px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:rgba(4,16,28,.85);
+    border:1px solid #00f0ff;
+    border-radius:3px;
+    padding:3px 8px;
+    font-size:9.5px;
+    font-weight:bold;
+    letter-spacing:.08em;
+    color:#00f0ff;
+    box-shadow:0 0 10px rgba(0,240,255,.3);
+    pointer-events:none;
+    z-index:10;
+  }
+  .ls3-live-pulse-dot{
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:#ff3355;
+    box-shadow:0 0 8px #ff3355;
+    animation:ls3Pulse 1.2s infinite;
+  }
+  .ls3-video-action-bar{
+    position:absolute;
+    bottom:8px;
+    right:10px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    z-index:10;
+  }
+  .ls3-hud-ctrl-btn{
+    background:rgba(4,20,32,.85);
+    border:1px solid rgba(56,189,248,.5);
+    border-radius:3px;
+    color:#7dd3fc;
+    padding:3px 8px;
+    font-family:inherit;
+    font-size:9.5px;
+    font-weight:bold;
+    letter-spacing:.05em;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .ls3-hud-ctrl-btn:hover{
+    background:#00f0ff;
+    border-color:#00f0ff;
+    color:#04101a;
+    box-shadow:0 0 12px rgba(0,240,255,.6);
+  }
+
+  .ls3-video-footer{padding:6px 12px;background:rgba(4,16,28,.9);border-top:1px solid rgba(56,189,248,.2);font-size:9.5px;color:#5fb3cc}
+  .ls3-dispatch-body{padding:12px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1}
+  .ls3-dispatch-header{border-bottom:1px solid rgba(56,189,248,.25);padding-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+  .ls3-dispatch-title{font-size:12px;color:#fff;margin:0;font-weight:bold;letter-spacing:.06em}
+  .ls3-dispatch-time{font-size:9.5px;color:#38bdf8}
+  .ls3-bulletin-label{font-size:10px;font-weight:bold;color:#7dd3fc;letter-spacing:.08em;margin-bottom:4px}
+  .ls3-bulletin-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .ls3-bulletin-list li{background:rgba(8,26,42,.6);border-left:3px solid #00f0ff;padding:6px 8px;font-size:10px;line-height:1.4;color:#cbf5ff;letter-spacing:.02em}
+  .ls3-dispatch-actions{margin-top:auto;padding-top:8px;display:flex;justify-content:flex-end}
+  .ls3-btn-action{background:rgba(0,240,255,.18);border:1.5px solid #00f0ff;color:#fff;border-radius:4px;padding:7px 14px;font-size:10.5px;font-weight:bold;letter-spacing:.08em;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:all .18s;box-shadow:0 0 14px rgba(0,240,255,.25)}
+  .ls3-btn-action:hover{background:#00f0ff;color:#04101a;box-shadow:0 0 25px rgba(0,240,255,.6)}
+  body:has(#ls3-news-holo.active) #btn-skip-anim {
+    display: none !important;
+  }
 </style>
 </head>
 <body>
+<button id="btn-skip-anim" title="Skip intro and jump directly to final illuminated state">⏩ SKIP ANIMATION (DEBUG)</button>
+<div id="blueprint-hud">
+  <a id="blueprint-gh-link" href="#" target="_blank" rel="noopener noreferrer">
+    <span id="blueprint-gh-text">↗ OPEN REPOSITORY ON GITHUB</span>
+  </a>
+  <button id="blueprint-close-btn" title="Close Blueprint (Esc)">✕ CLOSE</button>
+</div>
+
+<!-- LS3 FOCUSED BOTTOM TASKBAR -->
+<div id="ls3-taskbar">
+  <div class="ls3-tb-header">
+    <div class="ls3-tb-title">
+      <span class="ls3-tb-dot"></span>
+      <span class="ls3-tb-badge">LS3 GODS-EYE RECON</span>
+      <span id="ls3-tb-target-name">GLOBAL INTELLIGENCE NETWORK</span>
+    </div>
+    <div class="ls3-tb-ctrls">
+      <span id="ls3-tb-zoom-level">ZOOM: 1.0x</span>
+      <button id="ls3-tb-zoom-out" class="ls3-btn-small" title="Zoom Out">[-] ZOOM</button>
+      <button id="ls3-tb-zoom-in" class="ls3-btn-small" title="Zoom In">[+] ZOOM</button>
+      <button id="ls3-tb-retract-btn" class="ls3-btn-retract" title="Retract to pedestal">▼ DOCK / RETRACT</button>
+    </div>
+  </div>
+  <div class="ls3-tb-modes">
+    <button class="ls3-mode-btn active" data-mode="SURFACE">[1] SURFACE (SEISMIC)</button>
+    <button class="ls3-mode-btn" data-mode="ORBITAL">[2] ORBITAL (ISS)</button>
+    <button class="ls3-mode-btn" data-mode="AIRSPACE">[3] AIRSPACE (FLIGHTS)</button>
+    <button class="ls3-mode-btn" data-mode="NEWS">[4] GLOBAL LIVE NEWS</button>
+  </div>
+  <div class="ls3-tb-row">
+    <div class="ls3-tb-presets">
+      <span class="ls3-tb-label">PRESETS:</span>
+      <button class="ls3-preset-btn" data-preset="ATX">ATX</button>
+      <button class="ls3-preset-btn" data-preset="SFO">SFO</button>
+      <button class="ls3-preset-btn" data-preset="NYC">NYC</button>
+      <button class="ls3-preset-btn" data-preset="LON">LON</button>
+      <button class="ls3-preset-btn" data-preset="TYO">TYO</button>
+      <button class="ls3-preset-btn" data-preset="GPS">GPS</button>
+      <button class="ls3-preset-btn" data-preset="ISS">ISS</button>
+    </div>
+    <div id="ls3-tb-telemetry-text" class="ls3-tb-telemetry">
+      SYNCHRONIZING TELEMETRY STREAMS...
+    </div>
+  </div>
+</div>
+
+<!-- LS3 DUAL HOLOGRAPHIC NEWS DISPLAY WINGS -->
+<div id="ls3-news-holo">
+  <div id="ls3-news-header">
+    <div class="ls3-nh-left">
+      <span class="ls3-nh-pulse"></span>
+      <span id="ls3-nh-badge" class="ls3-nh-badge">● LIVE BROADCAST</span>
+      <span id="ls3-nh-title" class="ls3-nh-title">SKY NEWS LIVE // UNITED KINGDOM · LONDON</span>
+    </div>
+    <div id="ls3-nh-channels" class="ls3-nh-channels">
+      <!-- Dynamically populated with 2-5 channels for the country -->
+    </div>
+    <div class="ls3-nh-right">
+      <span id="ls3-nh-coords" class="ls3-nh-coords">51.51°N, 0.13°W</span>
+      <button id="ls3-nh-close-btn" class="ls3-nh-close" title="Close news uplink (Esc)">✕ CLOSE UPLINK</button>
+    </div>
+  </div>
+
+  <!-- Left Hologram Wing: Live English Video Stream -->
+  <div id="ls3-news-left">
+    <span class="ls3-holo-bracket tl"></span><span class="ls3-holo-bracket tr"></span>
+    <span class="ls3-holo-bracket bl"></span><span class="ls3-holo-bracket br"></span>
+    <div class="ls3-screen-bar">
+      <span class="ls3-screen-tag">LEFT BASE // LIVE ENGLISH STREAM</span>
+      <span class="ls3-screen-status">1080P HD · 60FPS</span>
+    </div>
+    <div class="ls3-video-container">
+      <video id="ls3-news-video" playsinline muted autoplay controls style="width:100%;height:100%;object-fit:cover;display:none;background:#000;"></video>
+      <iframe id="ls3-news-iframe" src="" title="Live News Video Stream" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width:100%;height:100%;border:none;display:none;"></iframe>
+      <div class="ls3-video-scanline"></div>
+      <div class="ls3-live-hud-badge">
+        <span class="ls3-live-pulse-dot"></span>
+        <span class="ls3-live-badge-text">● 24/7 LIVE STREAM</span>
+      </div>
+      <div class="ls3-video-action-bar">
+        <button id="ls3-btn-audio-toggle" class="ls3-hud-ctrl-btn" title="Toggle audio mute/unmute">🔊 UNMUTE</button>
+        <button id="ls3-btn-sync-live" class="ls3-hud-ctrl-btn" title="Synchronize to live edge">⚡ LIVE SYNC</button>
+        <button id="ls3-btn-fullscreen" class="ls3-hud-ctrl-btn" title="Toggle fullscreen view">⛶ EXPAND</button>
+      </div>
+    </div>
+    <div class="ls3-video-footer">
+      <span class="ls3-audio-hint">ℹ LIVE STREAM · HOVER / CLICK CONTROLS FOR AUDIO</span>
+    </div>
+  </div>
+
+  <!-- Right Hologram Wing: Live News Web Dispatch & Site -->
+  <div id="ls3-news-right">
+    <span class="ls3-holo-bracket tl"></span><span class="ls3-holo-bracket tr"></span>
+    <span class="ls3-holo-bracket bl"></span><span class="ls3-holo-bracket br"></span>
+    <div class="ls3-screen-bar">
+      <span class="ls3-screen-tag">RIGHT BASE // WEB DISPATCH & WIRE</span>
+      <span id="ls3-news-station-network" class="ls3-screen-status">INTERNATIONAL WIRE SERVICE</span>
+    </div>
+    <div class="ls3-dispatch-body">
+      <div class="ls3-dispatch-header">
+        <h3 id="ls3-news-headline-lead" class="ls3-dispatch-title">BREAKING DISPATCH</h3>
+        <span id="ls3-news-timestamp" class="ls3-dispatch-time">JUST NOW</span>
+      </div>
+      <div class="ls3-dispatch-bulletins">
+        <div class="ls3-bulletin-label">REAL-TIME BULLETIN WIRE:</div>
+        <ul id="ls3-news-bulletin-list" class="ls3-bulletin-list">
+          <!-- Dynamically populated -->
+        </ul>
+      </div>
+      <div class="ls3-dispatch-actions">
+        <a id="ls3-news-site-link" href="#" target="_blank" rel="noopener noreferrer" class="ls3-btn-action">
+          ↗ OPEN OFFICIAL LIVE NEWS PAGE
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="load"><div id="lt">INITIALIZING</div><div id="bar-wrap"><div id="bar"></div></div></div>
 <div id="dbg"></div>
 <div id="hint">SCROLL / DRAG UP TO APPROACH · MOVE MOUSE TO LOOK · CLICK PANEL</div>
 <canvas id="c"></canvas>
 
+<script>
+window.__skipToFinalRequested = false;
+window.triggerSkipAnimation = function() {
+  window.__skipToFinalRequested = true;
+  const btn = document.getElementById('btn-skip-anim');
+  if (btn) btn.style.display = 'none';
+  if (window.VAULT?.skipCinematic) window.VAULT.skipCinematic();
+  if (window.__lab?.skipToFinal) {
+    window.__lab.skipToFinal();
+  } else {
+    window.dispatchEvent(new CustomEvent('vault:entered'));
+    const iv = setInterval(() => {
+      if (window.__lab?.skipToFinal) {
+        window.__lab.skipToFinal();
+        clearInterval(iv);
+      }
+    }, 25);
+    setTimeout(() => clearInterval(iv), 6000);
+  }
+};
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('btn-skip-anim')?.addEventListener('click', window.triggerSkipAnimation);
+});
+</script>
+
+<script src="public/vendor/pdf-lib.min.js"></script>
 <script type="importmap">
 { "imports": {
     "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
@@ -43,7 +410,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 /* ═══ 0. QUALITY TIER ═══ */
 const ua=navigator.userAgent;
 const LOW=(navigator.deviceMemory&&navigator.deviceMemory<=4)||(navigator.hardwareConcurrency||4)<=2||/Android|iPhone|iPad/i.test(ua);
-const dprCap = LOW ? 1.5 : 2.0;
+const dprCap = LOW ? 1.0 : 1.25;
 const dpr = Math.min(window.devicePixelRatio || 1, dprCap);
 const Q={radial:LOW?40:64,along:LOW?48:96,shadows:!LOW,shadowMap:LOW?512:1024,dpr,
          dust:LOW?150:400,rockTex:LOW?512:768,metalTex:512,pebbles:LOW?140:320};
@@ -266,7 +633,7 @@ const mist = buildMist({ scene, LOW, warmSource: { x: SRC.x, z: SRC.z },
 
 /* ═══ 6. POST: bloom → tonemap → teal/orange grade + chromatic aberration + grain + vignette ═══ */
 const composer=new EffectComposer(renderer); composer.addPass(new RenderPass(scene,camera));
-const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.45,.6,.82); composer.addPass(bloom); composer.addPass(new OutputPass());
+const bloom=new UnrealBloomPass(new THREE.Vector2(Math.round(innerWidth/2),Math.round(innerHeight/2)),.45,.6,.82); composer.addPass(bloom); composer.addPass(new OutputPass());
 const grade=new ShaderPass({uniforms:{tDiffuse:{value:null},uT:{value:0},uRes:{value:new THREE.Vector2()}},
   vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
   fragmentShader:`uniform sampler2D tDiffuse;uniform float uT;uniform vec2 uRes;varying vec2 vUv;
@@ -367,6 +734,7 @@ const dbg=document.getElementById('dbg'), hint=document.getElementById('hint');
 document.getElementById('load')?.remove(); setTimeout(()=>hint.style.opacity=.8,600);
 let lastT=performance.now(), fps=60, fpsAcc=0, fpsN=0, lastScreen=0;
 function frame(nowMs = performance.now()){
+  window.__frameCount = (window.__frameCount || 0) + 1;
   const dt=Math.min((nowMs-lastT)/1000,.1); lastT=nowMs; const t=nowMs/1000;
   if (!window.__lab?.state?.active) {
     walk.t += (walk.target - walk.t) * (1 - Math.exp(-dt * 3.8));
@@ -396,9 +764,370 @@ const {applyRealism}=await import('./realism.js');
 window.VAULT.realism=await applyRealism({scene,renderer,camera,composer,LOW,METAL,
   rockMats:[rockCave,rockF,rockWall,rockFloor],metalMats:[gun,gunD,tit],door});
 const {installDoorSequence}=await import('./transition.js');
-window.VAULT.cinematic=installDoorSequence({scene,camera,composer,door,walk,look,canvas,DOOR_Y,DOOR_Z}).cinematic;
+const doorSeq=installDoorSequence({scene,camera,composer,door,walk,look,canvas,DOOR_Y,DOOR_Z});
+window.VAULT.cinematic=doorSeq.cinematic;
+window.VAULT.skipCinematic=doorSeq.skip;
+
+if (window.__skipToFinalRequested) {
+  doorSeq.skip();
+  table.skipToFinal();
+}
+
+document.getElementById('btn-skip-anim')?.addEventListener('click', () => {
+  window.triggerSkipAnimation?.();
+});
+
+window.addEventListener('lab:blueprint:read', e => {
+  const hud = document.getElementById('blueprint-hud');
+  const link = document.getElementById('blueprint-gh-link');
+  const text = document.getElementById('blueprint-gh-text');
+  if (hud && link && text) {
+    link.href = e.detail.url;
+    const repoName = e.detail.project?.repo_full || e.detail.project?.title || 'REPOSITORY';
+    text.textContent = `↗ OPEN ${repoName.toUpperCase()} ON GITHUB`;
+    hud.style.display = 'flex';
+  }
+});
+
+window.addEventListener('lab:blueprint:unread', () => {
+  const hud = document.getElementById('blueprint-hud');
+  if (hud) hud.style.display = 'none';
+});
+
+document.getElementById('blueprint-close-btn')?.addEventListener('click', () => {
+  window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+});
+
+// ─── LS3 FOCUSED BOTTOM TASKBAR SYNC ───
+const ls3Tb = document.getElementById('ls3-taskbar');
+const ls3TbTargetName = document.getElementById('ls3-tb-target-name');
+const ls3TbZoomLevel = document.getElementById('ls3-tb-zoom-level');
+const ls3TbTelemetry = document.getElementById('ls3-tb-telemetry-text');
+const ls3ModeBtns = document.querySelectorAll('.ls3-mode-btn');
+const ls3PresetBtns = document.querySelectorAll('.ls3-preset-btn');
+
+// Isolate pointer & click propagation on bottom taskbar
+ls3Tb?.addEventListener('pointerdown', e => e.stopPropagation());
+ls3Tb?.addEventListener('click', e => e.stopPropagation());
+
+window.addEventListener('lab:ls3:taskbar:open', () => {
+  if (ls3Tb) ls3Tb.classList.add('active');
+});
+
+window.addEventListener('lab:ls3:taskbar:close', () => {
+  if (ls3Tb) ls3Tb.classList.remove('active');
+});
+
+window.addEventListener('lab:ls3:taskbar:update', e => {
+  const d = e.detail;
+  if (!d) return;
+  if (ls3TbTargetName && d.targetName) ls3TbTargetName.textContent = d.targetName;
+  if (ls3TbZoomLevel && d.zoom != null) ls3TbZoomLevel.textContent = `ZOOM: ${d.zoom.toFixed(1)}x`;
+  if (ls3TbTelemetry && d.telemetry) ls3TbTelemetry.textContent = d.telemetry;
+  if (d.mode) {
+    ls3ModeBtns.forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-mode') === d.mode);
+    });
+  }
+  if (d.activePreset) {
+    ls3PresetBtns.forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-preset') === d.activePreset);
+    });
+  }
+});
+
+document.getElementById('ls3-tb-retract-btn')?.addEventListener('click', e => {
+  e.stopPropagation();
+  window.dispatchEvent(new CustomEvent('lab:ls3:taskbar:retract'));
+});
+
+document.getElementById('ls3-tb-zoom-in')?.addEventListener('click', e => {
+  e.stopPropagation();
+  window.dispatchEvent(new CustomEvent('lab:ls3:action', { detail: { action: 'zoom', factor: 1.25 } }));
+});
+
+document.getElementById('ls3-tb-zoom-out')?.addEventListener('click', e => {
+  e.stopPropagation();
+  window.dispatchEvent(new CustomEvent('lab:ls3:action', { detail: { action: 'zoom', factor: 0.8 } }));
+});
+
+ls3ModeBtns.forEach(btn => {
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const mode = btn.getAttribute('data-mode');
+    if (mode) window.dispatchEvent(new CustomEvent('lab:ls3:action', { detail: { action: 'mode', mode } }));
+  });
+});
+
+ls3PresetBtns.forEach(btn => {
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const preset = btn.getAttribute('data-preset');
+    if (preset) window.dispatchEvent(new CustomEvent('lab:ls3:action', { detail: { action: 'preset', preset } }));
+  });
+});
+
+// ─── LS3 DUAL HOLOGRAPHIC NEWS DISPLAY SYNC ───
+const ls3NewsHolo = document.getElementById('ls3-news-holo');
+const ls3NewsVideo = document.getElementById('ls3-news-video');
+const ls3NewsIframe = document.getElementById('ls3-news-iframe');
+const ls3NewsTitle = document.getElementById('ls3-nh-title');
+const ls3NewsBadge = document.getElementById('ls3-nh-badge');
+const ls3NewsCoords = document.getElementById('ls3-nh-coords');
+const ls3NewsChannels = document.getElementById('ls3-nh-channels');
+const ls3NewsStationNet = document.getElementById('ls3-news-station-network');
+const ls3NewsHeadlineLead = document.getElementById('ls3-news-headline-lead');
+const ls3NewsTimestamp = document.getElementById('ls3-news-timestamp');
+const ls3NewsBulletins = document.getElementById('ls3-news-bulletin-list');
+const ls3NewsSiteLink = document.getElementById('ls3-news-site-link');
+
+let activeHls = null;
+
+function playNewsStream(c) {
+  if (!c) return;
+  if (activeHls) {
+    activeHls.destroy();
+    activeHls = null;
+  }
+  if (ls3NewsVideo) {
+    ls3NewsVideo.pause();
+    ls3NewsVideo.removeAttribute('src');
+    ls3NewsVideo.load();
+    ls3NewsVideo.style.display = 'none';
+  }
+  if (ls3NewsIframe) {
+    ls3NewsIframe.src = 'about:blank';
+    ls3NewsIframe.style.display = 'none';
+  }
+
+  const url = c.streamUrl || '';
+  const isHls = c.streamType === 'hls' || url.includes('.m3u8') || url.includes('/playlist') || url.includes('/master');
+
+  if (isHls && url && ls3NewsVideo) {
+    ls3NewsVideo.style.display = 'block';
+    if (window.Hls && window.Hls.isSupported()) {
+      activeHls = new window.Hls({
+        enableWorker: true,
+        lowLatencyMode: true,
+        backBufferLength: 60,
+        liveSyncDurationCount: 3,
+        liveMaxLatencyDurationCount: 6,
+        maxLiveSyncPlaybackRate: 1.0
+      });
+      activeHls.loadSource(url);
+      activeHls.attachMedia(ls3NewsVideo);
+      activeHls.on(window.Hls.Events.MANIFEST_PARSED, () => {
+        ls3NewsVideo.muted = true;
+        ls3NewsVideo.play().catch(() => {});
+      });
+      const muteBtn = document.getElementById('ls3-btn-audio-toggle');
+      if (muteBtn) muteBtn.textContent = '🔊 UNMUTE';
+      activeHls.on(window.Hls.Events.ERROR, (evt, data) => {
+        if (data.fatal) {
+          switch (data.type) {
+            case window.Hls.ErrorTypes.NETWORK_ERROR:
+              activeHls.startLoad();
+              break;
+            case window.Hls.ErrorTypes.MEDIA_ERROR:
+              activeHls.recoverMediaError();
+              break;
+            default:
+              activeHls.destroy();
+              break;
+          }
+        }
+      });
+    } else if (ls3NewsVideo.canPlayType('application/vnd.apple.mpegurl')) {
+      ls3NewsVideo.src = url;
+      ls3NewsVideo.muted = true;
+      ls3NewsVideo.play().catch(() => {});
+    }
+  } else if (url && ls3NewsIframe) {
+    ls3NewsIframe.style.display = 'block';
+    ls3NewsIframe.src = url;
+  }
+}
+
+// Isolate pointer & click propagation on holographic displays
+ls3NewsHolo?.addEventListener('pointerdown', e => e.stopPropagation());
+ls3NewsHolo?.addEventListener('click', e => e.stopPropagation());
+
+window.addEventListener('lab:ls3:news:progress', e => {
+  const bp = e.detail?.borderProgress ?? 0;
+  const dp = e.detail?.displayProgress ?? 0;
+  if (ls3NewsHolo) {
+    ls3NewsHolo.style.setProperty('--holo-border-opacity', bp.toFixed(3));
+    ls3NewsHolo.style.setProperty('--holo-disp-opacity', dp.toFixed(3));
+    if (bp > 0.05) {
+      ls3NewsHolo.style.pointerEvents = 'auto';
+    } else {
+      ls3NewsHolo.style.pointerEvents = 'none';
+    }
+  }
+});
+
+// Live Video Player HUD Controls
+document.getElementById('ls3-btn-audio-toggle')?.addEventListener('click', e => {
+  e.stopPropagation();
+  if (!ls3NewsVideo) return;
+  ls3NewsVideo.muted = !ls3NewsVideo.muted;
+  const btn = document.getElementById('ls3-btn-audio-toggle');
+  if (btn) btn.textContent = ls3NewsVideo.muted ? '🔊 UNMUTE' : '🔇 MUTE';
+});
+
+document.getElementById('ls3-btn-sync-live')?.addEventListener('click', e => {
+  e.stopPropagation();
+  if (activeHls && activeHls.liveSyncPosition) {
+    ls3NewsVideo.currentTime = activeHls.liveSyncPosition;
+  }
+  ls3NewsVideo?.play().catch(() => {});
+});
+
+document.getElementById('ls3-btn-fullscreen')?.addEventListener('click', e => {
+  e.stopPropagation();
+  const vContainer = document.querySelector('.ls3-video-container');
+  if (!vContainer) return;
+  if (!document.fullscreenElement) {
+    vContainer.requestFullscreen?.().catch(() => {});
+  } else {
+    document.exitFullscreen?.().catch(() => {});
+  }
+});
+
+window.addEventListener('lab:ls3:news:open', e => {
+  const c = e.detail?.channel;
+  if (!c || !ls3NewsHolo) return;
+  if (ls3NewsTitle) ls3NewsTitle.textContent = `${c.name.toUpperCase()} // ${c.country.toUpperCase()} · ${c.city.toUpperCase()}`;
+  if (ls3NewsBadge) {
+    ls3NewsBadge.textContent = `● ${c.intensity} BROADCAST`;
+    ls3NewsBadge.style.color = c.color;
+    ls3NewsBadge.style.borderColor = c.color;
+  }
+  if (ls3NewsCoords) {
+    const latStr = `${Math.abs(c.lat).toFixed(2)}°${c.lat >= 0 ? 'N' : 'S'}`;
+    const lonStr = `${Math.abs(c.lon).toFixed(2)}°${c.lon >= 0 ? 'E' : 'W'}`;
+    ls3NewsCoords.textContent = `${latStr}, ${lonStr}`;
+  }
+  if (ls3NewsStationNet) ls3NewsStationNet.textContent = c.network.toUpperCase();
+  if (ls3NewsHeadlineLead) ls3NewsHeadlineLead.textContent = c.headlines?.[0] || 'LIVE BREAKING BULLETIN DISPATCH';
+  if (ls3NewsTimestamp) ls3NewsTimestamp.textContent = new Date().toLocaleTimeString();
+  if (ls3NewsSiteLink) ls3NewsSiteLink.href = c.siteUrl || '#';
+  if (ls3NewsBulletins) {
+    ls3NewsBulletins.innerHTML = (c.headlines || [])
+      .map(h => `<li>${h}</li>`)
+      .join('');
+  }
+
+  // Play stream via HLS or Embed
+  playNewsStream(c);
+
+  // Populate 2-5 channels tabs for this country
+  const countryChannels = e.detail?.channels || [c];
+  if (ls3NewsChannels) {
+    ls3NewsChannels.innerHTML = countryChannels.map(ch => {
+      const shortName = ch.name.replace(/ Live| News| World| 24x7| English| NOW/gi, '').trim() || ch.name;
+      return `<button class="ls3-channel-tab ${ch.id === c.id ? 'active' : ''}" data-channel-id="${ch.id}" title="${ch.name} (${ch.city})">${shortName}</button>`;
+    }).join('');
+
+    ls3NewsChannels.querySelectorAll('.ls3-channel-tab').forEach(btn => {
+      btn.addEventListener('click', ev => {
+        ev.stopPropagation();
+        const chId = btn.getAttribute('data-channel-id');
+        if (chId) {
+          window.dispatchEvent(new CustomEvent('lab:ls3:channel:select', { detail: { channelId: chId } }));
+          const nextCh = countryChannels.find(ch => ch.id === chId);
+          if (nextCh) {
+            ls3NewsChannels.querySelectorAll('.ls3-channel-tab').forEach(b => b.classList.toggle('active', b === btn));
+            if (ls3NewsTitle) ls3NewsTitle.textContent = `${nextCh.name.toUpperCase()} // ${nextCh.country.toUpperCase()} · ${nextCh.city.toUpperCase()}`;
+            if (ls3NewsStationNet) ls3NewsStationNet.textContent = nextCh.network.toUpperCase();
+            if (ls3NewsHeadlineLead) ls3NewsHeadlineLead.textContent = nextCh.headlines?.[0] || 'LIVE BULLETIN';
+            if (ls3NewsSiteLink) ls3NewsSiteLink.href = nextCh.siteUrl || '#';
+            if (ls3NewsBulletins) {
+              ls3NewsBulletins.innerHTML = (nextCh.headlines || []).map(h => `<li>${h}</li>`).join('');
+            }
+            playNewsStream(nextCh);
+          }
+        }
+      });
+    });
+  }
+
+  // Display starts hidden while rays shoot out, then forms dynamically via lab:ls3:news:progress
+  ls3NewsHolo.style.setProperty('--holo-border-opacity', '0');
+  ls3NewsHolo.style.setProperty('--holo-disp-opacity', '0');
+  ls3NewsHolo.classList.add('active');
+});
+
+function closeLS3NewsHolo() {
+  if (!ls3NewsHolo) return;
+  ls3NewsHolo.classList.remove('active');
+  ls3NewsHolo.style.setProperty('--holo-border-opacity', '0');
+  ls3NewsHolo.style.setProperty('--holo-disp-opacity', '0');
+  if (activeHls) {
+    activeHls.destroy();
+    activeHls = null;
+  }
+  if (ls3NewsVideo) {
+    ls3NewsVideo.pause();
+    ls3NewsVideo.removeAttribute('src');
+    ls3NewsVideo.load();
+    ls3NewsVideo.style.display = 'none';
+  }
+  if (ls3NewsIframe) {
+    ls3NewsIframe.src = 'about:blank';
+    ls3NewsIframe.style.display = 'none';
+  }
+  window.dispatchEvent(new CustomEvent('lab:ls3:news:retract'));
+}
+
+document.getElementById('ls3-nh-close-btn')?.addEventListener('click', e => {
+  e.stopPropagation();
+  closeLS3NewsHolo();
+});
+
+window.addEventListener('lab:ls3:news:close', () => {
+  if (ls3NewsHolo) {
+    ls3NewsHolo.classList.remove('active');
+    ls3NewsHolo.style.setProperty('--holo-border-opacity', '0');
+    ls3NewsHolo.style.setProperty('--holo-disp-opacity', '0');
+  }
+  if (activeHls) {
+    activeHls.destroy();
+    activeHls = null;
+  }
+  if (ls3NewsVideo) {
+    ls3NewsVideo.pause();
+    ls3NewsVideo.removeAttribute('src');
+    ls3NewsVideo.load();
+    ls3NewsVideo.style.display = 'none';
+  }
+  if (ls3NewsIframe) {
+    ls3NewsIframe.src = 'about:blank';
+    ls3NewsIframe.style.display = 'none';
+  }
+});
+
+// Click outside or press escape
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (ls3NewsHolo?.classList.contains('active')) {
+      closeLS3NewsHolo();
+      e.stopPropagation();
+    } else if (ls3Tb?.classList.contains('active')) {
+      window.dispatchEvent(new CustomEvent('lab:ls3:taskbar:retract'));
+      e.stopPropagation();
+    }
+  }
+});
+
 addEventListener('lab:activated', () => {
+  const btn = document.getElementById('btn-skip-anim');
+  if (btn) btn.style.display = 'none';
   if (window.VAULT) window.VAULT.sceneMode = 'table';
-  for (const p of composer.passes) { if (p.uniforms?.uFade) p.enabled = false; }
+  renderer.shadowMap.autoUpdate = false;
+  for (const p of composer.passes) {
+    if (p.uniforms?.uFade) p.enabled = false;
+    if (p.constructor.name === 'GTAOPass') p.enabled = false;
+  }
 });
 </script></body></html>

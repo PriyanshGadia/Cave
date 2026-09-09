@@ -23,7 +23,9 @@ async function main() {
     consoleMessages.push({ type, text });
     console.log(`[BROWSER ${type.toUpperCase()}]: ${text}`);
     if (type === 'warning' || type === 'error' || text.toLowerCase().includes('webgl') || text.toLowerCase().includes('warn')) {
-      webglWarnings.push(`[${type}] ${text}`);
+      if (!text.includes('Failed to load resource') && !text.includes('favicon')) {
+        webglWarnings.push(`[${type}] ${text}`);
+      }
     }
   });
 
@@ -33,8 +35,9 @@ async function main() {
   });
 
   try {
-    console.log('Navigating to http://localhost:8000/index.html ...');
-    await page.goto('http://localhost:8000/index.html', { waitUntil: 'load', timeout: 30000 });
+    const port = process.env.PORT || '3000';
+    console.log(`Navigating to http://localhost:${port}/index.html ...`);
+    await page.goto(`http://localhost:${port}/index.html`, { waitUntil: 'load', timeout: 30000 });
 
     console.log('Waiting for procedural compilation to complete (#load removed)...');
     await page.waitForSelector('#load', { state: 'detached', timeout: 30000 });
@@ -68,8 +71,8 @@ async function main() {
       }, consoleMessages);
     };
 
-    console.log('Waiting for FPS accumulator (4.5s)...');
-    await page.waitForTimeout(4500);
+    console.log('Waiting for FPS accumulator to reach steady state (6.5s)...');
+    await page.waitForTimeout(6500);
     await updateConsoleAudit();
 
     const outDir = path.resolve(process.cwd(), 'public', 'screenshots');

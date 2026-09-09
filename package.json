@@ -18,6 +18,7 @@
     "gsap": "^3.12.7",
     "lenis": "^1.1.20",
     "lucide-react": "^1.16.0",
+    "pdf-lib": "^1.17.1",
     "postprocessing": "^6.39.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

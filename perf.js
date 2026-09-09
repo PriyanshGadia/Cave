@@ -49,9 +49,9 @@ export function installPerfGovernor({ renderer, composer, camera, bloom, grade, 
     tick(dt) {
       acc += dt; n++; cooldown -= dt; if (acc < 1.5 || cooldown > 0) return;
       const fps = n / acc; acc = 0; n = 0;
-      if (fps < 24 && scale > minScale) { scale = Math.max(minScale, scale - .08); applySize(); cooldown = 2; }
-      else if (fps < 30 && bloom?.enabled) { bloom.enabled = false; cooldown = 2; }
-      else if (fps > 42 && scale < maxScale) { scale = Math.min(maxScale, scale + .05); applySize(); cooldown = 3; }
+      if (fps < 30 && scale > minScale) { scale = Math.max(minScale, scale - .08); applySize(); cooldown = 1.5; }
+      else if (fps < 38 && bloom?.enabled) { bloom.enabled = false; cooldown = 2; }
+      else if (fps > 55 && scale < maxScale) { scale = Math.min(maxScale, scale + .06); applySize(); cooldown = 2; }
     }, get scale() { return scale; },
     applySize
   };

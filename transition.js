@@ -60,7 +60,12 @@ export function installDoorSequence({scene,camera,composer,door,walk,look,canvas
     rumble(a+TL.rise[0]-.2,TL.rise[1]-TL.rise[0]+1.2,.45); clunk(a+TL.rise[1]+.1,.7); drone(a+TL.push[0],TL.black[1]-TL.push[0]+3,.1); hiss(a+TL.push[0]+1.5,2.5,.06); }
   addEventListener('vault:granted',begin,{once:true});
 
-  function cinematic(dt){ if(T<0) return; T+=dt;
+  function cinematic(dt){
+    if (T < 0 || entered) return;
+    T += dt;
+    if (!cam0) {
+      cam0 = { z: camera.position.z, pitch: camera.rotation.x, yaw: camera.rotation.y, y: camera.position.y };
+    }
     /* camera settles from the panel close-up to a centred view of the door */
     const s=E.io(seg(T,0,1.2)); let pitch=lerp(cam0.pitch,.1,s), yaw=lerp(cam0.yaw,0,s), x=0,y=lerp(cam0.y??-0.02,-0.02,s),z=cam0.z;
     /* lock pins: jolts */
@@ -86,6 +91,7 @@ export function installDoorSequence({scene,camera,composer,door,walk,look,canvas
     fade.uniforms.uFade.value = T < 12.8 ? E.io(seg(T, ...TL.black)) : Math.max(0, 1.0 - E.io(seg(T, 13.0, 14.2)));
     if(T>=TL.black[1]&&!entered){
       entered=true;
+      fade.uniforms.uFade.value = 0;
       if (canvas) canvas.style.pointerEvents = 'auto';
       if (window.VAULT) {
         window.VAULT.sceneMode = 'table';
@@ -97,5 +103,24 @@ export function installDoorSequence({scene,camera,composer,door,walk,look,canvas
       onEntered?.();
     } }
 
-  return {cinematic,begin,timeline:TL,fade};
+  function skip(){
+    if (entered) return;
+    entered = true;
+    T = TL.black[1] + 0.1;
+    if (!cam0) {
+      cam0 = { z: camera.position.z, pitch: camera.rotation.x, yaw: camera.rotation.y, y: camera.position.y };
+    }
+    if (canvas) canvas.style.pointerEvents = 'auto';
+    door.visible = false;
+    fade.uniforms.uFade.value = 0;
+    if (window.VAULT) {
+      window.VAULT.sceneMode = 'table';
+      window.VAULT.table?.activate(0);
+    }
+    window.dispatchEvent(new CustomEvent('vault:enterTable'));
+    window.dispatchEvent(new CustomEvent('vault:entered'));
+    onEntered?.();
+  }
+
+  return {cinematic,begin,skip,timeline:TL,fade};
 }
