@@ -1,0 +1,96 @@
+node -e "
+const { chromium } = require('playwright');
+const fs = require('fs');
+
+(async () => {
+  const browser = await chromium.launch({ headless: true, args: ['--use-gl=angle', '--use-angle=gl', '--enable-webgl', '--ignore-gpu-blocklist'] });
+  const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+  await page.goto('http://localhost:3000/index.html?lab&boot=skip', { waitUntil: 'load' });
+  await page.waitForFunction(() => window.__lab?.state?.ready);
+  
+  await page.evaluate(async () => {
+    if (window.__lab?.skipToFinal) window.__lab.skipToFinal();
+    const THREE = window.THREE || (await import('three'));
+    const { createIdentityVolumeGeometry } = await import('./ls1_identity_mesh.js?t=' + Date.now());
+
+    // Disable bloom for pure neutral matte clay diagnostics
+    if (window.__lab.composer) {
+      window.__lab.composer.passes.forEach(p => {
+        if (p.constructor.name.includes('Bloom') || p.name?.includes('Bloom')) {
+          p.enabled = false;
+        }
+      });
+    }
+
+    const g = window.__lab.sectorGroups['LS1'];
+    // Remove all old children from g
+    for (let i = g.children.length - 1; i >= 0; i--) {
+      const c = g.children[i];
+      if (c.type === 'Group' || c.isGroup || c.isLight || c.type.includes('Light')) {
+        g.remove(c);
+      }
+    }
+
+    // Turn off cyan emitter lights on pedestal
+    g.children.forEach(c => {
+      if (c.isMesh && c.material) {
+        c.material = new THREE.MeshStandardMaterial({ color: 0x1a1c20, roughness: 0.85 });
+      }
+    });
+
+    const geom = createIdentityVolumeGeometry(THREE);
+    const volumeMesh = new THREE.Mesh(geom, new THREE.MeshStandardMaterial({
+      color: 0x9ba2ad,
+      roughness: 0.55,
+      metalness: 0.05
+    }));
+    volumeMesh.name = 'LS1_B2_VOLUME';
+    volumeMesh.position.set(0, 0.08, 0);
+    g.add(volumeMesh);
+
+    // Dedicated Studio 3-Point Clay Lighting attached to g
+    const targetObj = new THREE.Object3D();
+    targetObj.position.set(0, 0.95, 0);
+    g.add(targetObj);
+
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.0);
+    keyLight.position.set(1.5, 2.2, 2.5);
+    keyLight.target = targetObj;
+    g.add(keyLight);
+
+    const fillLight = new THREE.DirectionalLight(0xd8e0ea, 1.4);
+    fillLight.position.set(-1.5, 1.8, 2.2);
+    fillLight.target = targetObj;
+    g.add(fillLight);
+
+    const backLight = new THREE.DirectionalLight(0xc0c8d4, 1.2);
+    backLight.position.set(0, 2.0, -2.5);
+    backLight.target = targetObj;
+    g.add(backLight);
+
+    const ambLight = new THREE.AmbientLight(0x808894, 1.2);
+    g.add(ambLight);
+
+    // Front Camera Setup
+    window.__lab.camera.fov = 58;
+    window.__lab.camera.updateProjectionMatrix();
+
+    const targetWorld = g.localToWorld(new THREE.Vector3(0, 0.95, 0));
+    const camWorld = g.localToWorld(new THREE.Vector3(0, 0.95, 1.68));
+    window.__targetCameraPos = camWorld;
+    window.__targetCameraLook = targetWorld;
+    const origUpdate = window.__lab.update;
+    window.__lab.update = function(dt) {
+      origUpdate.call(this, dt);
+      window.__lab.camera.position.copy(window.__targetCameraPos);
+      window.__lab.camera.lookAt(window.__targetCameraLook);
+    };
+  });
+
+  await page.waitForTimeout(600);
+  const buf = await page.screenshot();
+  fs.writeFileSync('C:/Users/gadia/.gemini/antigravity-ide/brain/694bd3af-9386-4a86-8cb6-98cd73f0a84a/test_studio_front.png', buf);
+  console.log('Saved test_studio_front.png');
+  await browser.close();
+})();
+"

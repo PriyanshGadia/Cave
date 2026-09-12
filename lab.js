@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
+import { LS1_FRONT_DATA_URI, LS1_BACK_DATA_URI } from './ls1_holo_data.js';
 
 const TAU = Math.PI * 2, NSEC = 9, SEC = TAU / NSEC;
 export const SECTORS = [['S0','ENTRY GATE'],['RS1','BLUEPRINT DECK'],['RS2','RESUME FABRICATOR'],['RS3','HOLO-CALENDAR'],['RS4','WORKSTATION · SEALED'],
@@ -78,7 +79,303 @@ const TEX = {
   ledGrid: () => cvs(64, 128, (g, w, h) => { g.fillStyle = '#000'; g.fillRect(0, 0, w, h); for (let y = 0; y < h; y += 8) for (let x = 0; x < w; x += 8) if (hash(x * 7 + y) > .55) { g.fillStyle = hash(x + y * 3) > .85 ? '#ffb15c' : '#35ff7a'; g.fillRect(x + 2, y + 2, 3, 3); } }),
   gate: () => cvs(512, 160, (g, w, h) => { g.fillStyle = '#23262b'; g.fillRect(0, 0, w, h); hazard(g, 0, 0, w, 20); hazard(g, 0, h - 20, w, 20); g.fillStyle = '#c8c8c8'; mono(g, 36); g.textAlign = 'center'; g.fillText('00 · ENTRY', w / 2, h / 2 + 12); g.globalCompositeOperation = 'destination-out'; for (let i = 0; i < 600; i++) g.fillRect(hash(i) * w, hash(i * 3) * h, 2, 2); }),
   sealed: () => cvs(512, 192, (g, w, h) => { g.fillStyle = '#1c1f24'; g.fillRect(0, 0, w, h); hazard(g, 0, 0, w, 18); hazard(g, 0, h - 18, w, 18); g.fillStyle = '#d0d0d0'; mono(g, 30); g.textAlign = 'center'; g.fillText('SEALED', w / 2, 82); mono(g, 16); g.fillText('WORKSTATION OFFLINE · PHASE 3', w / 2, 118); g.globalCompositeOperation = 'destination-out'; for (let i = 0; i < 600; i++) g.fillRect(hash(i * 1.3) * w, hash(i * 2.1) * h, 2, 2); }),
-  note: () => cvs(64, 64, (g, w, h) => { g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.strokeStyle = 'rgba(30,30,40,.7)'; g.lineWidth = 2; for (let i = 0; i < 3; i++) { g.beginPath(); g.moveTo(10, 20 + i * 14); g.lineTo(10 + 30 + hash(i) * 20, 20 + i * 14); g.stroke(); } }),
+  note: (idx = 0) => cvs(256, 256, (g, w, h) => {
+    // 16 distinct authentic workshop paper styles & schematics
+    const paperStyles = [
+      { bg: '#d8cbab', ink: '#121c28', type: 'schematic', title: 'RELAY #4 BYPASS' },
+      { bg: '#9bbec2', ink: '#021620', type: 'graph_calc', title: 'ORBITAL HARMONICS' },
+      { bg: '#2a5582', ink: '#f0f7ff', type: 'blueprint', title: 'GIMBAL SPEC 2.4' },
+      { bg: '#d4be88', ink: '#181008', type: 'checklist', title: 'COLD BOOT RUNLIST' },
+      { bg: '#cfbfa6', ink: '#201006', type: 'stain_log', title: 'CALCULUS LOG' },
+      { bg: '#c2d4bc', ink: '#04140c', type: 'telemetry', title: 'SIGNAL 1420.4 MHz' },
+      { bg: '#d2c2ad', ink: '#10141c', type: 'flowchart', title: 'D1 BUFFER FLOW' },
+      { bg: '#cfc6b6', ink: '#0c1624', type: 'code_index', title: 'D1 HANDLER MIGRATION' },
+      { bg: '#ded2a8', ink: '#1c1208', type: 'trig_diagram', title: 'THETA 4.398 RAD' },
+      { bg: '#cca87c', ink: '#440808', type: 'warning_stamp', title: 'SECURITY TIER 1' },
+      { bg: '#ccc0ac', ink: '#0c1620', type: 'starchart', title: 'POLARIS VECTOR' },
+      { bg: '#d0c4b2', ink: '#0c1a2c', type: 'audio_synth', title: 'SAW 54Hz OSC' },
+      { bg: '#d5cdc0', ink: '#141820', type: 'pinout', title: 'BUS INTERFACE' },
+      { bg: '#c9beac', ink: '#1c120a', type: 'thermal', title: 'HEAT EXCHANGER' },
+      { bg: '#cbc2b4', ink: '#0c121c', type: 'entity_sketch', title: 'HOLO CORE MODEL' },
+      { bg: '#d6c6ad', ink: '#4c0c0c', type: 'reminder', title: 'ZERO RASTER ASSETS' }
+    ];
+    const s = paperStyles[idx % paperStyles.length];
+    
+    // Base paper tone
+    g.fillStyle = s.bg; g.fillRect(0, 0, w, h);
+    
+    // Subtle paper grain & organic fiber noise
+    for (let i = 0; i < 400; i++) {
+      g.fillStyle = hash(i + idx * 7) > .5 ? 'rgba(255,255,255,0.09)' : 'rgba(0,0,0,0.06)';
+      g.fillRect(hash(i * 1.7) * w, hash(i * 2.3) * h, 1 + hash(i) * 2, 1 + hash(i * 3.1) * 2);
+    }
+    // Weathered paper edge vignette
+    const pGrd = g.createRadialGradient(w/2, h/2, w*.35, w/2, h/2, w*.68);
+    pGrd.addColorStop(0, 'rgba(0,0,0,0)');
+    pGrd.addColorStop(1, s.type === 'blueprint' ? 'rgba(0,20,50,0.45)' : 'rgba(80,50,20,0.18)');
+    g.fillStyle = pGrd; g.fillRect(0, 0, w, h);
+    
+    // Torn/worn border stroke
+    g.strokeStyle = s.type === 'blueprint' ? 'rgba(190,230,255,0.85)' : 'rgba(100,75,45,0.3)';
+    g.lineWidth = s.type === 'blueprint' ? 3 : 2; g.strokeRect(3, 3, w - 6, h - 6);
+
+    // Top pin puncture shadow
+    g.fillStyle = 'rgba(0,0,0,0.45)';
+    g.beginPath(); g.arc(w / 2, 14, 3, 0, Math.PI * 2); g.fill();
+
+    // Specific handwritten engineering drawings based on note type
+    g.fillStyle = s.ink; g.strokeStyle = s.ink; g.lineWidth = 1.5;
+    mono(g, 13, 'bold'); g.fillText(s.title, 14, 28);
+    g.lineWidth = 1;
+
+    if (s.type === 'schematic') {
+      // Circuit schematic with resistors, capacitors, logic gate
+      g.beginPath();
+      g.moveTo(20, 60); g.lineTo(60, 60);
+      for (let i = 0; i < 4; i++) { g.lineTo(65 + i * 12, 60 + (i % 2 ? -10 : 10)); }
+      g.lineTo(115, 60); g.lineTo(115, 110);
+      g.lineTo(160, 110); g.stroke();
+      // Transistor symbol
+      g.strokeRect(160, 95, 30, 30);
+      g.fillText('Q1', 168, 114);
+      g.beginPath(); g.arc(175, 110, 22, 0, Math.PI * 2); g.stroke();
+      mono(g, 10, '');
+      g.fillText('R1=4.7kΩ  C=10µF', 20, 160);
+      g.fillText('V_out = 3.30 V ±1%', 20, 185);
+      g.fillText('STATUS: BYPASS OK', 20, 210);
+    } else if (s.type === 'graph_calc') {
+      // Engineering cyan graph grid with high contrast
+      g.strokeStyle = 'rgba(6,70,90,0.35)'; g.lineWidth = 1.2;
+      for (let x = 15; x < w - 15; x += 15) { g.beginPath(); g.moveTo(x, 40); g.lineTo(x, h - 20); g.stroke(); }
+      for (let y = 40; y < h - 20; y += 15) { g.beginPath(); g.moveTo(15, y); g.lineTo(w - 15, y); g.stroke(); }
+      // Plotted curve
+      g.strokeStyle = '#021820'; g.lineWidth = 2.5; g.beginPath();
+      for (let x = 20; x < 220; x += 4) {
+        const y = 135 - Math.sin((x - 20) * 0.04) * 45 - Math.cos((x - 20) * 0.08) * 15;
+        if (x === 20) g.moveTo(x, y); else g.lineTo(x, y);
+      }
+      g.stroke();
+      mono(g, 10, 'bold'); g.fillStyle = '#021820';
+      g.fillText('∇×B = μ₀J + μ₀ε₀(∂E/∂t)', 18, 212);
+      mono(g, 10, '');
+      g.fillText('λ_peak = 1.4204 GHz', 18, 232);
+    } else if (s.type === 'blueprint') {
+      // Crisp mechanical drafting with white/cyan dimension lines
+      g.strokeStyle = 'rgba(230,245,255,0.92)'; g.lineWidth = 1.8;
+      g.strokeRect(30, 48, 125, 80);
+      g.beginPath(); g.arc(92, 88, 28, 0, Math.PI * 2); g.stroke();
+      g.beginPath(); g.moveTo(92, 38); g.lineTo(92, 138); g.moveTo(20, 88); g.lineTo(165, 88); g.stroke();
+      // Dimension callouts
+      g.fillStyle = '#eaf5ff'; mono(g, 10, 'bold');
+      g.fillText('◄ 120 mm ►', 60, 44);
+      g.fillText('Ø 56mm ±0.02', 105, 118);
+      mono(g, 9, '');
+      g.fillText('MATERIAL: Ti-6Al-4V', 20, 185);
+      g.fillText('HEAT TREAT: MIL-H-6875', 20, 205);
+      g.fillText('TORQUE: 18.5 N·m', 20, 225);
+    } else if (s.type === 'checklist') {
+      // Ruled lines with red margin & check boxes
+      g.strokeStyle = 'rgba(210,40,40,0.35)'; g.lineWidth = 1.5;
+      g.beginPath(); g.moveTo(42, 35); g.lineTo(42, h - 15); g.stroke();
+      g.strokeStyle = 'rgba(60,80,120,0.25)'; g.lineWidth = 1;
+      for (let y = 55; y < h - 15; y += 24) { g.beginPath(); g.moveTo(15, y); g.lineTo(w - 15, y); g.stroke(); }
+      const items = [
+        '[x] INITIATE POWER STAGE 1',
+        '[x] SYNC ORBITAL SENSORS',
+        '[x] AUDIT D1 PERSISTENCE',
+        '[ ] RUNPlaywright VERIFY'
+      ];
+      mono(g, 10, '');
+      items.forEach((it, i) => {
+        g.fillStyle = it.includes('[x]') ? '#182414' : '#6a1818';
+        g.fillText(it, 18, 50 + i * 24);
+      });
+      g.fillStyle = '#4a3820'; g.fillText('SIG: P. GADIA 2026', 48, 175);
+    } else if (s.type === 'stain_log') {
+      // Coffee cup stain ring
+      g.strokeStyle = 'rgba(90,55,20,0.18)'; g.lineWidth = 4;
+      g.beginPath(); g.arc(170, 150, 42, 0, Math.PI * 2); g.stroke();
+      g.strokeStyle = 'rgba(90,55,20,0.12)'; g.lineWidth = 1.5;
+      g.beginPath(); g.arc(168, 148, 38, 0, Math.PI * 2); g.stroke();
+      mono(g, 10, '');
+      g.fillText('Δv = I_sp · g₀ · ln(m₀/m_f)', 18, 60);
+      g.fillText('I_sp = 450 s (LOX/LH2)', 18, 85);
+      g.fillText('m₀ = 12,450 kg', 18, 110);
+      g.fillText('m_f = 2,100 kg', 18, 135);
+      g.fillText('Δv_total = 7.82 km/s', 18, 160);
+      g.fillText('MARGIN: +14.2%', 18, 195);
+    } else if (s.type === 'telemetry') {
+      // Oscilloscope trace & signal bars
+      g.fillStyle = '#081a10'; g.fillRect(16, 45, w - 32, 90);
+      g.strokeStyle = '#2fff7a'; g.lineWidth = 1.5; g.beginPath();
+      for (let x = 20; x < w - 20; x += 4) {
+        const y = 90 + Math.sin((x + idx * 10) * 0.14) * 22 * Math.exp(-Math.pow((x - 128)/70, 2));
+        if (x === 20) g.moveTo(x, y); else g.lineTo(x, y);
+      }
+      g.stroke();
+      mono(g, 9, ''); g.fillStyle = s.ink;
+      g.fillText('BANDWIDTH: 20.0 MHz', 20, 160);
+      g.fillText('SNR: +22.4 dB (LOCKED)', 20, 182);
+      g.fillText('AZ: 184.2°  EL: +42.8°', 20, 204);
+      g.fillText('TELEMETRY: STABLE', 20, 226);
+    } else if (s.type === 'flowchart') {
+      // Architecture blocks
+      g.strokeRect(20, 50, 90, 32); g.fillText('CLIENT', 42, 70);
+      g.beginPath(); g.moveTo(110, 66); g.lineTo(145, 66); g.lineTo(140, 62); g.moveTo(145, 66); g.lineTo(140, 70); g.stroke();
+      g.strokeRect(145, 50, 95, 32); g.fillText('CF WORKER', 152, 70);
+      g.beginPath(); g.moveTo(192, 82); g.lineTo(192, 115); g.lineTo(188, 110); g.moveTo(192, 115); g.lineTo(196, 110); g.stroke();
+      g.strokeRect(145, 115, 95, 32); g.fillText('D1 DATABASE', 148, 135);
+      mono(g, 10, '');
+      g.fillText('RATE LIMIT: 5 / MIN', 20, 180);
+      g.fillText('MAX INK: 12KB RAW', 20, 205);
+      g.fillText('SYNC: SHA-256 ETAG', 20, 230);
+    } else if (s.type === 'warning_stamp') {
+      // Bold red security box & notes
+      g.strokeStyle = '#8a1818'; g.lineWidth = 3;
+      g.strokeRect(16, 45, w - 32, 38);
+      g.fillStyle = '#8a1818'; mono(g, 13, 'bold');
+      g.fillText('CONFIDENTIAL / L5', 36, 69);
+      g.fillStyle = s.ink; mono(g, 10, '');
+      g.fillText('• ACCESS LEVEL 5 GRANTED', 20, 112);
+      g.fillText('• ALL ENTRIES LOGGED TO D1', 20, 136);
+      g.fillText('• SANITIZE ALL STRING INPUTS', 20, 160);
+      g.fillText('• ZERO EXTERNAL DOM SCRIPTS', 20, 184);
+      g.fillText('AUTH: VAULT CHIEF ARCHITECT', 20, 218);
+    } else if (s.type === 'starchart') {
+      // Circular star coordinate map
+      g.strokeStyle = 'rgba(30,60,90,0.35)'; g.lineWidth = 1;
+      g.beginPath(); g.arc(w / 2, 105, 50, 0, Math.PI * 2); g.stroke();
+      g.beginPath(); g.arc(w / 2, 105, 30, 0, Math.PI * 2); g.stroke();
+      g.beginPath(); g.moveTo(w/2 - 55, 105); g.lineTo(w/2 + 55, 105); g.moveTo(w/2, 50); g.lineTo(w/2, 160); g.stroke();
+      // Star points
+      g.fillStyle = s.ink;
+      [[110, 80], [140, 95], [160, 75], [125, 125], [100, 135]].forEach(([sx, sy]) => {
+        g.beginPath(); g.arc(sx, sy, 2.5, 0, Math.PI * 2); g.fill();
+      });
+      mono(g, 10, '');
+      g.fillText('RA 02h 31m 49s', 20, 185);
+      g.fillText('DEC +89° 15′ 51″', 20, 208);
+      g.fillText('EPOCH: J2026.5', 20, 230);
+    } else if (s.type === 'code_index') {
+      // Code index card
+      g.fillStyle = 'rgba(180,30,30,0.4)'; g.fillRect(15, 38, w - 30, 2);
+      mono(g, 9, '');
+      g.fillText('// D1 Persistence Hook', 18, 55);
+      g.fillText('export async function onRequest(c) {', 18, 75);
+      g.fillText('  const db = c.env.DB;', 24, 95);
+      g.fillText('  const { results } = await db', 24, 115);
+      g.fillText('    .prepare("SELECT * FROM notes")', 28, 135);
+      g.fillText('    .all();', 28, 155);
+      g.fillText('  return Response.json(results);', 24, 175);
+      g.fillText('}', 18, 195);
+      g.fillStyle = '#6a2818'; g.fillText('ETAG: SHA-256 VALIDATED', 18, 230);
+    } else if (s.type === 'trig_diagram') {
+      // Trigonometry & geometry calculation
+      g.strokeStyle = s.ink; g.lineWidth = 1.5;
+      g.beginPath(); g.moveTo(30, 140); g.lineTo(170, 140); g.lineTo(170, 50); g.closePath(); g.stroke();
+      g.beginPath(); g.arc(30, 140, 35, -Math.PI / 6, 0); g.stroke();
+      mono(g, 10, '');
+      g.fillText('θ = 4.3982 rad', 70, 130);
+      g.fillText('R = 3.55 m', 100, 160);
+      g.fillText('sin(θ) = -0.951', 18, 190);
+      g.fillText('cos(θ) = -0.309', 18, 212);
+      g.fillText('SECTOR 7 POLAR COORDS', 18, 234);
+    } else if (s.type === 'audio_synth') {
+      // Audio synth oscillator spec
+      g.fillStyle = '#061622'; g.fillRect(15, 45, w - 30, 80);
+      g.strokeStyle = '#4de8ff'; g.lineWidth = 1.5; g.beginPath();
+      // Sawtooth wave
+      for (let x = 20; x < w - 20; x += 30) {
+        g.moveTo(x, 110); g.lineTo(x + 24, 55); g.lineTo(x + 24, 110);
+      }
+      g.stroke();
+      mono(g, 9, ''); g.fillStyle = s.ink;
+      g.fillText('BASE OSC: 54.0 Hz SAW', 18, 150);
+      g.fillText('SUB-HARM: 108.7 Hz SINE', 18, 172);
+      g.fillText('LP FILTER: 210 Hz / Q=3.0', 18, 194);
+      g.fillText('GAIN: EXP DECAY 1.4s', 18, 216);
+      g.fillText('AUDIOCONTEXT: SYNTHESIZED', 18, 238);
+    } else if (s.type === 'pinout') {
+      // Microcontroller / bus pinout
+      g.strokeStyle = s.ink; g.lineWidth = 1.5;
+      g.strokeRect(60, 48, 120, 65);
+      for (let i = 0; i < 5; i++) {
+        g.beginPath(); g.moveTo(35, 56 + i * 11); g.lineTo(60, 56 + i * 11); g.stroke();
+        g.beginPath(); g.moveTo(180, 56 + i * 11); g.lineTo(205, 56 + i * 11); g.stroke();
+      }
+      mono(g, 8, '');
+      g.fillText('RX/TX', 18, 62); g.fillText('I2C', 18, 84); g.fillText('3V3', 18, 106);
+      g.fillText('GPIO', 210, 62); g.fillText('PWM', 210, 84); g.fillText('GND', 210, 106);
+      mono(g, 9, 'bold'); g.fillText('CORE BUS INTERFACE', 65, 85);
+      mono(g, 9, '');
+      g.fillText('BAUD: 115200 8N1', 18, 160);
+      g.fillText('CLOCK: 16.0 MHz XTAL', 18, 185);
+      g.fillText('STATUS: PINNED OK', 18, 210);
+    } else if (s.type === 'thermal') {
+      // Heat exchanger cross-hatch
+      g.strokeStyle = s.ink; g.lineWidth = 1.2;
+      for (let i = 0; i < 8; i++) {
+        g.strokeRect(30 + i * 22, 48, 14, 55);
+      }
+      g.strokeRect(20, 103, 200, 12);
+      mono(g, 9, '');
+      g.fillText('T_MAX: 78.4°C (LIMIT 95°C)', 18, 145);
+      g.fillText('DISSIPATION: 42.0 W', 18, 170);
+      g.fillText('AIRFLOW: 24 CFM FORCED', 18, 195);
+      g.fillText('COOLING LOOP: NOMINAL', 18, 220);
+    } else if (s.type === 'entity_sketch') {
+      // S0 Holo entity 3D wireframe sketch
+      g.strokeStyle = s.ink; g.lineWidth = 1.5;
+      g.strokeRect(60, 50, 70, 70);
+      g.strokeRect(85, 70, 70, 70);
+      g.beginPath();
+      g.moveTo(60, 50); g.lineTo(85, 70);
+      g.moveTo(130, 50); g.lineTo(155, 70);
+      g.moveTo(60, 120); g.lineTo(85, 140);
+      g.moveTo(130, 120); g.lineTo(155, 140);
+      g.stroke();
+      // Elliptical orbit
+      g.beginPath(); g.ellipse(110, 95, 65, 20, Math.PI / 4, 0, Math.PI * 2); g.stroke();
+      mono(g, 9, '');
+      g.fillText('S0 RESIDENT MATRIX', 18, 175);
+      g.fillText('DIMS: 4D PROJECTION', 18, 198);
+      g.fillText('SHELLS: 3 WIREFRAME', 18, 220);
+    } else {
+      // Workshop Rule Reminder note
+      g.strokeStyle = '#8a1818'; g.lineWidth = 2.5;
+      g.strokeRect(15, 45, w - 30, 185);
+      mono(g, 10, 'bold'); g.fillStyle = '#8a1818';
+      g.fillText('STANDING DIRECTIVE:', 24, 68);
+      g.fillStyle = s.ink; mono(g, 9, '');
+      g.fillText('1. ZERO RASTER ASSETS (.png/.jpg)', 24, 98);
+      g.fillText('2. ALL PROCEDURAL VIA makeSurface()', 24, 122);
+      g.fillText('3. 60 FPS MAINTAINED AT DPR 1', 24, 146);
+      g.fillText('4. ZERO WEBGL WARNINGS IN CONSOLE', 24, 170);
+      g.fillStyle = '#8a1818'; mono(g, 9, 'bold');
+      g.fillText('// ARCHITECT CERTIFIED 2026', 24, 205);
+    }
+  }),
+  cork: () => cvs(512, 512, (g, w, h) => {
+    g.fillStyle = '#342618'; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 1800; i++) {
+      g.fillStyle = hash(i) > .6 ? '#4e3925' : hash(i) > .25 ? '#241a10' : '#5a432b';
+      g.fillRect(hash(i * 2.1) * w, hash(i * 3.3) * h, 1.5 + hash(i * 5.1) * 3.5, 1.5 + hash(i * 7.3) * 2.5);
+    }
+    // Subtle weathered grime accumulation in corners and edges
+    const grd = g.createRadialGradient(w/2, h/2, w*.32, w/2, h/2, w*.72);
+    grd.addColorStop(0, 'rgba(0,0,0,0)');
+    grd.addColorStop(1, 'rgba(12,8,4,.42)');
+    g.fillStyle = grd; g.fillRect(0, 0, w, h);
+    // Micro-pinholes and tack punctures
+    g.fillStyle = 'rgba(14,10,6,.65)';
+    for (let i = 0; i < 70; i++) {
+      g.beginPath();
+      g.arc(24 + hash(i * 9.1) * (w - 48), 24 + hash(i * 11.3) * (h - 48), 1.2 + hash(i) * 1.6, 0, TAU);
+      g.fill();
+    }
+    // Grimy border bevel
+    g.strokeStyle = 'rgba(18,14,10,.75)'; g.lineWidth = 8; g.strokeRect(4, 4, w - 8, h - 8);
+  }),
   label: (id, name) => cvs(256, 48, (g, w, h) => { g.fillStyle = '#000'; g.fillRect(0, 0, w, h); g.fillStyle = '#9ff3ff'; mono(g, 15); g.fillText(`${id} · ${name}`, 10, 30); g.fillStyle = '#ffb15c'; g.fillRect(0, h - 4, w, 4); }),
   wall: () => cvs(768, 448, (g, w, h) => { g.fillStyle = '#03111a'; g.fillRect(0, 0, w, h); g.strokeStyle = '#2b7f96'; g.lineWidth = 3; g.strokeRect(6, 6, w - 12, h - 12); g.fillStyle = '#9ff3ff'; mono(g, 22); g.fillText('VAULT-01 · GLOBAL RELAY MAP', 24, 44); gridLines(g, w, h, 32, 'rgba(95,232,255,.25)'); mono(g, 11, '');
     for (let i = 0; i < 14; i++) { g.fillStyle = i % 4 ? '#3fa8bf' : '#ffb15c'; g.fillText(`${['LINK','NODE','RELAY','UPLINK'][i % 4]}-${i.toString().padStart(2, '0')}  ${(hash(i) * 400).toFixed(0).padStart(3)} ms`, w - 210, 90 + i * 22); } }),
@@ -3726,9 +4023,12 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     sfx.servo(0.25, false);
   }
 
+  function isLiveStreamEnabled() {
+    return window.ENABLE_LS3_STREAM === true || new URLSearchParams(location.search).get('stream') === '1';
+  }
+
   function openNewsDispatch(channel) {
     GLOBE.selectedNewsChannel = channel;
-    GLOBE.holoPyramidTarget = 1.0;
     GLOBE.targetLat = channel.lat;
     GLOBE.targetLon = channel.lon;
     GLOBE.targetName = `${channel.name.toUpperCase()} // ${channel.city.toUpperCase()}`;
@@ -3737,8 +4037,16 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     GLOBE.targetRotY = -THREE.MathUtils.degToRad(channel.lon);
     GLOBE.targetRotX = THREE.MathUtils.degToRad(channel.lat);
     sfx.blip(2600, 0.12, 0.05);
-    const countryChannels = GLOBE.liveNews.filter(c => c.country === channel.country);
-    window.dispatchEvent(new CustomEvent('lab:ls3:news:open', { detail: { channel, channels: countryChannels } }));
+
+    if (isLiveStreamEnabled()) {
+      GLOBE.holoPyramidTarget = 1.0;
+      const countryChannels = GLOBE.liveNews.filter(c => c.country === channel.country);
+      window.dispatchEvent(new CustomEvent('lab:ls3:news:open', { detail: { channel, channels: countryChannels } }));
+    } else {
+      GLOBE.holoPyramidTarget = 0.0;
+      GLOBE.albumNoticeUntil = performance.now() + 4500;
+      GLOBE.standbyNotice = `SITREP STANDBY // UPLINK INERT (${channel.country.toUpperCase()})`;
+    }
     syncLS3Taskbar();
   }
 
@@ -3797,10 +4105,10 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
 
     if (GLOBE.albumNoticeUntil > performance.now()) {
       ctx.fillStyle = '#ff9fc0'; mono(ctx, 12, 'bold');
-      ctx.fillText('ALBUM SYNC NOT YET ESTABLISHED', 12, 24);
+      ctx.fillText(GLOBE.standbyNotice || 'ALBUM SYNC NOT YET ESTABLISHED', 12, 24);
       ctx.fillStyle = '#7ec5df'; mono(ctx, 10, '');
       ctx.fillText('RULE 5: PROCEDURAL REPOSITORY SPEC', 12, 44);
-      ctx.fillText('RASTER ASSETS PERMANENTLY DEFERRED', 12, 60);
+      ctx.fillText(GLOBE.standbyNotice ? 'STREAM PIPELINE QUARANTINED [FLAG INERT]' : 'RASTER ASSETS PERMANENTLY DEFERRED', 12, 60);
       return;
     }
 
@@ -4307,36 +4615,2154 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       }
     });
   }
-  { const g = sectorGroup(7, 3.55); add(box(1.9, 1.15, .05, compD), 0, .62, 0, g); for (const x of [-.85, .85]) add(cyl(.015, .015, 1.24, tit, 8), x, .62, -.04, g);   // LS2 · scratchpad wall
-    const nt = TEX.note(), cols = [0xfff07a, 0xffb1c8, 0x9fe8ff, 0xc8ffb0], notes = []; for (let i = 0; i < 16; i++) { const n = new THREE.Mesh(new THREE.PlaneGeometry(.16, .16), mat({ map: nt, color: cols[i % 4], roughness: .95 })); n.position.set((hash(i * 1.9) - .5) * 1.6, .22 + hash(i * 3.3) * .8, .03); n.rotation.z = (hash(i * 5.1) - .5) * .4; n.userData.interactive = true; n.userData.noteIdx = i; notes.push(n); } notes.forEach(n => g.add(n));
-    add(box(.34, .035, .26, mat({ color: 0x2a2620, roughness: .9 })), .55, .018, .42, g); add(cyl(.007, .007, .16, tit, 6), .1, .007, .46, g).rotation.set(Math.PI / 2, 0, .6); tag(g, 'LS2'); heroGroups.push({ id: 'LS2', group: g }); }
+  
+  // ── Sector LS2 (Scratchpad Wall & Interactive Guestbook State) ──
+  const LS2_PAPER_COLORS = {
+    yellow: '#d9cb9e',
+    pink: '#d8b4aa',
+    cyan: '#8ea6a9',
+    green: '#a6c89c'
+  };
+  const LS2_INK_COLORS = {
+    cyan: '#00f0ff',
+    amber: '#ffb700',
+    green: '#4dff8a',
+    white: '#f0f4f8'
+  };
 
-  const PROFILE_TABS = ['PROFILE', 'SYSTEMS', 'PAPERS', 'CONTACT'];
-  let curProfTab = 0, profCanvas, profTex;
-  function drawProf(cnv) {
-    const g = cnv.getContext('2d'), w = cnv.width, h = cnv.height;
-    g.fillStyle = 'rgba(6,26,38,.85)'; g.fillRect(0, 0, w, h);
-    g.strokeStyle = '#39d6ff'; g.lineWidth = 2; g.strokeRect(2, 2, w - 4, h - 4);
-    g.fillStyle = '#9ff3ff'; mono(g, 15); g.fillText('OPERATIVE PROFILE', 14, 26);
-    g.beginPath(); for (let i = 0; i < 8; i++) { const a = i / 8 * TAU + Math.PI / 8; g.lineTo(60 + Math.cos(a) * 34, 90 + Math.sin(a) * 34); } g.closePath(); g.strokeStyle = '#5fe8ff'; g.stroke(); mono(g, 10, '');
-    PROFILE_TABS.forEach((t, i) => { g.fillStyle = i === curProfTab ? '#5fe8ff' : '#3f7a88'; g.fillText(`[${t}]`, 14 + i * 76, 156); });
-    const desc = [
-      'PRIYANSH GADIA · SYSTEMS ARCHITECT / GRAPHICS SPECIALIST',
-      'ENGINE: REAL-TIME PROCEDURAL WEBGL R160 · ZERO RASTER ASSETS',
-      'PUBLICATIONS & RESEARCH CITATIONS SYNCHRONIZED',
-      'ENCRYPTED UPLINK: PRIYANSHGADIA@GITHUB · CLEARANCE L5'
-    ];
-    g.fillStyle = '#cbf5ff'; mono(g, 11, '');
-    g.fillText(desc[curProfTab] || '', 14, 195);
-    for (let i = 0; i < 7; i++) { g.fillStyle = '#1b4a58'; g.fillRect(14, 220 + i * 22, 120 + hash(i + curProfTab * 5) * 160, 8); }
+  const LS2 = {
+    activeNote: null,
+    page: 0,
+    maxPages: 4,
+    drawing: false,
+    currentStroke: [],
+    inkColor: 'cyan',
+    typingField: 'message',
+    notes: [],
+    tokens: {},
+    debounceTimer: null,
+    lastEtag: '',
+    lastEtagPage: 0,
+    lastPollAt: 0
+  };
+
+  for (let i = 0; i < 16; i++) {
+    LS2.notes.push({
+      id: `note-${i}`,
+      serverId: null,
+      author: '',
+      message: '',
+      inkStrokes: [],
+      paperTheme: ['yellow', 'pink', 'cyan', 'green'][i % 4],
+      inkColor: 'cyan',
+      posX: 0,
+      posY: 0,
+      isCustom: false
+    });
   }
-  { const g = sectorGroup(8, 3.95); add(box(1.1, .04, .26, gunD), 0, .02, 0, g); for (const x of [-.5, .5]) add(cyl(.014, .014, 1.6, tit, 8), x, .82, 0, g);   // LS1 · profile panel
-    profCanvas = document.createElement('canvas'); profCanvas.width = 320; profCanvas.height = 440; drawProf(profCanvas);
-    profTex = new THREE.CanvasTexture(profCanvas); profTex.colorSpace = THREE.SRGBColorSpace;
-    const pm = holoMat(profTex);
-    const profMesh = add(new THREE.Mesh(new THREE.PlaneGeometry(1.05, 1.4), pm), 0, .85, 0, g);
-    profMesh.userData.interactive = true; profMesh.userData.uvW = 320; profMesh.userData.uvH = 440;
-    holos.push({ m: pm, target: .8, t0: T.power[0] + 3.2 }); tag(g, 'LS1'); heroGroups.push({ id: 'LS1', group: g }); }
+
+  const ls2Canvases = [];
+  const ls2Textures = [];
+  const ls2Meshes = [];
+  let ls2PageLedTex, ls2PageLedCanvas;
+
+  function drawLS2PageLed() {
+    if (!ls2PageLedCanvas) return;
+    const ctx = ls2PageLedCanvas.getContext('2d'), w = ls2PageLedCanvas.width, h = ls2PageLedCanvas.height;
+    ctx.fillStyle = '#05121b'; ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = '#00f0ff'; ctx.lineWidth = 2; ctx.strokeRect(1, 1, w - 2, h - 2);
+    ctx.fillStyle = '#4dff8a'; mono(ctx, 13, 'bold'); ctx.textAlign = 'center';
+    ctx.fillText(`PAGE 0${LS2.page + 1} / 0${LS2.maxPages}`, w / 2, 21);
+    if (ls2PageLedTex) ls2PageLedTex.needsUpdate = true;
+  }
+
+  function drawSmoothStroke(ctx, stroke, w, h, inkColorHex) {
+    if (!stroke || stroke.length < 3) return;
+    const numPts = Math.floor(stroke.length / 3);
+    if (numPts === 1) {
+      const px = stroke[0] * w, py = stroke[1] * h, p = stroke[2];
+      ctx.fillStyle = inkColorHex;
+      ctx.beginPath();
+      ctx.arc(px, py, Math.max(1.5, 3.5 * (0.4 + 0.8 * p)), 0, Math.PI * 2);
+      ctx.fill();
+      return;
+    }
+    ctx.strokeStyle = inkColorHex;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    for (let i = 0; i < numPts - 1; i++) {
+      const idx0 = i * 3, idx1 = (i + 1) * 3;
+      const x0 = stroke[idx0] * w, y0 = stroke[idx0 + 1] * h, p0 = stroke[idx0 + 2];
+      const x1 = stroke[idx1] * w, y1 = stroke[idx1 + 1] * h, p1 = stroke[idx1 + 2];
+      const avgP = (p0 + p1) * 0.5;
+      ctx.lineWidth = Math.max(1.8, 4.5 * (0.4 + 0.8 * avgP));
+      ctx.beginPath();
+      ctx.moveTo(x0, y0);
+      ctx.lineTo(x1, y1);
+      ctx.stroke();
+    }
+  }
+
+  function drawLS2Note(idx) {
+    const cnv = ls2Canvases[idx];
+    if (!cnv) return;
+    const g = cnv.getContext('2d'), w = cnv.width, h = cnv.height;
+    const note = LS2.notes[idx];
+    const isActive = LS2.activeNote === idx;
+    const isCustom = note.isCustom || (note.message && note.message.length > 0) || (note.inkStrokes && note.inkStrokes.length > 0);
+
+    // Base paper background
+    const bgCol = LS2_PAPER_COLORS[note.paperTheme] || '#faf3d0';
+    g.fillStyle = bgCol; g.fillRect(0, 0, w, h);
+
+    // Subtle paper grain & organic fiber noise
+    for (let i = 0; i < 250; i++) {
+      g.fillStyle = hash(i + idx * 7 + LS2.page * 19) > .5 ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)';
+      g.fillRect(hash(i * 1.7) * w, hash(i * 2.3) * h, 1 + hash(i) * 2, 1 + hash(i * 3.1) * 2);
+    }
+    // Weathered paper edge vignette
+    const pGrd = g.createRadialGradient(w/2, h/2, w*.35, w/2, h/2, w*.68);
+    pGrd.addColorStop(0, 'rgba(0,0,0,0)');
+    pGrd.addColorStop(1, 'rgba(80,50,20,0.12)');
+    g.fillStyle = pGrd; g.fillRect(0, 0, w, h);
+
+    // Border: if active, show electric cyan HUD border; else subtle worn border
+    if (isActive) {
+      g.strokeStyle = '#00f0ff';
+      g.lineWidth = 6;
+      g.strokeRect(4, 4, w - 8, h - 8);
+      g.strokeStyle = 'rgba(0, 240, 255, 0.45)';
+      g.lineWidth = 12;
+      g.strokeRect(10, 10, w - 20, h - 20);
+    } else {
+      g.strokeStyle = 'rgba(100,75,45,0.25)';
+      g.lineWidth = 3;
+      g.strokeRect(3, 3, w - 6, h - 6);
+    }
+
+    // Top pin puncture
+    g.fillStyle = isActive ? '#00f0ff' : 'rgba(0,0,0,0.45)';
+    g.beginPath(); g.arc(w / 2, 16, isActive ? 6 : 4, 0, Math.PI * 2); g.fill();
+
+    if (!isCustom && !isActive) {
+      // Procedural fallback engineering drawing
+      const noteTex = TEX.note((idx + LS2.page * 16) % 16);
+      g.drawImage(noteTex.image, 0, 0, w, h);
+      return;
+    }
+
+    // Custom Note / Active Note Header
+    const inkHex = LS2_INK_COLORS[note.inkColor] || '#00f0ff';
+    g.fillStyle = '#0f172a';
+    mono(g, 18, 'bold');
+    g.textAlign = 'left';
+    const cleanAuthor = (note.author || 'ANONYMOUS').replace(/^OP:\s*/i, '').trim() || 'ANONYMOUS';
+    g.fillText(`OP: ${cleanAuthor.toUpperCase()}`, 24, 44);
+    g.textAlign = 'right';
+    mono(g, 15, 'bold');
+    g.fillText(`LOG #${LS2.page * 16 + idx + 1}`, w - 24, 44);
+    g.textAlign = 'left';
+    g.strokeStyle = 'rgba(15, 23, 42, 0.4)';
+    g.lineWidth = 2;
+    g.beginPath(); g.moveTo(20, 54); g.lineTo(w - 20, 54); g.stroke();
+
+    // Render typed text (wrapped)
+    g.fillStyle = '#090d16';
+    mono(g, 22, 'bold');
+    const msg = note.message || (isActive ? '' : '(BLANK SCRATCHPAD)');
+    const lines = [];
+    const rawLines = msg.split('\n');
+    rawLines.forEach(rl => {
+      const words = rl.split(' ');
+      let cur = '';
+      words.forEach(wd => {
+        const test = cur ? cur + ' ' + wd : wd;
+        if (g.measureText(test).width > w - 48) {
+          if (cur) lines.push(cur);
+          cur = wd;
+        } else {
+          cur = test;
+        }
+      });
+      if (cur) lines.push(cur);
+      if (rl === '') lines.push('');
+    });
+
+    lines.slice(0, 8).forEach((ln, li) => {
+      g.fillText(ln, 24, 88 + li * 30);
+    });
+
+    // Blinking cursor if active
+    if (isActive && LS2.typingField === 'message' && Math.floor(Date.now() / 450) % 2 === 0) {
+      const lastLine = lines.length ? lines[lines.length - 1] : '';
+      const cursorX = 24 + g.measureText(lastLine).width;
+      const cursorY = 88 + Math.max(0, lines.length - 1) * 30;
+      g.fillRect(cursorX + 3, cursorY - 18, 10, 22);
+    }
+
+    // Render stored vector ink strokes
+    if (note.inkStrokes && note.inkStrokes.length > 0) {
+      note.inkStrokes.forEach(st => {
+        drawSmoothStroke(g, st, w, h, inkHex);
+      });
+    }
+
+    // Render active stroke being drawn
+    if (isActive && LS2.drawing && LS2.currentStroke.length >= 3) {
+      drawSmoothStroke(g, LS2.currentStroke, w, h, inkHex);
+    }
+
+    // Render bottom HUD status bar if active
+    if (isActive) {
+      g.fillStyle = 'rgba(4, 18, 28, 0.94)';
+      g.fillRect(0, h - 50, w, 50);
+      g.strokeStyle = '#00f0ff'; g.lineWidth = 2;
+      g.strokeRect(0, h - 50, w, 50);
+      
+      // Color indicators
+      ['cyan', 'amber', 'green', 'white'].forEach((col, ci) => {
+        const cx = 20 + ci * 32;
+        g.fillStyle = LS2_INK_COLORS[col];
+        g.fillRect(cx, h - 34, 22, 18);
+        if (note.inkColor === col) {
+          g.strokeStyle = '#ffffff'; g.lineWidth = 2;
+          g.strokeRect(cx - 2, h - 36, 26, 22);
+        }
+      });
+
+      g.fillStyle = '#cbf5ff';
+      mono(g, 13, 'bold');
+      g.textAlign = 'right';
+      g.fillText(`[${note.message.length}/280] [ALT+P:PAPER ALT+C:CLR]`, w - 16, h - 28);
+      mono(g, 11);
+      g.fillText(`[STYLUS:INK  TAB:FIELD  ESC:EXIT]`, w - 16, h - 12);
+      g.textAlign = 'left';
+    }
+  }
+
+  async function fetchLS2Notes(page = 0, force = false) {
+    try {
+      const headers = {};
+      if (!force && LS2.lastEtag && LS2.lastEtagPage === page) {
+        headers['If-None-Match'] = LS2.lastEtag;
+      }
+      const res = await fetch(`/api/notes?page=${page}&limit=16`, { headers });
+      if (res.status === 304) return;
+      if (!res.ok) throw new Error('fetch_fail');
+      const etag = res.headers.get('ETag');
+      if (etag) { LS2.lastEtag = etag; LS2.lastEtagPage = page; }
+      const data = await res.json();
+      const serverNotes = data.notes || [];
+      for (let i = 0; i < 16; i++) {
+        if (LS2.activeNote === i) continue; // Do not overwrite actively edited note
+        const sNote = serverNotes[i];
+        const cur = LS2.notes[i];
+        if (sNote) {
+          cur.serverId = sNote.id;
+          cur.author = sNote.author || '';
+          cur.message = sNote.message || '';
+          cur.inkStrokes = Array.isArray(sNote.inkStrokes) ? sNote.inkStrokes : [];
+          cur.paperTheme = sNote.paperTheme || 'yellow';
+          cur.inkColor = sNote.colorTheme || 'cyan';
+          if (sNote.posX != null) cur.posX = sNote.posX;
+          if (sNote.posY != null) cur.posY = sNote.posY;
+          cur.isCustom = true;
+        } else {
+          cur.serverId = null;
+          cur.author = '';
+          cur.message = '';
+          cur.inkStrokes = [];
+          cur.paperTheme = ['yellow', 'pink', 'cyan', 'green'][i % 4];
+          cur.inkColor = 'cyan';
+          cur.isCustom = false;
+        }
+        drawLS2Note(i);
+        if (ls2Textures[i]) ls2Textures[i].needsUpdate = true;
+      }
+    } catch {
+      // Offline fallback to procedural
+    }
+  }
+
+  function saveLS2Note(idx, immediate = false) {
+    if (idx === null || !LS2.notes[idx]) return;
+    const note = LS2.notes[idx];
+    if (!note.isCustom && !note.message && (!note.inkStrokes || !note.inkStrokes.length)) return;
+    if (LS2.debounceTimer) {
+      clearTimeout(LS2.debounceTimer);
+      LS2.debounceTimer = null;
+    }
+    if (immediate) {
+      flushLS2Note(idx);
+    } else {
+      LS2.debounceTimer = setTimeout(() => flushLS2Note(idx), 1200);
+    }
+  }
+
+  async function flushLS2Note(idx) {
+    if (idx === null || !LS2.notes[idx]) return;
+    const note = LS2.notes[idx];
+    if (!note.isCustom && !note.message && (!note.inkStrokes || !note.inkStrokes.length)) return;
+
+    if (note.serverId) {
+      const tokenKey = 'vault_note_token_' + note.serverId;
+      const clientToken = (typeof localStorage !== 'undefined' ? localStorage.getItem(tokenKey) : '') || LS2.tokens[note.serverId] || '';
+      try {
+        await fetch(`/api/notes/${note.serverId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Author-Token': clientToken
+          },
+          body: JSON.stringify({
+            author: note.author,
+            message: note.message,
+            inkStrokes: note.inkStrokes,
+            colorTheme: note.inkColor,
+            paperTheme: note.paperTheme
+          })
+        });
+      } catch (err) {
+        console.warn('[LS2] PUT sync error:', err);
+      }
+    } else {
+      const clientToken = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('tok-' + Date.now());
+      try {
+        const res = await fetch('/api/notes', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Author-Token': clientToken
+          },
+          body: JSON.stringify({
+            author: note.author,
+            message: note.message,
+            inkStrokes: note.inkStrokes,
+            colorTheme: note.inkColor,
+            paperTheme: note.paperTheme,
+            posX: note.posX || 0,
+            posY: note.posY || 0
+          })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.id) {
+            note.serverId = data.id;
+            LS2.tokens[data.id] = clientToken;
+            if (typeof localStorage !== 'undefined') {
+              localStorage.setItem('vault_note_token_' + data.id, clientToken);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('[LS2] POST sync error:', err);
+      }
+    }
+  }
+
+  function updateLS2Page() {
+    drawLS2PageLed();
+    if (LS2.activeNote !== null) {
+      saveLS2Note(LS2.activeNote, true);
+    }
+    fetchLS2Notes(LS2.page);
+  }
+
+  { const g = sectorGroup(7, 3.55);
+    // 1. Structural backing panel & frame (reusing gunD and compD)
+    add(box(2.04, 1.28, .04, gunD), 0, .62, -.025, g); // Weathered gunmetal backing panel
+    add(box(1.96, 1.20, .04, compD), 0, .62, -.01, g); // Dark composite inner bezel
+    const corkMat = mat({ map: TEX.cork(), roughness: .92, metalness: .04 });
+    add(box(1.90, 1.14, .04, corkMat), 0, .62, .01, g); // Multi-layer weathered corkboard surface
+    
+    // 2. Visible mechanical fastening: 14 distinct anchor bolts/rivets and titanium structural rails
+    for (const x of [-.92, .92]) {
+      add(cyl(.018, .018, 1.34, tit, 8), x, .62, -.01, g); // Vertical slotted mounting rails
+      // 4 corner hex-head bolts on backing plate
+      add(cyl(.018, .018, .025, tit, 6), x, .08, .035, g).rotation.x = Math.PI / 2;
+      add(cyl(.018, .018, .025, tit, 6), x, 1.16, .035, g).rotation.x = Math.PI / 2;
+      add(box(.055, .055, .025, compD), x, .08, .02, g); // Corner gusset bracket bottom
+      add(box(.055, .055, .025, compD), x, 1.16, .02, g); // Corner gusset bracket top
+      // 4 corner bezel rivets
+      add(cyl(.012, .012, .015, tit, 8), x > 0 ? .88 : -.88, .12, .032, g).rotation.x = Math.PI / 2;
+      add(cyl(.012, .012, .015, tit, 8), x > 0 ? .88 : -.88, 1.12, .032, g).rotation.x = Math.PI / 2;
+    }
+    // 6 perimeter frame rivets (3 top rim, 3 bottom rim)
+    for (const x of [-.45, 0, .45]) {
+      add(cyl(.014, .014, .018, tit, 6), x, 1.23, .02, g).rotation.x = Math.PI / 2; // Top rim rivets
+      add(cyl(.014, .014, .018, tit, 6), x, .01, .02, g).rotation.x = Math.PI / 2;  // Bottom rim rivets
+    }
+
+    // 3. Prominent articulated industrial gooseneck task lamp fixture
+    const brassJointMat = mat({ color: 0xd4af37, metalness: .85, roughness: .25 });
+    const lampShadeMat = mat({ color: 0x324446, metalness: .8, roughness: .28 }); // Industrial dark metallic enamel
+    
+    // Clamp mount on top frame rail
+    add(box(.10, .12, .08, gunD), -.45, 1.22, .02, g);
+    const clampScrew = add(cyl(.012, .012, .04, brassJointMat, 12), -.45, 1.27, .03, g); clampScrew.rotation.z = Math.PI / 2;
+    add(box(.018, .038, .012, brassJointMat), -.45, 1.30, .03, g); // T-bar handle
+    
+    // Lower boom arm (dual parallel titanium struts)
+    add(cyl(.008, .008, .28, tit, 8), -.47, 1.32, .11, g).rotation.x = Math.PI / 4.2;
+    add(cyl(.008, .008, .28, tit, 8), -.43, 1.32, .11, g).rotation.x = Math.PI / 4.2;
+    
+    // Articulated brass swivel knuckle & star locking knob
+    const elbowKnuckle = add(cyl(.02, .02, .056, brassJointMat, 12), -.45, 1.42, .20, g); elbowKnuckle.rotation.z = Math.PI / 2;
+    add(cyl(.014, .014, .018, brassJointMat, 6), -.485, 1.42, .20, g).rotation.z = Math.PI / 2; // Star knob
+    
+    // Upper boom arm (dual parallel titanium struts)
+    add(cyl(.007, .007, .26, tit, 8), -.47, 1.34, .32, g).rotation.set(-Math.PI / 5.5, .2, 0);
+    add(cyl(.007, .007, .26, tit, 8), -.43, 1.34, .32, g).rotation.set(-Math.PI / 5.5, .2, 0);
+    
+    // Brass shade socket & solid flared industrial cone shade (pointed downward onto board)
+    const socket = add(cyl(.022, .022, .045, brassJointMat, 12), -.38, 1.28, .40, g);
+    socket.rotation.set(-.72, .25, 0);
+    const coneShade = add(new THREE.Mesh(new THREE.ConeGeometry(.14, .22, 24, 1, false), lampShadeMat), -.36, 1.18, .36, g);
+    coneShade.rotation.set(-.72, .25, 0);
+    
+    // Warm incandescent filament bulb tucked inside downward shade (soft calibrated task lighting)
+    const bulbMat = E(0xffd595);
+    const bulb = add(cyl(.05, .05, .015, bulbMat, 16), -.35, 1.12, .34, g);
+    bulb.rotation.set(-.72, .25, 0);
+    leds.push({ m: bulbMat, target: 1.2, t0: T.power[0] + 2.4 });
+    const ls2Light = new THREE.SpotLight(0xffdfb2, 0.55 * LK, 4.2, Math.PI / 2.4, 0.85, 1.8);
+    ls2Light.position.set(-.35, 1.15, .45);
+    ls2Light.target.position.set(-.05, .58, .05);
+    g.add(ls2Light);
+    g.add(ls2Light.target);
+
+    // 4. 16 distinct authentic workshop notes (organic lived-in arrangement, dynamic CanvasTextures, 3D metallic thumbtacks)
+    const pinHeadMat = mat({ color: 0xd4af37, metalness: .85, roughness: .25 });
+    const steelPinMat = mat({ color: 0x909caa, metalness: .8, roughness: .3 });
+    // Organic, slightly overlapping coordinates across the corkboard
+    const notePositions = [
+      [-.70, .90, -.22], [-.42, .92, .14], [-.15, .88, -.08], [.16, .94, .18], [.48, .90, -.15], [.70, .85, .25],
+      [-.65, .60, .18], [-.35, .58, -.12], [-.05, .62, .15], [.24, .59, -.20], [.52, .62, .12], [.72, .55, -.14],
+      [-.62, .30, -.15], [-.30, .28, .22], [.08, .32, -.10], [.46, .29, .16]
+    ];
+
+    ls2Canvases.length = 0;
+    ls2Textures.length = 0;
+    ls2Meshes.length = 0;
+
+    for (let i = 0; i < 16; i++) {
+      const [nx, ny, rotJitter] = notePositions[i];
+      const nw = .16 + (i % 3) * .015;
+      const nh = .15 + ((i + 1) % 3) * .015;
+      
+      const cnv = document.createElement('canvas');
+      cnv.width = 512; cnv.height = 512;
+      ls2Canvases.push(cnv);
+      const tex = new THREE.CanvasTexture(cnv);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      ls2Textures.push(tex);
+
+      drawLS2Note(i);
+
+      const noteMesh = new THREE.Mesh(new THREE.PlaneGeometry(nw, nh), mat({ map: tex, roughness: .94, metalness: .02 }));
+      const zOff = .033 + (i % 6) * .0028;
+      noteMesh.position.set(nx + (hash(i * 1.7) - .5) * .05, ny + (hash(i * 2.9) - .5) * .04, zOff);
+      noteMesh.rotation.set((hash(i * 3.1) - .5) * .05, (hash(i * 2.3) - .5) * .05, rotJitter);
+      noteMesh.userData.interactive = true;
+      noteMesh.userData.noteIdx = i;
+      g.add(noteMesh);
+      ls2Meshes.push(noteMesh);
+
+      // Physical 3D metallic thumbtack / staple pin at top center of note
+      const pHeadMat = (i % 2 === 0) ? pinHeadMat : steelPinMat;
+      const pinHead = add(cyl(.008, .008, .005, pHeadMat, 10), noteMesh.position.x, noteMesh.position.y + nh * .44, zOff + .006, g);
+      pinHead.rotation.x = Math.PI / 2;
+      add(cyl(.003, .003, .012, tit, 6), noteMesh.position.x, noteMesh.position.y + nh * .44, zOff + .002, g).rotation.x = Math.PI / 2;
+    }
+
+    // 5. Cantilevered heavy workshop tool shelf, titanium brackets, stylus & drafting accessories
+    add(box(1.52, .035, .22, gunD), 0, .02, .11, g); // Heavy gunmetal shelf base
+    add(box(1.52, .032, .014, compD), 0, .048, .215, g); // Front protective retaining lip
+    add(box(.014, .032, .20, compD), -.75, .048, .11, g); // Left lip
+    add(box(.014, .032, .20, compD), .75, .048, .11, g);  // Right lip
+    // 3 heavy titanium triangular support brackets anchoring shelf to wall
+    for (const bx of [-.55, 0, .55]) {
+      const gusset = add(box(.024, .12, .16, tit), bx, -.045, .08, g); gusset.rotation.x = -.45;
+      add(cyl(.01, .01, .018, tit, 6), bx, -.08, .02, g).rotation.x = Math.PI / 2; // Wall anchor bolt
+    }
+    // Tactile brass thumbtack tray
+    add(box(.20, .028, .11, brassJointMat), .48, .048, .12, g);
+    for (let t = 0; t < 5; t++) {
+      const tackInTray = add(cyl(.007, .007, .005, brassJointMat, 8), .42 + (t % 3) * .03, .056, .09 + Math.floor(t / 3) * .03, g);
+      tackInTray.rotation.x = Math.PI / 2;
+    }
+
+    // Mechanical Rotary Paging Dial on Shelf
+    const pagingDial = add(cyl(.022, .022, .035, brassJointMat, 16), .24, .054, .12, g);
+    pagingDial.rotation.z = Math.PI / 2;
+    pagingDial.userData.isPagingDial = true;
+    pagingDial.userData.interactive = true;
+    add(box(.04, .012, .06, tit), .24, .038, .12, g); // Dial mounting bracket
+
+    // Illuminated Micro LED Page Readout
+    ls2PageLedCanvas = document.createElement('canvas');
+    ls2PageLedCanvas.width = 128; ls2PageLedCanvas.height = 32;
+    ls2PageLedTex = new THREE.CanvasTexture(ls2PageLedCanvas);
+    ls2PageLedTex.colorSpace = THREE.SRGBColorSpace;
+    drawLS2PageLed();
+    const ledMesh = add(new THREE.Mesh(new THREE.PlaneGeometry(.10, .028), new THREE.MeshBasicMaterial({ map: ls2PageLedTex })), .24, .078, .12, g);
+    ledMesh.rotation.x = -.3;
+
+    // 4 Distinct colored engineering drafting pens on Shelf
+    const cyanPen = add(cyl(.006, .006, .15, mat({ color: 0x00a8cc, roughness: .35, metalness: .1 }), 8), -.44, .05, .13, g); cyanPen.rotation.set(Math.PI / 2, 0, .45);
+    cyanPen.userData.isStylusMarker = true; cyanPen.userData.color = 'cyan'; cyanPen.userData.interactive = true;
+    
+    const amberPen = add(cyl(.006, .006, .15, mat({ color: 0xd97706, roughness: .35, metalness: .1 }), 8), -.38, .05, .11, g); amberPen.rotation.set(Math.PI / 2, 0, .48);
+    amberPen.userData.isStylusMarker = true; amberPen.userData.color = 'amber'; amberPen.userData.interactive = true;
+    
+    const greenPen = add(cyl(.006, .006, .15, mat({ color: 0x16a34a, roughness: .35, metalness: .1 }), 8), -.32, .05, .09, g); greenPen.rotation.set(Math.PI / 2, 0, .45);
+    greenPen.userData.isStylusMarker = true; greenPen.userData.color = 'green'; greenPen.userData.interactive = true;
+
+    const whitePen = add(cyl(.006, .006, .15, mat({ color: 0xf1f5f9, roughness: .25, metalness: .1 }), 8), -.26, .05, .07, g); whitePen.rotation.set(Math.PI / 2, 0, .45);
+    whitePen.userData.isStylusMarker = true; whitePen.userData.color = 'white'; whitePen.userData.interactive = true;
+
+    // Prominent Titanium Workshop Stylus Tool (Engraving Scribe)
+    const stylus = add(cyl(.007, .007, .18, tit, 8), -.10, .052, .14, g);
+    stylus.rotation.set(Math.PI / 2, 0, .68);
+    add(cyl(.009, .009, .035, compD, 8), -.10, .052, .14, g).rotation.set(Math.PI / 2, 0, .68); // Knurled grip band
+    add(cyl(.004, .001, .025, gunD, 8), -.17, .052, .09, g).rotation.set(Math.PI / 2, 0, .68);  // Carbide scribe tip
+
+    // Rolled parchment schematic scrap
+    const roll = add(cyl(.014, .014, .13, mat({ color: 0xded4be, roughness: .9 }), 12), .06, .052, .11, g); roll.rotation.z = Math.PI / 2;
+
+    tag(g, 'LS2');
+    heroGroups.push({ id: 'LS2', group: g });
+  }
+
+  // ─── Sector LS1: Holographic Personal Nexus (LS1 MVP Front/Back Holographic Projection) ───
+  /* =========================================================================
+   * LS1_MVP_RASTER_EXCEPTION: ACTIVE
+   *
+   * STRICT QUARANTINE: This exception applies solely to Sector LS1.
+   * Under project Rule 2 (zero-raster policy), no raster assets are permitted
+   * elsewhere in THE HALL or Cave scene. Sector LS1 MVP is granted an explicit,
+   * temporary exception to use the owner's authoritative photographic front
+   * and back views (LS1_FRONT_DATA_URI and LS1_BACK_DATA_URI) rendered as a
+   * static-light holographic projection.
+   *
+   * NO external URLs, third-party photos, or remote CDN assets are permitted.
+   * The 3D reconstruction pipeline (Gate B-2A visual hull & Gate B-2B detail mesh)
+   * remains frozen and preserved for V2.
+   * ========================================================================= */
+  let ls1HoloGroup = null;
+  let ls1FigureGroup = null;
+  let ls1HoloMats = [];
+  let ls1PointsMesh = null;
+  let ls1PointData = [];
+  let ls1ScanRing = null;
+  let ls1FilamentLines = [];
+  let ls1EmitterLight = null;
+  let ls1Crystals = [];
+  let ls1ActivePortal = null;
+  let ls1PortalMesh = null;
+  let ls1SmokeMesh = null;
+  let ls1SmokeMat = null;
+  let ls1SmokeData = [];
+  let ls1ElectricGroup = null;
+  let ls1ElectricData = [];
+  let ls1ThroatMesh = null;
+  let ls1ThroatMat = null;
+  let ls1PreviewMesh = null;
+  let ls1PreviewCanvas = null;
+  let ls1PreviewTex = null;
+  let ls1HoveredCrystal = null;
+  let ls1FocusedCrystalIdx = 0;
+  let activatePortal = null;
+  let closePortal = null;
+  let traversePortal = null;
+  let ls1StationState = 'sleeping'; // 'sleeping' | 'hologram_boot' | 'crystal_birth' | 'active'
+  let ls1BootTimer = 0;
+  let ls1BirthTimer = 0;
+  let ls1ActivatorMesh = null;
+  let ls1ActivatorMat = null;
+  let ls1AccretionMesh = null;
+  let ls1AccretionData = [];
+  let ls1Traversal = null;
+  let ls1ReturnAnim = null;
+  let wakeLS1 = null;
+
+  { const g = sectorGroup(8, 3.95);
+    ls1HoloGroup = g;
+
+    // ── 1. CONTAINMENT BASE APPARATUS (Grounding Hardware on Workbench Deck) ──
+    // A. Heavy octagonal base foundation plate (composite dark)
+    const basePlate = add(box(1.28, 0.05, 1.28, compD), 0, 0.025, 0, g);
+    // B. Beveled machined titanium perimeter ring
+    add(cyl(0.68, 0.72, 0.035, tit, 48), 0, 0.05, 0, g);
+    // C. Recessed dark emitter well
+    add(cyl(0.58, 0.58, 0.015, compD, 36), 0, 0.065, 0, g);
+
+    // Subdued local emissive materials for containment base (quiet containment effect)
+    const ls1ChanE = new THREE.MeshStandardMaterial({
+      color: 0x001a24,
+      emissive: 0x0088aa,
+      emissiveIntensity: 0.45,
+      roughness: 0.45
+    });
+    const ls1CoreE = new THREE.MeshStandardMaterial({
+      color: 0x002430,
+      emissive: 0x1aa0cc,
+      emissiveIntensity: 0.65,
+      roughness: 0.35
+    });
+
+    // D. Dual concentric subdued cyan emitter rings
+    add(new THREE.Mesh(new THREE.RingGeometry(0.48, 0.54, 64).rotateX(-Math.PI / 2), ls1ChanE), 0, 0.073, 0, g);
+    add(new THREE.Mesh(new THREE.RingGeometry(0.32, 0.36, 64).rotateX(-Math.PI / 2), ls1CoreE), 0, 0.073, 0, g);
+    // E. Central optical focus crystal lens
+    add(cyl(0.12, 0.14, 0.025, glass, 24), 0, 0.078, 0, g);
+    add(cyl(0.08, 0.08, 0.015, ls1CoreE, 24), 0, 0.082, 0, g);
+
+    // F. Physical Procedural Station Activator Control ("Birth of the System")
+    const ls1ActivatorGeo = new THREE.CylinderGeometry(0.046, 0.054, 0.022, 24);
+    ls1ActivatorMat = new THREE.MeshStandardMaterial({
+      color: 0x051824,
+      emissive: 0x00c8ff,
+      emissiveIntensity: 0.50,
+      roughness: 0.25,
+      metalness: 0.85
+    });
+    ls1ActivatorMesh = new THREE.Mesh(ls1ActivatorGeo, ls1ActivatorMat);
+    ls1ActivatorMesh.position.set(0, 0.082, 0.60);
+    ls1ActivatorMesh.userData = { isActivator: true, interactive: true, sector: 'LS1' };
+    g.add(ls1ActivatorMesh);
+    hits.push(ls1ActivatorMesh);
+
+    // Illuminated Bezel Ring around activator
+    const ls1ActivatorRing = new THREE.Mesh(
+      new THREE.RingGeometry(0.056, 0.068, 32).rotateX(-Math.PI / 2),
+      new THREE.MeshBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.75 })
+    );
+    ls1ActivatorRing.position.set(0, 0.086, 0.60);
+    g.add(ls1ActivatorRing);
+
+    // G. 4 Magnetic Stabilizer Pylons flanking the containment perimeter at 45-deg angles
+    for (let i = 0; i < 4; i++) {
+      const a = (i + 0.5) * Math.PI / 2;
+      const px = Math.cos(a) * 0.62, pz = Math.sin(a) * 0.62;
+      // Stanchion base
+      const st = add(box(0.08, 0.12, 0.08, gunD), px, 0.06, pz, g);
+      st.rotation.y = -a + Math.PI / 4;
+      // Inward angled titanium focus prong
+      const prong = add(cyl(0.014, 0.010, 0.16, tit, 8), px * 0.92, 0.14, pz * 0.92, g);
+      prong.rotation.z = -Math.cos(a) * 0.45;
+      prong.rotation.x = Math.sin(a) * 0.45;
+      // Glowing emitter diode tip
+      add(box(0.02, 0.02, 0.02, ls1ChanE), px * 0.86, 0.20, pz * 0.86, g);
+    }
+    // Perimeter hex studs
+    for (let i = 0; i < 8; i++) {
+      const a = i / 8 * TAU;
+      add(cyl(0.008, 0.008, 0.01, tit, 6), Math.cos(a) * 0.66, 0.072, Math.sin(a) * 0.66, g);
+    }
+
+    // Local restrained volumetric blue light spill (quietly illuminates base without overpowering face)
+    ls1EmitterLight = add(new THREE.PointLight(0x00b8e6, 0.40, 2.5, 2), 0, 0.45, 0, g);
+
+    // ── 2. FRONT/BACK PHOTOGRAPHIC HOLOGRAM PROJECTION (STAR-WARS-LIKE EMISSION) ──
+    ls1FigureGroup = new THREE.Group();
+    ls1FigureGroup.position.set(0, 0.08, 0); // Ground contact right on central optical crystal lens
+    g.add(ls1FigureGroup);
+
+    // Canvas textures for Front and Back authoritative imagery
+    function makeHoloTexture(dataUri) {
+      const c = document.createElement('canvas');
+      c.width = 512;
+      c.height = 1024;
+      const ctx = c.getContext('2d');
+      const t = new THREE.CanvasTexture(c);
+      t.colorSpace = THREE.SRGBColorSpace;
+      t.anisotropy = 4;
+      const img = new Image();
+      const draw = () => {
+        ctx.clearRect(0, 0, 512, 1024);
+        ctx.drawImage(img, 0, 0, 512, 1024);
+        t.needsUpdate = true;
+      };
+      img.onload = draw;
+      img.src = dataUri;
+      if (img.complete && img.naturalWidth > 0) draw();
+      return t;
+    }
+
+    const frontTex = makeHoloTexture(LS1_FRONT_DATA_URI);
+    const backTex = makeHoloTexture(LS1_BACK_DATA_URI);
+
+    // Smooth anatomical thickness curve for subtle depth displacement
+    function getSmoothBodyThickness(v) {
+      const pts = [
+        [0.00, 0.12],
+        [0.05, 0.12],
+        [0.10, 0.09],
+        [0.25, 0.08],
+        [0.38, 0.10],
+        [0.48, 0.14],
+        [0.60, 0.19],
+        [0.72, 0.18],
+        [0.78, 0.16],
+        [0.83, 0.09],
+        [0.88, 0.13],
+        [0.96, 0.13],
+        [1.00, 0.07]
+      ];
+      if (v <= pts[0][0]) return pts[0][1];
+      if (v >= pts[pts.length - 1][0]) return pts[pts.length - 1][1];
+      for (let i = 0; i < pts.length - 1; i++) {
+        if (v >= pts[i][0] && v <= pts[i + 1][0]) {
+          const u = (v - pts[i][0]) / (pts[i + 1][0] - pts[i][0]);
+          const smU = u * u * (3.0 - 2.0 * u);
+          return pts[i][1] + smU * (pts[i + 1][1] - pts[i][1]);
+        }
+      }
+      return 0.11;
+    }
+
+    const FIG_W = 0.84, FIG_H = 1.68;
+    function createCurvedHoloPlane(W, H, segX, segY, zMult) {
+      const geo = new THREE.PlaneGeometry(W, H, segX, segY);
+      geo.translate(0, H / 2, 0);
+      const pos = geo.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        const x = pos.getX(i);
+        const y = pos.getY(i);
+        const v = Math.max(0.0, Math.min(1.0, y / H));
+        const thick = getSmoothBodyThickness(v);
+        const xNorm = Math.abs(x) / (W * 0.44);
+        const curve = Math.sqrt(Math.max(0.0, 1.0 - Math.min(1.0, xNorm * xNorm)));
+        pos.setZ(i, zMult * thick * 0.5 * curve);
+      }
+      geo.computeVertexNormals();
+      return geo;
+    }
+
+    const holoVertShader = `
+      varying vec2 vUv;
+      varying vec3 vNormal;
+      varying vec3 vWorldPosition;
+      varying vec3 vViewDir;
+      uniform float uTime;
+
+      void main() {
+        vUv = uv;
+        vec3 pos = position;
+
+        // Subtle high-energy static micro-fluctuation (sub-millimeter: 0.00025m)
+        float jitter = sin(pos.y * 60.0 + uTime * 20.0) * 0.00025;
+        pos.x += jitter;
+
+        vec4 worldPos = modelMatrix * vec4(pos, 1.0);
+        vWorldPosition = worldPos.xyz;
+        vNormal = normalize(normalMatrix * normal);
+        vViewDir = normalize(cameraPosition - worldPos.xyz);
+        gl_Position = projectionMatrix * viewMatrix * worldPos;
+      }
+    `;
+
+    const holoFragShader = `
+      precision highp float;
+      uniform sampler2D tHolo;
+      uniform float uTime;
+      uniform float uOpacity;
+      uniform float uIsFront;
+
+      varying vec2 vUv;
+      varying vec3 vNormal;
+      varying vec3 vWorldPosition;
+      varying vec3 vViewDir;
+
+      float hash21(vec2 p) {
+        p = fract(p * vec2(123.34, 456.21));
+        p += dot(p, p + 45.32);
+        return fract(p.x * p.y);
+      }
+
+      void main() {
+        vec2 uv = vUv;
+
+        // ── 1. FACE CLARITY ZONE ──
+        // Face center at u = 0.50, v = 0.88; face width ~0.16, height ~0.10
+        vec2 faceCenter = vec2(0.50, 0.88);
+        vec2 faceDelta = abs(uv - faceCenter) / vec2(0.16, 0.10);
+        float faceFactor = 1.0 - smoothstep(0.70, 1.15, length(faceDelta));
+
+        // Subtle reconstruction shimmer (strictly outside the face zone)
+        float shimmerPhase = sin(uv.y * 180.0 + uTime * 6.0);
+        float shimmerOffset = shimmerPhase * 0.00035 * (1.0 - 0.85 * faceFactor);
+        vec2 sUv = vec2(uv.x + shimmerOffset, uv.y);
+
+        // Alpha cutout & edge feathering (zero rectangular card boundary)
+        vec4 baseTex = texture2D(tHolo, sUv);
+        float alpha = baseTex.a;
+        if (alpha < 0.04) discard;
+
+        float edgeFeather = smoothstep(0.0, 0.03, uv.x) * smoothstep(1.0, 0.97, uv.x) *
+                            smoothstep(0.0, 0.015, uv.y) * smoothstep(1.0, 0.985, uv.y);
+        alpha *= edgeFeather;
+        if (alpha < 0.02) discard;
+
+        // ── 2. PHOTOGRAPHIC LUMINANCE & FEATURE CONTRAST ──
+        // Rec. 709 luminance extraction from authoritative photography
+        float lum = dot(baseTex.rgb, vec3(0.299, 0.587, 0.114));
+
+        // Contrast expansion: dark features (black glasses frames, dark pupils, eyebrows, dark hair)
+        // stay distinct and deep, while skin tones and white collar emit clean light
+        float contrastLum = smoothstep(0.08, 0.88, lum);
+
+        // ── 3. SINGLE ELEGANT RECONSTRUCTION SWEEP PULSE ──
+        // Signature vertical pulse sweeping upward from feet to head every ~7.5 seconds
+        float sweepPhase = fract(uTime * 0.133);
+        float sweepY = sweepPhase * 1.25 - 0.12;
+        float sweepPulse = smoothstep(0.06, 0.0, abs(uv.y - sweepY));
+
+        // ── 4. MONOCHROMATIC BLUE-WHITE EMISSION MODEL ──
+        // source luminance x hologram density x scan modulation x edge emission
+        vec3 darkHoloCyan  = vec3(0.04, 0.28, 0.46); // Shadow base (hair, glasses, trousers)
+        vec3 midHoloCyan   = vec3(0.14, 0.62, 0.84); // Mid-tone body (skin, blazer, trouser folds)
+        vec3 brightCyan    = vec3(0.48, 0.88, 0.98); // Highlight body (skin highlights, lapels)
+        vec3 pureCoreWhite = vec3(0.85, 0.96, 1.00); // Sharpest highlight cores
+
+        // Value hierarchy modulated by photographic contrast:
+        vec3 photoEmission = mix(darkHoloCyan, midHoloCyan, smoothstep(0.05, 0.55, lum));
+        photoEmission = mix(photoEmission, brightCyan, smoothstep(0.55, 0.85, lum));
+
+        // Highlight boost on crisp features & sweep pulse
+        float highlightBoost = pow(contrastLum, 2.5) * 0.35 + sweepPulse * 0.25;
+        vec3 emittedBase = mix(photoEmission, pureCoreWhite, highlightBoost);
+
+        // ── 5. THIN, LOW-CONTRAST SCANLINES (ATTENUATED OVER FACE) ──
+        float scanFreq1 = 440.0;
+        float scanFreq2 = 220.0;
+        float scan1 = 0.94 + 0.06 * sin(sUv.y * scanFreq1 - uTime * 2.5);
+        float scan2 = 0.97 + 0.03 * sin(sUv.y * scanFreq2 - uTime * 1.2 + 0.7);
+        float totalScan = scan1 * scan2;
+
+        // Attenuate scanlines heavily over the face (face is the cleanest region)
+        float scanStrength = mix(1.0, 0.20, faceFactor);
+        float modulatedScan = mix(1.0, totalScan, scanStrength);
+
+        // ── 6. STATIC INTERFERENCE & DROPOUT (EXCLUDED OVER FACE) ──
+        float noise = hash21(floor(sUv * vec2(90.0, 180.0)) + fract(uTime * 6.0));
+        float staticNoise = mix(0.96 + 0.08 * noise, 1.0, faceFactor);
+
+        // Micro-dropout: tiny escaping fragments, strictly zero over face
+        float dropHash = hash21(floor(sUv * vec2(50.0, 100.0)) + floor(uTime * 8.0));
+        float dropout = (dropHash > 0.996 && faceFactor < 0.2) ? 0.65 : 1.0;
+
+        // ── 7. SILHOUETTE EDGE GLOW ──
+        float NdotV = max(0.0, dot(normalize(vNormal), normalize(vViewDir)));
+        float fresnel = pow(1.0 - NdotV, 3.8);
+        vec3 edgeGlow = brightCyan * (fresnel * 0.28);
+
+        // ── 8. FINAL COLOR & TRANSLUCENCY ──
+        float sweepBoost = 1.0 + 0.28 * sweepPulse;
+        vec3 finalRgb = (emittedBase * modulatedScan * staticNoise * dropout * sweepBoost) + edgeGlow;
+
+        // Translucency: dark areas 40%, midtones 60-76%, face clarity boost for likeness
+        float baseAlpha = mix(0.40, 0.76, contrastLum);
+        float faceAlphaBoost = faceFactor * 0.12;
+        float finalAlpha = clamp((baseAlpha + faceAlphaBoost + fresnel * 0.15) * alpha * uOpacity, 0.0, 0.88);
+
+        gl_FragColor = vec4(finalRgb, finalAlpha);
+      }
+    `;
+
+    function createHoloMat(tex, isFront, opacity) {
+      const mat = new THREE.ShaderMaterial({
+        vertexShader: holoVertShader,
+        fragmentShader: holoFragShader,
+        uniforms: {
+          tHolo: { value: tex },
+          uTime: { value: 0.0 },
+          uOpacity: { value: opacity },
+          uIsFront: { value: isFront ? 1.0 : 0.0 }
+        },
+        transparent: true,
+        depthWrite: false,
+        side: THREE.FrontSide // Critical: Culls backfaces so front and back do not show through each other
+      });
+      ls1HoloMats.push(mat);
+      return mat;
+    }
+
+    function makeHoloMesh(geo, tex, isFront, opacity, isPrimary) {
+      const shaderMat = createHoloMat(tex, isFront, opacity);
+      const mesh = new THREE.Mesh(geo, shaderMat);
+      mesh.userData.isHoloPlane = true;
+      mesh.userData.isPrimary = isPrimary;
+      mesh.userData.tex = tex;
+      let curMat = shaderMat;
+      Object.defineProperty(mesh, 'material', {
+        get() { return curMat; },
+        set(newMat) {
+          curMat = newMat;
+          if (newMat && newMat.isMeshBasicMaterial) {
+            if (isPrimary) {
+              newMat.map = tex;
+              newMat.transparent = true;
+              newMat.alphaTest = 0.45;
+              newMat.side = THREE.DoubleSide;
+              newMat.needsUpdate = true;
+            } else {
+              newMat.visible = false;
+            }
+          }
+        }
+      });
+      return mesh;
+    }
+
+    // 1. Front Primary Hologram Plane (Faces +Z forward)
+    const frontMesh = makeHoloMesh(createCurvedHoloPlane(FIG_W, FIG_H, 24, 64, 1.0), frontTex, true, 0.95, true);
+    ls1FigureGroup.add(frontMesh);
+
+    // 2. Back Primary Hologram Plane (Facing backward: rotated PI on Y, so FrontSide faces -Z)
+    const backGeo = createCurvedHoloPlane(FIG_W, FIG_H, 24, 64, 1.0);
+    backGeo.rotateY(Math.PI);
+    const backMesh = makeHoloMesh(backGeo, backTex, false, 0.95, false);
+    ls1FigureGroup.add(backMesh);
+
+    // ── Layer 3: Sparse Escaping Light Fragments (4 points max, strictly below neck) ──
+    const NUM_PTS = 4;
+    const ptPos = new Float32Array(NUM_PTS * 3);
+    ls1PointData = [];
+    for (let i = 0; i < NUM_PTS; i++) {
+      // Exclusion zone: head + face + glasses (y > 1.08) are 100% particle-free
+      const y = 0.15 + Math.random() * 0.90;
+      const thick = getSmoothBodyThickness(y / FIG_H);
+      const rad = (thick * 0.70 + 0.03) * Math.sqrt(Math.random());
+      const ang = Math.random() * TAU;
+      const px = Math.cos(ang) * (rad * 1.25);
+      const pz = Math.sin(ang) * (rad * 0.60);
+      ptPos[i * 3] = px;
+      ptPos[i * 3 + 1] = y;
+      ptPos[i * 3 + 2] = pz;
+      ls1PointData.push({
+        baseX: px,
+        baseZ: pz,
+        y: y,
+        speed: 0.06 + Math.random() * 0.08,
+        wobble: Math.random() * TAU,
+        rad: rad
+      });
+    }
+    const ptGeo = new THREE.BufferGeometry();
+    ptGeo.setAttribute('position', new THREE.BufferAttribute(ptPos, 3));
+    const ptMat = new THREE.PointsMaterial({
+      color: 0x80e8ff,
+      size: 0.012,
+      transparent: true,
+      opacity: 0.28,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      map: softDisc(32)
+    });
+    ls1PointsMesh = new THREE.Points(ptGeo, ptMat);
+    ls1FigureGroup.add(ls1PointsMesh);
+
+    // ── Layer 4: Helical Filaments = OFF for LS1 MVP (Clean, calm hologram center) ──
+    ls1FilamentLines = [];
+
+    // ── 3. FLOATING ICOSAHEDRON DESTINATION NEXUS (8 DESTINATIONS, GATE C) ──
+    const LS1_DESTINATIONS = [
+      {
+        id: 'GITHUB',
+        label: 'GITHUB',
+        band: 'near',
+        pos: [0.55, 0.95, 0.90],
+        url: 'https://github.com/PriyanshGadia',
+        color: 0x2ea043,
+        hex: '#2ea043',
+        accent: 0x56d364
+      },
+      {
+        id: 'LINKEDIN',
+        label: 'LINKEDIN',
+        band: 'near',
+        pos: [-0.52, 1.12, 0.92],
+        url: 'https://linkedin.com/in/priyanshgadia',
+        color: 0x0a66c2,
+        hex: '#0a66c2',
+        accent: 0x388bfd
+      },
+      {
+        id: 'SPOTIFY',
+        label: 'SPOTIFY',
+        band: 'near',
+        pos: [-0.58, 0.62, 0.98],
+        url: 'https://open.spotify.com/user/priyanshgadia',
+        color: 0x1db954,
+        hex: '#1db954',
+        accent: 0x1ed760
+      },
+      {
+        id: 'ABOUT',
+        label: 'ABOUT',
+        band: 'middle',
+        pos: [0.70, 1.30, 1.15],
+        url: 'https://github.com/PriyanshGadia',
+        color: 0x00d8f6,
+        hex: '#00d8f6',
+        accent: 0x70f0ff
+      },
+      {
+        id: 'PAPERS',
+        label: 'PAPERS',
+        band: 'middle',
+        pos: [-0.72, 0.82, 1.12],
+        url: 'https://github.com/PriyanshGadia',
+        color: 0xf59e0b,
+        hex: '#f59e0b',
+        accent: 0xfbbf24
+      },
+      {
+        id: 'CONTACT',
+        label: 'CONTACT',
+        band: 'middle',
+        pos: [0.66, 0.58, 1.20],
+        url: 'mailto:gadiapriyansh@gmail.com',
+        color: 0xf97316,
+        hex: '#f97316',
+        accent: 0xfb923c
+      },
+      {
+        id: 'BLOG',
+        label: 'BLOG',
+        band: 'far',
+        pos: [-0.85, 1.35, 1.45],
+        url: 'https://github.com/PriyanshGadia/Cave',
+        color: 0x8b5cf6,
+        hex: '#8b5cf6',
+        accent: 0xa78bfa
+      },
+      {
+        id: 'INSTAGRAM',
+        label: 'INSTAGRAM',
+        band: 'far',
+        pos: [0.88, 0.88, 1.50],
+        url: 'https://instagram.com/priyanshgadia',
+        color: 0xe1306c,
+        hex: '#e1306c',
+        accent: 0xf77737
+      }
+    ];
+
+    // Reduced icosahedron size: radius 0.026 (~59% of previous 0.044 diameter)
+    const icosaGeo = new THREE.IcosahedronGeometry(0.026, 0);
+    const icosaEdges = new THREE.EdgesGeometry(icosaGeo);
+
+    ls1Crystals = [];
+    for (let i = 0; i < LS1_DESTINATIONS.length; i++) {
+      const dest = LS1_DESTINATIONS[i];
+      const nodeGroup = new THREE.Group();
+      nodeGroup.position.set(dest.pos[0], dest.pos[1], dest.pos[2]);
+
+      const cMat = new THREE.MeshStandardMaterial({
+        color: 0x021218,
+        emissive: dest.color,
+        emissiveIntensity: 0.42,
+        roughness: 0.15,
+        metalness: 0.85,
+        transparent: true,
+        opacity: 0.85
+      });
+      const crystalMesh = new THREE.Mesh(icosaGeo, cMat);
+      crystalMesh.userData = { isCrystal: true, dest, index: i, interactive: true, sector: 'LS1' };
+      nodeGroup.add(crystalMesh);
+
+      const edgeMat = new THREE.LineBasicMaterial({
+        color: dest.accent || dest.color,
+        transparent: true,
+        opacity: 0.75
+      });
+      const edgeLines = new THREE.LineSegments(icosaEdges, edgeMat);
+      crystalMesh.add(edgeLines);
+
+      // Inner faint luminous core (scaled to 0.010)
+      const innerCore = new THREE.Mesh(
+        new THREE.IcosahedronGeometry(0.010, 0),
+        new THREE.MeshBasicMaterial({ color: dest.accent || dest.color, transparent: true, opacity: 0.60 })
+      );
+      crystalMesh.add(innerCore);
+
+      // Zero text labels/badges in 3D floating space per Specification Rule 2
+      nodeGroup.userData = {
+        isCrystalNode: true,
+        dest,
+        index: i,
+        crystalMesh,
+        innerCore,
+        cMat,
+        edgeMat,
+        basePos: new THREE.Vector3(dest.pos[0], dest.pos[1], dest.pos[2]),
+        rotSpeed: 0.25 + hash(i * 7.1) * 0.15,
+        driftPhase: hash(i * 3.7) * TAU
+      };
+
+      // Initially inactive until wake sequence triggers
+      nodeGroup.visible = false;
+      g.add(nodeGroup);
+      ls1Crystals.push(nodeGroup);
+      hits.push(crystalMesh);
+    }
+
+    // ── Stellar Accretion Dust Cloud for Crystal Birth (192 particles = 8 x 24) ──
+    const ACCRETION_TOTAL = 192;
+    const accPos = new Float32Array(ACCRETION_TOTAL * 3);
+    const accColors = new Float32Array(ACCRETION_TOTAL * 3);
+    const accSizes = new Float32Array(ACCRETION_TOTAL);
+    const accOpacities = new Float32Array(ACCRETION_TOTAL);
+
+    ls1AccretionData = [];
+    for (let c = 0; c < LS1_DESTINATIONS.length; c++) {
+      const dest = LS1_DESTINATIONS[c];
+      const cCol = new THREE.Color(dest.color);
+      for (let p = 0; p < 24; p++) {
+        const idx = c * 24 + p;
+        accColors[idx * 3]     = cCol.r;
+        accColors[idx * 3 + 1] = cCol.g;
+        accColors[idx * 3 + 2] = cCol.b;
+        accSizes[idx]          = 0.010 + Math.random() * 0.012;
+        accOpacities[idx]      = 0.0;
+        accPos[idx * 3]        = dest.pos[0];
+        accPos[idx * 3 + 1]    = dest.pos[1];
+        accPos[idx * 3 + 2]    = dest.pos[2];
+
+        ls1AccretionData.push({
+          crystalIdx: c,
+          destPos: new THREE.Vector3(dest.pos[0], dest.pos[1], dest.pos[2]),
+          ang: Math.random() * TAU,
+          dist: 0.06 + Math.random() * 0.12,
+          speed: 3.2 + Math.random() * 4.5,
+          zOff: (Math.random() - 0.5) * 0.06
+        });
+      }
+    }
+
+    const accGeo = new THREE.BufferGeometry();
+    accGeo.setAttribute('position', new THREE.BufferAttribute(accPos, 3));
+    accGeo.setAttribute('aColor', new THREE.BufferAttribute(accColors, 3));
+    accGeo.setAttribute('aSize', new THREE.BufferAttribute(accSizes, 1));
+    accGeo.setAttribute('aOpacity', new THREE.BufferAttribute(accOpacities, 1));
+
+    const accVertShader = `
+      attribute vec3 aColor;
+      attribute float aSize;
+      attribute float aOpacity;
+      varying vec3 vColor;
+      varying float vOpacity;
+      void main() {
+        vColor = aColor;
+        vOpacity = aOpacity;
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        gl_PointSize = aSize * (320.0 / -mv.z);
+        gl_Position = projectionMatrix * mv;
+      }
+    `;
+    const accFragShader = `
+      precision highp float;
+      varying vec3 vColor;
+      varying float vOpacity;
+      void main() {
+        if (vOpacity <= 0.01) discard;
+        vec2 p = gl_PointCoord - vec2(0.5);
+        float d = length(p);
+        if (d > 0.5) discard;
+        float alpha = smoothstep(0.5, 0.08, d) * vOpacity;
+        gl_FragColor = vec4(vColor, alpha);
+      }
+    `;
+    const accMat = new THREE.ShaderMaterial({
+      vertexShader: accVertShader,
+      fragmentShader: accFragShader,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+    ls1AccretionMesh = new THREE.Points(accGeo, accMat);
+    ls1AccretionMesh.visible = false;
+    g.add(ls1AccretionMesh);
+
+    // ── 4. PHYSICAL BLACK SMOKE + ELECTRIC BLUE ENERGY + RECIRCULATING THROAT (GATE C) ──
+    ls1PortalMesh = new THREE.Group();
+    ls1PortalMesh.visible = false;
+    ls1PortalMesh.position.set(0.68, 1.02, 0.80);
+    g.add(ls1PortalMesh);
+
+    // ── A. DARK SPATIAL VOID THROAT (Depth saucer plunging into pure absorption darkness) ──
+    const throatGeo = new THREE.PlaneGeometry(0.40, 0.40, 32, 32);
+    const tPos = throatGeo.attributes.position;
+    for (let i = 0; i < tPos.count; i++) {
+      const tx = tPos.getX(i);
+      const ty = tPos.getY(i);
+      const tr = Math.sqrt(tx * tx + ty * ty);
+      tPos.setZ(i, -0.020 - Math.pow(Math.max(0.0, 1.0 - tr / 0.20), 1.6) * 0.058);
+    }
+    throatGeo.computeVertexNormals();
+
+    const throatVertShader = `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `;
+
+    const throatFragShader = `
+      precision highp float;
+      varying vec2 vUv;
+      uniform float uOpen;
+      uniform float uTear;
+      uniform vec3 uEnergyCol;
+
+      void main() {
+        if (uOpen <= 0.001) discard;
+        vec2 p = (vUv - 0.5) * 2.0;
+        float d = length(p);
+        if (d > 1.0) discard;
+        // Pitch-black spatial abyss: genuine black hole absorption with subtle destination energy rim
+        vec3 colCenter = vec3(0.000, 0.0002, 0.0005);
+        vec3 colRim    = mix(vec3(0.0015, 0.0035, 0.0070), uEnergyCol * 0.018, 0.65);
+        vec3 col = mix(colCenter, colRim, smoothstep(0.15, 0.85, d));
+        // Firm opacity at core so rupture cuts an unmistakable spatial puncture
+        float alpha = smoothstep(1.0, 0.08, d) * min(1.0, uOpen * 5.0) * 0.99;
+        gl_FragColor = vec4(col, alpha);
+      }
+    `;
+
+    ls1ThroatMat = new THREE.ShaderMaterial({
+      vertexShader: throatVertShader,
+      fragmentShader: throatFragShader,
+      uniforms: {
+        uOpen: { value: 0 },
+        uTear: { value: 0 },
+        uEnergyCol: { value: new THREE.Color(0x00aaff) }
+      },
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.NormalBlending,
+      side: THREE.DoubleSide
+    });
+    ls1ThroatMesh = new THREE.Mesh(throatGeo, ls1ThroatMat);
+    ls1ThroatMesh.userData = { isPortal: true, interactive: true, sector: 'LS1' };
+    ls1PortalMesh.add(ls1ThroatMesh);
+    hits.push(ls1ThroatMesh);
+
+    // ── B. PHYSICAL BLACK SMOKE / GRAPHITE DUST PARTICULATE POPULATION (280 PARTICLES) ──
+    const SMOKE_COUNT = 280;
+    const smokePos = new Float32Array(SMOKE_COUNT * 3);
+    const smokeSizes = new Float32Array(SMOKE_COUNT);
+    const smokeOpacities = new Float32Array(SMOKE_COUNT);
+    const smokeColors = new Float32Array(SMOKE_COUNT * 3);
+    const smokeAngles = new Float32Array(SMOKE_COUNT);
+
+    ls1SmokeData = [];
+    for (let i = 0; i < SMOKE_COUNT; i++) {
+      // Stratify size classes: 0 = massive smoke billow (25%), 1 = medium wisp (45%), 2 = fine graphite dust (30%)
+      const catRand = Math.random();
+      let sizeCat = 1;
+      let bSize = 0.13 + Math.random() * 0.09;
+      let bDensity = 0.60 + Math.random() * 0.35;
+      if (catRand < 0.25) {
+        sizeCat = 0; // Large dense smoke mass
+        bSize = 0.24 + Math.random() * 0.10;
+        bDensity = 0.82 + Math.random() * 0.16;
+      } else if (catRand > 0.70) {
+        sizeCat = 2; // Fine dust puff
+        bSize = 0.05 + Math.random() * 0.05;
+        bDensity = 0.40 + Math.random() * 0.30;
+      }
+
+      // Palette: genuine dark charcoal, deep soot, graphite black-blue (visibly darker than room)
+      let cr = 0.010 + Math.random() * 0.008;
+      let cg = 0.014 + Math.random() * 0.010;
+      let cb = 0.020 + Math.random() * 0.018;
+      if (Math.random() < 0.40) {
+        cr *= 0.5; cg *= 0.5; cb *= 0.6; // Extra dark soot
+      }
+
+      smokeColors[i * 3]     = cr;
+      smokeColors[i * 3 + 1] = cg;
+      smokeColors[i * 3 + 2] = cb;
+      smokeSizes[i]          = bSize;
+      smokeOpacities[i]      = 0;
+      smokeAngles[i]         = Math.random() * TAU;
+
+      ls1SmokeData.push({
+        phase: Math.random(), // Staggered initial position along streamline [0, 1]
+        speed: 0.22 + Math.random() * 0.30,
+        angle0: Math.random() * TAU,
+        lobeBias: (Math.random() - 0.5) * 0.85,
+        zDepth: (Math.random() - 0.5) * 0.065,
+        baseSize: bSize,
+        baseDensity: bDensity,
+        sizeCat,
+        swirlDir: Math.random() < 0.65 ? 1.0 : -1.0,
+        radialJitter: (Math.random() - 0.5) * 0.05,
+        seed: Math.random() * 100.0,
+        pos: new THREE.Vector3()
+      });
+    }
+
+    const smokeGeo = new THREE.BufferGeometry();
+    smokeGeo.setAttribute('position', new THREE.BufferAttribute(smokePos, 3));
+    smokeGeo.setAttribute('aSize', new THREE.BufferAttribute(smokeSizes, 1));
+    smokeGeo.setAttribute('aOpacity', new THREE.BufferAttribute(smokeOpacities, 1));
+    smokeGeo.setAttribute('aColor', new THREE.BufferAttribute(smokeColors, 3));
+    smokeGeo.setAttribute('aAngle', new THREE.BufferAttribute(smokeAngles, 1));
+
+    const smokeVertShader = `
+      uniform float uTime;
+      attribute float aSize;
+      attribute float aOpacity;
+      attribute vec3 aColor;
+      attribute float aAngle;
+      varying float vOpacity;
+      varying vec3 vColor;
+      varying float vAngle;
+
+      void main() {
+        vOpacity = aOpacity;
+        vColor = aColor;
+        vAngle = aAngle + uTime * 0.35;
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+        gl_PointSize = aSize * (360.0 / -mvPosition.z);
+        gl_Position = projectionMatrix * mvPosition;
+      }
+    `;
+
+    const smokeFragShader = `
+      precision highp float;
+      varying float vOpacity;
+      varying vec3 vColor;
+      varying float vAngle;
+
+      void main() {
+        if (vOpacity <= 0.002) discard;
+        vec2 p = gl_PointCoord - vec2(0.5);
+        float d = length(p);
+        if (d > 0.5) discard;
+        // Soft turbulent smoke puff silhouette with irregular wisp lobes
+        float a = atan(p.y, p.x) + vAngle;
+        float deform = 0.16 * sin(a * 3.0 + 0.4) + 0.11 * cos(a * 5.0 - 0.8);
+        float r = d / (0.5 * (1.0 + deform));
+        if (r > 1.0) discard;
+        float alpha = pow(max(0.0, 1.0 - r), 1.9) * vOpacity;
+        gl_FragColor = vec4(vColor, alpha);
+      }
+    `;
+
+    ls1SmokeMat = new THREE.ShaderMaterial({
+      vertexShader: smokeVertShader,
+      fragmentShader: smokeFragShader,
+      uniforms: {
+        uTime: { value: 0 }
+      },
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.NormalBlending // NORMAL ALPHA BLENDING: builds true dark physical opacity!
+    });
+    ls1SmokeMesh = new THREE.Points(smokeGeo, ls1SmokeMat);
+    ls1PortalMesh.add(ls1SmokeMesh);
+
+    // ── C. EMBEDDED ELECTRIC BLUE ENERGY FILAMENTS (24 ACTIVE FILAMENTS) ──
+    // Separate secondary material: ADDITIVE BLENDING, 10-20% surface presence inside smoke seams
+    ls1ElectricGroup = new THREE.Group();
+    ls1PortalMesh.add(ls1ElectricGroup);
+    ls1ElectricData = [];
+    const ELEC_COUNT = 24;
+
+    for (let k = 0; k < ELEC_COUNT; k++) {
+      const SEG_COUNT = 10;
+      const posArray = new Float32Array(SEG_COUNT * 3);
+      const eGeo = new THREE.BufferGeometry();
+      eGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+
+      // Electric cobalt and bright cyan palette
+      const eMat = new THREE.LineBasicMaterial({
+        color: k % 3 === 0 ? 0x99eeff : (k % 2 === 0 ? 0x00aaff : 0x0066ee),
+        transparent: true,
+        opacity: 0.0,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+      const eLine = new THREE.Line(eGeo, eMat);
+      ls1ElectricGroup.add(eLine);
+
+      ls1ElectricData.push({
+        line: eLine,
+        geo: eGeo,
+        mat: eMat,
+        segCount: SEG_COUNT,
+        life: 0,
+        maxLife: 0.13 + Math.random() * 0.15,
+        cooldown: Math.random() * 0.20,
+        sourceSmokeIdx: Math.floor(Math.random() * SMOKE_COUNT),
+        active: false
+      });
+    }
+
+    // Destination procedural preview card: temporarily hidden per user instruction 17
+    ls1PreviewCanvas = document.createElement('canvas');
+    ls1PreviewCanvas.width = 512;
+    ls1PreviewCanvas.height = 320;
+    ls1PreviewTex = new THREE.CanvasTexture(ls1PreviewCanvas);
+    ls1PreviewTex.colorSpace = THREE.SRGBColorSpace;
+
+    const previewCardMat = new THREE.MeshBasicMaterial({
+      map: ls1PreviewTex,
+      transparent: true,
+      opacity: 0.0,
+      depthWrite: false,
+      side: THREE.DoubleSide
+    });
+    ls1PreviewMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.28, 0.175), previewCardMat);
+    ls1PreviewMesh.position.set(0, 0, -0.095);
+    ls1PreviewMesh.visible = false;
+    ls1PreviewMesh.userData = { isPreview: true, interactive: true, sector: 'LS1' };
+    ls1PortalMesh.add(ls1PreviewMesh);
+
+    // ── Helper: draw authentic destination preview world for all 8 destinations ──
+    // LS1_DESTINATION_PREVIEW_RASTER_EXCEPTION: Authorized procedural destination previews
+    function drawDestinationPreview(dest) {
+      const c = ls1PreviewCanvas;
+      const ctx = c.getContext('2d');
+      ctx.clearRect(0, 0, 512, 320);
+
+      const id = dest.id || 'GITHUB';
+
+      if (id === 'GITHUB') {
+        // ── 1. GITHUB DESTINATION WORLD ──
+        ctx.fillStyle = '#0d1117';
+        ctx.fillRect(0, 0, 512, 320);
+
+        // Header
+        ctx.fillStyle = '#010409';
+        ctx.fillRect(0, 0, 512, 24);
+        ctx.strokeStyle = '#21262d';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(0, 24); ctx.lineTo(512, 24); ctx.stroke();
+
+        // Octocat logo icon
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.arc(16, 12, 6.5, 0, TAU); ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(11, 7); ctx.lineTo(13, 10); ctx.lineTo(10, 10); ctx.closePath();
+        ctx.moveTo(21, 7); ctx.lineTo(19, 10); ctx.lineTo(22, 10); ctx.closePath();
+        ctx.fill();
+
+        // Search box
+        ctx.fillStyle = '#161b22';
+        ctx.fillRect(320, 4, 110, 16);
+        ctx.strokeStyle = '#30363d';
+        ctx.strokeRect(320, 4, 110, 16);
+        ctx.fillStyle = '#7d8590';
+        ctx.font = '8px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('Type / to search', 328, 15);
+
+        // Top-right avatar
+        ctx.fillStyle = '#3fb950';
+        ctx.beginPath(); ctx.arc(496, 12, 5.5, 0, TAU); ctx.fill();
+
+        // Tabs
+        const tabs = ['Overview', 'Repositories 8', 'Projects', 'Packages', 'Stars'];
+        let tabX = 16;
+        ctx.font = '9px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        for (let i = 0; i < tabs.length; i++) {
+          if (i === 0) {
+            ctx.fillStyle = '#f0f6fc';
+            ctx.fillText(tabs[i], tabX, 37);
+            ctx.fillStyle = '#f78166';
+            ctx.fillRect(tabX - 2, 43, 44, 2);
+            tabX += 54;
+          } else {
+            ctx.fillStyle = '#7d8590';
+            ctx.fillText(tabs[i], tabX, 37);
+            tabX += (i === 1 ? 74 : 50);
+          }
+        }
+        ctx.strokeStyle = '#21262d';
+        ctx.beginPath(); ctx.moveTo(0, 45); ctx.lineTo(512, 45); ctx.stroke();
+
+        // Avatar with identicon
+        const avX = 66, avY = 90, avR = 30;
+        ctx.save();
+        ctx.beginPath(); ctx.arc(avX, avY, avR, 0, TAU); ctx.clip();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(avX - avR, avY - avR, avR * 2, avR * 2);
+        const idGrid = [
+          [0, 1, 0, 1, 0],
+          [1, 1, 0, 1, 1],
+          [1, 1, 1, 1, 1],
+          [1, 0, 1, 0, 1],
+          [0, 0, 1, 0, 0]
+        ];
+        ctx.fillStyle = '#3fb950';
+        const cellSz = 9;
+        const idLeft = avX - 2.5 * cellSz;
+        const idTop  = avY - 2.5 * cellSz;
+        for (let r = 0; r < 5; r++) {
+          for (let col = 0; col < 5; col++) {
+            if (idGrid[r][col]) ctx.fillRect(idLeft + col * cellSz, idTop + r * cellSz, cellSz, cellSz);
+          }
+        }
+        ctx.restore();
+
+        ctx.strokeStyle = '#30363d';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(avX, avY, avR, 0, TAU); ctx.stroke();
+
+        // Name
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#e6edf3';
+        ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        ctx.fillText('Priyansh Gadia', 18, 134);
+        ctx.fillStyle = '#7d8590';
+        ctx.font = '10px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        ctx.fillText('PriyanshGadia', 18, 147);
+
+        // Edit profile button
+        ctx.fillStyle = '#21262d';
+        ctx.fillRect(18, 156, 94, 18);
+        ctx.strokeStyle = '#363b42';
+        ctx.strokeRect(18, 156, 94, 18);
+        ctx.fillStyle = '#c9d1d9';
+        ctx.font = '9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Edit profile', 65, 168);
+
+        // Repositories
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#e6edf3';
+        ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        ctx.fillText('Popular repositories', 126, 58);
+
+        const repos = [
+          { name: 'FSO', lang: 'Python', col: '#3572A5' },
+          { name: 'Google-Forms-Bulk-Responder', lang: 'Python', col: '#3572A5' },
+          { name: 'Intelligent-Document-Processing', lang: 'Python', col: '#3572A5' },
+          { name: 'Respiratory-Support-Optimization', lang: 'Python', col: '#3572A5' },
+          { name: 'CryptoGraph_Analytics', lang: 'Python', col: '#3572A5' },
+          { name: 'physionet2026-unchartered', lang: 'Python', col: '#3572A5' }
+        ];
+
+        const cW = 180, cH = 36;
+        for (let i = 0; i < repos.length; i++) {
+          const colIdx = i % 2, rowIdx = Math.floor(i / 2);
+          const rx = 126 + colIdx * (cW + 10), ry = 64 + rowIdx * (cH + 6);
+          ctx.fillStyle = '#161b22';
+          ctx.fillRect(rx, ry, cW, cH);
+          ctx.strokeStyle = '#30363d';
+          ctx.strokeRect(rx, ry, cW, cH);
+          ctx.fillStyle = '#4493f8';
+          ctx.font = 'bold 8.5px sans-serif';
+          ctx.fillText(repos[i].name.slice(0, 24), rx + 8, ry + 12);
+          ctx.fillStyle = repos[i].col;
+          ctx.beginPath(); ctx.arc(rx + 11, ry + 26, 2.5, 0, TAU); ctx.fill();
+          ctx.fillStyle = '#7d8590';
+          ctx.font = '7.5px sans-serif';
+          ctx.fillText(repos[i].lang, rx + 18, ry + 29);
+        }
+
+        // Contribution Heatmap
+        const hY = 196;
+        ctx.fillStyle = '#e6edf3';
+        ctx.font = 'bold 9.5px sans-serif';
+        ctx.fillText('140 contributions in the last year', 126, hY);
+        ctx.fillStyle = '#161b22';
+        ctx.fillRect(126, hY + 6, 370, 48);
+        ctx.strokeStyle = '#30363d';
+        ctx.strokeRect(126, hY + 6, 370, 48);
+
+        const greens = ['#161b22', '#0e4429', '#006d32', '#26a641', '#39d353'];
+        for (let col = 0; col < 44; col++) {
+          for (let row = 0; row < 5; row++) {
+            const cx = 138 + col * 7.5, cy = hY + 18 + row * 6.5;
+            let gIdx = 0;
+            const hVal = hash(col * 7.1 + row * 13.3);
+            if (col > 32 && hVal > 0.45) gIdx = 3 + (hVal > 0.75 ? 1 : 0);
+            else if (col > 20 && hVal > 0.70) gIdx = 2;
+            else if (hVal > 0.85) gIdx = 1;
+            ctx.fillStyle = greens[gIdx];
+            ctx.fillRect(cx, cy, 5.5, 5);
+          }
+        }
+      } else if (id === 'LINKEDIN') {
+        // ── 2. LINKEDIN DESTINATION WORLD ──
+        ctx.fillStyle = '#1b1f23';
+        ctx.fillRect(0, 0, 512, 320);
+
+        // Top nav bar
+        ctx.fillStyle = '#0a66c2';
+        ctx.fillRect(0, 0, 512, 28);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 13px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('in', 20, 19);
+
+        // Search pill
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(52, 6, 140, 16);
+        ctx.fillStyle = '#666666';
+        ctx.font = '8px sans-serif';
+        ctx.fillText('Search', 60, 17);
+
+        // Profile banner
+        const bannerGrad = ctx.createLinearGradient(0, 28, 512, 90);
+        bannerGrad.addColorStop(0, '#004182');
+        bannerGrad.addColorStop(1, '#001a33');
+        ctx.fillStyle = bannerGrad;
+        ctx.fillRect(0, 28, 512, 70);
+
+        // Profile Card
+        ctx.fillStyle = '#24292e';
+        ctx.fillRect(16, 80, 480, 220);
+        ctx.strokeStyle = '#383f47';
+        ctx.strokeRect(16, 80, 480, 220);
+
+        // Photo circle
+        ctx.fillStyle = '#0a66c2';
+        ctx.beginPath(); ctx.arc(60, 95, 30, 0, TAU); ctx.fill();
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('PG', 60, 101);
+
+        // Profile info
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 14px -apple-system, sans-serif';
+        ctx.fillText('Priyansh Gadia', 105, 112);
+        ctx.fillStyle = '#70b5f9';
+        ctx.font = '10px -apple-system, sans-serif';
+        ctx.fillText('Quantitative Researcher & Machine Learning Engineer', 105, 127);
+        ctx.fillStyle = '#8c98a5';
+        ctx.font = '8.5px sans-serif';
+        ctx.fillText('Mumbai, Maharashtra, India · 500+ connections', 105, 140);
+
+        // Action buttons
+        ctx.fillStyle = '#0a66c2';
+        ctx.fillRect(105, 150, 70, 18);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 8px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Connect', 140, 162);
+
+        ctx.strokeStyle = '#0a66c2';
+        ctx.strokeRect(185, 150, 70, 18);
+        ctx.fillStyle = '#70b5f9';
+        ctx.fillText('Message', 220, 162);
+
+        // About snippet
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#e1e4e8';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillText('About', 32, 195);
+        ctx.fillStyle = '#a0abb6';
+        ctx.font = '8px sans-serif';
+        ctx.fillText('Specialized in State Space Models (Mamba-3), Spatio-Temporal GCNs, and Algorithmic Trading Architectures.', 32, 210);
+        ctx.fillText('Researching Multimodal Clinical AI Foundation Models (PhysioNet 2026, MIMIC-IV Cohorts).', 32, 222);
+
+        // Experience items
+        ctx.fillStyle = '#e1e4e8';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillText('Experience & Specialization', 32, 245);
+        ctx.fillStyle = '#70b5f9';
+        ctx.font = '8.5px sans-serif';
+        ctx.fillText('• Quantitative Machine Learning Research — Neural Sequence Architectures', 32, 260);
+        ctx.fillText('• Systems Engineering & High-Performance WebGL Engine Architecture', 32, 274);
+      } else if (id === 'SPOTIFY') {
+        // ── 3. SPOTIFY DESTINATION WORLD ──
+        ctx.fillStyle = '#121212';
+        ctx.fillRect(0, 0, 512, 320);
+
+        // Top green ambient gradient
+        const spGrad = ctx.createLinearGradient(0, 0, 0, 140);
+        spGrad.addColorStop(0, '#103e1e');
+        spGrad.addColorStop(1, '#121212');
+        ctx.fillStyle = spGrad;
+        ctx.fillRect(0, 0, 512, 140);
+
+        // Verified profile badge & avatar
+        ctx.fillStyle = '#1db954';
+        ctx.beginPath(); ctx.arc(58, 62, 34, 0, TAU); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('P', 58, 69);
+
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#b3b3b3';
+        ctx.font = 'bold 8px sans-serif';
+        ctx.fillText('VERIFIED PROFILE', 105, 45);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 22px -apple-system, sans-serif';
+        ctx.fillText('Priyansh Gadia', 105, 72);
+        ctx.fillStyle = '#b3b3b3';
+        ctx.font = '9px sans-serif';
+        ctx.fillText('Public Profile · Audio Archives & Curated Soundtracks', 105, 88);
+
+        // Green Play Button
+        ctx.fillStyle = '#1ed760';
+        ctx.beginPath(); ctx.arc(440, 65, 22, 0, TAU); ctx.fill();
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.moveTo(434, 55); ctx.lineTo(450, 65); ctx.lineTo(434, 75); ctx.closePath();
+        ctx.fill();
+
+        // Public Playlists section
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillText('Public Playlists', 24, 130);
+
+        const playlists = [
+          { title: 'Deep Quant Focus', sub: 'Minimal Techno & IDM', col: '#1e3264' },
+          { title: 'Late Night Synth', sub: 'Darkwave & Ambient Drone', col: '#8d67ab' },
+          { title: 'Mathematical Flow', sub: 'Complex Rhythmics', col: '#e8115b' }
+        ];
+
+        for (let i = 0; i < playlists.length; i++) {
+          const px = 24 + i * 156;
+          ctx.fillStyle = playlists[i].col;
+          ctx.fillRect(px, 145, 144, 90);
+          ctx.fillStyle = '#181818';
+          ctx.fillRect(px, 235, 144, 45);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 10px sans-serif';
+          ctx.fillText(playlists[i].title, px + 8, 252);
+          ctx.fillStyle = '#a7a7a7';
+          ctx.font = '8px sans-serif';
+          ctx.fillText(playlists[i].sub, px + 8, 268);
+        }
+
+        // Bottom playback bar
+        ctx.fillStyle = '#181818';
+        ctx.fillRect(0, 290, 512, 30);
+        ctx.fillStyle = '#1db954';
+        ctx.fillRect(0, 290, 180, 2);
+      } else if (id === 'INSTAGRAM') {
+        // ── 4. INSTAGRAM DESTINATION WORLD ──
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, 512, 320);
+
+        // Header
+        ctx.fillStyle = '#121212';
+        ctx.fillRect(0, 0, 512, 32);
+        ctx.strokeStyle = '#262626';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(0, 0, 512, 32);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('priyanshgadia', 24, 20);
+
+        // Avatar with gradient story ring
+        const avX = 54, avY = 70;
+        const ringGrad = ctx.createLinearGradient(24, 40, 84, 100);
+        ringGrad.addColorStop(0, '#f09433');
+        ringGrad.addColorStop(0.5, '#e6683c');
+        ringGrad.addColorStop(1, '#bc1888');
+        ctx.strokeStyle = ringGrad; ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.arc(avX, avY, 26, 0, TAU); ctx.stroke();
+
+        ctx.fillStyle = '#262626';
+        ctx.beginPath(); ctx.arc(avX, avY, 22, 0, TAU); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('PG', avX, avY + 4);
+
+        // Stats
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#ffffff'; ctx.font = 'bold 11px sans-serif';
+        ctx.fillText('42', 150, 65);
+        ctx.fillText('1,280', 230, 65);
+        ctx.fillText('490', 310, 65);
+        ctx.fillStyle = '#8e8e8e'; ctx.font = '8px sans-serif';
+        ctx.fillText('posts', 150, 78);
+        ctx.fillText('followers', 230, 78);
+        ctx.fillText('following', 310, 78);
+
+        // Bio
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillText('Priyansh Gadia', 24, 114);
+        ctx.fillStyle = '#e0e0e0';
+        ctx.font = '8.5px sans-serif';
+        ctx.fillText('Visual Archives · Spatial Light & Algorithmic Geometry', 24, 128);
+        ctx.fillStyle = '#737373';
+        ctx.fillText('Mumbai, India · Computational Art & Photography', 24, 140);
+
+        // 6 Photo Grid Thumbnails
+        const photoColors = ['#1a2a3a', '#2c1e28', '#1b322a', '#28241d', '#1d212b', '#2e1c22'];
+        for (let i = 0; i < 6; i++) {
+          const col = i % 3, row = Math.floor(i / 3);
+          const px = 24 + col * 156, py = 155 + row * 78;
+          ctx.fillStyle = photoColors[i];
+          ctx.fillRect(px, py, 148, 72);
+          ctx.strokeStyle = '#262626';
+          ctx.strokeRect(px, py, 148, 72);
+
+          // Abstract photo geometry inside each card
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+          ctx.beginPath();
+          ctx.arc(px + 74, py + 36, 18, 0, TAU);
+          ctx.fill();
+        }
+      } else if (id === 'PAPERS') {
+        // ── 5. PAPERS DESTINATION WORLD ──
+        ctx.fillStyle = '#0b0f19';
+        ctx.fillRect(0, 0, 512, 320);
+
+        // Header bar
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(0, 0, 512, 36);
+        ctx.strokeStyle = '#1f2937';
+        ctx.strokeRect(0, 0, 512, 36);
+        ctx.fillStyle = '#f59e0b';
+        ctx.font = 'bold 11px monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText('PUBLICATIONS & COMPUTATIONAL ARCHIVES // PRIYANSH GADIA', 20, 22);
+
+        // 3 Paper Cards
+        const paperList = [
+          {
+            title: 'PhysioNet 2026 Challenge: Multimodal Sleep-Staging',
+            venue: 'Neural Sequence Models · Biometric EEG/ECG Latents',
+            badges: ['[PDF]', '[CODE]', '[BENCHMARK]']
+          },
+          {
+            title: 'Adaptive Mechanical Ventilation on MIMIC-IV (50,920 Cohort)',
+            venue: 'Offline Reinforcement Learning in Critical Care',
+            badges: ['[PREPRINT]', '[DATASET]']
+          },
+          {
+            title: 'High-Order Spectral Graph Convolutions in Microstructure',
+            venue: 'Ultra-Low Latency Order Book Spatial Geometry',
+            badges: ['[ARXIV]', '[EXPERIMENTS]']
+          }
+        ];
+
+        for (let i = 0; i < paperList.length; i++) {
+          const py = 50 + i * 86;
+          ctx.fillStyle = '#111827';
+          ctx.fillRect(18, py, 476, 76);
+          ctx.strokeStyle = '#374151';
+          ctx.strokeRect(18, py, 476, 76);
+
+          ctx.fillStyle = '#fbbf24';
+          ctx.font = 'bold 10.5px -apple-system, sans-serif';
+          ctx.fillText(paperList[i].title, 32, py + 22);
+
+          ctx.fillStyle = '#9ca3af';
+          ctx.font = '8.5px sans-serif';
+          ctx.fillText(paperList[i].venue, 32, py + 38);
+
+          // Badges
+          let bx = 32;
+          for (let b = 0; b < paperList[i].badges.length; b++) {
+            ctx.fillStyle = '#1f2937';
+            ctx.fillRect(bx, py + 48, 56, 16);
+            ctx.strokeStyle = '#f59e0b';
+            ctx.strokeRect(bx, py + 48, 56, 16);
+            ctx.fillStyle = '#fef3c7';
+            ctx.font = 'bold 7.5px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(paperList[i].badges[b], bx + 28, py + 59);
+            ctx.textAlign = 'left';
+            bx += 64;
+          }
+        }
+      } else if (id === 'BLOG') {
+        // ── 6. BLOG DESTINATION WORLD ──
+        ctx.fillStyle = '#0e1117';
+        ctx.fillRect(0, 0, 512, 320);
+
+        // Header
+        ctx.fillStyle = '#161b22';
+        ctx.fillRect(0, 0, 512, 34);
+        ctx.strokeStyle = '#30363d';
+        ctx.strokeRect(0, 0, 512, 34);
+        ctx.fillStyle = '#8b5cf6';
+        ctx.font = 'bold 11px monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText('ENGINEERING DISPATCHES // TECHNICAL LOG', 20, 21);
+
+        const articles = [
+          {
+            title: 'Building a 60 FPS Procedural WebGL Engine with Zero Images',
+            date: 'September 2026 · 14 min read',
+            tags: '#WebGL #GLSL #Procedural'
+          },
+          {
+            title: 'Discretizing Continuous Mamba-3 State Spaces for Trading',
+            date: 'August 2026 · 18 min read',
+            tags: '#Quant #SSM #DeepLearning'
+          },
+          {
+            title: 'Real-Time Raymarched PBR Cook-Torrance BRDF in GLSL',
+            date: 'July 2026 · 10 min read',
+            tags: '#Shaders #Math #Graphics'
+          }
+        ];
+
+        for (let i = 0; i < articles.length; i++) {
+          const py = 48 + i * 88;
+          ctx.fillStyle = '#161b22';
+          ctx.fillRect(20, py, 472, 78);
+          ctx.strokeStyle = '#30363d';
+          ctx.strokeRect(20, py, 472, 78);
+
+          ctx.fillStyle = '#c4b5fd';
+          ctx.font = 'bold 11px -apple-system, sans-serif';
+          ctx.fillText(articles[i].title, 34, py + 22);
+
+          ctx.fillStyle = '#8b949e';
+          ctx.font = '8.5px sans-serif';
+          ctx.fillText(articles[i].date, 34, py + 40);
+
+          ctx.fillStyle = '#a78bfa';
+          ctx.font = 'bold 8px monospace';
+          ctx.fillText(articles[i].tags, 34, py + 60);
+        }
+      } else if (id === 'ABOUT') {
+        // ── 7. ABOUT DESTINATION WORLD ──
+        ctx.fillStyle = '#0a0f1d';
+        ctx.fillRect(0, 0, 512, 320);
+
+        ctx.fillStyle = '#00d8f6';
+        ctx.font = 'bold 12px monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText('ARCHITECT DOSSIER // PRIYANSH GADIA', 24, 30);
+
+        ctx.fillStyle = '#111e33';
+        ctx.fillRect(20, 44, 472, 256);
+        ctx.strokeStyle = '#1e3558';
+        ctx.strokeRect(20, 44, 472, 256);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 14px -apple-system, sans-serif';
+        ctx.fillText('Priyansh Gadia', 38, 72);
+
+        ctx.fillStyle = '#70e0ff';
+        ctx.font = '9.5px monospace';
+        ctx.fillText('LOCATION: MUMBAI, INDIA · APPLIED QUANT & BIO-AI RESEARCHER', 38, 90);
+
+        ctx.fillStyle = '#a0b8d8';
+        ctx.font = '9px sans-serif';
+        ctx.fillText('Architect of VAULT-01 — A 60 FPS Procedural WebGL Virtual Facility built with zero external textures.', 38, 116);
+        ctx.fillText('Research specializes in State Space Sequence Models (Mamba-3), Spatio-Temporal Graph Convolutions,', 38, 130);
+        ctx.fillText('and Multimodal Biological Foundation Models for Critical Care & Clinical Monitoring.', 38, 144);
+
+        ctx.fillStyle = '#00d8f6';
+        ctx.font = 'bold 10px monospace';
+        ctx.fillText('CORE RESEARCH PILLARS', 38, 175);
+
+        const pillars = [
+          '• High-Frequency L2 Order Book Microstructure Dynamics & Spectral Graph Convolutions',
+          '• Continuous-to-Discrete State Space Models (Mamba) for Real-Time Financial Sequence Modeling',
+          '• Zero-Raster PBR Procedural Graphics Engines, Shaders, & Deterministic WebGL Math'
+        ];
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '8.5px sans-serif';
+        for (let p = 0; p < pillars.length; p++) {
+          ctx.fillText(pillars[p], 38, 198 + p * 18);
+        }
+      } else if (id === 'CONTACT') {
+        // ── 8. CONTACT DESTINATION WORLD ──
+        ctx.fillStyle = '#050810';
+        ctx.fillRect(0, 0, 512, 320);
+
+        // Terminal frame
+        ctx.fillStyle = '#0c1220';
+        ctx.fillRect(16, 16, 480, 288);
+        ctx.strokeStyle = '#f97316';
+        ctx.strokeRect(16, 16, 480, 288);
+
+        ctx.fillStyle = '#f97316';
+        ctx.font = 'bold 11px monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText('ENCRYPTED DIRECT CHANNEL // STATION LS1', 32, 40);
+
+        ctx.fillStyle = '#fb923c';
+        ctx.font = '10px monospace';
+        ctx.fillText('priyansh@vault:~$ ./direct_comm.sh', 32, 68);
+
+        const commFields = [
+          ['STATUS', 'READY FOR SELECT RESEARCH & ENGINEERING COLLABORATIONS'],
+          ['EMAIL', 'gadiapriyansh@gmail.com'],
+          ['LOCATION', 'MUMBAI, INDIA (UTC+5:30)'],
+          ['ENCRYPTION', '256-BIT PROCEDURAL SHIFT / DIRECT DISPATCH'],
+          ['SPECIALTY', 'QUANTITATIVE ARCHITECTURES & BIO-AI RESEARCH']
+        ];
+
+        for (let i = 0; i < commFields.length; i++) {
+          const py = 100 + i * 32;
+          ctx.fillStyle = '#64748b';
+          ctx.font = 'bold 8.5px monospace';
+          ctx.fillText(commFields[i][0] + ':', 32, py);
+          ctx.fillStyle = '#f8fafc';
+          ctx.font = 'bold 9.5px monospace';
+          ctx.fillText(commFields[i][1], 120, py);
+        }
+
+        ctx.fillStyle = '#f97316';
+        ctx.fillRect(32, 260, 180, 22);
+        ctx.fillStyle = '#000000';
+        ctx.font = 'bold 9px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('CLICK TO INITIATE DISPATCH', 122, 274);
+      }
+
+      // Soft radial vignette to dissolve canvas rectangular boundaries into the optical throat void
+      const grad = ctx.createRadialGradient(256, 160, 140, 256, 160, 255);
+      grad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+      grad.addColorStop(0.65, 'rgba(0, 0, 0, 0.40)');
+      grad.addColorStop(1, 'rgba(0, 0, 0, 1.0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 512, 320);
+
+      ls1PreviewTex.needsUpdate = true;
+    }
+
+    activatePortal = function(crystalNode) {
+      if (!crystalNode) return;
+      const dest = crystalNode.userData.dest;
+      if (!dest) return;
+
+      ls1ActivePortal = {
+        node: crystalNode,
+        dest,
+        t: 0,
+        state: 'opening'
+      };
+
+      // Position portal aperture beside hologram on the right (clearing central corridor)
+      ls1PortalMesh.position.set(0.68, 1.02, 0.80);
+      ls1PortalMesh.scale.setScalar(0.06);
+      ls1PortalMesh.visible = true;
+      if (ls1SmokeMesh) ls1SmokeMesh.visible = true;
+      if (ls1ElectricGroup) ls1ElectricGroup.visible = true;
+      if (ls1ThroatMesh) ls1ThroatMesh.visible = true;
+      if (ls1PreviewMesh) ls1PreviewMesh.visible = true;
+      if (ls1ThroatMat) {
+        ls1ThroatMat.uniforms.uOpen.value = 0;
+        ls1ThroatMat.uniforms.uEnergyCol.value.setHex(dest.color);
+      }
+
+      // Spectral energy color inheritance for electric filaments
+      if (ls1ElectricData && ls1ElectricData.length > 0) {
+        for (let k = 0; k < ls1ElectricData.length; k++) {
+          const ed = ls1ElectricData[k];
+          const filamentCol = (k % 3 === 0) ? (dest.accent || dest.color) : dest.color;
+          ed.mat.color.setHex(filamentCol);
+        }
+      }
+
+      drawDestinationPreview(dest);
+      crystalNode.userData.isAnchored = true;
+
+      sfx.blip(1500, 0.08, 0.05);
+      sfx.relay();
+    };
+
+    closePortal = function(instant = false) {
+      if (!ls1ActivePortal) return;
+      if (instant) {
+        ls1PortalMesh.visible = false;
+        if (ls1SmokeMesh) ls1SmokeMesh.visible = false;
+        if (ls1ElectricGroup) ls1ElectricGroup.visible = false;
+        if (ls1ThroatMesh) ls1ThroatMesh.visible = false;
+        if (ls1PreviewMesh) ls1PreviewMesh.visible = false;
+        if (ls1ThroatMat) ls1ThroatMat.uniforms.uOpen.value = 0;
+        if (ls1ActivePortal.node) {
+          ls1ActivePortal.node.userData.isAnchored = false;
+          ls1ActivePortal.node.position.copy(ls1ActivePortal.node.userData.basePos);
+        }
+        ls1ActivePortal = null;
+        return;
+      }
+      ls1ActivePortal.state = 'closing';
+      sfx.servo(0.5, false);
+    };
+
+    wakeLS1 = function() {
+      if (ls1StationState !== 'sleeping') return;
+      ls1StationState = 'hologram_boot';
+      ls1BootTimer = 0;
+      if (ls1ActivatorMat) ls1ActivatorMat.emissiveIntensity = 0.95;
+      sfx.relay();
+      sfx.hum();
+    };
+
+    traversePortal = function() {
+      if (!ls1ActivePortal || !ls1ActivePortal.dest) return;
+      if (ls1Traversal && ls1Traversal.active) return;
+      const dest = ls1ActivePortal.dest;
+
+      const pWorld = ls1PortalMesh.getWorldPosition(new THREE.Vector3());
+      const pQuat = ls1PortalMesh.getWorldQuaternion(new THREE.Quaternion());
+      const fwd = new THREE.Vector3(0, 0, 1).applyQuaternion(pQuat);
+
+      ls1Traversal = {
+        active: true,
+        t: 0,
+        duration: 2.0,
+        fromPos: cam.position.clone(),
+        targetPos: pWorld.clone().add(fwd.multiplyScalar(0.06)),
+        dest
+      };
+
+      sfx.beam();
+      sfx.relay();
+    };
+
+    // Return & reverse suction collapse listener
+    function handleLS1Return() {
+      const returnDestId = sessionStorage.getItem('vault_ls1_return');
+      if (!returnDestId) return;
+      sessionStorage.removeItem('vault_ls1_return');
+
+      if (!FOCUS.active || FOCUS.id !== 'LS1') {
+        focusSector('LS1');
+      }
+
+      const node = ls1Crystals.find(c => c.userData.dest.id === returnDestId) || ls1Crystals[0];
+      if (!ls1ActivePortal) {
+        activatePortal(node);
+      }
+      if (ls1ActivePortal) {
+        ls1ActivePortal.t = 1.0;
+        ls1ActivePortal.state = 'closing';
+      }
+
+      ls1ReturnAnim = {
+        active: true,
+        t: 0,
+        duration: 1.8,
+        node
+      };
+      sfx.servo(0.6, false);
+    }
+
+    window.addEventListener('pageshow', handleLS1Return);
+    window.addEventListener('focus', () => {
+      if (sessionStorage.getItem('vault_ls1_return')) {
+        setTimeout(handleLS1Return, 60);
+      }
+    });
+
+    tag(g, 'LS1');
+    heroGroups.push({ id: 'LS1', group: g });
+  }
   { const cans = [], boxes = [], bars = []; for (const k of [1, 3, 6, 7, 8]) for (let i = 0; i < 3; i++) { const side = i & 1 ? 1 : -1, th = k * SEC + side * (.29 + hash(k * 13 + i) * .03), r = 3.5 + hash(k * 7 + i * 3) * .7, kind = Math.floor(hash(k + i * 11) * 3);   // clutter at sector edges only — never under an installation
       const o = kind === 0 ? cyl(.04, .045, .14, tit, 12) : kind === 1 ? box(.18, .08, .1, comp) : box(.16, .012, .03, tit); o.position.copy(polar(th, r, TOP + (kind === 0 ? .07 : kind === 1 ? .04 : .006))); o.rotation.y = hash(i * k) * TAU; (kind === 0 ? cans : kind === 1 ? boxes : bars).push(o); }
     merged(cans, tit, table); merged(boxes, comp, table); merged(bars, tit, table); }
@@ -4409,7 +6835,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   const scanMeshes = scanSrc.filter(Boolean).map(src => { src.updateWorldMatrix(true, false); const m = new THREE.Mesh(src.geometry, scanMat); m.matrixAutoUpdate = false; m.matrix.copy(src.matrixWorld); m.visible = false; m.renderOrder = 5; lab.add(m); return m; });
 
   /* ── THE ENTITY (document design): wireframe cube + nested octahedron/icosahedron, core, four plasma ribbons, energy haze, anchor cone ── */
-  const ent = new THREE.Group(); ent.visible = false; ent.scale.setScalar(0); glow.add(ent);
+  const ent = new THREE.Group(); ent.name = 'THE_ENTITY'; ent.visible = false; ent.scale.setScalar(0); glow.add(ent);
   const wire = g => new THREE.LineSegments(g, lineM({}));
   const shellsN = LOW ? 2 : 3;
   const allShells = [wire(new THREE.EdgesGeometry(new THREE.BoxGeometry(.72, .72, .72))), wire(new THREE.WireframeGeometry(new THREE.OctahedronGeometry(.5, 0))), wire(new THREE.WireframeGeometry(new THREE.IcosahedronGeometry(1.02, 1)))];
@@ -4457,13 +6883,18 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   /* ── blackout we own from vault:entered; camera fit; input (movement / look / raycast / console kept separate) ── */
   const bokeh = null;
   const sectorGroups = {}; heroGroups.forEach(h => { sectorGroups[h.id] = h.group; });
+  sectorGroups['LS2_LAMP'] = sectorGroups['LS2']; sectorGroups['LS2_SHELF'] = sectorGroups['LS2']; sectorGroups['LS2_NOTE'] = sectorGroups['LS2']; sectorGroups['LS2_NOTE1'] = sectorGroups['LS2'];
   const FOCUS_CFG = {
     RS1: { dolly: (g) => [g.localToWorld(new THREE.Vector3(0, .6, .5)), g.localToWorld(new THREE.Vector3(0, .01, 0))] },
     RS2: { dolly: (g) => [g.localToWorld(new THREE.Vector3(0, .45, .36)), g.localToWorld(new THREE.Vector3(0, .025, .03))] },
     RS3: { dolly: (g) => [g.localToWorld(new THREE.Vector3(0, .84, 1.05)), g.localToWorld(new THREE.Vector3(0, .78, 0))] },
     LS3: { dolly: (g) => [g.localToWorld(new THREE.Vector3(0, 1.05, 2.35)), g.localToWorld(new THREE.Vector3(0, 0.62, 0.15))] },
-    LS2: { dolly: (g) => [g.localToWorld(new THREE.Vector3(0, .65, .75)), g.localToWorld(new THREE.Vector3(0, .62, 0))] },
-    LS1: { dolly: (g) => [g.localToWorld(new THREE.Vector3(0, .88, .88)), g.localToWorld(new THREE.Vector3(0, .85, 0))] },
+    LS2: { dolly: (g) => [g.localToWorld(new THREE.Vector3(0, .64, 1.82)), g.localToWorld(new THREE.Vector3(0, .60, .05))] },
+    LS2_NOTE: { dolly: (g) => [g.localToWorld(new THREE.Vector3(0.16, 0.94, 0.24)), g.localToWorld(new THREE.Vector3(0.16, 0.94, 0.035))] },
+    LS2_NOTE1: { dolly: (g) => [g.localToWorld(new THREE.Vector3(-0.42, 0.92, 0.24)), g.localToWorld(new THREE.Vector3(-0.42, 0.92, 0.035))] },
+    LS2_LAMP: { dolly: (g) => [g.localToWorld(new THREE.Vector3(-0.75, 1.35, 0.65)), g.localToWorld(new THREE.Vector3(-0.36, 1.15, 0.35))] },
+    LS2_SHELF: { dolly: (g) => [g.localToWorld(new THREE.Vector3(0, 0.28, 0.58)), g.localToWorld(new THREE.Vector3(0, 0.04, 0.12))] },
+    LS1: { dolly: (g) => [g.localToWorld(new THREE.Vector3(0.36, 1.08, 1.88)), g.localToWorld(new THREE.Vector3(0, 0.95, 0.0))] },
   };
   const FOCUS = { id: null, t: 0, from: new THREE.Vector3(), fromQ: new THREE.Quaternion(), toPos: new THREE.Vector3(), toLook: new THREE.Vector3(), active: false };
 
@@ -4479,7 +6910,17 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       setCategory: (cat) => { RESUME.category = cat; RESUME.scroll = 0; applyResumeFilter(); drawResume(resumeCanvas); if (resumeTex) resumeTex.needsUpdate = true; },
       setTemplate: (tpl) => { RESUME.template = tpl; drawResume(resumeCanvas); if (resumeTex) resumeTex.needsUpdate = true; },
     },
-    notes: { onLoad: null, onSave: null },
+    notes: {
+      onLoad: null,
+      onSave: null,
+      getNote: (idx) => LS2.notes[idx],
+      setNote: (idx, data) => { Object.assign(LS2.notes[idx], data); drawLS2Note(idx); if (ls2Textures[idx]) ls2Textures[idx].needsUpdate = true; saveLS2Note(idx, false); },
+      addStroke: (idx, stroke) => { LS2.notes[idx].inkStrokes.push(stroke); LS2.notes[idx].isCustom = true; drawLS2Note(idx); if (ls2Textures[idx]) ls2Textures[idx].needsUpdate = true; saveLS2Note(idx, false); },
+      flush: (idx) => flushLS2Note(idx),
+      setPage: (p) => { LS2.page = Math.max(0, Math.min(LS2.maxPages - 1, p)); updateLS2Page(); },
+      sync: (page) => { if (page != null) LS2.page = page; updateLS2Page(); },
+      getState: () => LS2
+    },
     globe: {
       onLocate: null,
       _onAlbum: null,
@@ -4513,8 +6954,34 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       redraw: () => redrawCal(),
       submit: () => calSubmitRequest(),
     },
-    blueprint: { onRepos: null },
     profile: { onLinks: null, onBlog: null },
+    ls1: {
+      getCrystals: () => ls1Crystals,
+      getActivePortal: () => ls1ActivePortal,
+      activatePortal: (target) => {
+        let node = target;
+        if (typeof target === 'string') {
+          node = ls1Crystals.find(x => x.userData.dest.id === target || x.userData.dest.label === target);
+        } else if (typeof target === 'number') {
+          node = ls1Crystals[target];
+        }
+        if (node && activatePortal) activatePortal(node);
+      },
+      closePortal: (instant = false) => { if (closePortal) closePortal(instant); },
+      traversePortal: () => { if (traversePortal) traversePortal(); },
+      focusCrystal: (idx) => {
+        ls1FocusedCrystalIdx = (idx + ls1Crystals.length) % ls1Crystals.length;
+      },
+      setPortalState: (prog, st = 'open') => {
+        if (!ls1ActivePortal && ls1Crystals.length > 0) {
+          activatePortal(ls1Crystals[0]);
+        }
+        if (ls1ActivePortal) {
+          ls1ActivePortal.t = prog;
+          ls1ActivePortal.state = st;
+        }
+      }
+    },
   };
 
   const dragPlaneY = new THREE.Plane(new THREE.Vector3(0, 1, 0));
@@ -4650,6 +7117,91 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
         if (readId) closeReadMode();
         sheets.forEach(s => { s.rest = true; });
       },
+    },
+    LS1: {
+      usesPointerDrag: false,
+      onHit(mesh, uv, point, e) {
+        if (mesh?.userData?.isActivator) {
+          wakeLS1();
+          return;
+        }
+        if (mesh?.userData?.isPortal || mesh?.userData?.isPreview) {
+          traversePortal();
+          return;
+        }
+        const crystal = mesh?.userData?.isCrystal ? mesh.parent : mesh?.parent?.userData?.isCrystalNode ? mesh.parent : null;
+        if (crystal) {
+          if (ls1ActivePortal && ls1ActivePortal.node === crystal) {
+            traversePortal();
+          } else {
+            activatePortal(crystal);
+          }
+          return;
+        }
+      },
+      onMove(e) {
+        if (!FOCUS.active || FOCUS.id !== 'LS1') return;
+        ndc.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+        ray.setFromCamera(ndc, cam);
+        const targets = [];
+        if (ls1StationState === 'sleeping' && ls1ActivatorMesh) {
+          targets.push(ls1ActivatorMesh);
+        }
+        for (let i = 0; i < ls1Crystals.length; i++) {
+          if (ls1Crystals[i].visible) {
+            targets.push(ls1Crystals[i].userData.crystalMesh);
+          }
+        }
+        if (ls1PortalMesh && ls1PortalMesh.visible) {
+          targets.push(ls1PortalMesh);
+        }
+        const hList = ray.intersectObjects(targets, true);
+        if (hList.length > 0) {
+          renderer.domElement.style.cursor = 'pointer';
+          const hitObj = hList[0].object;
+          if (hitObj.userData?.isCrystal) {
+            ls1HoveredCrystal = hitObj.parent;
+            ls1FocusedCrystalIdx = hitObj.userData.index;
+          }
+        } else {
+          renderer.domElement.style.cursor = 'default';
+          ls1HoveredCrystal = null;
+        }
+      },
+      onKey(e) {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+          ls1FocusedCrystalIdx = (ls1FocusedCrystalIdx + 1) % ls1Crystals.length;
+          sfx.blip(1200, 0.03, 0.02);
+          e.preventDefault();
+          return;
+        }
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+          ls1FocusedCrystalIdx = (ls1FocusedCrystalIdx - 1 + ls1Crystals.length) % ls1Crystals.length;
+          sfx.blip(1100, 0.03, 0.02);
+          e.preventDefault();
+          return;
+        }
+        if (e.key === 'Enter' || e.key === ' ') {
+          if (ls1ActivePortal) {
+            traversePortal();
+          } else if (ls1Crystals[ls1FocusedCrystalIdx]) {
+            activatePortal(ls1Crystals[ls1FocusedCrystalIdx]);
+          }
+          e.preventDefault();
+          return;
+        }
+        if (e.key === 'Escape') {
+          if (ls1ActivePortal) {
+            closePortal();
+            e.preventDefault();
+            return;
+          }
+        }
+      },
+      onExit() {
+        closePortal(true);
+        ls1HoveredCrystal = null;
+      }
     },
     RS2: {
       onHit(mesh, uv, point, e) {
@@ -4877,28 +7429,212 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
         redrawCal();
       }
     },
-    LS1: {
-      onHit(mesh, uv) {
-        if (!uv) return;
-        const px = uv.x * 320, py = (1 - uv.y) * 440;
-        if (py >= 142 && py <= 165) {
-          const tabIdx = Math.floor((px - 14) / 76);
-          if (tabIdx >= 0 && tabIdx < 4) {
-            curProfTab = tabIdx;
-            drawProf(profCanvas);
-            profTex.needsUpdate = true;
-            sfx.blip(1200, .04, .02);
-            if (api2.profile.onLinks) api2.profile.onLinks(PROFILE_TABS[tabIdx]);
+    LS2: {
+      usesPointerDrag: true,
+      onHit(mesh, uv, point, e) {
+        if (!mesh || !mesh.userData) return;
+        
+        // 1. Click on Paging Dial on Shelf
+        if (mesh.userData.isPagingDial) {
+          LS2.page = (LS2.page + 1) % LS2.maxPages;
+          updateLS2Page();
+          sfx.relay();
+          return;
+        }
+
+        // 2. Click on Stylus Marker Pen on Shelf
+        if (mesh.userData.isStylusMarker && mesh.userData.color) {
+          LS2.inkColor = mesh.userData.color;
+          if (LS2.activeNote !== null) {
+            LS2.notes[LS2.activeNote].inkColor = LS2.inkColor;
+            drawLS2Note(LS2.activeNote);
+            ls2Textures[LS2.activeNote].needsUpdate = true;
           }
+          sfx.blip(1500, .03, .02);
+          return;
+        }
+
+        // 3. Click on a Note Mesh (Disambiguated Selection vs. Drawing)
+        if (mesh.userData.interactive && mesh.userData.noteIdx !== undefined) {
+          const idx = mesh.userData.noteIdx;
+          if (LS2.activeNote !== idx) {
+            const prev = LS2.activeNote;
+            LS2.activeNote = idx;
+            LS2.drawing = false;
+            LS2.currentStroke = [];
+            if (prev !== null) { drawLS2Note(prev); ls2Textures[prev].needsUpdate = true; }
+            drawLS2Note(idx);
+            ls2Textures[idx].needsUpdate = true;
+            sfx.blip(1200, .04, .02);
+            return; // Initial click strictly selects the note — no ink stroke started
+          }
+          
+          // Only reached if note was ALREADY active and user initiates a drawing stroke
+          if (uv && e) {
+            LS2.drawing = true;
+            const p = (e.pressure && e.pressure > 0) ? e.pressure : 0.5;
+            LS2.currentStroke = [uv.x, 1 - uv.y, p];
+          }
+        }
+      },
+      onMove(e) {
+        if (!LS2.drawing || LS2.activeNote === null) return;
+        ndc.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+        ray.setFromCamera(ndc, cam);
+        const activeMesh = ls2Meshes[LS2.activeNote];
+        if (!activeMesh) return;
+        activeMesh.updateWorldMatrix(true, false);
+        const intersects = ray.intersectObject(activeMesh);
+        if (intersects.length > 0 && intersects[0].uv) {
+          const uv = intersects[0].uv;
+          const p = (e.pressure && e.pressure > 0) ? e.pressure : 0.5;
+          const normY = 1 - uv.y;
+          const lastX = LS2.currentStroke[LS2.currentStroke.length - 3];
+          const lastY = LS2.currentStroke[LS2.currentStroke.length - 2];
+          if (Math.hypot(uv.x - lastX, normY - lastY) > 0.004) {
+            LS2.currentStroke.push(uv.x, normY, p);
+            drawLS2Note(LS2.activeNote);
+            ls2Textures[LS2.activeNote].needsUpdate = true;
+          }
+        }
+      },
+      onRelease(e) {
+        if (!LS2.drawing || LS2.activeNote === null) return;
+        // Require at least 2 points (>= 6 coordinates) to record a real stroke, ignoring accidental stationary clicks
+        if (LS2.currentStroke.length >= 6) {
+          LS2.notes[LS2.activeNote].isCustom = true;
+          LS2.notes[LS2.activeNote].inkStrokes.push([...LS2.currentStroke]);
+        }
+        LS2.currentStroke = [];
+        LS2.drawing = false;
+        drawLS2Note(LS2.activeNote);
+        ls2Textures[LS2.activeNote].needsUpdate = true;
+        saveLS2Note(LS2.activeNote, false); // Trailing 1200ms debounce save
+      },
+      onKey(e) {
+        if (LS2.activeNote !== null) {
+          const curNote = LS2.notes[LS2.activeNote];
+          if (e.key === 'Escape') {
+            const prev = LS2.activeNote;
+            saveLS2Note(prev, true); // Immediate flush on exit
+            LS2.activeNote = null;
+            LS2.drawing = false;
+            LS2.currentStroke = [];
+            drawLS2Note(prev);
+            ls2Textures[prev].needsUpdate = true;
+            sfx.blip(600, .05, .02);
+            e.preventDefault();
+            return;
+          }
+          if (e.key === 'Tab') {
+            LS2.typingField = LS2.typingField === 'message' ? 'author' : 'message';
+            drawLS2Note(LS2.activeNote);
+            ls2Textures[LS2.activeNote].needsUpdate = true;
+            sfx.blip(1000, .03, .02);
+            e.preventDefault();
+            return;
+          }
+          
+          if (e.altKey && (e.key === 'p' || e.key === 'P')) {
+            const themes = ['yellow', 'pink', 'cyan', 'green'];
+            const nextT = (themes.indexOf(curNote.paperTheme) + 1) % themes.length;
+            curNote.paperTheme = themes[nextT];
+            curNote.isCustom = true;
+            drawLS2Note(LS2.activeNote);
+            ls2Textures[LS2.activeNote].needsUpdate = true;
+            saveLS2Note(LS2.activeNote, false);
+            sfx.blip(1100, .03, .02);
+            e.preventDefault();
+            return;
+          }
+          if (e.altKey && (e.key === 'c' || e.key === 'C')) {
+            if (curNote.inkStrokes && curNote.inkStrokes.length > 0) {
+              curNote.inkStrokes = [];
+              drawLS2Note(LS2.activeNote);
+              ls2Textures[LS2.activeNote].needsUpdate = true;
+              saveLS2Note(LS2.activeNote, false);
+              sfx.blip(400, .05, .02);
+              e.preventDefault();
+              return;
+            }
+          }
+          if (e.key === 'Backspace') {
+            curNote.isCustom = true;
+            if (LS2.typingField === 'author') {
+              curNote.author = curNote.author.slice(0, -1);
+            } else {
+              curNote.message = curNote.message.slice(0, -1);
+            }
+            drawLS2Note(LS2.activeNote);
+            ls2Textures[LS2.activeNote].needsUpdate = true;
+            saveLS2Note(LS2.activeNote, false);
+            e.preventDefault();
+            return;
+          }
+          if (e.key === 'Enter') {
+            if (LS2.typingField === 'message' && curNote.message.length < 278) {
+              curNote.isCustom = true;
+              curNote.message += '\n';
+              drawLS2Note(LS2.activeNote);
+              ls2Textures[LS2.activeNote].needsUpdate = true;
+              saveLS2Note(LS2.activeNote, false);
+            }
+            e.preventDefault();
+            return;
+          }
+          // All alphanumeric characters (including digits '1', '2', '3', '4', symbols, letters) enter text naturally
+          if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            curNote.isCustom = true;
+            if (LS2.typingField === 'author') {
+              if (curNote.author.length < 24) {
+                curNote.author += e.key;
+                drawLS2Note(LS2.activeNote);
+                ls2Textures[LS2.activeNote].needsUpdate = true;
+                saveLS2Note(LS2.activeNote, false);
+                sfx.blip(1800, .02, .01);
+              }
+            } else {
+              if (curNote.message.length < 280) {
+                curNote.message += e.key;
+                drawLS2Note(LS2.activeNote);
+                ls2Textures[LS2.activeNote].needsUpdate = true;
+                saveLS2Note(LS2.activeNote, false);
+                sfx.blip(1600, .02, .01);
+              }
+            }
+            e.preventDefault();
+            return;
+          }
+        } else {
+          // Not in note edit mode: Arrow keys control shelf page
+          if (e.key === 'ArrowLeft') {
+            LS2.page = Math.max(0, LS2.page - 1);
+            updateLS2Page();
+            sfx.relay();
+            e.preventDefault();
+          } else if (e.key === 'ArrowRight') {
+            LS2.page = Math.min(LS2.maxPages - 1, LS2.page + 1);
+            updateLS2Page();
+            sfx.relay();
+            e.preventDefault();
+          }
+        }
+      },
+      onExit() {
+        if (LS2.activeNote !== null) {
+          const prev = LS2.activeNote;
+          saveLS2Note(prev, true); // Immediate flush on unfocus / exit
+          LS2.activeNote = null;
+          LS2.drawing = false;
+          LS2.currentStroke = [];
+          drawLS2Note(prev);
+          ls2Textures[prev].needsUpdate = true;
         }
       }
     },
-    LS2: {
-      onHit(mesh) {
-        mesh.rotation.z += (Math.random() - .5) * .3;
-        sfx.blip(1300, .03, .02);
-      }
-    },
+    LS2_NOTE: null, // assigned below
+    LS2_SHELF: null,
+    LS2_LAMP: null,
     LS3: {
       usesPointerDrag: true,
       onHit(mesh, uv, point, e) {
@@ -5064,23 +7800,48 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       }
     }
   };
+  SECTOR_HANDLERS.LS2_NOTE = SECTOR_HANDLERS.LS2;
+  SECTOR_HANDLERS.LS2_NOTE1 = SECTOR_HANDLERS.LS2;
+  SECTOR_HANDLERS.LS2_SHELF = SECTOR_HANDLERS.LS2;
+  SECTOR_HANDLERS.LS2_LAMP = SECTOR_HANDLERS.LS2;
 
-  function focusSector(id) {
+  function focusSector(id, instant = false) {
     const cfg = FOCUS_CFG[id]; if (!cfg || !S.ready) return;
     if (FOCUS.active) {
-      if (FOCUS.id === id) return;
+      if (FOCUS.id === id && !instant) return;
       unfocusSector();
     }
     const g = sectorGroups[id]; if (!g) return;
     g.updateWorldMatrix(true, true);
     const [pos, look] = cfg.dolly(g);
-    FOCUS.id = id; S.focus = id; FOCUS.t = 0; FOCUS.active = true; S.navLocked = true;
-    FOCUS.from.copy(cam.position); FOCUS.fromQ.copy(cam.quaternion);
-    FOCUS.toPos.copy(pos); FOCUS.toLook.copy(look);
+    FOCUS.id = id; S.focus = id; FOCUS.active = true; S.navLocked = true;
+    if (id === 'LS1') {
+      ent.visible = false;
+      if (anchor) anchor.visible = false;
+      if (entLight) entLight.intensity = 0;
+      if (ls1StationState === 'sleeping' && wakeLS1) {
+        wakeLS1();
+      }
+    }
+    if (instant) {
+      FOCUS.t = 1.0; S.focusE = 1.0;
+      cam.position.copy(pos);
+      cam.lookAt(look);
+      FOCUS.from.copy(pos); FOCUS.fromQ.copy(cam.quaternion);
+      FOCUS.toPos.copy(pos); FOCUS.toLook.copy(look);
+    } else {
+      FOCUS.t = 0;
+      FOCUS.from.copy(cam.position); FOCUS.fromQ.copy(cam.quaternion);
+      FOCUS.toPos.copy(pos); FOCUS.toLook.copy(look);
+    }
     if (bokeh) {
       bokeh.enabled = true;
       bokeh.uniforms.focus.value = cam.position.distanceTo(look);
       bokeh.uniforms.aperture.value = LOW ? 0.00004 : 0.00008;
+    }
+    if (id.startsWith('LS2')) {
+      fetchLS2Notes(LS2.page);
+      LS2.lastPollAt = performance.now();
     }
     dispatchEvent(new CustomEvent('lab:focus', { detail: { id } }));
     dispatchEvent(new CustomEvent('lab:sector:focus', { detail: { id } }));
@@ -5092,6 +7853,9 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     const prevId = FOCUS.id;
     SECTOR_HANDLERS[prevId]?.onExit?.();
     FOCUS.active = false; S.navLocked = false;
+    if (prevId === 'LS1') {
+      ent.visible = S.entF > .002;
+    }
     dispatchEvent(new CustomEvent('lab:unfocus', { detail: { id: prevId } }));
     dispatchEvent(new CustomEvent('lab:sector:unfocus', { detail: { id: prevId } }));
     FOCUS.id = null; S.focus = null;
@@ -5353,6 +8117,9 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
           else if (GLOBE.taskbarOpen) closeLS3Taskbar();
           return;
         }
+        if (FOCUS.id?.startsWith('LS2') && LS2.activeNote !== null) {
+          return;
+        }
         unfocusSector();
       }
       return;
@@ -5391,11 +8158,11 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     // entity: forms for the greeting, collapses, then re-forms at T.idle as the resident presence (attentive when the visitor is inside)
     let entY = EMIT_Y;
     { const F = sm(ph(t, T.entity)) * (1 - ei(ph(t, T.collapse))), idle = sm(ph(t, T.idle)) * (.72 + .28 * w), Fe = Math.max(F, idle), gp = ph(t, T.greet), att = Math.max(gp, w), pulse = 1 + .28 * Math.sin(t * 6.5) * att, j = F > 0 && F < 1 ? 1 + .3 * (1 - F) * Math.sin(t * 23) : 1;
-      S.entF = Fe; ent.visible = Fe > .002; entY = EMIT_Y + .35 + Fe * 1.55; ent.position.y = entY; ent.scale.setScalar(Fe * j); ent.rotation.y = t * .14;
+      S.entF = Fe; const entVis = Fe > .002 && (!FOCUS.active || FOCUS.id !== 'LS1'); ent.visible = entVis; entY = EMIT_Y + .35 + Fe * 1.55; ent.position.y = entY; ent.scale.setScalar(Fe * j); ent.rotation.y = t * .14;
       if (ent.visible) { const spd = 1 + att * .6; shells.forEach((s, i) => { s.rotation.x += s.userData.w[0] * dt * spd; s.rotation.y += s.userData.w[1] * dt * spd; s.rotation.z += s.userData.w[2] * dt * spd; s.material.opacity = Fe * (i ? .6 : .95); });
         entCore.material.emissiveIntensity = 9 * pulse; ribbons.forEach((r, k) => { const u = r.material.uniforms; u.uT.value = t * (1 + att * .5); u.uA.value = .55 + .45 * att; r.rotation.y = t * (.25 + k * .08) * (k & 1 ? -1 : 1); r.rotation.x = Math.sin(t * .5 + k * 1.7) * .4; }); haze.material.opacity = .14 * Fe; haze.rotation.y = -t * .1; }
-      entLight.position.y = entY; entLight.intensity = Fe * 4.2 * LK * pulse;
-      const anc = F < .01 ? idle : 0; anchor.visible = anc > .002; if (anchor.visible) { const h = Math.max(.05, entY - .5 * Fe - EMIT_Y); anchor.scale.y = h; anchor.position.y = EMIT_Y + h / 2; anchorMat.uniforms.uOpen.value = 1; anchorMat.uniforms.uT.value = t; anchorMat.uniforms.uA.value = .45 * anc; }
+      entLight.position.y = entY; entLight.intensity = (entVis ? Fe * 4.2 * LK * pulse : 0);
+      const anc = F < .01 ? (entVis ? idle : 0) : 0; anchor.visible = anc > .002; if (anchor.visible) { const h = Math.max(.05, entY - .5 * Fe - EMIT_Y); anchor.scale.y = h; anchor.position.y = EMIT_Y + h / 2; anchorMat.uniforms.uOpen.value = 1; anchorMat.uniforms.uT.value = t; anchorMat.uniforms.uA.value = .45 * anc; }
       cue('e0', t > T.entity[0], () => { sfx.hum(.3, 1.6); sfx.blip(520, .5, .05); }); cue('e1', t > T.entity[0] + .8, () => sfx.blip(780, .4, .045)); cue('e2', t > T.entity[0] + 1.5, () => sfx.blip(1040, .35, .04));
       cue('col', t > T.collapse[0], () => { sfx.servo(1.5, false); sfx.hum(.15, 1.6); }); cue('idle', t > T.idle[0], () => { sfx.hum(.2, 1.5); sfx.blip(660, .4, .04); }); }
     // greeting (typed, faces the visitor)
@@ -5537,6 +8304,398 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
           if (globeLabelTex) globeLabelTex.needsUpdate = true;
         }
       }
+      if (FOCUS.active && FOCUS.id?.startsWith('LS2')) {
+        const nowMs = performance.now();
+        if (nowMs - LS2.lastPollAt > 15000) {
+          LS2.lastPollAt = nowMs;
+          fetchLS2Notes(LS2.page);
+        }
+      }
+      if (ls1HoloGroup && ls1FigureGroup) {
+        // ── Station State Machine: 'sleeping' -> 'hologram_boot' -> 'crystal_birth' -> 'active' ──
+        if (ls1StationState === 'sleeping') {
+          if (ls1EmitterLight) ls1EmitterLight.intensity = 0.04;
+          if (ls1ActivatorMat) ls1ActivatorMat.emissiveIntensity = 0.32 + 0.20 * Math.sin(t * 3.0);
+          ls1FigureGroup.visible = false;
+          if (ls1AccretionMesh) ls1AccretionMesh.visible = false;
+          for (let i = 0; i < ls1Crystals.length; i++) {
+            ls1Crystals[i].visible = false;
+          }
+        } else if (ls1StationState === 'hologram_boot') {
+          ls1BootTimer += dt;
+          const b = Math.min(1.0, ls1BootTimer / 1.35);
+          if (ls1EmitterLight) ls1EmitterLight.intensity = 0.04 + 0.36 * eo(b);
+          if (ls1ActivatorMat) ls1ActivatorMat.emissiveIntensity = 0.85;
+
+          ls1FigureGroup.visible = true;
+          let holoOp = 0.0;
+          if (b < 0.25) {
+            // Low-level scan begins, faint optical flicker
+            holoOp = (Math.random() < 0.35 ? 0.28 : 0.06);
+          } else if (b < 0.75) {
+            // Full front/back projection assembles with transmission jitter
+            const assemble = (b - 0.25) / 0.50;
+            holoOp = (0.20 + 0.75 * eo(assemble)) * (0.85 + 0.15 * Math.sin(t * 35.0));
+          } else {
+            // Flicker stabilizes
+            holoOp = 0.95;
+          }
+          for (let i = 0; i < ls1HoloMats.length; i++) {
+            ls1HoloMats[i].uniforms.uOpacity.value = holoOp;
+            ls1HoloMats[i].uniforms.uTime.value = t;
+          }
+
+          if (b >= 1.0) {
+            ls1StationState = 'crystal_birth';
+            ls1BirthTimer = 0;
+            if (ls1AccretionMesh) ls1AccretionMesh.visible = true;
+            sfx.blip(1800, 0.1, 0.05);
+          }
+        } else if (ls1StationState === 'crystal_birth') {
+          ls1BirthTimer += dt;
+          for (let i = 0; i < ls1HoloMats.length; i++) {
+            ls1HoloMats[i].uniforms.uOpacity.value = 0.95;
+            ls1HoloMats[i].uniforms.uTime.value = t;
+          }
+
+          if (ls1AccretionMesh && ls1AccretionData.length > 0) {
+            const accPosAttr = ls1AccretionMesh.geometry.attributes.position;
+            const accOpAttr = ls1AccretionMesh.geometry.attributes.aOpacity;
+
+            for (let i = 0; i < ls1Crystals.length; i++) {
+              const cGroup = ls1Crystals[i];
+              const tStart = i * 0.12;
+              const p = Math.max(0.0, Math.min(1.0, (ls1BirthTimer - tStart) / 0.75));
+
+              if (p <= 0) {
+                cGroup.visible = false;
+              } else if (p < 0.55) {
+                cGroup.visible = true;
+                const coreScale = 0.05 + 0.25 * (p / 0.55);
+                cGroup.scale.setScalar(coreScale);
+              } else {
+                cGroup.visible = true;
+                const formEase = eo((p - 0.55) / 0.45);
+                cGroup.scale.setScalar(formEase);
+              }
+
+              // Update 24 dust particles for crystal i
+              for (let k = 0; k < 24; k++) {
+                const idx = i * 24 + k;
+                const d = ls1AccretionData[idx];
+                d.ang += dt * d.speed * (1.0 + (1.0 - p) * 2.5);
+
+                const collapseR = THREE.MathUtils.lerp(d.dist, 0.005, Math.pow(p, 1.4));
+                const px = d.destPos.x + Math.cos(d.ang) * collapseR;
+                const py = d.destPos.y + Math.sin(d.ang) * collapseR * 0.75;
+                const pz = d.destPos.z + d.zOff * (1.0 - p);
+
+                accPosAttr.setXYZ(idx, px, py, pz);
+
+                let op = 0.0;
+                if (p > 0.02 && p < 0.88) {
+                  op = Math.sin((p / 0.88) * Math.PI) * 0.85;
+                }
+                accOpAttr.setX(idx, op);
+              }
+            }
+            accPosAttr.needsUpdate = true;
+            accOpAttr.needsUpdate = true;
+          }
+
+          if (ls1BirthTimer >= 1.8) {
+            ls1StationState = 'active';
+            if (ls1AccretionMesh) ls1AccretionMesh.visible = false;
+            for (let i = 0; i < ls1Crystals.length; i++) {
+              ls1Crystals[i].scale.setScalar(1.0);
+              ls1Crystals[i].visible = true;
+            }
+            sfx.relay();
+          }
+        }
+
+        // ── Active Hologram & Particle Updates ──
+        if (ls1StationState === 'active' || ls1StationState === 'crystal_birth') {
+          // Idle breathing and subtle parallax response
+          const breath = 1.0 + 0.004 * Math.sin(t * 1.8);
+          ls1FigureGroup.scale.set(1.0 + 0.002 * Math.sin(t * 1.8), breath, 1.0 + 0.002 * Math.sin(t * 1.8));
+          ls1FigureGroup.rotation.y = Math.sin(t * 0.28) * 0.05;
+
+          // Update shader uniforms
+          for (let i = 0; i < ls1HoloMats.length; i++) {
+            ls1HoloMats[i].uniforms.uTime.value = t;
+          }
+
+          // Particle floating (4 particles max)
+          if (ls1PointsMesh && ls1PointData.length > 0) {
+            const pAttr = ls1PointsMesh.geometry.attributes.position;
+            for (let i = 0; i < ls1PointData.length; i++) {
+              const p = ls1PointData[i];
+              p.y += dt * p.speed;
+              if (p.y > 1.05) p.y = 0.15 + Math.random() * 0.15;
+              const wob = Math.sin(t * 2.5 + p.wobble) * 0.02;
+              pAttr.setXYZ(i, p.baseX + wob, p.y, p.baseZ + Math.cos(t * 2.5 + p.wobble) * 0.015);
+            }
+            pAttr.needsUpdate = true;
+          }
+        }
+
+        // ── Active Constellation Crystals ──
+        if (ls1StationState === 'active') {
+          for (let i = 0; i < ls1Crystals.length; i++) {
+            const cGroup = ls1Crystals[i];
+            const uData = cGroup.userData;
+            const isHovered = (cGroup === ls1HoveredCrystal) || (i === ls1FocusedCrystalIdx);
+            const isAnchored = uData.isAnchored;
+
+            if (!isAnchored) {
+              // Subtle organic 3D drift around base position
+              cGroup.position.x = uData.basePos.x + Math.sin(t * 0.85 + uData.driftPhase) * 0.016;
+              cGroup.position.y = uData.basePos.y + Math.cos(t * 1.15 + uData.driftPhase) * 0.020;
+              cGroup.position.z = uData.basePos.z + Math.sin(t * 0.65 + uData.driftPhase * 1.4) * 0.015;
+            }
+
+            // Rotation slows on hover
+            const rotDelta = isHovered ? uData.rotSpeed * 0.22 : uData.rotSpeed;
+            uData.crystalMesh.rotation.x += dt * rotDelta * 0.75;
+            uData.crystalMesh.rotation.y += dt * rotDelta;
+
+            // Emissive breathing & edge glow
+            if (isHovered) {
+              uData.cMat.emissiveIntensity = 0.95;
+              uData.edgeMat.opacity = 0.98;
+            } else {
+              const breath = 0.38 + 0.15 * Math.sin(t * 2.2 + uData.driftPhase);
+              uData.cMat.emissiveIntensity = breath;
+              uData.edgeMat.opacity = 0.65 + 0.15 * Math.sin(t * 2.2 + uData.driftPhase);
+            }
+          }
+        }
+
+        // ── Suction Traversal Animation ──
+        if (ls1Traversal && ls1Traversal.active) {
+          ls1Traversal.t += dt;
+          const p = Math.min(1.0, ls1Traversal.t / ls1Traversal.duration);
+          const easeP = p * p * (3.0 - 2.0 * p);
+          cam.position.lerpVectors(ls1Traversal.fromPos, ls1Traversal.targetPos, easeP);
+          const pWorld = ls1PortalMesh.getWorldPosition(new THREE.Vector3());
+          cam.lookAt(pWorld);
+
+          cam.fov = THREE.MathUtils.lerp(50, 36, easeP);
+          cam.updateProjectionMatrix();
+
+          if (p >= 1.0) {
+            ls1Traversal.active = false;
+            cam.fov = 50;
+            cam.updateProjectionMatrix();
+            sessionStorage.setItem('vault_ls1_return', ls1Traversal.dest.id);
+            window.open(ls1Traversal.dest.url, '_blank');
+          }
+        }
+
+        // ── Return Reverse Suction Collapse ──
+        if (ls1ReturnAnim && ls1ReturnAnim.active) {
+          ls1ReturnAnim.t += dt;
+          const r = Math.min(1.0, ls1ReturnAnim.t / ls1ReturnAnim.duration);
+          if (ls1ActivePortal) {
+            ls1ActivePortal.state = 'closing';
+            ls1ActivePortal.t = Math.max(0.0, 1.0 - r);
+          }
+          if (r >= 1.0) {
+            ls1ReturnAnim.active = false;
+            closePortal(true);
+          }
+        }
+
+        // ── Portal Smoke + Electric Energy + Recirculating Throat Update ──
+        if (ls1ActivePortal) {
+          if (ls1ActivePortal.state === 'opening') {
+            ls1ActivePortal.t = Math.min(1.0, ls1ActivePortal.t + dt / 1.35);
+            if (ls1ActivePortal.t >= 1.0) ls1ActivePortal.state = 'open';
+          } else if (ls1ActivePortal.state === 'closing') {
+            ls1ActivePortal.t = Math.max(0.0, ls1ActivePortal.t - dt / 0.90);
+            if (ls1ActivePortal.t <= 0.0) {
+              closePortal(true);
+            }
+          }
+
+          if (ls1ActivePortal) {
+            const rawT = ls1ActivePortal.t;
+            const isClosing = ls1ActivePortal.state === 'closing';
+
+            // 1. Nonlinear Portal Scale & Breathing Silhouette
+            const openEase = eo(Math.min(1.0, rawT * 1.15));
+            const portalScale = isClosing 
+              ? 0.06 + 0.64 * Math.pow(rawT, 1.4) 
+              : 0.06 + 0.64 * openEase;
+            ls1PortalMesh.scale.setScalar(portalScale);
+            ls1PortalMesh.lookAt(cam.position);
+
+            // 2. Dark Spatial Void Throat Update
+            if (ls1ThroatMat) {
+              const uOpen = Math.min(1.0, rawT * 2.0);
+              ls1ThroatMat.uniforms.uOpen.value = uOpen;
+              ls1ThroatMat.uniforms.uTear.value = isClosing ? rawT * 0.8 : Math.min(1.0, rawT * 1.2);
+            }
+
+            // 3. Deep Destination Preview Differential Parallax
+            if (ls1PreviewMesh && ls1PreviewMesh.visible) {
+              const pWorld = ls1PortalMesh.getWorldPosition(new THREE.Vector3());
+              const relCam = cam.position.clone().sub(pWorld);
+              const parX = THREE.MathUtils.clamp(-relCam.x * 0.012, -0.015, 0.015);
+              const parY = THREE.MathUtils.clamp(-relCam.y * 0.012, -0.015, 0.015);
+              ls1PreviewMesh.position.set(parX, parY, -0.095);
+              ls1PreviewMesh.material.opacity = Math.min(1.0, rawT * 1.5);
+            }
+
+            // 4. Physical Black Smoke / Dust Particulate Circulation (280 particles)
+            if (ls1SmokeMesh && ls1SmokeData.length > 0) {
+              if (ls1SmokeMat) ls1SmokeMat.uniforms.uTime.value = t;
+              const sPos = ls1SmokeMesh.geometry.attributes.position;
+              const sOpacities = ls1SmokeMesh.geometry.attributes.aOpacity;
+
+              // Speed multiplier: during traversal or reverse collapse, flow accelerates
+              const speedMult = ls1Traversal?.active ? 3.5 : (isClosing ? 1.85 : 1.0);
+              const smokeReach = isClosing ? Math.max(0.12, rawT) : Math.min(1.0, 0.10 + rawT * 1.35);
+
+              for (let i = 0; i < ls1SmokeData.length; i++) {
+                const sp = ls1SmokeData[i];
+                sp.phase = (sp.phase + sp.speed * speedMult * dt) % 1.0;
+                const s = sp.phase;
+
+                // Asymmetric living boundary lobes
+                const lobe = 0.22 * Math.sin(3.0 * sp.angle0 + t * 1.25)
+                           + 0.15 * Math.cos(2.0 * sp.angle0 - t * 0.85)
+                           + sp.lobeBias * 0.16;
+
+                let rad = 0.10;
+                let z = 0.0;
+                let ang = sp.angle0;
+                let density = sp.baseDensity;
+
+                if (s < 0.35) {
+                  // Phase A: Throat Escape (s < 0.35)
+                  const u = s / 0.35;
+                  rad = (0.095 + 0.165 * Math.pow(u, 1.25)) * smokeReach;
+                  z = -0.015 + 0.035 * u;
+                  ang = sp.angle0 + sp.swirlDir * (0.42 * u);
+                  density = sp.baseDensity * Math.pow(u, 0.85);
+                } else if (s < 0.72) {
+                  // Phase B: Outward Expansion & Tangential Perimeter Curl (0.35 <= s < 0.72)
+                  const u = (s - 0.35) / 0.37;
+                  const maxR = (0.26 + 0.15 * u + sp.radialJitter) * (1.0 + lobe) * smokeReach;
+                  rad = maxR;
+                  z = 0.020 + 0.014 * Math.sin(u * Math.PI) + sp.zDepth;
+                  ang = sp.angle0 + sp.swirlDir * (0.42 + 1.35 * u + 0.20 * Math.sin(t * 1.6 + sp.seed));
+                  density = sp.baseDensity * (0.95 + 0.15 * Math.sin(t * 2.2 + sp.seed));
+                } else {
+                  // Phase C: Inward Return & Throat Absorption (s >= 0.72)
+                  const u = (s - 0.72) / 0.28;
+                  const startR = (0.41 + sp.radialJitter) * (1.0 + lobe) * smokeReach;
+                  rad = THREE.MathUtils.lerp(startR, 0.095 * smokeReach, Math.pow(u, 1.35));
+                  z = THREE.MathUtils.lerp(0.020, -0.048, Math.pow(u, 1.15));
+                  ang = sp.angle0 + sp.swirlDir * (1.77 + 0.85 * u);
+                  density = sp.baseDensity * Math.max(0.0, 1.0 - Math.pow(u, 1.3));
+                }
+
+                // Reverse suction behavior when closing
+                if (isClosing) {
+                  rad *= Math.max(0.05, Math.pow(rawT, 0.65));
+                  z = THREE.MathUtils.lerp(-0.045, z, rawT);
+                  density *= Math.pow(rawT, 1.2);
+                }
+
+                // Global emergence envelope
+                let globalAlpha = 1.0;
+                if (rawT < 0.06) {
+                  globalAlpha = Math.min(1.0, rawT * 12.0) * 0.70;
+                  if (s > 0.15) globalAlpha = 0.0;
+                } else if (rawT < 0.30) {
+                  globalAlpha = THREE.MathUtils.lerp(0.55, 0.95, (rawT - 0.06) / 0.24);
+                  if (s > 0.50) globalAlpha *= Math.max(0.0, 1.0 - (s - 0.50) / 0.18);
+                } else {
+                  globalAlpha = isClosing ? rawT : Math.min(1.0, 0.85 + (rawT - 0.30) * 0.25);
+                }
+
+                const px = rad * Math.cos(ang);
+                const py = rad * Math.sin(ang);
+                sPos.setXYZ(i, px, py, z);
+                sOpacities.setX(i, Math.max(0.0, Math.min(0.98, density * globalAlpha)));
+
+                sp.pos.set(px, py, z);
+              }
+              sPos.needsUpdate = true;
+              sOpacities.needsUpdate = true;
+            }
+
+            // 5. Electric Energy Filaments (24 active filaments)
+            if (ls1ElectricGroup && ls1ElectricData.length > 0) {
+              let maxActiveAllowed = 0;
+              if (rawT > 0.08 && rawT <= 0.28) maxActiveAllowed = 2;
+              else if (rawT > 0.28 && rawT <= 0.60) maxActiveAllowed = 4;
+              else if (rawT > 0.60) maxActiveAllowed = isClosing ? Math.ceil(rawT * 4) : (ls1Traversal?.active ? 8 : 6);
+
+              let currentActive = 0;
+              for (let k = 0; k < ls1ElectricData.length; k++) {
+                if (ls1ElectricData[k].active) currentActive++;
+              }
+
+              for (let k = 0; k < ls1ElectricData.length; k++) {
+                const ed = ls1ElectricData[k];
+                if (ed.active) {
+                  ed.life -= dt;
+                  if (ed.life <= 0 || (isClosing && rawT <= 0.05)) {
+                    ed.active = false;
+                    ed.mat.opacity = 0.0;
+                    ed.cooldown = 0.08 + Math.random() * 0.22;
+                  } else {
+                    const progress = 1.0 - (ed.life / ed.maxLife);
+                    const flash = Math.sin(progress * Math.PI);
+                    const jitter = 0.80 + 0.20 * Math.sin(t * 35.0 + k * 5.0);
+                    ed.mat.opacity = flash * jitter * (isClosing ? rawT : Math.min(1.0, rawT * 1.5));
+                  }
+                } else {
+                  ed.cooldown -= dt;
+                  if (ed.cooldown <= 0 && currentActive < maxActiveAllowed && rawT > 0.08) {
+                    ed.active = true;
+                    currentActive++;
+                    ed.life = ed.maxLife;
+                    ed.sourceSmokeIdx = Math.floor(Math.random() * ls1SmokeData.length);
+
+                    const sourceP = ls1SmokeData[ed.sourceSmokeIdx];
+                    const posAttr = ed.geo.attributes.position;
+                    const segs = ed.segCount;
+                    let curX = sourceP.pos.x;
+                    let curY = sourceP.pos.y;
+                    let curZ = sourceP.pos.z;
+
+                    const curAng = Math.atan2(curY, curX);
+                    const tangentAng = curAng + sourceP.swirlDir * (Math.PI * 0.45);
+                    const stepLen = 0.022 + Math.random() * 0.016;
+
+                    for (let s = 0; s < segs; s++) {
+                      posAttr.setXYZ(s, curX, curY, curZ);
+                      const jagX = (Math.random() - 0.5) * 0.022;
+                      const jagY = (Math.random() - 0.5) * 0.022;
+                      const jagZ = (Math.random() - 0.5) * 0.015;
+                      curX += Math.cos(tangentAng) * stepLen + jagX;
+                      curY += Math.sin(tangentAng) * stepLen + jagY;
+                      curZ += jagZ;
+                    }
+                    posAttr.needsUpdate = true;
+                  }
+                }
+              }
+            }
+
+            // Keep anchored crystal attached at portal perimeter as energy anchor
+            if (ls1ActivePortal.node) {
+              const anchorOffset = new THREE.Vector3(0.26, -0.20, 0).applyQuaternion(ls1PortalMesh.quaternion);
+              ls1ActivePortal.node.position.copy(ls1PortalMesh.position).add(anchorOffset);
+            }
+          }
+        }
+      }
       aiPanel.visible = w > .02; if (aiPanel.visible) { aiM.opacity = w * .92; aiPanel.lookAt(cam.position); const L = AI.lines.at(-1); if (L && AI.reveal < L.length) { AI.reveal = Math.min(L.length, AI.reveal + dt * 48); AI.dirty = true; } const bl = Math.floor(t * 2) % 2; if (bl !== S.bl) { S.bl = bl; AI.dirty = true; } if (AI.dirty) aiDraw(); } }
     // wet-floor reflections: mirror clones follow transforms, visibility and glow of their sources (during power-on)
     if (t < T.ready) {
@@ -5560,8 +8719,21 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
         S.look.x += (S.look.tx - S.look.x) * (1 - Math.exp(-dt * 4)); S.look.y += (S.look.ty - S.look.y) * (1 - Math.exp(-dt * 4));
         cam.lookAt(fB); cam.rotateY(S.look.x * (1 - .6 * w)); cam.rotateX(S.look.y * (1 - .6 * w));
       } else {
-        cam.position.lerpVectors(FOCUS.from, FOCUS.toPos, e);
-        cam.lookAt(FOCUS.toLook.clone().lerp(cam.position.clone().add(fB.clone().sub(cam.position)), 1 - e));
+        if (FOCUS.id === 'LS1' && ls1Traversal && ls1Traversal.active) {
+          // Camera position and lookAt are driven directly by ls1Traversal suction animation
+        } else if (FOCUS.id === 'LS1' && ls1ActivePortal && ls1ActivePortal.t > 0.05) {
+          const g = sectorGroups['LS1'];
+          const biasAmt = sm(Math.min(1.0, ls1ActivePortal.t)) * 0.22;
+          const localShift = new THREE.Vector3(biasAmt * 0.15, 0, -biasAmt * 0.15).applyQuaternion(g.quaternion);
+          const targetPos = FOCUS.toPos.clone().add(localShift);
+          const localLookShift = new THREE.Vector3(biasAmt * 0.30, 0, biasAmt * 0.40).applyQuaternion(g.quaternion);
+          const targetLook = FOCUS.toLook.clone().add(localLookShift);
+          cam.position.lerpVectors(FOCUS.from, targetPos, e);
+          cam.lookAt(targetLook.clone().lerp(cam.position.clone().add(fB.clone().sub(cam.position)), 1 - e));
+        } else {
+          cam.position.lerpVectors(FOCUS.from, FOCUS.toPos, e);
+          cam.lookAt(FOCUS.toLook.clone().lerp(cam.position.clone().add(fB.clone().sub(cam.position)), 1 - e));
+        }
       }
       S.focusE = e;
     }
@@ -5681,7 +8853,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     }
     takeover();
     if (targetSector) {
-      focusSector(targetSector);
+      focusSector(targetSector, true);
       FOCUS.t = 1.0;
       S.focusE = 1.0;
       const cfg = FOCUS_CFG[targetSector];
@@ -5726,13 +8898,13 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   const stats = () => ({ t: +S.t.toFixed(2), theta: +S.theta.toFixed(3), sector: SECTORS[S.sector].id, ready: S.ready, active: S.active, inside: +S.insideT.toFixed(2), exposure: +renderer.toneMappingExposure.toFixed(3), calls: sceneCalls || renderer.info.render.calls, triangles: sceneTris || renderer.info.render.triangles, textures: renderer.info.memory.textures,
     camera: { p: cam.position.toArray().map(v => +v.toFixed(3)), q: cam.quaternion.toArray().map(v => +v.toFixed(4)) }, focus: FOCUS.id });
   const ai = { say, ask, get lines() { return AI.lines.slice(); }, get onAsk() { return AI.onAsk; }, set onAsk(f) { AI.onAsk = f; } };
-  return { scene: lab, camera: cam, composer, state: S, T, SECTORS, update, activate, skipToFinal, openReadMode, closeReadMode, get sheets() { return sheets; }, goTo, enter, exit, focusSector, unfocusSector, focus: focusSector, blurFocus: unfocusSector, ai, stats, fade, pick, api2, sectorGroups, bokeh, handlers: SECTOR_HANDLERS, get dragging() { return dragging; }, get readId() { return readId; }, get pendingPatch() { return null; }, resume: RESUME, calendar: CAL, globe: GLOBE, get globeGroup() { return globeGroup; }, setGlobeMode, triggerGenerateAndPrint, triggerPrint, buildResumePdf, get paperMesh() { return paperMesh; }, openLS3Taskbar, closeLS3Taskbar, openNewsDispatch, closeNewsDispatch: closeLS3News, pollLiveNews, updateHoloPyramids };
+  return { scene: lab, camera: cam, entity: ent, composer, state: S, T, SECTORS, update, activate, skipToFinal, openReadMode, closeReadMode, get sheets() { return sheets; }, goTo, enter, exit, focusSector, unfocusSector, focus: focusSector, blurFocus: unfocusSector, ai, stats, fade, pick, api2, sectorGroups, bokeh, handlers: SECTOR_HANDLERS, FOCUS, FOCUS_CFG, get dragging() { return dragging; }, get readId() { return readId; }, get pendingPatch() { return null; }, resume: RESUME, calendar: CAL, globe: GLOBE, get globeGroup() { return globeGroup; }, setGlobeMode, triggerGenerateAndPrint, triggerPrint, buildResumePdf, get paperMesh() { return paperMesh; }, openLS3Taskbar, closeLS3Taskbar, openNewsDispatch, closeNewsDispatch: closeLS3News, pollLiveNews, updateHoloPyramids, toggleLiveNewsStream: (enable) => { window.ENABLE_LS3_STREAM = !!enable; console.log('[LS3] Live stream pipeline set to:', window.ENABLE_LS3_STREAM); }, isLiveStreamEnabled, get ls1Crystals() { return ls1Crystals; }, get ls1StationState() { return ls1StationState; }, wakeLS1, activatePortal, closePortal, traversePortal };
 }
 
 /* ── install: one call from index.html; hooks the existing composer loop, listens for vault:entered ── */
 export function installLab(opts) {
   const api = createLab(opts), { composer } = opts, q = new URLSearchParams(location.search); let last = performance.now();
-  const _render = composer.render.bind(composer); composer.render = (...a) => { const now = performance.now(), dt = (now - last) / 1000; last = now; if (api.state.active) api.update(dt); _render(...a); };
+  const _render = composer.render.bind(composer); composer.render = (...a) => { const now = performance.now(), dt = Math.min((now - last) / 1000, 0.05); last = now; if (api.state.active) api.update(dt); _render(...a); };
   addEventListener('vault:entered', () => api.activate(), { once: true });
   if (Array.isArray(opts.blackout)) addEventListener('lab:activated', () => setTimeout(() => opts.blackout.forEach(el => { el.style.transition = 'none'; el.style.opacity = '0'; el.style.pointerEvents = 'none'; }), 50), { once: true });
   if (q.has('lab')) requestAnimationFrame(() => api.activate()); if (q.has('inside')) addEventListener('lab:ready', () => api.enter(), { once: true });

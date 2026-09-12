@@ -558,6 +558,246 @@ export function viteApiPlugin(): Plugin {
           return;
         }
 
+        // 5. Notes In-Memory Store for Dev Mode (Sector LS2)
+        if (!globalThis.__vaultDevNotes) {
+          globalThis.__vaultDevNotes = [];
+          globalThis.__vaultRateLimits = new Map<string, { count: number; expiresAt: number }>();
+        }
+
+        const devNotes = globalThis.__vaultDevNotes;
+        const devRateLimits = globalThis.__vaultRateLimits;
+        // 5a. POST /api/notes/reset (Test Harness Reset)
+        if (url.pathname === '/api/notes/reset' && req.method === 'POST') {
+          devNotes.length = 0;
+          devRateLimits.clear();
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: true, reset: true }));
+          return;
+        }
+
+        // 5b. GET /api/notes
+        if (url.pathname === '/api/notes' && req.method === 'GET') {
+          const page = Math.max(0, parseInt(url.searchParams.get('page') || '0', 10) || 0);
+          const limit = Math.min(32, Math.max(1, parseInt(url.searchParams.get('limit') || '16', 10) || 16));
+          const offset = page * limit;
+
+          const activeNotes = devNotes.filter((n: any) => !n.isHidden);
+          const sorted = [...activeNotes].sort((a: any, b: any) => b.createdAt - a.createdAt);
+          const paged = sorted.slice(offset, offset + limit);
+          const latestUpdated = sorted.length > 0 ? Math.max(...sorted.map((n: any) => n.updatedAt || 0)) : 0;
+          const etag = `"notes-p${page}-${latestUpdated}"`;
+
+          if (req.headers['if-none-match'] === etag) {
+            res.writeHead(304);
+            res.end();
+            return;
+          }
+
+          res.writeHead(200, {
+            'Content-Type': 'application/json',
+            'ETag': etag,
+            'Cache-Control': 'public, max-age=2, stale-while-revalidate=8',
+          });
+          res.end(JSON.stringify({ notes: paged, total: activeNotes.length, page, limit }));
+          return;
+        }
+
+        // 5b. POST /api/notes
+        if (url.pathname === '/api/notes' && req.method === 'POST') {
+          const clientIp = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || '127.0.0.1';
+          const now = Math.floor(Date.now() / 1000);
+          const rateKey = `rate:notes:${clientIp}`;
+          const currentLimit = devRateLimits.get(rateKey);
+
+          if (currentLimit && currentLimit.expiresAt > now) {
+            if (currentLimit.count >= 25) {
+              res.writeHead(429, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: 'RATE_LIMIT_EXCEEDED' }));
+              return;
+            }
+            currentLimit.count += 1;
+          } else {
+            devRateLimits.set(rateKey, { count: 1, expiresAt: now + 600 });
+          }
+
+          let bodyText = '';
+          for await (const chunk of req) { bodyText += chunk; }
+          let body: any = {};
+          try { body = JSON.parse(bodyText); } catch {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'INVALID_JSON_PAYLOAD' }));
+            return;
+          }
+
+          const MAX_MESSAGE_LEN = 280;
+          const MAX_AUTHOR_LEN = 24;
+          const MAX_INK_BYTES = 12288;
+          const MAX_ACTIVE_NOTES = 500;
+          const MAX_TOTAL_RETAINED = 2000;
+
+          const author = String(body.author || 'ANONYMOUS').trim().slice(0, MAX_AUTHOR_LEN);
+          const message = String(body.message || '');
+          const colorTheme = ['cyan', 'amber', 'green', 'white'].includes(body.colorTheme) ? body.colorTheme : 'cyan';
+          const paperTheme = ['yellow', 'pink', 'cyan', 'green'].includes(body.paperTheme) ? body.paperTheme : 'yellow';
+          const posX = typeof body.posX === 'number' ? Math.max(-0.1, Math.min(0.1, body.posX)) : (Math.random() - 0.5) * 0.06;
+          const posY = typeof body.posY === 'number' ? Math.max(-0.1, Math.min(0.1, body.posY)) : (Math.random() - 0.5) * 0.06;
+
+          // Hard server-side message length check
+          if (message.length > MAX_MESSAGE_LEN) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: `MESSAGE_EXCEEDS_MAX_LEN_${MAX_MESSAGE_LEN}` }));
+            return;
+          }
+
+          // Hard server-side ink byte size check
+          let inkStrokes = [];
+          let inkJson = '[]';
+          if (body.inkStrokes && Array.isArray(body.inkStrokes)) {
+            inkStrokes = body.inkStrokes;
+            inkJson = JSON.stringify(body.inkStrokes);
+          } else if (typeof body.ink_strokes_json === 'string') {
+            inkJson = body.ink_strokes_json;
+            try { inkStrokes = JSON.parse(inkJson); } catch {}
+          }
+
+          const inkBytes = Buffer.byteLength(inkJson, 'utf8');
+          if (inkBytes > MAX_INK_BYTES) {
+            res.writeHead(413, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: `INK_DATA_EXCEEDS_${MAX_INK_BYTES}_BYTES` }));
+            return;
+          }
+
+          const clientToken = (req.headers['x-author-token'] as string) || body.clientToken || `token-${Math.random().toString(36).slice(2)}`;
+          const cryptoModule = await import('crypto');
+          const tokenHash = cryptoModule.createHash('sha256').update(clientToken).digest('hex');
+          const noteId = `note-${Math.random().toString(36).slice(2)}-${Date.now()}`;
+
+          const newNote = {
+            id: noteId,
+            author,
+            message,
+            inkStrokes,
+            colorTheme,
+            paperTheme,
+            posX,
+            posY,
+            createdAt: now,
+            updatedAt: now,
+            tokenHash,
+            isHidden: 0,
+          };
+
+          devNotes.unshift(newNote);
+
+          // 5a. Soft-hide rows beyond MAX_ACTIVE_NOTES (500)
+          const active = devNotes.filter((n: any) => !n.isHidden);
+          if (active.length > MAX_ACTIVE_NOTES) {
+            for (let i = MAX_ACTIVE_NOTES; i < active.length; i++) {
+              active[i].isHidden = 1;
+            }
+          }
+
+          // 5b. Hard-delete entries beyond MAX_TOTAL_RETAINED (2000)
+          if (devNotes.length > MAX_TOTAL_RETAINED) {
+            devNotes.splice(MAX_TOTAL_RETAINED);
+          }
+
+          res.writeHead(201, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: true, id: noteId, createdAt: now }));
+          return;
+        }
+
+        // 5c. GET /api/notes/:id
+        const noteIdMatch = url.pathname.match(/^\/api\/notes\/([^/]+)$/);
+        if (noteIdMatch && req.method === 'GET') {
+          const noteId = noteIdMatch[1];
+          const found = devNotes.find((n: any) => n.id === noteId && !n.isHidden);
+          if (!found) {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'NOTE_NOT_FOUND' }));
+            return;
+          }
+          res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=4' });
+          res.end(JSON.stringify(found));
+          return;
+        }
+
+        // 5d. PUT /api/notes/:id
+        if (noteIdMatch && req.method === 'PUT') {
+          const noteId = noteIdMatch[1];
+          const authorToken = req.headers['x-author-token'] as string;
+          if (!authorToken) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'AUTHOR_TOKEN_REQUIRED' }));
+            return;
+          }
+
+          const found = devNotes.find((n: any) => n.id === noteId && !n.isHidden);
+          if (!found) {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'NOTE_NOT_FOUND' }));
+            return;
+          }
+
+          if (!found.tokenHash) {
+            res.writeHead(403, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'UNOWNED_ENTRY_MUTATION_RESTRICTED' }));
+            return;
+          }
+
+          const cryptoModule = await import('crypto');
+          const computedHash = cryptoModule.createHash('sha256').update(authorToken).digest('hex');
+          if (computedHash !== found.tokenHash) {
+            res.writeHead(403, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'INVALID_AUTHOR_TOKEN' }));
+            return;
+          }
+
+          let bodyText = '';
+          for await (const chunk of req) { bodyText += chunk; }
+          let body: any = {};
+          try { body = JSON.parse(bodyText); } catch {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'INVALID_JSON_PAYLOAD' }));
+            return;
+          }
+
+          const MAX_MESSAGE_LEN = 280;
+          const MAX_AUTHOR_LEN = 24;
+          const MAX_INK_BYTES = 12288;
+
+          if (body.message !== undefined && String(body.message).length > MAX_MESSAGE_LEN) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: `MESSAGE_EXCEEDS_MAX_LEN_${MAX_MESSAGE_LEN}` }));
+            return;
+          }
+
+          if (body.inkStrokes !== undefined || body.ink_strokes_json !== undefined) {
+            const inkJson = Array.isArray(body.inkStrokes) ? JSON.stringify(body.inkStrokes) : String(body.ink_strokes_json || '[]');
+            const inkBytes = Buffer.byteLength(inkJson, 'utf8');
+            if (inkBytes > MAX_INK_BYTES) {
+              res.writeHead(413, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: `INK_DATA_EXCEEDS_${MAX_INK_BYTES}_BYTES` }));
+              return;
+            }
+            if (Array.isArray(body.inkStrokes)) {
+              found.inkStrokes = body.inkStrokes;
+            }
+          }
+
+          if (body.author !== undefined) found.author = String(body.author).trim().slice(0, MAX_AUTHOR_LEN);
+          if (body.message !== undefined) found.message = String(body.message);
+          if (['cyan', 'amber', 'green', 'white'].includes(body.colorTheme)) found.colorTheme = body.colorTheme;
+          if (['yellow', 'pink', 'cyan', 'green'].includes(body.paperTheme)) found.paperTheme = body.paperTheme;
+
+          const now = Math.floor(Date.now() / 1000);
+          found.updatedAt = now;
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: true, id: noteId, updatedAt: now }));
+          return;
+        }
+
         // 4. Fallback for other /api routes
         if (url.pathname.startsWith('/api/state/')) {
           res.writeHead(200, { 'Content-Type': 'application/json' });

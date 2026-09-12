@@ -755,8 +755,11 @@ function frame(nowMs = performance.now()){
   }
   perf.tick(dt);
   grade.uniforms.uT.value=t; window.VAULT?.cinematic?.(dt,t); composer.render();
-  fpsAcc+=dt; fpsN++; if(fpsAcc>2){ fps=fpsN/fpsAcc; fpsAcc=0; fpsN=0; }
-  if(dbg.style.display==='block') dbg.textContent=`fps ${fps.toFixed(0)}  scale ${perf?.scale?.toFixed(2)??'1'}  dpr ${renderer.getPixelRatio()}  tier ${LOW?'LOW':'HIGH'}  bloom ${bloom.enabled}\ntriangles ${renderer.info.render.triangles}  draw calls ${renderer.info.render.calls}\ncam z ${camera.position.z.toFixed(2)}  walk ${walk.t.toFixed(2)}  mode ${state.mode}\ndoor vertices ${doorVerts}  saved calls ${savedDrawCalls}\nraster image files loaded: 0 — 6 PBR maps compiled procedurally (${Q.rockTex}px rock, ${Q.metalTex}px metal)`;
+  if(dbg.style.display==='block') {
+    const triCount = (window.VAULT?.lab?.stats ? window.VAULT.lab.stats().triangles : null) || renderer.info.render.triangles;
+    const callCount = (window.VAULT?.lab?.stats ? window.VAULT.lab.stats().calls : null) || renderer.info.render.calls;
+    dbg.textContent=`fps ${fps.toFixed(0)}  scale ${perf?.scale?.toFixed(2)??'1'}  dpr ${renderer.getPixelRatio()}  tier ${LOW?'LOW':'HIGH'}  bloom ${bloom.enabled}\ntriangles ${triCount}  draw calls ${callCount}\ncam z ${camera.position.z.toFixed(2)}  walk ${walk.t.toFixed(2)}  mode ${state.mode}\ndoor vertices ${doorVerts}  saved calls ${savedDrawCalls}\nraster image files loaded: 0 — 6 PBR maps compiled procedurally (${Q.rockTex}px rock, ${Q.metalTex}px metal)`;
+  }
   requestAnimationFrame(frame); }
 frame();
 window.VAULT={state,hooks,setMode,walk,scene,camera,door,table,lab:table,sceneMode:'cave',perf};
@@ -883,8 +886,12 @@ const ls3NewsSiteLink = document.getElementById('ls3-news-site-link');
 
 let activeHls = null;
 
+function isLiveStreamEnabled() {
+  return window.ENABLE_LS3_STREAM === true || new URLSearchParams(location.search).get('stream') === '1';
+}
+
 function playNewsStream(c) {
-  if (!c) return;
+  if (!c || !isLiveStreamEnabled()) return;
   if (activeHls) {
     activeHls.destroy();
     activeHls = null;
@@ -995,6 +1002,10 @@ document.getElementById('ls3-btn-fullscreen')?.addEventListener('click', e => {
 });
 
 window.addEventListener('lab:ls3:news:open', e => {
+  if (!isLiveStreamEnabled()) {
+    console.log('[LS3] Live stream overlay quarantined (ENABLE_LS3_STREAM is false).');
+    return;
+  }
   const c = e.detail?.channel;
   if (!c || !ls3NewsHolo) return;
   if (ls3NewsTitle) ls3NewsTitle.textContent = `${c.name.toUpperCase()} // ${c.country.toUpperCase()} · ${c.city.toUpperCase()}`;

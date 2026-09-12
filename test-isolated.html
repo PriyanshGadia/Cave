@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gate B-2A: Isolated 3D Identity Volume — Six-View Clay</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #111118; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <script type="module">
+    import * as THREE from './node_modules/three/build/three.module.js';
+    import { createIdentityVolumeGeometry } from './ls1_identity_mesh.js';
+    import { createIdentityDetailGroup } from './ls1_identity_detail.js';
+
+    // Fixed canvas size for renders
+    const W = 900, H = 1000;
+    const canvas = document.getElementById('c');
+    canvas.width = W; canvas.height = H;
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+    renderer.setSize(W, H, false);
+    renderer.setPixelRatio(1);
+    renderer.setClearColor(0x111118, 1);
+    renderer.shadowMap.enabled = false;
+
+    const scene = new THREE.Scene();
+
+    // Studio clay material (consistent across hull and identity detail)
+    const clayMat = new THREE.MeshStandardMaterial({
+      color: 0xc8c0b8,
+      roughness: 0.78,
+      metalness: 0.0,
+      side: THREE.DoubleSide
+    });
+
+    // --- Base structural identity volume (Gate B-2A accepted) ---
+    const geom = createIdentityVolumeGeometry(THREE);
+    const mesh = new THREE.Mesh(geom, clayMat);
+    mesh.name = 'LS1_Body_Hull';
+    scene.add(mesh);
+
+    // --- Identity detail pass geometry (Gate B-2B) ---
+    const detailGroup = createIdentityDetailGroup(THREE, clayMat);
+    scene.add(detailGroup);
+
+    // Centre the figure at Y midpoint for comfortable camera target
+    const box = new THREE.Box3().setFromObject(scene);
+    const cy = (box.min.y + box.max.y) * 0.5;
+
+    // Ground plane
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(4, 4),
+      new THREE.MeshStandardMaterial({ color: 0x1a1a28, roughness: 1 })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = 0;
+    scene.add(ground);
+
+    // --- Studio clay lighting (NO composer, NO bloom) ---
+    scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+
+    const key = new THREE.DirectionalLight(0xfffaf4, 1.55);
+    key.position.set(2.2, 3.8, 3.2);
+    scene.add(key);
+
+    const fill = new THREE.DirectionalLight(0xd0e0ff, 0.55);
+    fill.position.set(-3.0, 2.0, 1.8);
+    scene.add(fill);
+
+    const rim = new THREE.DirectionalLight(0xffffff, 0.85);
+    rim.position.set(0.5, 3.2, -4.0);
+    scene.add(rim);
+
+    const bot_fill = new THREE.DirectionalLight(0x8090a0, 0.25);
+    bot_fill.position.set(0, -2, 2);
+    scene.add(bot_fill);
+
+    // --- Camera factory ---
+    const TARGET_Y = 0.87;   // mid-torso height
+    function makeCamera(px, py, pz, tx, ty, tz, fov = 28) {
+      const cam = new THREE.PerspectiveCamera(fov, W / H, 0.01, 20);
+      cam.position.set(px, py, pz);
+      cam.lookAt(tx ?? 0, ty ?? TARGET_Y, tz ?? 0);
+      return cam;
+    }
+
+    // 8 Exact views requested for Gate B-2B
+    const cameras = {
+      front:          makeCamera(0.0,  0.87, 4.4),                       // 1. FRONT
+      right_3q:       makeCamera(2.6,  1.05, 3.2),                       // 2. RIGHT 3/4
+      right:          makeCamera(4.4,  0.87, 0.0),                       // 3. RIGHT
+      left_3q:        makeCamera(-2.6, 1.05, 3.2),                       // 4. LEFT 3/4
+      left:           makeCamera(-4.4, 0.87, 0.0),                       // 5. LEFT
+      back:           makeCamera(0.0,  0.87, -4.4),                      // 6. BACK
+      head_front:     makeCamera(0.010, 1.595, 0.72, 0.010, 1.595, 0.08, 22), // 7. HEAD CLOSE-UP FRONT
+      head_right_3q:  makeCamera(0.420, 1.615, 0.58, 0.010, 1.595, 0.08, 22), // 8. HEAD CLOSE-UP RIGHT 3/4
+    };
+
+    // Calculate total stats (hull + detail)
+    let totalTris = geom.index ? geom.index.count / 3 : geom.attributes.position.count / 3;
+    let totalVerts = geom.attributes.position.count;
+    let detailTris = 0;
+    detailGroup.traverse(child => {
+      if (child.isMesh && child.geometry) {
+        const g = child.geometry;
+        const tris = g.index ? g.index.count / 3 : g.attributes.position.count / 3;
+        totalTris += tris;
+        detailTris += tris;
+        totalVerts += g.attributes.position.count;
+      }
+    });
+
+    // Capture API
+    window.__capture = function(viewName) {
+      const cam = cameras[viewName];
+      if (!cam) return null;
+      renderer.render(scene, cam);
+      return canvas.toDataURL('image/png');
+    };
+
+    window.__stats = {
+      hullTriangles: geom.index ? geom.index.count / 3 : geom.attributes.position.count / 3,
+      detailTriangles: detailTris,
+      totalTriangles: totalTris,
+      totalVertices: totalVerts,
+      bounds: {
+        x: (box.max.x - box.min.x).toFixed(3),
+        y: (box.max.y - box.min.y).toFixed(3),
+        z: (box.max.z - box.min.z).toFixed(3)
+      }
+    };
+
+    // Initial render
+    renderer.render(scene, cameras.front);
+    window.__ready = true;
+    console.log('__ready', JSON.stringify(window.__stats));
+  </script>
+</body>
+</html>

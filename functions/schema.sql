@@ -36,16 +36,19 @@ CREATE TABLE IF NOT EXISTS consent_releases (
 -- 3. Live Collaborative Guestbook (Sector LS2)
 CREATE TABLE IF NOT EXISTS guestbook_entries (
     id TEXT PRIMARY KEY,
-    author_name TEXT NOT NULL,
+    author_name TEXT NOT NULL DEFAULT 'ANONYMOUS',
     visitor_tier INTEGER NOT NULL DEFAULT 0,
-    message TEXT NOT NULL,
-    ink_strokes_json TEXT,         -- Optional freehand pen vector strokes (JSON serialized)
+    message TEXT NOT NULL DEFAULT '',
+    ink_strokes_json TEXT,                    -- Optional freehand pen vector strokes (JSON serialized)
     color_theme TEXT NOT NULL DEFAULT 'cyan', -- 'cyan' | 'amber' | 'green' | 'white'
-    pos_x REAL NOT NULL DEFAULT 0, -- Relative X on the infinite canvas
-    pos_y REAL NOT NULL DEFAULT 0, -- Relative Y on the infinite canvas
+    paper_theme TEXT NOT NULL DEFAULT 'yellow', -- 'yellow' | 'pink' | 'cyan' | 'green'
+    pos_x REAL NOT NULL DEFAULT 0,            -- Subtle organic visual layout X jitter (-0.05..+0.05)
+    pos_y REAL NOT NULL DEFAULT 0,            -- Subtle organic visual layout Y jitter (-0.05..+0.05)
     ip_hash TEXT NOT NULL,
+    token_hash TEXT,                          -- SHA-256(client_token) for write & delete authorization
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
-    is_hidden INTEGER NOT NULL DEFAULT 0 -- Owner moderation flag
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    is_hidden INTEGER NOT NULL DEFAULT 0      -- Owner moderation flag
 );
 
 -- 4. Rate Limiting and Abuse Prevention

@@ -5543,13 +5543,27 @@ export const GLOBAL_NEWS_CHANNELS: NewsChannel[] = [
   }
 ];
 
-export async function onRequestGet(): Promise<Response> {
+export async function onRequestGet(context?: { env?: Record<string, string> }): Promise<Response> {
+  const allowStreams = context?.env?.ALLOW_LIVE_NEWS_STREAMS === 'true';
+
+  const channels = GLOBAL_NEWS_CHANNELS.map(c => {
+    if (!allowStreams) {
+      return {
+        ...c,
+        streamUrl: '',
+        streamType: 'none'
+      };
+    }
+    return c;
+  });
+
   return new Response(JSON.stringify({
     status: 'ok',
-    totalChannels: GLOBAL_NEWS_CHANNELS.length,
-    totalCountries: new Set(GLOBAL_NEWS_CHANNELS.map(c => c.country)).size,
+    totalChannels: channels.length,
+    totalCountries: new Set(channels.map(c => c.country)).size,
     timestamp: new Date().toISOString(),
-    channels: GLOBAL_NEWS_CHANNELS
+    liveStreamsAllowed: allowStreams,
+    channels: channels
   }), {
     headers: {
       'Content-Type': 'application/json',
