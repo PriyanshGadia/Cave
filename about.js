@@ -284,121 +284,115 @@ function onAllArmorLoaded() {
       
       // 7. MARK READY
       window.__ARMOR_READY = true;
-      requestAnimationFrame(() => requestAnimationFrame(() => startIntro()));
+      requestAnimationFrame(() => requestAnimationFrame(() => initCinematic()));
     }
   );
 }
 
 // ==========================================
-// 5. INTRO SEQUENCE (NO SCROLL)
+// 5. MASTER CINEMATIC TIMELINE
 // ==========================================
-function startIntro() {
-  const tlIntro = gsap.timeline({
-    onComplete: () => {
-      // Enable scroll interactions after intro
-      document.body.style.overflowY = 'auto';
-      initScrollAnimations();
-    }
-  });
+function initCinematic() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const isTest = urlParams.get('cinematicTest') === '1';
 
-  // Setup Initial State
-  gsap.set('.intro-name', { opacity: 0, y: 20 });
-  gsap.set(doorGroup.position, { z: 20 });
-  gsap.set(doorGroup.scale, { x: 1, y: 1, z: 1 });
-
-  tlIntro
-    // 1. Fade in P G
-    .fromTo('.intro-letters', { opacity: 0 }, { opacity: 1, duration: 1, ease: 'power2.inOut' })
-    // 2. Form Name
-    .to('.intro-name', { opacity: 1, y: 0, duration: 1, ease: 'power2.out' }, '+=0.5')
-    // 3. Fade out the HTML layer to reveal WebGL Door behind it
-    .to('#intro-layer', { opacity: 0, duration: 1, ease: 'power2.inOut' }, '+=0.5')
-    .call(() => {
-      document.getElementById('intro-layer').style.display = 'none';
-    })
-    // 4. Slide door open (simulated by splitting/scaling or moving parts if model has it)
-    // If no model, we just move the group out of the way
-    .to(doorGroup.position, { x: -10, duration: 1.5, ease: 'power3.inOut' }) 
-    // 5. Room Power up
-    .to(ambientLight, { intensity: 1.5, duration: 1 }, '-=1')
-    .to(practicalLight, { intensity: 50, duration: 0.5 }, '-=0.5')
-    .to(cyanAccent, { intensity: 100, duration: 0.5 }, '+=0.2')
-    .to(cameraLight, { intensity: 5.0, duration: 0.5 }, '-=0.5');
-
-  // 6. Armor parts hover up, ready to be attached
-  const validParts = Object.values(armorParts).filter(p => p !== null);
-  if (validParts.length > 0) {
-    tlIntro.to(validParts.map(p => p.position), { y: '+=1.5', duration: 2, stagger: 0.2, ease: 'power2.inOut' }, '-=0.5');
+  // In Test mode, we completely disable Lenis by not starting it, 
+  // so progress is 100% deterministic and controlled by the harness
+  window.isCinematicTest = isTest;
+  
+  if (!isTest) {
+     // Allow native scroll
+     document.body.style.overflowY = 'auto';
+  } else {
+     // Force hide overflow to prevent accidental real scroll in test
+     document.body.style.overflowY = 'hidden';
   }
-}
 
-// ==========================================
-// 6. SCROLL ANIMATIONS
-// ==========================================
-function initScrollAnimations() {
-  // We map the flight path. Camera flies ENE (x: +, z: -)
-  const flightTimeline = gsap.timeline({
-    scrollTrigger: {
+  // Master timeline encompassing everything
+  // We use a paused timeline, and either scrub it with ScrollTrigger or manually via setCinematicProgress
+  const masterTimeline = gsap.timeline({
+    paused: isTest,
+    scrollTrigger: isTest ? null : {
       trigger: '#scroll-container',
       start: 'top top',
       end: 'bottom bottom',
       scrub: 1
+    },
+    onUpdate: () => {
+      console.log(`[ABOUT CINEMATIC] progress=${masterTimeline.progress().toFixed(3)}`);
     }
   });
 
-  // Fade in copy blocks when they enter
-  gsap.utils.toArray('.copy-block').forEach((block) => {
-    gsap.fromTo(block, 
-      { opacity: 0, y: 50 },
-      { 
-        opacity: 1, 
-        y: 0, 
-        scrollTrigger: {
-          trigger: block,
-          start: 'top 70%',
-          end: 'top 30%',
-          scrub: true
-        }
-      }
-    );
+  window.masterCinematicTimeline = masterTimeline;
+  window.setCinematicProgress = (p) => {
+    masterTimeline.progress(p);
+  };
+
+  // Setup Initial State
+  gsap.set('.name-hidden', { opacity: 0, width: 0 });
+  gsap.set('.intro-name-container', { gap: '8rem' });
+  gsap.set(doorGroup.position, { z: 20 });
+  gsap.set(doorGroup.scale, { x: 1, y: 1, z: 1 });
+  
+  const scale = ARMOR_ROOT.scale.x;
+  
+  // Set initial component positions (workbench)
+  Object.keys(workbenchOffsets).forEach(partName => {
+    if (armorParts[partName]) {
+      const off = workbenchOffsets[partName];
+      armorParts[partName].position.set(
+        (off.x) / scale,
+        (off.y - 1.0 + 10) / scale,
+        (off.z + 100) / scale
+      );
+      armorParts[partName].rotation.set(0, 0, 0);
+    }
   });
 
-  // CAMERA FLIGHT PATH
-  // 1. Exit the room
-  flightTimeline.to(camera.position, {
-    x: 0,
-    y: 10,
-    z: -30,
-    ease: 'power1.inOut',
-    duration: 0.2
-  }, 0);
+  // Since we are mapping this exactly to percentages, we give the master timeline a total duration of 100
+  // so that `.to(..., { duration: X }, Y)` exactly matches scroll percentage points!
   
-  // 2. Fly down path
-  flightTimeline.to(camera.position, {
-    x: 0,
-    y: 0,
-    z: -75,
-    ease: 'none',
-    duration: 0.6
-  }, 0.2);
+  // ==========================================
+  // SHOT A: Intro Identity (0 -> 10)
+  // ==========================================
+  // P and G are already visible at gap: 8rem
+  masterTimeline.to('.intro-name-container', { gap: '1rem', duration: 4, ease: 'power2.inOut' }, 2);
+  masterTimeline.to('.name-hidden', { opacity: 1, width: 'auto', duration: 4, ease: 'power2.out' }, 2);
+  masterTimeline.to('#intro-layer', { autoAlpha: 0, duration: 2, ease: 'power2.inOut' }, 8);
 
-  // 3. Final landing approach
-  flightTimeline.to(camera.position, {
-    x: 0,
-    y: -8,
-    z: -90,
-    ease: 'power2.out',
-    duration: 0.2
-  }, 0.8);
+  // ==========================================
+  // SHOT B & C: Door opening / workshop reveal (10 -> 20)
+  // ==========================================
+  masterTimeline.to(doorGroup.position, { x: -10, duration: 6, ease: 'power3.inOut' }, 10);
+  masterTimeline.to(ambientLight, { intensity: 1.5, duration: 4 }, 10);
+  masterTimeline.to(practicalLight, { intensity: 50, duration: 3 }, 12);
+  masterTimeline.to(cyanAccent, { intensity: 100, duration: 3 }, 14);
+  masterTimeline.to(cameraLight, { intensity: 5.0, duration: 3 }, 13);
 
-  flightTimeline.to(camera.rotation, {
-    x: 0.1, y: 0, z: 0,
-    ease: 'power1.inOut',
-    duration: 1
-  }, 0);
+  // ==========================================
+  // SHOT D: Armor Activation (20 -> 25)
+  // ==========================================
+  const validParts = Object.values(armorParts).filter(p => p !== null);
+  if (validParts.length > 0) {
+    masterTimeline.to(validParts.map(p => p.position), { 
+      y: `+=${1.5 / scale}`, duration: 3, stagger: 0.5, ease: 'power2.inOut' 
+    }, 20);
+  }
 
-  // SEQUENCE THE COMPONENTS
-  // 4. ANIMATE COMPONENTS RELATIVE TO ARMOR_ROOT
+  // ==========================================
+  // SHOT E - K: Flight (Camera deliberate tracking) (25 -> 85)
+  // ==========================================
+  // Camera moves out of workshop and starts following
+  // At 25, exit the workshop
+  masterTimeline.to(camera.position, { x: 0, y: 5, z: 0, ease: 'power1.inOut', duration: 10 }, 25);
+  // At 35, fly down path
+  masterTimeline.to(camera.position, { x: 0, y: 0, z: -50, ease: 'none', duration: 30 }, 35);
+  // At 65, final landing approach
+  masterTimeline.to(camera.position, { x: 0, y: -5, z: -85, ease: 'power2.out', duration: 20 }, 65);
+  
+  // Camera tilt
+  masterTimeline.to(camera.rotation, { x: 0.05, y: 0, z: 0, ease: 'power1.inOut', duration: 10 }, 25);
+
   const components = [
     armorParts.boots,
     armorParts.legs,
@@ -408,46 +402,53 @@ function initScrollAnimations() {
     armorParts.helmet
   ].filter(p => p !== null);
 
-  const scale = ARMOR_ROOT.scale.x;
-
   components.forEach((comp, index) => {
-    const startTime = 0.1 + (index * 0.08);
+    const launchStart = 25 + (index * 4); // Launch at 25, 29, 33, 37, 41, 45
     
-    // Part flies from workbench to left side of camera view
-    // Local pos = (WorldPos - RootPos) / Scale
-    flightTimeline.to(comp.position, { 
-      x: (-4 + (Math.random() * 2 - 1)) / scale,
-      y: ((Math.random() * 4 - 2) + 10) / scale,
-      z: (-65 + 100) / scale, 
-      ease: 'power1.inOut', 
-      duration: 0.4 
-    }, startTime);
+    // Launch off workbench and start flying down tunnel
+    masterTimeline.to(comp.position, { 
+      x: (-2 + (Math.random() * 4 - 2)) / scale,
+      y: ((Math.random() * 4 - 2) + 5) / scale,
+      z: (-40 + 100) / scale, 
+      ease: 'power1.in', 
+      duration: 15
+    }, launchStart);
 
-    flightTimeline.to(comp.rotation, {
+    masterTimeline.to(comp.rotation, {
       y: Math.PI * 2, x: 0.5,
       ease: 'none',
-      duration: 0.4
-    }, startTime);
+      duration: 15
+    }, launchStart);
 
-    // Boost ahead to assembly area all together (origin of ARMOR_ROOT)
-    flightTimeline.to(comp.position, {
-      x: 0, y: 0, z: 0, 
-      ease: 'power2.in', 
-      duration: 0.2
-    }, 0.7);
+    // Boost ahead to assembly area (75 -> 85)
+    // Assembly starts at 75
+    masterTimeline.to(comp.position, {
+      x: 0, y: 15 / scale, z: 0, 
+      ease: 'power2.inOut', 
+      duration: 8
+    }, 70 + (index * 1));
     
-    flightTimeline.to(comp.rotation, {
+    masterTimeline.to(comp.rotation, {
       y: 0, x: 0,
-      ease: 'power2.in',
-      duration: 0.2
-    }, 0.7);
+      ease: 'power2.inOut',
+      duration: 8
+    }, 70 + (index * 1));
   });
 
-  // FORMATION & LANDING
-  flightTimeline.call(() => {
+  // ==========================================
+  // SHOT L - N: Descent & Landing (85 -> 95)
+  // ==========================================
+  if (validParts.length > 0) {
+    masterTimeline.to(validParts.map(p => p.position), { 
+      y: 0, duration: 5, stagger: 0.5, ease: 'power2.in' 
+    }, 85);
+  }
+
+  // ==========================================
+  // 95 -> 100: Final stand, UI reveal
+  // ==========================================
+  masterTimeline.call(() => {
     console.log('[ARMOR PROD] stage=assembled');
-    
-    // Fade in cavern
     if (window.cavernEnvironment) {
        window.cavernEnvironment.traverse(c => {
          if (c.isMesh && c.material) {
@@ -459,13 +460,6 @@ function initScrollAnimations() {
     
     if (suitAnimations['Landing']) {
       suitAnimations['Landing'].reset().play();
-    }
-    
-    // Show UI Button
-    const btn = document.getElementById('repulsor-btn');
-    if (btn) {
-      btn.classList.remove('hidden');
-      gsap.fromTo(btn, { opacity: 0, scale: 0 }, { opacity: 1, scale: 1, duration: 0.5 });
     }
     
     // Add strong light to illuminate the suit
@@ -480,7 +474,38 @@ function initScrollAnimations() {
        scene.add(cavernAmbient);
     }
     
-  }, null, 0.95);
+    const btn = document.getElementById('repulsor-btn');
+    if (btn) {
+      btn.classList.remove('hidden');
+      gsap.fromTo(btn, { opacity: 0, scale: 0 }, { opacity: 1, scale: 1, duration: 0.5 });
+    }
+  }, null, 95);
+
+  // ==========================================
+  // TEXT BLOCKS (Deterministic mapping)
+  // ==========================================
+  const chapters = [
+    '#chapter-01 .copy-block',
+    '#chapter-02 .copy-block',
+    '#chapter-03 .copy-block',
+    '#chapter-04 .copy-block',
+    '#chapter-05 .copy-block',
+    '#chapter-06 .copy-block',
+  ];
+  
+  // They appear during flight phase: 35, 42, 49, 56, 63, 70
+  chapters.forEach((sel, i) => {
+     const block = document.querySelector(sel);
+     if (block) {
+        masterTimeline.fromTo(block, { autoAlpha: 0, y: 50 }, { autoAlpha: 1, y: 0, duration: 4 }, 35 + (i * 7));
+        masterTimeline.to(block, { autoAlpha: 0, y: -50, duration: 3 }, 35 + (i * 7) + 5);
+     }
+  });
+
+  const finalBlock = document.querySelector('#chapter-final .copy-block');
+  if (finalBlock) {
+     masterTimeline.fromTo(finalBlock, { autoAlpha: 0, y: 50 }, { autoAlpha: 1, y: 0, duration: 4 }, 95);
+  }
 }
 
 // ==========================================
@@ -530,7 +555,9 @@ const lenis = new Lenis();
 let suitThrottle = 0.0;
 
 function animate(time) {
-  lenis.raf(time);
+  if (!window.isCinematicTest) {
+      lenis.raf(time);
+  }
   
   const delta = clock.getDelta();
   if (suitMixer) suitMixer.update(delta);

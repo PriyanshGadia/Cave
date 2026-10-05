@@ -1,0 +1,288 @@
+:root {
+  --bg-color: #000000;
+  --gunmetal: #1a1a1a;
+  --gunmetal-light: #2a2a2a;
+  --blood-red: #8a0000;
+  --blood-red-glow: #ff0000;
+  --cyan: #00f3ff;
+  --cyan-glow: rgba(0, 243, 255, 0.6);
+  --text-main: #ffffff;
+  --text-muted: #888888;
+
+  --font-logo: 'Syncopate', sans-serif;
+  --font-heading: 'Inter Tight', sans-serif;
+  --font-body: 'Inter Tight', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Add canvas styling */
+#webgl-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  pointer-events: none;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  /* Start hidden to avoid scrollbar before intro finishes */
+  overflow-y: hidden; 
+}
+
+/* ========================================================
+   INTRO LAYER
+======================================================== */
+#intro-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--bg-color);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  transition: opacity 2s ease-in-out;
+}
+
+#intro-layer.fade-out {
+  opacity: 0;
+}
+
+.intro-name-container {
+  font-family: var(--font-logo);
+  font-size: 4rem; /* Scaled down slightly to fit full name */
+  font-weight: 700;
+  letter-spacing: 0.5rem;
+  display: flex;
+  gap: 8rem; /* Initially very far apart */
+  color: var(--text-main);
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+  align-items: center;
+}
+
+.word {
+  display: flex;
+  align-items: center;
+}
+
+.name-hidden {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  display: inline-block;
+  white-space: nowrap;
+  /* GSAP will animate width and opacity */
+}
+
+/* Optional cyan accent on the hidden letters */
+.name-hidden {
+  color: var(--cyan);
+  text-shadow: 0 0 15px var(--cyan-glow);
+}
+
+/* ========================================================
+   WEBGL CANVAS
+======================================================== */
+#webgl-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ========================================================
+   SCROLL CONTENT
+======================================================== */
+#scroll-container {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  pointer-events: none; /* Let clicks pass through to canvas if needed, except on specific elements */
+}
+
+.chapter-spacer {
+  height: 100vh; /* gives room before first chapter */
+}
+
+#start-spacer {
+  height: 200vh; /* wait for launch sequence */
+}
+
+#end-spacer {
+  height: 150vh; /* breathing room at the bottom */
+}
+
+.chapter-content {
+  height: 150vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0 10vw;
+}
+
+.copy-block {
+  width: 40%;
+  opacity: 0;
+  transform: translateY(30px);
+  /* GSAP will control opacity and transform */
+}
+
+.copy-block.right-side {
+  margin-left: auto; /* Push to right */
+  text-align: left;
+  border-left: 2px solid var(--cyan);
+  padding-left: 2rem;
+}
+
+.copy-block.center-bottom {
+  margin: 0 auto;
+  text-align: center;
+  width: 100%;
+  margin-top: 50vh;
+}
+
+.chapter-indicator {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--cyan);
+  letter-spacing: 0.2rem;
+  margin-bottom: 1rem;
+}
+
+.chapter-content h2 {
+  font-family: var(--font-heading);
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+}
+
+.chapter-content p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 400px;
+}
+
+.technical-label {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: var(--blood-red-glow);
+  letter-spacing: 0.3rem;
+  margin-bottom: 1.5rem;
+}
+
+.final-statement {
+  font-family: var(--font-heading);
+  font-size: 4rem;
+  font-weight: 700;
+  line-height: 1.1;
+  text-transform: uppercase;
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+}
+
+/* ========================================================
+   UI LAYER (BUTTONS / CTAS)
+======================================================== */
+#ui-layer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 20;
+  pointer-events: none;
+}
+
+/* The red glowing button next to the pad */
+#repulsor-btn {
+  position: absolute;
+  top: 60%;
+  right: 25%;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: transparent;
+  border: 2px solid var(--blood-red);
+  cursor: pointer;
+  pointer-events: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px var(--blood-red);
+  transform: translate(-50%, -50%);
+}
+
+#repulsor-btn:hover {
+  box-shadow: 0 0 30px var(--blood-red-glow);
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+#repulsor-btn:active {
+  transform: translate(-50%, -50%) scale(0.95);
+}
+
+.btn-core {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: var(--blood-red-glow);
+  box-shadow: 0 0 20px var(--blood-red-glow);
+}
+
+#repulsor-btn.hidden {
+  display: none;
+  opacity: 0;
+}
+
+/* The final CTA */
+#vault-cta {
+  position: absolute;
+  bottom: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--cyan);
+  text-decoration: none;
+  letter-spacing: 0.2rem;
+  border: 1px solid var(--cyan);
+  padding: 1rem 3rem;
+  pointer-events: auto;
+  transition: all 0.3s ease;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+}
+
+#vault-cta:hover {
+  background: var(--cyan);
+  color: #000;
+  box-shadow: 0 0 20px var(--cyan-glow);
+}
+
+#vault-cta.hidden {
+  display: none;
+  opacity: 0;
+}
