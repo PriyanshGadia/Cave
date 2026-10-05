@@ -191,7 +191,7 @@ partsToLoad.forEach(partName => {
 });
 
 function onAllArmorLoaded() {
-  // Normalize and center ARMOR_ROOT just like debug script
+  // 2. NORMALIZE/CENTER
   ARMOR_ROOT.updateMatrixWorld(true);
   const bounds = new THREE.Box3().setFromObject(ARMOR_ROOT);
   const size = new THREE.Vector3();
@@ -209,13 +209,46 @@ function onAllArmorLoaded() {
     ARMOR_ROOT.updateMatrixWorld(true);
   }
 
+  // 3. EXPLICIT VISIBILITY
+  ARMOR_ROOT.visible = true;
+  Object.values(armorParts).forEach(p => {
+    if (p) {
+      p.visible = true;
+      p.traverse(c => {
+        if (c.isMesh) c.visible = true;
+      });
+    }
+  });
+
+  // Setup ARMOR_ROOT final position
+  ARMOR_ROOT.position.set(0, -10, -100);
+  ARMOR_ROOT.updateMatrixWorld(true);
+
   // Set initial separated positions in local space (workbench)
+  // LocalPos = (WorldPos - RootPos) / Scale
+  const scale = ARMOR_ROOT.scale.x;
   Object.keys(workbenchOffsets).forEach(partName => {
     if (armorParts[partName]) {
       const off = workbenchOffsets[partName];
-      armorParts[partName].position.set(off.x, off.y - 1.0, off.z);
+      // original world pos: x: off.x, y: off.y - 1.0, z: off.z
+      armorParts[partName].position.set(
+        (off.x) / scale,
+        (off.y - 1.0 + 10) / scale,
+        (off.z + 100) / scale
+      );
     }
   });
+
+  // 6. TELEMETRY
+  const finalBounds = new THREE.Box3().setFromObject(ARMOR_ROOT);
+  console.log('[ARMOR PROD]');
+  console.log(`loaded=true`);
+  console.log(`components=${Object.values(armorParts).filter(p=>p).length}`);
+  console.log(`meshes=${totalMeshesLoaded}`);
+  console.log(`rootVisible=${ARMOR_ROOT.visible}`);
+  console.log(`rootScale=${ARMOR_ROOT.scale.x}`);
+  console.log(`rootBounds=min(${finalBounds.min.x.toFixed(2)},${finalBounds.min.y.toFixed(2)},${finalBounds.min.z.toFixed(2)}) max(${finalBounds.max.x.toFixed(2)},${finalBounds.max.y.toFixed(2)},${finalBounds.max.z.toFixed(2)})`);
+  console.log(`stage=normalized`);
 
   // Load Cavern Environment
   loader.load(
@@ -248,10 +281,12 @@ function onAllArmorLoaded() {
       cavern.position.y = -20;
       scene.add(cavern);
       window.cavernEnvironment = cavern;
+      
+      // 7. MARK READY
+      window.__ARMOR_READY = true;
+      requestAnimationFrame(() => requestAnimationFrame(() => startIntro()));
     }
   );
-
-  startIntro();
 }
 
 // ==========================================
@@ -363,7 +398,7 @@ function initScrollAnimations() {
   }, 0);
 
   // SEQUENCE THE COMPONENTS
-  // They start at workbench positions. They fly along with the camera, appearing one by one.
+  // 4. ANIMATE COMPONENTS RELATIVE TO ARMOR_ROOT
   const components = [
     armorParts.boots,
     armorParts.legs,
@@ -373,52 +408,17 @@ function initScrollAnimations() {
     armorParts.helmet
   ].filter(p => p !== null);
 
+  const scale = ARMOR_ROOT.scale.x;
+
   components.forEach((comp, index) => {
     const startTime = 0.1 + (index * 0.08);
     
     // Part flies from workbench to left side of camera view
-    // Since ARMOR_ROOT is now centered at (0,0,0) and scaled, we need to move the components in their local space
-    // to match the flight timeline. But ARMOR_ROOT is fixed at origin right now.
-    // Wait, the original code animated comp.position while camera moved, but since comp was in scene root, its world pos moved.
-    // Now comp is in ARMOR_ROOT which is scaled. We need to move ARMOR_ROOT into the vault (-10, -100) and assemble there.
-    // Or we move ARMOR_ROOT right from the start? No, workbench is near the camera start.
-    
-    // Let's animate ARMOR_ROOT's position along with the camera, or place it at the landing pad?
-    // Actually, ARMOR_ROOT can just sit at the vault entrance (-10, -100).
-    // And the individual pieces start far away (at the workbench) and fly INTO the vault.
-  });
-
-  // Setup ARMOR_ROOT final position
-  ARMOR_ROOT.position.set(0, -10, -100);
-  
-  // Since ARMOR_ROOT is far away, we must compensate the workbench offsets so they appear near camera originally
-  // Wait, the original code had them fly FROM workbench (near origin) TO vault (-100).
-  // If ARMOR_ROOT is at -100, we must offset the start position by +100!
-  // Let's adjust the GSAP timeline.
-  components.forEach((comp, index) => {
-    const startTime = 0.1 + (index * 0.08);
-    const initialOff = workbenchOffsets[Object.keys(armorParts).find(key => armorParts[key] === comp)];
-    
-    // Set them far out so they appear at workbench globally. (ARMOR_ROOT scale applies, so we must divide by scale)
-    // Actually it's easier to just animate them locally to (0,0,0).
-    // The previous code had them fly to (0, -10, -100) locally because they were in scene root.
-    // Since they are now in ARMOR_ROOT which is AT (0, -10, -100), their target is (0,0,0).
-    
-    // So we animate from: current local offset + some world offset?
-    // No, just let GSAP animate them from a local position that corresponds to the workbench, to (0,0,0).
-    // Local workbench Z was 25. Let's make them fly from z = 100/scale, to z=0.
-    const scale = ARMOR_ROOT.scale.x;
-    
-    gsap.set(comp.position, {
-        x: (initialOff.x) / scale,
-        y: (initialOff.y - 1.0 + 10) / scale,
-        z: (initialOff.z + 100) / scale
-    });
-    
+    // Local pos = (WorldPos - RootPos) / Scale
     flightTimeline.to(comp.position, { 
-      x: -4 / scale,
-      y: (Math.random() * 4 - 2) / scale,
-      z: 35 / scale, 
+      x: (-4 + (Math.random() * 2 - 1)) / scale,
+      y: ((Math.random() * 4 - 2) + 10) / scale,
+      z: (-65 + 100) / scale, 
       ease: 'power1.inOut', 
       duration: 0.4 
     }, startTime);
@@ -429,7 +429,7 @@ function initScrollAnimations() {
       duration: 0.4
     }, startTime);
 
-    // Boost ahead to assembly area all together
+    // Boost ahead to assembly area all together (origin of ARMOR_ROOT)
     flightTimeline.to(comp.position, {
       x: 0, y: 0, z: 0, 
       ease: 'power2.in', 
@@ -445,6 +445,8 @@ function initScrollAnimations() {
 
   // FORMATION & LANDING
   flightTimeline.call(() => {
+    console.log('[ARMOR PROD] stage=assembled');
+    
     // Fade in cavern
     if (window.cavernEnvironment) {
        window.cavernEnvironment.traverse(c => {
