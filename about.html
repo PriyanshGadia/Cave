@@ -1,127 +1,127 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Priyansh Gadia | Engineer</title>
-  <link rel="stylesheet" href="./about.css" />
-  <!-- Elegant geometric font for intro -->
-  <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Inter+Tight:wght@300;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#020202">
+  <meta name="description" content="Priyansh Gadia. Engineer, builder, systems architect. A cinematic portfolio installation.">
+  <title>Priyansh Gadia // About</title>
+  <link rel="stylesheet" href="./about.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter+Tight:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+  <main id="about-experience" aria-label="Cinematic about experience">
+    <canvas id="webgl-canvas" aria-hidden="true"></canvas>
 
-  <!-- INTRO LOADER (NO SCROLL INITIALLY) -->
-  <div id="intro-layer">
-    <div class="intro-name-container">
-      <div class="word" id="word-first">
-        <span class="letter-p">P</span>
-        <span class="name-hidden">RIYANSH</span>
+    <div id="cinema-grade" aria-hidden="true"></div>
+    <div id="scanline-layer" aria-hidden="true"></div>
+    <div id="grain-layer" aria-hidden="true"></div>
+    <div id="vignette-layer" aria-hidden="true"></div>
+
+    <section id="identity-layer" aria-hidden="true">
+      <div class="identity-mark identity-p">P</div>
+      <div class="identity-mark identity-g">G</div>
+      <div class="identity-name">
+        <span class="identity-first">PRIYANSH</span>
+        <span class="identity-last">GADIA</span>
       </div>
-      <div class="word" id="word-last">
-        <span class="letter-g">G</span>
-        <span class="name-hidden">ADIA</span>
+      <div class="identity-rule"></div>
+      <div class="identity-sub">ENGINEER&nbsp;&nbsp;·&nbsp;&nbsp;BUILDER&nbsp;&nbsp;·&nbsp;&nbsp;SYSTEMS ARCHITECT</div>
+    </section>
+
+    <section id="hud" aria-hidden="true">
+      <div class="hud-corner hud-top-left">
+        <span class="hud-kicker">PG // ABOUT</span>
+        <span class="hud-readout" id="hud-readout">000.0</span>
       </div>
+      <div class="hud-corner hud-top-right">
+        <span class="hud-status"><i></i> SYSTEM LIVE</span>
+        <span class="hud-depth" id="hud-depth">DEPTH 00</span>
+      </div>
+      <div class="hud-bottom">
+        <span id="hud-chapter">VOID</span>
+        <span class="hud-line"></span>
+        <span id="hud-coordinate">X 000 / Y 000 / Z 000</span>
+      </div>
+    </section>
+
+    <section id="copy-layer" aria-hidden="true">
+      <article class="chapter-copy" data-chapter="boots">
+        <span class="copy-index">01 / MOBILITY</span>
+        <h2>BOOT<br><em>SYSTEM</em></h2>
+        <p>Propulsion, stabilization and articulation begin at the smallest mechanical layer. Every millimetre has a job.</p>
+        <div class="copy-specs"><span>THRUST</span><span>LOCK</span><span>VECTOR</span></div>
+      </article>
+      <article class="chapter-copy" data-chapter="legs">
+        <span class="copy-index">02 / STRUCTURE</span>
+        <h2>LOAD<br><em>FRAME</em></h2>
+        <p>Load-bearing kinematics built around controlled movement, joint protection and brutal mechanical honesty.</p>
+        <div class="copy-specs"><span>KNEE</span><span>ACTUATION</span><span>LOAD</span></div>
+      </article>
+      <article class="chapter-copy" data-chapter="torso">
+        <span class="copy-index">03 / CORE</span>
+        <h2>CENTRAL<br><em>ARCHITECTURE</em></h2>
+        <p>The torso is where power, thermal management, structure and control become one machine.</p>
+        <div class="copy-specs"><span>POWER</span><span>THERMAL</span><span>ROUTING</span></div>
+      </article>
+      <article class="chapter-copy" data-chapter="arms">
+        <span class="copy-index">04 / CONTROL</span>
+        <h2>ACTUATION<br><em>CHAIN</em></h2>
+        <p>Intent becomes motion through nested bearings, actuators, articulated armour and controlled force.</p>
+        <div class="copy-specs"><span>JOINT</span><span>TORQUE</span><span>CONTROL</span></div>
+      </article>
+      <article class="chapter-copy" data-chapter="gauntlets">
+        <span class="copy-index">05 / OUTPUT</span>
+        <h2>ENERGY<br><em>DELIVERY</em></h2>
+        <p>A compact interface for turning a control decision into a precise physical output.</p>
+        <div class="copy-specs"><span>EMITTER</span><span>COLLIMATION</span><span>OUTPUT</span></div>
+      </article>
+      <article class="chapter-copy" data-chapter="helmet">
+        <span class="copy-index">06 / PERCEPTION</span>
+        <h2>THE<br><em>SENSORIUM</em></h2>
+        <p>Perception is infrastructure. Optics, protection and information converge into one forward-facing system.</p>
+        <div class="copy-specs"><span>OPTICS</span><span>SCAN</span><span>LOCK</span></div>
+      </article>
+      <article class="chapter-copy chapter-assembly-copy" data-chapter="assembly">
+        <span class="copy-index">VAULT-01 / ASSEMBLY</span>
+        <h1>BUILT TO<br><em>MOVE.</em></h1>
+        <div class="assembly-rule"></div>
+        <h1>BUILT TO<br><em>THINK.</em></h1>
+      </article>
+    </section>
+
+    <div id="scroll-rail" aria-hidden="true">
+      <div id="scroll-rail-progress"></div>
     </div>
-  </div>
 
-  <!-- THE 3D CANVAS -->
-  <canvas id="webgl-canvas"></canvas>
+    <div id="interaction-cursor" aria-hidden="true">
+      <span></span>
+    </div>
 
-  <!-- SCROLL CONTENT (Appears after launch) -->
-  <div id="scroll-container">
-    
-    <section class="chapter-spacer" id="start-spacer"></section>
+    <div id="cinematic-end" aria-hidden="true"></div>
 
-    <!-- CHAPTER 01: BOOTS -->
-    <section class="chapter-content" id="chapter-01">
-      <div class="copy-block right-side">
-        <div class="chapter-indicator">01 / MOBILITY</div>
-        <h2>ARMOR BOOT SYSTEM</h2>
-        <p>Propulsion, stabilization, and articulation begin at the smallest mechanical layer. The foundation dictates the trajectory.</p>
-      </div>
-    </section>
+    <div id="scroll-space">
+      <div class="scroll-block"></div>
+      <div class="scroll-block"></div>
+      <div class="scroll-block"></div>
+      <div class="scroll-block"></div>
+      <div class="scroll-block"></div>
+      <div class="scroll-block"></div>
+      <div class="scroll-block"></div>
+      <div class="scroll-block"></div>
+      <div class="scroll-block"></div>
+      <div class="scroll-block"></div>
+      <div class="scroll-block"></div>
+      <div class="scroll-block"></div>
+      <div class="scroll-block"></div>
+      <div class="scroll-block"></div>
+      <div class="scroll-block"></div>
+      <div class="scroll-block"></div>
+    </div>
+  </main>
 
-    <!-- CHAPTER 02: LEGS -->
-    <section class="chapter-content" id="chapter-02">
-      <div class="copy-block right-side">
-        <div class="chapter-indicator">02 / STRUCTURE</div>
-        <h2>LEG ASSEMBLY</h2>
-        <p>The interface moves because the mechanism underneath it works. Load-bearing kinematics designed for extreme impact resistance.</p>
-      </div>
-    </section>
-
-    <!-- CHAPTER 03: TORSO -->
-    <section class="chapter-content" id="chapter-03">
-      <div class="copy-block right-side">
-        <div class="chapter-indicator">03 / CORE</div>
-        <h2>THE BODY OF THE SYSTEM</h2>
-        <p>Central power architecture routing energy to extremities. The structural ribbing houses the primary execution engines and thermal management.</p>
-      </div>
-    </section>
-
-    <!-- CHAPTER 04: ARMS -->
-    <section class="chapter-content" id="chapter-04">
-      <div class="copy-block right-side">
-        <div class="chapter-indicator">04 / CONTROL</div>
-        <h2>ARM ASSEMBLY</h2>
-        <p>Translating intention into physical actuation. Redundant joint servos provide micron-level precision and massive kinetic potential.</p>
-      </div>
-    </section>
-
-    <!-- CHAPTER 05: GAUNTLETS -->
-    <section class="chapter-content" id="chapter-05">
-      <div class="copy-block right-side">
-        <div class="chapter-indicator">05 / OUTPUT</div>
-        <h2>GAUNTLET SYSTEM</h2>
-        <p>Direct environmental interaction. High-density energy delivery via palmar emitters, mapped directly to autonomous control subroutines.</p>
-      </div>
-    </section>
-
-    <!-- CHAPTER 06: HELMET -->
-    <section class="chapter-content" id="chapter-06">
-      <div class="copy-block right-side">
-        <div class="chapter-indicator">06 / PERCEPTION</div>
-        <h2>HELMET SENSORIUM</h2>
-        <p>The visual processing nexus. Ingesting spatial data, calculating ballistics, and maintaining complete situational dominance.</p>
-      </div>
-    </section>
-
-    <!-- FORMATION -->
-    <section class="chapter-content" id="chapter-formation">
-      <div class="copy-block">
-        <!-- Visual breathing period -->
-      </div>
-    </section>
-
-    <!-- DESCENT & LANDING -->
-    <section class="chapter-content" id="chapter-landing">
-      <div class="copy-block">
-        <!-- Visual landing -->
-      </div>
-    </section>
-
-    <!-- FINAL SUIT -->
-    <section class="chapter-content" id="chapter-final">
-      <div class="copy-block center-bottom">
-        <div class="technical-label">VAULT-01 // PROTOTYPE</div>
-        <h1 class="final-statement">BUILT TO MOVE.<br>BUILT TO THINK.</h1>
-      </div>
-    </section>
-
-    <section class="chapter-spacer" id="end-spacer"></section>
-  </div>
-
-  <!-- INTERACTION UI (Fixed, appears at the end) -->
-  <div id="ui-layer">
-
-    
-    <button id="repulsor-btn" class="hidden">
-      <div class="btn-core"></div>
-    </button>
-    <a href="/" id="vault-cta" class="hidden">ENTER THE VAULT ↗</a>
-  </div>
-
-  <!-- SCRIPTS -->
   <script type="module" src="./about.js"></script>
 </body>
 </html>
