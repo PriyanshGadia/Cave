@@ -2,12 +2,14 @@
 
 :root {
   --color-bg: #030405;
+  --color-gunmetal: #171a1d;
   --color-text: #f2f4f5;
   --color-accent: #ff2b20;
   --color-accent-dark: #b60000;
   --color-hud: #7deaf0;
   --color-hud-dim: rgba(125, 234, 240, 0.4);
-  --color-border: rgba(105, 116, 123, 0.2);
+  --color-border: rgba(138, 146, 153, 0.2);
+  
   --font-mono: 'IBM Plex Mono', monospace;
   --font-condensed: 'Barlow Condensed', sans-serif;
   --font-sans: 'Inter Tight', sans-serif;
@@ -29,7 +31,7 @@ html, body {
   overscroll-behavior: none;
 }
 
-#monolith-experience {
+#forge-experience {
   position: relative;
   width: 100%;
   height: 100%;
@@ -42,10 +44,10 @@ html, body {
   width: 100vw;
   height: 100vh;
   z-index: 1;
-  pointer-events: auto; /* allows raycasting for the floor puzzle */
+  pointer-events: auto; /* raycasting allowed */
 }
 
-/* Post Processing Overlay Layers */
+/* Post Processing */
 #cinema-grade, #scanline-layer, #grain-layer, #vignette-layer {
   position: fixed;
   top: 0;
@@ -76,7 +78,7 @@ html, body {
   box-shadow: inset 0 0 150px rgba(0,0,0,0.9);
 }
 
-/* HUD elements */
+/* Mode C: Instrument */
 #hud {
   position: fixed;
   top: 0;
@@ -102,7 +104,6 @@ html, body {
   gap: 8px;
   position: absolute;
 }
-
 .hud-top-left { top: 40px; left: 40px; }
 .hud-top-right { top: 40px; right: 40px; text-align: right; }
 
@@ -114,12 +115,6 @@ html, body {
   border-radius: 50%;
   margin-right: 8px;
   box-shadow: 0 0 8px var(--color-accent);
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
 }
 
 .hud-bottom {
@@ -131,7 +126,6 @@ html, body {
   justify-content: space-between;
   align-items: center;
 }
-
 .hud-line {
   flex-grow: 1;
   height: 1px;
@@ -139,7 +133,43 @@ html, body {
   margin: 0 20px;
 }
 
-/* Content layer for scroll-triggered text */
+/* Mode A: Identity */
+#identity-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 45;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.identity-letters {
+  display: flex;
+  justify-content: space-between;
+  width: 60vw;
+  font-family: var(--font-condensed);
+  font-size: 15vw;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.identity-full {
+  margin-top: -5vw;
+  font-family: var(--font-condensed);
+  font-size: 5vw;
+  letter-spacing: 0.1em;
+  font-weight: 500;
+  opacity: 0;
+}
+
+/* Mode B: Editorial */
 #copy-layer {
   position: fixed;
   top: 0;
@@ -151,8 +181,8 @@ html, body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: flex-start;
-  padding-left: 15vw;
+  align-items: flex-end;
+  padding-right: 15vw;
 }
 
 .chapter-copy {
@@ -161,13 +191,14 @@ html, body {
   visibility: hidden;
   max-width: 400px;
   transform: translateY(20px);
+  text-align: right;
 }
 
 .copy-index {
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.2em;
-  color: var(--color-accent);
+  color: var(--color-hud);
   display: block;
   margin-bottom: 16px;
 }
@@ -181,11 +212,6 @@ html, body {
   color: #fff;
 }
 
-.chapter-copy h2 em {
-  font-style: normal;
-  color: var(--color-accent);
-}
-
 .chapter-copy p {
   font-size: 14px;
   line-height: 1.6;
@@ -195,6 +221,7 @@ html, body {
 
 .copy-specs {
   display: flex;
+  justify-content: flex-end;
   gap: 24px;
   font-family: var(--font-mono);
   font-size: 10px;
@@ -204,6 +231,7 @@ html, body {
   padding-top: 16px;
 }
 
+/* Personal section */
 .chapter-assembly-copy {
   align-items: center;
   text-align: center;
@@ -211,6 +239,7 @@ html, body {
   transform: translateX(-50%) translateY(20px);
   width: 100%;
   max-width: none;
+  padding-right: 0;
 }
 
 .chapter-assembly-copy h1 {
@@ -221,11 +250,26 @@ html, body {
   text-transform: uppercase;
 }
 
+.chapter-assembly-copy h1 em {
+  font-style: normal;
+  color: var(--color-accent);
+}
+
 .assembly-rule {
   width: 2px;
   height: 60px;
   background: var(--color-accent);
   margin: 40px auto;
+}
+
+.personal-roles {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--color-hud-dim);
 }
 
 /* Scroll mechanism */

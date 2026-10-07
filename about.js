@@ -1,5467 +1,2229 @@
-import * as THREE from 'three';\nimport gsap from 'gsap';\nimport { ScrollTrigger } from 'gsap/ScrollTrigger';\ngsap.registerPlugin(ScrollTrigger);\n\nconst COLORS = {\n  gun0: new THREE.Color(0x050607),\n  gun1: new THREE.Color(0x0d0f11),\n  blood: new THREE.Color(0xb60000),\n  bloodHot: new THREE.Color(0xff2b20),\n  cyan: new THREE.Color(0x7deaf0)\n};\n\n// ==========================================
-// MONOLITH ARCHITECTURAL DATA SET (PROCEDURAL)
-// ==========================================
-const MONOLITH_DATA = [
-  {
-    id: 'node_0000',
-    type: 'emitter',
-    position: [25.049, -14.583, 9.256],
-    rotation: [0.026, 0.354, 0.002],
-    scale: [2.756, 9.378, 1.897],
-    materialIndex: 1,
-    integrity: 0.6570056004226725,
-    resonance: 0.6950331351445911,
-  },
-  {
-    id: 'node_0001',
-    type: 'structural',
-    position: [53.925, 148.964, -20.100],
-    rotation: [0.026, 5.926, 0.084],
-    scale: [3.516, 18.970, 1.137],
-    materialIndex: 1,
-    integrity: 0.5503893390757173,
-    resonance: 0.957476818852041,
-  },
-  {
-    id: 'node_0002',
-    type: 'emitter',
-    position: [-42.574, -158.017, 9.319],
-    rotation: [0.062, 2.926, 0.087],
-    scale: [2.690, 11.452, 1.550],
-    materialIndex: 0,
-    integrity: 0.9166990663505208,
-    resonance: 0.7463737027703098,
-  },
-  {
-    id: 'node_0003',
-    type: 'structural',
-    position: [8.945, 120.742, 19.644],
-    rotation: [0.088, 1.143, 0.045],
-    scale: [2.084, 16.600, 1.206],
-    materialIndex: 1,
-    integrity: 0.9901417576969964,
-    resonance: 0.9710335182593005,
-  },
-  {
-    id: 'node_0004',
-    type: 'structural',
-    position: [16.006, 38.592, -4.318],
-    rotation: [0.066, 6.020, 0.098],
-    scale: [4.479, 22.332, 1.145],
-    materialIndex: 0,
-    integrity: 0.6994990714563069,
-    resonance: 0.39029816438960996,
-  },
-  {
-    id: 'node_0005',
-    type: 'structural',
-    position: [-40.219, 107.667, 27.351],
-    rotation: [0.076, 2.544, 0.048],
-    scale: [2.533, 19.463, 4.687],
-    materialIndex: 1,
-    integrity: 0.7263522355012377,
-    resonance: 0.6497895062318719,
-  },
-  {
-    id: 'node_0006',
-    type: 'structural',
-    position: [31.146, 33.134, -45.084],
-    rotation: [0.015, 5.317, 0.091],
-    scale: [3.466, 23.936, 2.987],
-    materialIndex: 2,
-    integrity: 0.6155458843076402,
-    resonance: 0.38915394565686345,
-  },
-  {
-    id: 'node_0007',
-    type: 'structural',
-    position: [-11.098, -184.648, 10.478],
-    rotation: [0.076, 2.385, 0.086],
-    scale: [4.797, 20.062, 4.278],
-    materialIndex: 2,
-    integrity: 0.9849512651456813,
-    resonance: 0.9280231990357591,
-  },
-  {
-    id: 'node_0008',
-    type: 'structural',
-    position: [-11.706, 57.020, 2.361],
-    rotation: [0.022, 2.943, 0.082],
-    scale: [2.248, 21.775, 1.468],
-    materialIndex: 2,
-    integrity: 0.7928411852521026,
-    resonance: 0.02071407496150479,
-  },
-  {
-    id: 'node_0009',
-    type: 'structural',
-    position: [-32.355, -189.860, -12.022],
-    rotation: [0.027, 3.497, 0.096],
-    scale: [1.366, 14.666, 2.650],
-    materialIndex: 2,
-    integrity: 0.6120270857476788,
-    resonance: 0.6586795011337001,
-  },
-  {
-    id: 'node_0010',
-    type: 'structural',
-    position: [16.843, 100.630, 0.448],
-    rotation: [0.055, 0.027, 0.055],
-    scale: [3.693, 20.445, 2.947],
-    materialIndex: 0,
-    integrity: 0.9540432387789588,
-    resonance: 0.0496177475056796,
-  },
-  {
-    id: 'node_0011',
-    type: 'structural',
-    position: [21.745, 138.702, 16.756],
-    rotation: [0.078, 0.657, 0.058],
-    scale: [3.142, 19.857, 1.628],
-    materialIndex: 2,
-    integrity: 0.5688851379903392,
-    resonance: 0.041661118241028805,
-  },
-  {
-    id: 'node_0012',
-    type: 'structural',
-    position: [-30.698, -161.250, 39.351],
-    rotation: [0.042, 2.233, 0.076],
-    scale: [1.537, 10.674, 4.673],
-    materialIndex: 0,
-    integrity: 0.9914088132108889,
-    resonance: 0.7129732858361402,
-  },
-  {
-    id: 'node_0013',
-    type: 'structural',
-    position: [7.314, -168.512, 53.863],
-    rotation: [0.079, 1.436, 0.011],
-    scale: [2.568, 18.752, 4.032],
-    materialIndex: 1,
-    integrity: 0.940832807975174,
-    resonance: 0.3691975954105029,
-  },
-  {
-    id: 'node_0014',
-    type: 'emitter',
-    position: [-28.883, 40.671, -49.631],
-    rotation: [0.058, 4.185, 0.008],
-    scale: [2.450, 15.771, 4.867],
-    materialIndex: 1,
-    integrity: 0.648608385744176,
-    resonance: 0.9462996576649816,
-  },
-  {
-    id: 'node_0015',
-    type: 'structural',
-    position: [-40.630, -122.739, 32.322],
-    rotation: [0.082, 2.470, 0.030],
-    scale: [2.339, 11.278, 3.993],
-    materialIndex: 0,
-    integrity: 0.9209928174983127,
-    resonance: 0.8390753395592281,
-  },
-  {
-    id: 'node_0016',
-    type: 'emitter',
-    position: [57.136, -191.659, -2.918],
-    rotation: [0.078, 6.232, 0.032],
-    scale: [1.080, 16.900, 4.270],
-    materialIndex: 0,
-    integrity: 0.9140251287050557,
-    resonance: 0.24797341581287058,
-  },
-  {
-    id: 'node_0017',
-    type: 'structural',
-    position: [-27.016, 68.434, 30.844],
-    rotation: [0.035, 2.290, 0.045],
-    scale: [1.975, 6.684, 1.599],
-    materialIndex: 2,
-    integrity: 0.7643002524351985,
-    resonance: 0.9997132582388992,
-  },
-  {
-    id: 'node_0018',
-    type: 'structural',
-    position: [23.817, -111.272, 3.209],
-    rotation: [0.011, 0.134, 0.026],
-    scale: [3.389, 14.382, 1.686],
-    materialIndex: 0,
-    integrity: 0.7368402393198266,
-    resonance: 0.06824675410321668,
-  },
-  {
-    id: 'node_0019',
-    type: 'structural',
-    position: [5.261, -128.603, 44.542],
-    rotation: [0.051, 1.453, 0.067],
-    scale: [4.109, 7.463, 2.129],
-    materialIndex: 1,
-    integrity: 0.9759492436865598,
-    resonance: 0.499396084676194,
-  },
-  {
-    id: 'node_0020',
-    type: 'structural',
-    position: [5.071, -76.688, 9.373],
-    rotation: [0.054, 1.075, 0.016],
-    scale: [4.348, 15.683, 1.704],
-    materialIndex: 2,
-    integrity: 0.9620363269928045,
-    resonance: 0.04175284092335885,
-  },
-  {
-    id: 'node_0021',
-    type: 'emitter',
-    position: [2.665, -164.208, 18.729],
-    rotation: [0.006, 1.429, 0.060],
-    scale: [2.224, 16.253, 4.772],
-    materialIndex: 2,
-    integrity: 0.5476616148584887,
-    resonance: 0.6778004651008639,
-  },
-  {
-    id: 'node_0022',
-    type: 'structural',
-    position: [-49.249, -70.314, -30.636],
-    rotation: [0.097, 3.698, 0.032],
-    scale: [1.530, 19.790, 1.088],
-    materialIndex: 2,
-    integrity: 0.8941132860453255,
-    resonance: 0.6538344418041308,
-  },
-  {
-    id: 'node_0023',
-    type: 'structural',
-    position: [-3.757, 6.867, 10.995],
-    rotation: [0.040, 1.900, 0.033],
-    scale: [2.818, 9.627, 3.042],
-    materialIndex: 1,
-    integrity: 0.9177339595440801,
-    resonance: 0.36302613251208427,
-  },
-  {
-    id: 'node_0024',
-    type: 'structural',
-    position: [-25.494, -160.058, 17.178],
-    rotation: [0.058, 2.549, 0.090],
-    scale: [4.477, 13.677, 2.180],
-    materialIndex: 2,
-    integrity: 0.9545877776172954,
-    resonance: 0.2811992544191577,
-  },
-  {
-    id: 'node_0025',
-    type: 'structural',
-    position: [-8.072, 33.088, 6.488],
-    rotation: [0.033, 2.465, 0.083],
-    scale: [3.892, 12.616, 4.074],
-    materialIndex: 1,
-    integrity: 0.8107716281224069,
-    resonance: 0.48202043820754537,
-  },
-  {
-    id: 'node_0026',
-    type: 'structural',
-    position: [-49.901, 92.411, 7.829],
-    rotation: [0.005, 2.986, 0.025],
-    scale: [3.366, 9.525, 2.564],
-    materialIndex: 0,
-    integrity: 0.9979188684306648,
-    resonance: 0.5022902977055989,
-  },
-  {
-    id: 'node_0027',
-    type: 'structural',
-    position: [-11.422, -27.658, -10.584],
-    rotation: [0.073, 3.889, 0.012],
-    scale: [1.159, 20.766, 2.995],
-    materialIndex: 2,
-    integrity: 0.5375556773467187,
-    resonance: 0.8088281406047532,
-  },
-  {
-    id: 'node_0028',
-    type: 'structural',
-    position: [10.413, -64.410, 29.845],
-    rotation: [0.020, 1.235, 0.100],
-    scale: [2.505, 18.782, 4.259],
-    materialIndex: 0,
-    integrity: 0.7498639845716202,
-    resonance: 0.009050422225954202,
-  },
-  {
-    id: 'node_0029',
-    type: 'structural',
-    position: [-17.302, -70.579, 0.436],
-    rotation: [0.042, 3.116, 0.086],
-    scale: [2.533, 21.191, 2.137],
-    materialIndex: 1,
-    integrity: 0.9777544153140356,
-    resonance: 0.7881896108467553,
-  },
-  {
-    id: 'node_0030',
-    type: 'structural',
-    position: [22.545, 188.384, 36.480],
-    rotation: [0.031, 1.017, 0.100],
-    scale: [2.378, 9.195, 2.073],
-    materialIndex: 0,
-    integrity: 0.5274199008804251,
-    resonance: 0.6414621536584378,
-  },
-  {
-    id: 'node_0031',
-    type: 'structural',
-    position: [-16.216, 89.481, -5.597],
-    rotation: [0.043, 3.474, 0.012],
-    scale: [1.967, 11.174, 2.276],
-    materialIndex: 0,
-    integrity: 0.8096417313022265,
-    resonance: 0.1803845938374572,
-  },
-  {
-    id: 'node_0032',
-    type: 'structural',
-    position: [-48.036, 9.988, 20.143],
-    rotation: [0.019, 2.745, 0.052],
-    scale: [1.929, 23.315, 2.785],
-    materialIndex: 0,
-    integrity: 0.9517757891204823,
-    resonance: 0.13701724708536944,
-  },
-  {
-    id: 'node_0033',
-    type: 'structural',
-    position: [-15.614, 75.722, 37.941],
-    rotation: [0.027, 1.961, 0.044],
-    scale: [2.834, 13.219, 3.908],
-    materialIndex: 0,
-    integrity: 0.7918512254826311,
-    resonance: 0.8097972151048247,
-  },
-  {
-    id: 'node_0034',
-    type: 'structural',
-    position: [-10.633, -87.022, 29.824],
-    rotation: [0.027, 1.913, 0.061],
-    scale: [2.153, 7.936, 3.125],
-    materialIndex: 0,
-    integrity: 0.6250992941973261,
-    resonance: 0.7030011354873749,
-  },
-  {
-    id: 'node_0035',
-    type: 'emitter',
-    position: [-9.610, 81.404, -26.474],
-    rotation: [0.041, 4.364, 0.099],
-    scale: [3.070, 5.275, 2.333],
-    materialIndex: 1,
-    integrity: 0.6185383512522324,
-    resonance: 0.9112438848909168,
-  },
-  {
-    id: 'node_0036',
-    type: 'structural',
-    position: [10.271, 66.980, -26.791],
-    rotation: [0.055, 5.078, 0.082],
-    scale: [2.996, 16.494, 2.467],
-    materialIndex: 1,
-    integrity: 0.517854893318425,
-    resonance: 0.65850612670826,
-  },
-  {
-    id: 'node_0037',
-    type: 'emitter',
-    position: [10.959, 199.172, -6.333],
-    rotation: [0.052, 5.759, 0.079],
-    scale: [2.508, 14.916, 1.965],
-    materialIndex: 0,
-    integrity: 0.7439864600171954,
-    resonance: 0.41778278371805433,
-  },
-  {
-    id: 'node_0038',
-    type: 'structural',
-    position: [37.492, 109.755, -39.820],
-    rotation: [0.066, 5.468, 0.003],
-    scale: [4.913, 15.255, 2.545],
-    materialIndex: 2,
-    integrity: 0.6479646269097409,
-    resonance: 0.3243150295988301,
-  },
-  {
-    id: 'node_0039',
-    type: 'structural',
-    position: [-19.813, 120.982, -28.509],
-    rotation: [0.039, 4.105, 0.039],
-    scale: [1.576, 23.374, 3.693],
-    materialIndex: 0,
-    integrity: 0.5931962897933247,
-    resonance: 0.19549932746774068,
-  },
-  {
-    id: 'node_0040',
-    type: 'emitter',
-    position: [41.858, -96.899, -29.381],
-    rotation: [0.067, 5.671, 0.094],
-    scale: [3.819, 18.086, 3.194],
-    materialIndex: 1,
-    integrity: 0.9447400920076685,
-    resonance: 0.8915129450308721,
-  },
-  {
-    id: 'node_0041',
-    type: 'structural',
-    position: [-12.206, 113.756, 54.405],
-    rotation: [0.023, 1.791, 0.009],
-    scale: [3.403, 12.219, 4.259],
-    materialIndex: 1,
-    integrity: 0.8071899335997192,
-    resonance: 0.6928440878752004,
-  },
-  {
-    id: 'node_0042',
-    type: 'structural',
-    position: [32.278, 66.190, -3.319],
-    rotation: [0.028, 6.181, 0.030],
-    scale: [1.357, 21.645, 4.859],
-    materialIndex: 1,
-    integrity: 0.7634310433544074,
-    resonance: 0.20258293082941448,
-  },
-  {
-    id: 'node_0043',
-    type: 'structural',
-    position: [-57.285, -189.214, -11.211],
-    rotation: [0.042, 3.335, 0.010],
-    scale: [4.334, 5.795, 3.203],
-    materialIndex: 2,
-    integrity: 0.6005064042763532,
-    resonance: 0.16417550017157756,
-  },
-  {
-    id: 'node_0044',
-    type: 'emitter',
-    position: [-6.159, 46.044, 45.126],
-    rotation: [0.050, 1.706, 0.057],
-    scale: [3.824, 15.086, 4.868],
-    materialIndex: 1,
-    integrity: 0.811065966125306,
-    resonance: 0.6942970390936596,
-  },
-  {
-    id: 'node_0045',
-    type: 'structural',
-    position: [25.078, -126.195, -53.539],
-    rotation: [0.083, 5.150, 0.063],
-    scale: [3.486, 11.336, 1.027],
-    materialIndex: 0,
-    integrity: 0.5180947907156369,
-    resonance: 0.3598539198481767,
-  },
-  {
-    id: 'node_0046',
-    type: 'structural',
-    position: [-7.054, 18.280, 10.098],
-    rotation: [0.086, 2.181, 0.012],
-    scale: [1.884, 21.666, 2.722],
-    materialIndex: 2,
-    integrity: 0.6285326983781415,
-    resonance: 0.6169036781741448,
-  },
-  {
-    id: 'node_0047',
-    type: 'structural',
-    position: [11.229, -28.072, 5.224],
-    rotation: [0.053, 0.435, 0.011],
-    scale: [4.070, 9.537, 4.138],
-    materialIndex: 1,
-    integrity: 0.7832073792731792,
-    resonance: 0.6670791320763306,
-  },
-  {
-    id: 'node_0048',
-    type: 'structural',
-    position: [36.574, 47.144, -3.496],
-    rotation: [0.014, 6.188, 0.010],
-    scale: [3.995, 9.261, 1.938],
-    materialIndex: 1,
-    integrity: 0.533156502346658,
-    resonance: 0.664388787210108,
-  },
-  {
-    id: 'node_0049',
-    type: 'structural',
-    position: [5.754, 4.376, 36.719],
-    rotation: [0.061, 1.415, 0.035],
-    scale: [2.666, 6.037, 2.172],
-    materialIndex: 1,
-    integrity: 0.8510977508705553,
-    resonance: 0.1468196877365946,
-  },
-  {
-    id: 'node_0050',
-    type: 'structural',
-    position: [-29.811, 7.622, 18.321],
-    rotation: [0.002, 2.591, 0.051],
-    scale: [1.494, 19.361, 1.171],
-    materialIndex: 0,
-    integrity: 0.6207235267483726,
-    resonance: 0.8414169323893851,
-  },
-  {
-    id: 'node_0051',
-    type: 'emitter',
-    position: [37.950, -152.099, 33.076],
-    rotation: [0.099, 0.717, 0.046],
-    scale: [3.663, 7.382, 4.407],
-    materialIndex: 1,
-    integrity: 0.572022300836762,
-    resonance: 0.060036332568307205,
-  },
-  {
-    id: 'node_0052',
-    type: 'structural',
-    position: [-44.390, -100.834, -30.058],
-    rotation: [0.091, 3.737, 0.036],
-    scale: [4.606, 20.054, 4.413],
-    materialIndex: 1,
-    integrity: 0.9271557393949486,
-    resonance: 0.5099615815166154,
-  },
-  {
-    id: 'node_0053',
-    type: 'structural',
-    position: [-16.083, -38.665, -22.321],
-    rotation: [0.003, 4.088, 0.068],
-    scale: [1.116, 20.399, 2.027],
-    materialIndex: 2,
-    integrity: 0.6295225364918857,
-    resonance: 0.16688641605332422,
-  },
-  {
-    id: 'node_0054',
-    type: 'structural',
-    position: [21.281, -162.377, -32.864],
-    rotation: [0.007, 5.287, 0.081],
-    scale: [3.110, 20.643, 4.340],
-    materialIndex: 0,
-    integrity: 0.9672934238370021,
-    resonance: 0.7149394805247069,
-  },
-  {
-    id: 'node_0055',
-    type: 'emitter',
-    position: [-25.478, -36.650, -30.042],
-    rotation: [0.003, 4.009, 0.028],
-    scale: [4.571, 12.078, 4.298],
-    materialIndex: 0,
-    integrity: 0.6256981324750845,
-    resonance: 0.5166134650632147,
-  },
-  {
-    id: 'node_0056',
-    type: 'structural',
-    position: [-16.995, 145.004, 5.533],
-    rotation: [0.021, 2.827, 0.010],
-    scale: [2.610, 5.141, 4.641],
-    materialIndex: 0,
-    integrity: 0.7489473214497433,
-    resonance: 0.9235561904457736,
-  },
-  {
-    id: 'node_0057',
-    type: 'emitter',
-    position: [-20.461, -5.923, 38.903],
-    rotation: [0.076, 2.055, 0.036],
-    scale: [4.927, 8.838, 2.430],
-    materialIndex: 1,
-    integrity: 0.5674161041421406,
-    resonance: 0.5478155560208317,
-  },
-  {
-    id: 'node_0058',
-    type: 'structural',
-    position: [-33.838, -141.682, 18.613],
-    rotation: [0.067, 2.639, 0.076],
-    scale: [2.505, 10.340, 2.750],
-    materialIndex: 0,
-    integrity: 0.7203303697554455,
-    resonance: 0.3070957050011568,
-  },
-  {
-    id: 'node_0059',
-    type: 'structural',
-    position: [-13.141, 13.544, 23.237],
-    rotation: [0.075, 2.085, 0.081],
-    scale: [4.876, 5.493, 1.611],
-    materialIndex: 2,
-    integrity: 0.5608165401580458,
-    resonance: 0.9698121923924337,
-  },
-  {
-    id: 'node_0060',
-    type: 'structural',
-    position: [-15.479, 103.545, -9.569],
-    rotation: [0.088, 3.695, 0.059],
-    scale: [4.185, 5.450, 4.204],
-    materialIndex: 2,
-    integrity: 0.9935611802074397,
-    resonance: 0.44536081320309906,
-  },
-  {
-    id: 'node_0061',
-    type: 'structural',
-    position: [24.194, 51.898, -27.162],
-    rotation: [0.033, 5.440, 0.076],
-    scale: [1.716, 12.678, 1.926],
-    materialIndex: 1,
-    integrity: 0.7219374406660282,
-    resonance: 0.568977309374513,
-  },
-  {
-    id: 'node_0062',
-    type: 'structural',
-    position: [28.848, -195.984, -23.792],
-    rotation: [0.039, 5.594, 0.023],
-    scale: [2.902, 6.562, 4.735],
-    materialIndex: 0,
-    integrity: 0.7081693511314457,
-    resonance: 0.8112092653283177,
-  },
-  {
-    id: 'node_0063',
-    type: 'structural',
-    position: [-30.771, 68.189, -27.537],
-    rotation: [0.041, 3.872, 0.061],
-    scale: [4.776, 17.958, 3.427],
-    materialIndex: 1,
-    integrity: 0.8249720632017485,
-    resonance: 0.05777289565129151,
-  },
-  {
-    id: 'node_0064',
-    type: 'structural',
-    position: [37.385, -28.950, -7.266],
-    rotation: [0.017, 6.091, 0.089],
-    scale: [3.776, 9.932, 1.811],
-    materialIndex: 1,
-    integrity: 0.5203206415299514,
-    resonance: 0.3440924720581292,
-  },
-  {
-    id: 'node_0065',
-    type: 'structural',
-    position: [-48.401, -5.588, -11.376],
-    rotation: [0.036, 3.372, 0.040],
-    scale: [1.720, 10.191, 2.788],
-    materialIndex: 2,
-    integrity: 0.8136965156134113,
-    resonance: 0.06276611217268846,
-  },
-  {
-    id: 'node_0066',
-    type: 'structural',
-    position: [34.148, -191.806, 14.244],
-    rotation: [0.086, 0.395, 0.084],
-    scale: [1.469, 10.013, 1.735],
-    materialIndex: 0,
-    integrity: 0.9738552427392411,
-    resonance: 0.5292012076778772,
-  },
-  {
-    id: 'node_0067',
-    type: 'structural',
-    position: [-0.890, -15.804, -26.327],
-    rotation: [0.067, 4.679, 0.069],
-    scale: [2.555, 6.284, 1.233],
-    materialIndex: 0,
-    integrity: 0.7318461031710071,
-    resonance: 0.389614376832081,
-  },
-  {
-    id: 'node_0068',
-    type: 'structural',
-    position: [52.455, -11.490, -15.860],
-    rotation: [0.019, 5.990, 0.003],
-    scale: [1.850, 6.534, 2.290],
-    materialIndex: 0,
-    integrity: 0.8047253924626103,
-    resonance: 0.5228879888083754,
-  },
-  {
-    id: 'node_0069',
-    type: 'structural',
-    position: [-52.414, -12.932, -25.038],
-    rotation: [0.022, 3.587, 0.021],
-    scale: [2.322, 18.091, 4.379],
-    materialIndex: 0,
-    integrity: 0.5106063125348135,
-    resonance: 0.17615249392368593,
-  },
-  {
-    id: 'node_0070',
-    type: 'structural',
-    position: [7.709, -40.599, -34.116],
-    rotation: [0.000, 4.935, 0.032],
-    scale: [1.939, 9.152, 3.214],
-    materialIndex: 1,
-    integrity: 0.5004985541022098,
-    resonance: 0.17987207200651456,
-  },
-  {
-    id: 'node_0071',
-    type: 'emitter',
-    position: [-20.663, 105.190, 5.017],
-    rotation: [0.016, 2.903, 0.020],
-    scale: [4.892, 12.211, 2.021],
-    materialIndex: 0,
-    integrity: 0.6258265803723708,
-    resonance: 0.5256608607305757,
-  },
-  {
-    id: 'node_0072',
-    type: 'structural',
-    position: [-6.529, 101.580, -11.476],
-    rotation: [0.066, 4.195, 0.026],
-    scale: [1.497, 14.632, 1.816],
-    materialIndex: 1,
-    integrity: 0.5368689424400004,
-    resonance: 0.014794875085497483,
-  },
-  {
-    id: 'node_0073',
-    type: 'structural',
-    position: [37.435, -29.545, -9.441],
-    rotation: [0.045, 6.036, 0.051],
-    scale: [1.400, 21.397, 3.055],
-    materialIndex: 1,
-    integrity: 0.9847800908175568,
-    resonance: 0.44922780734307466,
-  },
-  {
-    id: 'node_0074',
-    type: 'structural',
-    position: [-9.797, 70.134, 25.275],
-    rotation: [0.075, 1.941, 0.051],
-    scale: [2.254, 21.274, 4.850],
-    materialIndex: 2,
-    integrity: 0.9834088760671633,
-    resonance: 0.35628920016563503,
-  },
-  {
-    id: 'node_0075',
-    type: 'structural',
-    position: [-0.171, -41.103, -14.097],
-    rotation: [0.081, 4.700, 0.090],
-    scale: [2.192, 20.110, 2.512],
-    materialIndex: 1,
-    integrity: 0.8652734221165174,
-    resonance: 0.4293422099978784,
-  },
-  {
-    id: 'node_0076',
-    type: 'emitter',
-    position: [-38.017, -129.939, -17.184],
-    rotation: [0.052, 3.566, 0.041],
-    scale: [3.206, 19.672, 1.413],
-    materialIndex: 0,
-    integrity: 0.5354758276146263,
-    resonance: 0.07450536905836491,
-  },
-  {
-    id: 'node_0077',
-    type: 'emitter',
-    position: [-0.610, -49.144, 10.087],
-    rotation: [0.085, 1.631, 0.075],
-    scale: [4.093, 8.710, 3.965],
-    materialIndex: 1,
-    integrity: 0.7321686014734563,
-    resonance: 0.43616348098486724,
-  },
-  {
-    id: 'node_0078',
-    type: 'structural',
-    position: [-56.464, 188.886, -10.672],
-    rotation: [0.081, 3.328, 0.079],
-    scale: [4.023, 15.767, 2.100],
-    materialIndex: 1,
-    integrity: 0.8914573153561809,
-    resonance: 0.9685334778113877,
-  },
-  {
-    id: 'node_0079',
-    type: 'emitter',
-    position: [15.003, 54.359, -55.218],
-    rotation: [0.020, 4.978, 0.011],
-    scale: [3.704, 8.983, 4.201],
-    materialIndex: 2,
-    integrity: 0.5143981716853165,
-    resonance: 0.9923544104192372,
-  },
-  {
-    id: 'node_0080',
-    type: 'structural',
-    position: [-22.196, -118.216, -25.488],
-    rotation: [0.021, 3.996, 0.085],
-    scale: [2.356, 7.512, 4.098],
-    materialIndex: 2,
-    integrity: 0.5104655330938062,
-    resonance: 0.25880622824318034,
-  },
-  {
-    id: 'node_0081',
-    type: 'emitter',
-    position: [24.516, 155.479, -5.897],
-    rotation: [0.048, 6.047, 0.045],
-    scale: [2.343, 16.982, 1.210],
-    materialIndex: 1,
-    integrity: 0.7679216774749649,
-    resonance: 0.8396031696124724,
-  },
-  {
-    id: 'node_0082',
-    type: 'structural',
-    position: [-26.043, -103.140, 30.582],
-    rotation: [0.076, 2.276, 0.087],
-    scale: [3.522, 22.384, 2.091],
-    materialIndex: 1,
-    integrity: 0.7611987951693819,
-    resonance: 0.6688247093689113,
-  },
-  {
-    id: 'node_0083',
-    type: 'structural',
-    position: [-19.061, 168.286, -4.995],
-    rotation: [0.100, 3.398, 0.034],
-    scale: [1.673, 12.074, 2.372],
-    materialIndex: 0,
-    integrity: 0.7812130994460176,
-    resonance: 0.5340725353337612,
-  },
-  {
-    id: 'node_0084',
-    type: 'structural',
-    position: [-46.220, -164.257, 25.874],
-    rotation: [0.073, 2.631, 0.057],
-    scale: [2.620, 20.304, 2.771],
-    materialIndex: 1,
-    integrity: 0.749106149918598,
-    resonance: 0.7122997869048922,
-  },
-  {
-    id: 'node_0085',
-    type: 'structural',
-    position: [-10.708, 149.959, 4.698],
-    rotation: [0.004, 2.728, 0.050],
-    scale: [3.104, 14.030, 2.799],
-    materialIndex: 2,
-    integrity: 0.9702837599634575,
-    resonance: 0.9334916812050428,
-  },
-  {
-    id: 'node_0086',
-    type: 'structural',
-    position: [-14.105, 116.259, -9.018],
-    rotation: [0.010, 3.710, 0.042],
-    scale: [2.382, 24.756, 1.458],
-    materialIndex: 1,
-    integrity: 0.8844020908590595,
-    resonance: 0.8484300685786094,
-  },
-  {
-    id: 'node_0087',
-    type: 'emitter',
-    position: [3.122, -50.911, -32.202],
-    rotation: [0.092, 4.809, 0.005],
-    scale: [1.008, 9.267, 3.933],
-    materialIndex: 0,
-    integrity: 0.5326973166387056,
-    resonance: 0.20420303266388895,
-  },
-  {
-    id: 'node_0088',
-    type: 'structural',
-    position: [41.297, -188.103, -17.354],
-    rotation: [0.007, 5.885, 0.094],
-    scale: [3.299, 15.118, 4.321],
-    materialIndex: 1,
-    integrity: 0.9945796244201682,
-    resonance: 0.903106153356595,
-  },
-  {
-    id: 'node_0089',
-    type: 'structural',
-    position: [-16.843, -58.028, -23.046],
-    rotation: [0.028, 4.081, 0.036],
-    scale: [3.165, 9.010, 1.432],
-    materialIndex: 2,
-    integrity: 0.9015926807937998,
-    resonance: 0.6248270907661598,
-  },
-  {
-    id: 'node_0090',
-    type: 'structural',
-    position: [-11.287, 172.848, -39.530],
-    rotation: [0.080, 4.434, 0.054],
-    scale: [3.371, 10.001, 2.382],
-    materialIndex: 0,
-    integrity: 0.953189797352999,
-    resonance: 0.6580400558227485,
-  },
-  {
-    id: 'node_0091',
-    type: 'emitter',
-    position: [7.152, 82.591, -10.499],
-    rotation: [0.048, 5.310, 0.088],
-    scale: [3.681, 6.929, 1.906],
-    materialIndex: 0,
-    integrity: 0.6253361578548768,
-    resonance: 0.4333544272020752,
-  },
-  {
-    id: 'node_0092',
-    type: 'structural',
-    position: [8.167, 129.839, 6.459],
-    rotation: [0.020, 0.669, 0.057],
-    scale: [4.272, 16.988, 3.099],
-    materialIndex: 2,
-    integrity: 0.5096936586453932,
-    resonance: 0.9982433619880605,
-  },
-  {
-    id: 'node_0093',
-    type: 'structural',
-    position: [46.473, 87.267, 4.377],
-    rotation: [0.027, 0.094, 0.081],
-    scale: [4.021, 20.053, 2.932],
-    materialIndex: 2,
-    integrity: 0.6880337328012027,
-    resonance: 0.25148510783028344,
-  },
-  {
-    id: 'node_0094',
-    type: 'structural',
-    position: [-31.965, -170.981, 9.975],
-    rotation: [0.034, 2.839, 0.011],
-    scale: [1.867, 11.810, 1.023],
-    materialIndex: 0,
-    integrity: 0.8671030518970406,
-    resonance: 0.7864159674372503,
-  },
-  {
-    id: 'node_0095',
-    type: 'emitter',
-    position: [-25.252, 113.820, 24.218],
-    rotation: [0.084, 2.377, 0.058],
-    scale: [3.607, 13.167, 2.438],
-    materialIndex: 2,
-    integrity: 0.5279725445011925,
-    resonance: 0.4729243269520059,
-  },
-  {
-    id: 'node_0096',
-    type: 'structural',
-    position: [39.016, 42.595, -18.398],
-    rotation: [0.057, 5.843, 0.099],
-    scale: [4.662, 10.951, 3.695],
-    materialIndex: 2,
-    integrity: 0.8509816191226136,
-    resonance: 0.2411274206968146,
-  },
-  {
-    id: 'node_0097',
-    type: 'structural',
-    position: [-41.137, 7.673, 13.426],
-    rotation: [0.023, 2.826, 0.099],
-    scale: [1.800, 20.212, 2.458],
-    materialIndex: 0,
-    integrity: 0.6279626037580348,
-    resonance: 0.19658534465347088,
-  },
-  {
-    id: 'node_0098',
-    type: 'structural',
-    position: [-35.229, -114.914, -22.007],
-    rotation: [0.070, 3.700, 0.021],
-    scale: [3.478, 6.924, 2.096],
-    materialIndex: 2,
-    integrity: 0.7160446019518856,
-    resonance: 0.7009134461270413,
-  },
-  {
-    id: 'node_0099',
-    type: 'structural',
-    position: [6.862, -10.682, -32.641],
-    rotation: [0.093, 4.920, 0.081],
-    scale: [1.422, 18.742, 4.699],
-    materialIndex: 1,
-    integrity: 0.5624647705634744,
-    resonance: 0.8047225067166003,
-  },
-  {
-    id: 'node_0100',
-    type: 'structural',
-    position: [9.289, -157.515, 49.509],
-    rotation: [0.047, 1.385, 0.002],
-    scale: [2.998, 15.364, 3.250],
-    materialIndex: 0,
-    integrity: 0.5967330381570378,
-    resonance: 0.833066658005346,
-  },
-  {
-    id: 'node_0101',
-    type: 'structural',
-    position: [-38.969, 105.635, 25.982],
-    rotation: [0.041, 2.554, 0.028],
-    scale: [3.603, 13.416, 3.865],
-    materialIndex: 0,
-    integrity: 0.8244834538703332,
-    resonance: 0.5181812331414029,
-  },
-  {
-    id: 'node_0102',
-    type: 'structural',
-    position: [35.364, 164.101, -26.127],
-    rotation: [0.073, 5.647, 0.081],
-    scale: [1.554, 6.193, 2.414],
-    materialIndex: 1,
-    integrity: 0.7677251261683689,
-    resonance: 0.054505939815902016,
-  },
-  {
-    id: 'node_0103',
-    type: 'structural',
-    position: [30.519, -0.867, 21.261],
-    rotation: [0.067, 0.608, 0.090],
-    scale: [4.093, 8.778, 3.524],
-    materialIndex: 2,
-    integrity: 0.9007165512062696,
-    resonance: 0.8196236863421751,
-  },
-  {
-    id: 'node_0104',
-    type: 'emitter',
-    position: [-53.519, 130.154, 10.652],
-    rotation: [0.027, 2.945, 0.074],
-    scale: [1.411, 11.656, 4.666],
-    materialIndex: 1,
-    integrity: 0.7873654845019951,
-    resonance: 0.487470089479202,
-  },
-  {
-    id: 'node_0105',
-    type: 'structural',
-    position: [8.918, 82.959, 13.788],
-    rotation: [0.028, 0.997, 0.038],
-    scale: [1.983, 20.477, 2.819],
-    materialIndex: 1,
-    integrity: 0.5851866721782324,
-    resonance: 0.6475443836735489,
-  },
-  {
-    id: 'node_0106',
-    type: 'structural',
-    position: [-4.452, 168.649, 20.745],
-    rotation: [0.022, 1.782, 0.036],
-    scale: [2.868, 8.391, 4.431],
-    materialIndex: 2,
-    integrity: 0.5939733859766798,
-    resonance: 0.04854224553634978,
-  },
-  {
-    id: 'node_0107',
-    type: 'emitter',
-    position: [-10.237, 101.384, 28.531],
-    rotation: [0.019, 1.915, 0.084],
-    scale: [4.250, 9.937, 1.403],
-    materialIndex: 2,
-    integrity: 0.7851695136177627,
-    resonance: 0.8634049562776607,
-  },
-  {
-    id: 'node_0108',
-    type: 'emitter',
-    position: [-15.245, 194.929, 3.507],
-    rotation: [0.093, 2.915, 0.088],
-    scale: [3.189, 23.425, 2.054],
-    materialIndex: 2,
-    integrity: 0.7020461180772968,
-    resonance: 0.17130311464373016,
-  },
-  {
-    id: 'node_0109',
-    type: 'structural',
-    position: [17.250, -130.608, 21.282],
-    rotation: [0.076, 0.890, 0.050],
-    scale: [3.932, 18.714, 3.035],
-    materialIndex: 0,
-    integrity: 0.9176826923507073,
-    resonance: 0.8870848954403785,
-  },
-  {
-    id: 'node_0110',
-    type: 'emitter',
-    position: [16.486, -99.500, -11.727],
-    rotation: [0.000, 5.665, 0.042],
-    scale: [2.239, 6.934, 4.582],
-    materialIndex: 1,
-    integrity: 0.8437635347756237,
-    resonance: 0.8862092684548556,
-  },
-  {
-    id: 'node_0111',
-    type: 'structural',
-    position: [-39.315, 132.708, -33.115],
-    rotation: [0.077, 3.842, 0.018],
-    scale: [4.301, 6.577, 2.907],
-    materialIndex: 1,
-    integrity: 0.569027554127674,
-    resonance: 0.08712395605150736,
-  },
-  {
-    id: 'node_0112',
-    type: 'emitter',
-    position: [-44.258, 61.818, 20.434],
-    rotation: [0.001, 2.709, 0.007],
-    scale: [4.333, 17.595, 4.259],
-    materialIndex: 1,
-    integrity: 0.8443663719813096,
-    resonance: 0.08511111251208958,
-  },
-  {
-    id: 'node_0113',
-    type: 'structural',
-    position: [9.662, -190.920, -18.816],
-    rotation: [0.052, 5.187, 0.042],
-    scale: [2.946, 21.395, 1.799],
-    materialIndex: 0,
-    integrity: 0.5379593166619133,
-    resonance: 0.6335556030512354,
-  },
-  {
-    id: 'node_0114',
-    type: 'structural',
-    position: [18.931, 156.361, -39.664],
-    rotation: [0.068, 5.158, 0.006],
-    scale: [1.965, 6.949, 4.824],
-    materialIndex: 2,
-    integrity: 0.708120079924949,
-    resonance: 0.8903383454018395,
-  },
-  {
-    id: 'node_0115',
-    type: 'structural',
-    position: [-23.305, -96.728, -46.460],
-    rotation: [0.088, 4.247, 0.060],
-    scale: [4.336, 23.072, 1.918],
-    materialIndex: 2,
-    integrity: 0.8432185475359635,
-    resonance: 0.09015692242261997,
-  },
-  {
-    id: 'node_0116',
-    type: 'structural',
-    position: [-56.948, -177.894, -7.291],
-    rotation: [0.012, 3.269, 0.040],
-    scale: [3.828, 20.021, 2.575],
-    materialIndex: 0,
-    integrity: 0.84721342380359,
-    resonance: 0.022754656362981462,
-  },
-  {
-    id: 'node_0117',
-    type: 'structural',
-    position: [23.141, -59.741, 28.897],
-    rotation: [0.056, 0.896, 0.001],
-    scale: [3.288, 16.303, 2.467],
-    materialIndex: 2,
-    integrity: 0.9153425861604003,
-    resonance: 0.00716997494439453,
-  },
-  {
-    id: 'node_0118',
-    type: 'emitter',
-    position: [2.392, -89.210, 20.196],
-    rotation: [0.033, 1.453, 0.082],
-    scale: [3.183, 12.139, 1.655],
-    materialIndex: 1,
-    integrity: 0.980679370731818,
-    resonance: 0.30732038034339104,
-  },
-  {
-    id: 'node_0119',
-    type: 'structural',
-    position: [7.430, 139.691, 34.923],
-    rotation: [0.091, 1.361, 0.076],
-    scale: [2.192, 21.909, 2.866],
-    materialIndex: 2,
-    integrity: 0.9674521888708599,
-    resonance: 0.5640598332295911,
-  },
-  {
-    id: 'node_0120',
-    type: 'structural',
-    position: [-1.485, 94.119, -18.916],
-    rotation: [0.071, 4.634, 0.063],
-    scale: [3.995, 11.283, 1.289],
-    materialIndex: 1,
-    integrity: 0.6985641340454003,
-    resonance: 0.7492192362303725,
-  },
-  {
-    id: 'node_0121',
-    type: 'structural',
-    position: [-48.259, -122.668, 22.022],
-    rotation: [0.087, 2.713, 0.030],
-    scale: [4.675, 11.586, 2.652],
-    materialIndex: 0,
-    integrity: 0.7986124827066311,
-    resonance: 0.10811694773637415,
-  },
-  {
-    id: 'node_0122',
-    type: 'structural',
-    position: [18.493, -73.521, -13.213],
-    rotation: [0.077, 5.663, 0.073],
-    scale: [4.289, 12.462, 1.148],
-    materialIndex: 1,
-    integrity: 0.5333692240100368,
-    resonance: 0.018621765203834628,
-  },
-  {
-    id: 'node_0123',
-    type: 'structural',
-    position: [-45.473, -167.701, 12.120],
-    rotation: [0.038, 2.881, 0.095],
-    scale: [3.820, 22.167, 3.180],
-    materialIndex: 0,
-    integrity: 0.9482362910957438,
-    resonance: 0.9330643769953606,
-  },
-  {
-    id: 'node_0124',
-    type: 'structural',
-    position: [37.310, 167.647, 0.485],
-    rotation: [0.038, 0.013, 0.085],
-    scale: [3.433, 13.399, 3.078],
-    materialIndex: 2,
-    integrity: 0.7634207102178646,
-    resonance: 0.9095409723491559,
-  },
-  {
-    id: 'node_0125',
-    type: 'structural',
-    position: [-15.951, -99.739, -37.219],
-    rotation: [0.030, 4.307, 0.059],
-    scale: [1.493, 5.377, 3.988],
-    materialIndex: 0,
-    integrity: 0.769422156787838,
-    resonance: 0.535645271145047,
-  },
-  {
-    id: 'node_0126',
-    type: 'structural',
-    position: [14.957, -21.125, 55.810],
-    rotation: [0.064, 1.309, 0.063],
-    scale: [1.633, 5.523, 2.300],
-    materialIndex: 0,
-    integrity: 0.5929269386613333,
-    resonance: 0.7620759961623458,
-  },
-  {
-    id: 'node_0127',
-    type: 'structural',
-    position: [-23.007, -166.940, 7.910],
-    rotation: [0.060, 2.810, 0.034],
-    scale: [4.194, 17.684, 3.634],
-    materialIndex: 2,
-    integrity: 0.6830422383014945,
-    resonance: 0.0065272492356437395,
-  },
-  {
-    id: 'node_0128',
-    type: 'structural',
-    position: [-33.496, -199.555, 28.580],
-    rotation: [0.004, 2.435, 0.054],
-    scale: [3.873, 14.856, 4.599],
-    materialIndex: 1,
-    integrity: 0.77289199649655,
-    resonance: 0.6912324823860737,
-  },
-  {
-    id: 'node_0129',
-    type: 'structural',
-    position: [-37.476, 133.790, -35.312],
-    rotation: [0.044, 3.897, 0.008],
-    scale: [3.639, 15.346, 2.566],
-    materialIndex: 0,
-    integrity: 0.849586759985586,
-    resonance: 0.19805500073884763,
-  },
-  {
-    id: 'node_0130',
-    type: 'structural',
-    position: [-9.986, 111.886, -48.122],
-    rotation: [0.014, 4.508, 0.050],
-    scale: [3.665, 10.372, 4.535],
-    materialIndex: 0,
-    integrity: 0.505431276436628,
-    resonance: 0.641709407343441,
-  },
-  {
-    id: 'node_0131',
-    type: 'structural',
-    position: [16.299, -34.808, 5.764],
-    rotation: [0.003, 0.340, 0.003],
-    scale: [3.177, 13.466, 1.777],
-    materialIndex: 1,
-    integrity: 0.6680000092465208,
-    resonance: 0.1577646715714801,
-  },
-  {
-    id: 'node_0132',
-    type: 'structural',
-    position: [-44.526, 11.251, 2.090],
-    rotation: [0.050, 3.095, 0.011],
-    scale: [1.606, 8.685, 3.695],
-    materialIndex: 1,
-    integrity: 0.7091390841411762,
-    resonance: 0.5262672033926759,
-  },
-  {
-    id: 'node_0133',
-    type: 'structural',
-    position: [29.844, 113.522, 12.727],
-    rotation: [0.047, 0.403, 0.026],
-    scale: [3.636, 12.305, 4.112],
-    materialIndex: 2,
-    integrity: 0.6226587527295044,
-    resonance: 0.7573688077754144,
-  },
-  {
-    id: 'node_0134',
-    type: 'structural',
-    position: [5.384, 106.815, 19.744],
-    rotation: [0.094, 1.305, 0.043],
-    scale: [2.038, 24.998, 4.331],
-    materialIndex: 2,
-    integrity: 0.52335898246944,
-    resonance: 0.17542312657678105,
-  },
-  {
-    id: 'node_0135',
-    type: 'structural',
-    position: [-35.737, -48.990, 16.823],
-    rotation: [0.096, 2.702, 0.075],
-    scale: [3.289, 8.058, 1.585],
-    materialIndex: 0,
-    integrity: 0.740871699853171,
-    resonance: 0.45731118903689894,
-  },
-  {
-    id: 'node_0136',
-    type: 'emitter',
-    position: [-23.443, 101.318, 6.305],
-    rotation: [0.080, 2.879, 0.039],
-    scale: [1.274, 12.119, 3.151],
-    materialIndex: 1,
-    integrity: 0.8124921926875975,
-    resonance: 0.8294511054925756,
-  },
-  {
-    id: 'node_0137',
-    type: 'emitter',
-    position: [-46.525, -102.475, 3.594],
-    rotation: [0.014, 3.064, 0.032],
-    scale: [1.401, 17.228, 3.127],
-    materialIndex: 1,
-    integrity: 0.7524931397331647,
-    resonance: 0.5298191953944524,
-  },
-  {
-    id: 'node_0138',
-    type: 'structural',
-    position: [-42.368, 45.997, 7.945],
-    rotation: [0.059, 2.956, 0.008],
-    scale: [2.766, 10.772, 1.064],
-    materialIndex: 1,
-    integrity: 0.7802018112507128,
-    resonance: 0.728515904409915,
-  },
-  {
-    id: 'node_0139',
-    type: 'emitter',
-    position: [-13.242, -91.249, 35.016],
-    rotation: [0.074, 1.932, 0.046],
-    scale: [4.237, 19.106, 2.882],
-    materialIndex: 2,
-    integrity: 0.9640590469248356,
-    resonance: 0.04434861901456988,
-  },
-  {
-    id: 'node_0140',
-    type: 'emitter',
-    position: [-3.868, 124.957, 34.893],
-    rotation: [0.066, 1.681, 0.091],
-    scale: [3.154, 5.873, 4.211],
-    materialIndex: 2,
-    integrity: 0.531043769205844,
-    resonance: 0.44381852281874534,
-  },
-  {
-    id: 'node_0141',
-    type: 'structural',
-    position: [35.028, -95.531, -16.270],
-    rotation: [0.100, 5.848, 0.055],
-    scale: [3.160, 11.378, 4.837],
-    materialIndex: 1,
-    integrity: 0.5845626860944086,
-    resonance: 0.6947805949335115,
-  },
-  {
-    id: 'node_0142',
-    type: 'structural',
-    position: [-23.658, -5.833, 52.961],
-    rotation: [0.093, 1.991, 0.082],
-    scale: [3.726, 6.815, 2.973],
-    materialIndex: 1,
-    integrity: 0.8131751966535651,
-    resonance: 0.8045524636529504,
-  },
-  {
-    id: 'node_0143',
-    type: 'emitter',
-    position: [-6.462, -3.152, -27.868],
-    rotation: [0.016, 4.485, 0.024],
-    scale: [3.764, 13.491, 1.835],
-    materialIndex: 2,
-    integrity: 0.9635776840284325,
-    resonance: 0.3296449599086315,
-  },
-  {
-    id: 'node_0144',
-    type: 'structural',
-    position: [20.956, 141.475, -23.220],
-    rotation: [0.048, 5.447, 0.078],
-    scale: [2.395, 13.550, 1.126],
-    materialIndex: 0,
-    integrity: 0.5791181426133929,
-    resonance: 0.6342792120513372,
-  },
-  {
-    id: 'node_0145',
-    type: 'emitter',
-    position: [53.468, 167.529, 8.965],
-    rotation: [0.072, 0.166, 0.095],
-    scale: [2.169, 15.888, 2.188],
-    materialIndex: 1,
-    integrity: 0.8420174079022362,
-    resonance: 0.30809562907050514,
-  },
-  {
-    id: 'node_0146',
-    type: 'structural',
-    position: [14.543, 135.691, 30.804],
-    rotation: [0.073, 1.130, 0.037],
-    scale: [1.183, 5.327, 2.824],
-    materialIndex: 0,
-    integrity: 0.9814516168061176,
-    resonance: 0.8406841883846361,
-  },
-  {
-    id: 'node_0147',
-    type: 'structural',
-    position: [-18.728, -49.983, -32.368],
-    rotation: [0.065, 4.188, 0.089],
-    scale: [2.008, 7.952, 2.740],
-    materialIndex: 0,
-    integrity: 0.6685521782993518,
-    resonance: 0.8047484831273087,
-  },
-  {
-    id: 'node_0148',
-    type: 'structural',
-    position: [7.692, -148.224, 55.829],
-    rotation: [0.056, 1.434, 0.055],
-    scale: [3.161, 7.070, 4.466],
-    materialIndex: 0,
-    integrity: 0.576794878878339,
-    resonance: 0.08453946117277045,
-  },
-  {
-    id: 'node_0149',
-    type: 'structural',
-    position: [-6.192, -167.094, 44.640],
-    rotation: [0.004, 1.709, 0.054],
-    scale: [3.784, 7.422, 3.826],
-    materialIndex: 2,
-    integrity: 0.582886554373409,
-    resonance: 0.9975647985061518,
-  },
-  {
-    id: 'node_0150',
-    type: 'emitter',
-    position: [51.234, 198.505, -15.428],
-    rotation: [0.003, 5.991, 0.084],
-    scale: [3.249, 22.304, 3.322],
-    materialIndex: 1,
-    integrity: 0.795876205667166,
-    resonance: 0.9281854671430023,
-  },
-  {
-    id: 'node_0151',
-    type: 'structural',
-    position: [5.363, -44.169, 16.774],
-    rotation: [0.049, 1.261, 0.027],
-    scale: [1.052, 14.123, 3.805],
-    materialIndex: 1,
-    integrity: 0.8121303091556136,
-    resonance: 0.32480343437866166,
-  },
-  {
-    id: 'node_0152',
-    type: 'emitter',
-    position: [-13.413, -25.954, -4.092],
-    rotation: [0.027, 3.438, 0.041],
-    scale: [3.358, 16.268, 4.994],
-    materialIndex: 0,
-    integrity: 0.9675220964233806,
-    resonance: 0.9842846618680916,
-  },
-  {
-    id: 'node_0153',
-    type: 'emitter',
-    position: [21.684, -198.899, 1.289],
-    rotation: [0.088, 0.059, 0.083],
-    scale: [2.097, 22.165, 1.013],
-    materialIndex: 0,
-    integrity: 0.6462213283714325,
-    resonance: 0.46054690175446444,
-  },
-  {
-    id: 'node_0154',
-    type: 'structural',
-    position: [7.738, -111.693, 28.378],
-    rotation: [0.044, 1.305, 0.076],
-    scale: [4.356, 18.447, 1.558],
-    materialIndex: 1,
-    integrity: 0.6551100890205304,
-    resonance: 0.4130630902745508,
-  },
-  {
-    id: 'node_0155',
-    type: 'structural',
-    position: [7.518, -155.978, 26.645],
-    rotation: [0.090, 1.296, 0.054],
-    scale: [1.604, 6.488, 2.877],
-    materialIndex: 2,
-    integrity: 0.7406874037042821,
-    resonance: 0.5810072489385654,
-  },
-  {
-    id: 'node_0156',
-    type: 'structural',
-    position: [34.499, -110.541, 9.178],
-    rotation: [0.096, 0.260, 0.075],
-    scale: [4.933, 15.407, 4.147],
-    materialIndex: 2,
-    integrity: 0.6386973252203246,
-    resonance: 0.4543896362700862,
-  },
-  {
-    id: 'node_0157',
-    type: 'emitter',
-    position: [16.824, 57.281, 15.819],
-    rotation: [0.060, 0.755, 0.020],
-    scale: [4.885, 19.227, 3.216],
-    materialIndex: 1,
-    integrity: 0.7390199915212188,
-    resonance: 0.9402775973929987,
-  },
-  {
-    id: 'node_0158',
-    type: 'emitter',
-    position: [-36.095, -46.071, -12.573],
-    rotation: [0.036, 3.477, 0.054],
-    scale: [2.521, 15.102, 2.948],
-    materialIndex: 2,
-    integrity: 0.7139944580816795,
-    resonance: 0.7232659372072818,
-  },
-  {
-    id: 'node_0159',
-    type: 'structural',
-    position: [17.326, 148.081, -6.919],
-    rotation: [0.038, 5.903, 0.069],
-    scale: [2.079, 20.098, 2.903],
-    materialIndex: 1,
-    integrity: 0.6155445582608405,
-    resonance: 0.16258651347144815,
-  },
-  {
-    id: 'node_0160',
-    type: 'structural',
-    position: [-20.908, 156.333, -18.486],
-    rotation: [0.084, 3.866, 0.022],
-    scale: [4.232, 9.723, 2.321],
-    materialIndex: 2,
-    integrity: 0.5194109432590637,
-    resonance: 0.36238688565605437,
-  },
-  {
-    id: 'node_0161',
-    type: 'structural',
-    position: [-32.801, 138.555, -50.039],
-    rotation: [0.084, 4.132, 0.020],
-    scale: [3.672, 13.973, 3.464],
-    materialIndex: 0,
-    integrity: 0.9520648273795447,
-    resonance: 0.4201558320511227,
-  },
-  {
-    id: 'node_0162',
-    type: 'structural',
-    position: [-13.307, 5.473, -13.044],
-    rotation: [0.066, 3.917, 0.036],
-    scale: [3.025, 22.924, 1.274],
-    materialIndex: 1,
-    integrity: 0.9770097920355263,
-    resonance: 0.8573158596555815,
-  },
-  {
-    id: 'node_0163',
-    type: 'structural',
-    position: [-21.472, -165.959, -30.983],
-    rotation: [0.060, 4.106, 0.079],
-    scale: [4.897, 8.946, 4.682],
-    materialIndex: 2,
-    integrity: 0.7867898206167837,
-    resonance: 0.5169350836631754,
-  },
-  {
-    id: 'node_0164',
-    type: 'structural',
-    position: [-24.822, 178.559, -39.574],
-    rotation: [0.086, 4.152, 0.045],
-    scale: [3.611, 11.105, 1.334],
-    materialIndex: 0,
-    integrity: 0.7902331786825765,
-    resonance: 0.1138045267424862,
-  },
-  {
-    id: 'node_0165',
-    type: 'structural',
-    position: [12.331, 199.320, 23.669],
-    rotation: [0.084, 1.090, 0.066],
-    scale: [3.752, 6.477, 2.839],
-    materialIndex: 1,
-    integrity: 0.9802102983573526,
-    resonance: 0.16090175367742965,
-  },
-  {
-    id: 'node_0166',
-    type: 'structural',
-    position: [-17.485, 15.667, -10.318],
-    rotation: [0.029, 3.675, 0.068],
-    scale: [1.443, 15.567, 3.213],
-    materialIndex: 1,
-    integrity: 0.9219614358188941,
-    resonance: 0.09956781735123921,
-  },
-  {
-    id: 'node_0167',
-    type: 'structural',
-    position: [38.218, -135.212, 2.192],
-    rotation: [0.097, 0.057, 0.008],
-    scale: [1.256, 7.179, 3.703],
-    materialIndex: 1,
-    integrity: 0.5684697090343458,
-    resonance: 0.9542833939477965,
-  },
-  {
-    id: 'node_0168',
-    type: 'structural',
-    position: [-37.443, -160.109, -29.995],
-    rotation: [0.014, 3.817, 0.073],
-    scale: [3.509, 19.003, 3.121],
-    materialIndex: 0,
-    integrity: 0.5107513091246656,
-    resonance: 0.10825446125646809,
-  },
-  {
-    id: 'node_0169',
-    type: 'structural',
-    position: [9.515, -44.158, -3.112],
-    rotation: [0.001, 5.967, 0.014],
-    scale: [4.932, 24.599, 2.891],
-    materialIndex: 0,
-    integrity: 0.8604158645801148,
-    resonance: 0.7731545185074348,
-  },
-  {
-    id: 'node_0170',
-    type: 'structural',
-    position: [-10.334, 102.540, 36.507],
-    rotation: [0.031, 1.847, 0.023],
-    scale: [1.390, 23.628, 1.940],
-    materialIndex: 1,
-    integrity: 0.7702848048325222,
-    resonance: 0.09881185631038414,
-  },
-  {
-    id: 'node_0171',
-    type: 'structural',
-    position: [-17.538, -76.730, 17.423],
-    rotation: [0.081, 2.359, 0.094],
-    scale: [2.710, 15.089, 2.381],
-    materialIndex: 1,
-    integrity: 0.5338947280880078,
-    resonance: 0.04018228176942318,
-  },
-  {
-    id: 'node_0172',
-    type: 'structural',
-    position: [-5.457, -192.980, -13.466],
-    rotation: [0.042, 4.327, 0.020],
-    scale: [4.844, 17.875, 1.718],
-    materialIndex: 2,
-    integrity: 0.9787202390121534,
-    resonance: 0.8919484189845583,
-  },
-  {
-    id: 'node_0173',
-    type: 'structural',
-    position: [13.706, -158.264, 21.034],
-    rotation: [0.036, 0.993, 0.033],
-    scale: [3.406, 23.784, 4.170],
-    materialIndex: 2,
-    integrity: 0.7261825201728145,
-    resonance: 0.3725772641790136,
-  },
-  {
-    id: 'node_0174',
-    type: 'structural',
-    position: [-13.410, 166.989, -27.569],
-    rotation: [0.038, 4.260, 0.082],
-    scale: [1.259, 12.068, 3.895],
-    materialIndex: 2,
-    integrity: 0.5521799184182214,
-    resonance: 0.6869362664956756,
-  },
-  {
-    id: 'node_0175',
-    type: 'structural',
-    position: [55.906, 184.222, 19.146],
-    rotation: [0.018, 0.330, 0.075],
-    scale: [2.989, 16.298, 2.180],
-    materialIndex: 2,
-    integrity: 0.869443018099715,
-    resonance: 0.8852545679489969,
-  },
-  {
-    id: 'node_0176',
-    type: 'structural',
-    position: [-28.555, 146.140, 12.407],
-    rotation: [0.075, 2.732, 0.069],
-    scale: [4.856, 5.252, 3.512],
-    materialIndex: 0,
-    integrity: 0.6681155285634941,
-    resonance: 0.3724579959314953,
-  },
-  {
-    id: 'node_0177',
-    type: 'emitter',
-    position: [-26.017, 171.610, 48.512],
-    rotation: [0.076, 2.063, 0.006],
-    scale: [4.234, 8.090, 1.602],
-    materialIndex: 2,
-    integrity: 0.719422715800714,
-    resonance: 0.08931166270628743,
-  },
-  {
-    id: 'node_0178',
-    type: 'structural',
-    position: [-9.485, -191.055, 52.364],
-    rotation: [0.033, 1.750, 0.035],
-    scale: [4.014, 7.141, 3.113],
-    materialIndex: 2,
-    integrity: 0.9484567060262085,
-    resonance: 0.9614644039002613,
-  },
-  {
-    id: 'node_0179',
-    type: 'structural',
-    position: [18.180, -187.436, -4.843],
-    rotation: [0.090, 6.023, 0.081],
-    scale: [2.575, 12.840, 3.692],
-    materialIndex: 0,
-    integrity: 0.5835216406835513,
-    resonance: 0.8480354367778226,
-  },
-  {
-    id: 'node_0180',
-    type: 'structural',
-    position: [-14.119, 59.753, -12.929],
-    rotation: [0.078, 3.883, 0.016],
-    scale: [1.725, 19.328, 2.943],
-    materialIndex: 1,
-    integrity: 0.8441134616737662,
-    resonance: 0.3773412377165142,
-  },
-  {
-    id: 'node_0181',
-    type: 'structural',
-    position: [18.159, -155.006, 24.288],
-    rotation: [0.095, 0.929, 0.060],
-    scale: [4.147, 18.755, 1.326],
-    materialIndex: 1,
-    integrity: 0.853795466923798,
-    resonance: 0.8263703586158584,
-  },
-  {
-    id: 'node_0182',
-    type: 'emitter',
-    position: [41.360, -93.264, 42.249],
-    rotation: [0.054, 0.796, 0.091],
-    scale: [2.896, 12.163, 4.360],
-    materialIndex: 0,
-    integrity: 0.5531502679479002,
-    resonance: 0.7454788569490691,
-  },
-  {
-    id: 'node_0183',
-    type: 'structural',
-    position: [16.425, 37.235, 23.473],
-    rotation: [0.050, 0.960, 0.100],
-    scale: [2.898, 15.580, 3.844],
-    materialIndex: 0,
-    integrity: 0.8186203568035533,
-    resonance: 0.20272049525560998,
-  },
-  {
-    id: 'node_0184',
-    type: 'structural',
-    position: [-10.994, -39.052, -17.754],
-    rotation: [0.047, 4.158, 0.002],
-    scale: [3.677, 10.019, 1.728],
-    materialIndex: 0,
-    integrity: 0.8631784135022955,
-    resonance: 0.5877913719778524,
-  },
-  {
-    id: 'node_0185',
-    type: 'structural',
-    position: [-17.236, 159.390, 18.469],
-    rotation: [0.024, 2.322, 0.049],
-    scale: [4.333, 5.664, 3.887],
-    materialIndex: 2,
-    integrity: 0.5622810454697365,
-    resonance: 0.1145622356774596,
-  },
-  {
-    id: 'node_0186',
-    type: 'structural',
-    position: [-6.401, -116.412, 18.799],
-    rotation: [0.099, 1.899, 0.094],
-    scale: [4.057, 7.371, 1.097],
-    materialIndex: 1,
-    integrity: 0.5550065489259933,
-    resonance: 0.5678153010769207,
-  },
-  {
-    id: 'node_0187',
-    type: 'structural',
-    position: [-3.629, -127.670, 17.471],
-    rotation: [0.080, 1.776, 0.025],
-    scale: [2.567, 5.352, 4.826],
-    materialIndex: 0,
-    integrity: 0.7684411422249373,
-    resonance: 0.810519748179252,
-  },
-  {
-    id: 'node_0188',
-    type: 'structural',
-    position: [-0.937, 23.585, 11.466],
-    rotation: [0.041, 1.652, 0.011],
-    scale: [4.695, 17.384, 4.683],
-    materialIndex: 1,
-    integrity: 0.5176752793969752,
-    resonance: 0.8789063020947878,
-  },
-  {
-    id: 'node_0189',
-    type: 'structural',
-    position: [23.736, -147.359, -46.264],
-    rotation: [0.031, 5.186, 0.047],
-    scale: [4.498, 11.303, 1.301],
-    materialIndex: 0,
-    integrity: 0.6929589045600857,
-    resonance: 0.5638315670578377,
-  },
-  {
-    id: 'node_0190',
-    type: 'structural',
-    position: [47.327, 43.943, 9.477],
-    rotation: [0.002, 0.198, 0.012],
-    scale: [4.386, 23.708, 3.384],
-    materialIndex: 0,
-    integrity: 0.8248436863842163,
-    resonance: 0.6549625454225827,
-  },
-  {
-    id: 'node_0191',
-    type: 'structural',
-    position: [-14.176, 145.610, -11.157],
-    rotation: [0.038, 3.808, 0.046],
-    scale: [4.838, 8.783, 2.393],
-    materialIndex: 1,
-    integrity: 0.5448939247698881,
-    resonance: 0.693085532834004,
-  },
-  {
-    id: 'node_0192',
-    type: 'structural',
-    position: [26.537, 6.731, 15.464],
-    rotation: [0.036, 0.528, 0.093],
-    scale: [1.290, 22.599, 4.545],
-    materialIndex: 2,
-    integrity: 0.5036639202449377,
-    resonance: 0.4089482572893036,
-  },
-  {
-    id: 'node_0193',
-    type: 'emitter',
-    position: [-7.955, 44.582, 15.364],
-    rotation: [0.015, 2.049, 0.086],
-    scale: [2.971, 13.639, 1.476],
-    materialIndex: 2,
-    integrity: 0.9204626420870731,
-    resonance: 0.2185250873912329,
-  },
-  {
-    id: 'node_0194',
-    type: 'emitter',
-    position: [26.400, 127.139, -23.728],
-    rotation: [0.065, 5.551, 0.068],
-    scale: [4.887, 9.219, 4.586],
-    materialIndex: 0,
-    integrity: 0.8997969815791553,
-    resonance: 0.30611786862365054,
-  },
-  {
-    id: 'node_0195',
-    type: 'structural',
-    position: [19.898, -113.532, 12.643],
-    rotation: [0.083, 0.566, 0.087],
-    scale: [1.927, 21.520, 1.484],
-    materialIndex: 0,
-    integrity: 0.7304349017738909,
-    resonance: 0.1921021235391971,
-  },
-  {
-    id: 'node_0196',
-    type: 'structural',
-    position: [-27.541, 110.629, 5.536],
-    rotation: [0.065, 2.943, 0.074],
-    scale: [1.670, 18.366, 3.942],
-    materialIndex: 1,
-    integrity: 0.606282537829623,
-    resonance: 0.5353710480881915,
-  },
-  {
-    id: 'node_0197',
-    type: 'structural',
-    position: [50.691, -57.272, 0.586],
-    rotation: [0.079, 0.012, 0.059],
-    scale: [1.555, 21.889, 1.095],
-    materialIndex: 2,
-    integrity: 0.8173456255869556,
-    resonance: 0.9783110178228792,
-  },
-  {
-    id: 'node_0198',
-    type: 'emitter',
-    position: [14.100, 87.563, -30.260],
-    rotation: [0.055, 5.148, 0.036],
-    scale: [1.757, 11.209, 4.782],
-    materialIndex: 2,
-    integrity: 0.569302170674594,
-    resonance: 0.4419112127477415,
-  },
-  {
-    id: 'node_0199',
-    type: 'structural',
-    position: [-22.956, -60.498, 16.719],
-    rotation: [0.040, 2.512, 0.008],
-    scale: [1.834, 10.028, 1.481],
-    materialIndex: 2,
-    integrity: 0.8918493816277284,
-    resonance: 0.0205662288016355,
-  },
-  {
-    id: 'node_0200',
-    type: 'structural',
-    position: [46.575, -107.970, -28.130],
-    rotation: [0.032, 5.740, 0.065],
-    scale: [2.150, 15.397, 2.140],
-    materialIndex: 0,
-    integrity: 0.7712661729650971,
-    resonance: 0.420667740494713,
-  },
-  {
-    id: 'node_0201',
-    type: 'structural',
-    position: [-52.315, -130.867, 4.710],
-    rotation: [0.099, 3.052, 0.042],
-    scale: [3.068, 18.905, 4.344],
-    materialIndex: 1,
-    integrity: 0.6009453441868382,
-    resonance: 0.42408654434938464,
-  },
-  {
-    id: 'node_0202',
-    type: 'structural',
-    position: [-12.025, 172.497, -9.159],
-    rotation: [0.070, 3.793, 0.028],
-    scale: [3.592, 14.672, 3.980],
-    materialIndex: 1,
-    integrity: 0.5812733778374827,
-    resonance: 0.5889769504708013,
-  },
-  {
-    id: 'node_0203',
-    type: 'structural',
-    position: [-4.118, -119.599, 44.253],
-    rotation: [0.039, 1.664, 0.026],
-    scale: [3.439, 17.617, 4.460],
-    materialIndex: 0,
-    integrity: 0.775577313218405,
-    resonance: 0.48967837177230555,
-  },
-  {
-    id: 'node_0204',
-    type: 'emitter',
-    position: [1.298, 2.965, 33.393],
-    rotation: [0.016, 1.532, 0.074],
-    scale: [1.897, 17.894, 1.149],
-    materialIndex: 0,
-    integrity: 0.540325214343645,
-    resonance: 0.10555055371252353,
-  },
-  {
-    id: 'node_0205',
-    type: 'structural',
-    position: [9.337, 15.284, 42.813],
-    rotation: [0.092, 1.356, 0.047],
-    scale: [2.679, 24.703, 4.302],
-    materialIndex: 1,
-    integrity: 0.630356888777222,
-    resonance: 0.16634535855687882,
-  },
-  {
-    id: 'node_0206',
-    type: 'structural',
-    position: [53.915, 50.993, -24.089],
-    rotation: [0.098, 5.863, 0.086],
-    scale: [1.248, 18.052, 4.667],
-    materialIndex: 2,
-    integrity: 0.834391973930832,
-    resonance: 0.26586332694591264,
-  },
-  {
-    id: 'node_0207',
-    type: 'emitter',
-    position: [23.769, 107.658, 46.850],
-    rotation: [0.018, 1.101, 0.047],
-    scale: [1.081, 18.320, 3.749],
-    materialIndex: 2,
-    integrity: 0.5509219843534794,
-    resonance: 0.23817657432486905,
-  },
-  {
-    id: 'node_0208',
-    type: 'structural',
-    position: [-56.150, 30.048, -16.137],
-    rotation: [0.051, 3.421, 0.086],
-    scale: [3.660, 7.950, 3.533],
-    materialIndex: 1,
-    integrity: 0.8283178461053111,
-    resonance: 0.8703555989715432,
-  },
-  {
-    id: 'node_0209',
-    type: 'emitter',
-    position: [-12.814, -43.769, 32.064],
-    rotation: [0.072, 1.951, 0.045],
-    scale: [3.936, 20.903, 4.263],
-    materialIndex: 2,
-    integrity: 0.8564165035520188,
-    resonance: 0.5987864584029465,
-  },
-  {
-    id: 'node_0210',
-    type: 'structural',
-    position: [-10.671, 59.249, -17.150],
-    rotation: [0.093, 4.156, 0.083],
-    scale: [2.877, 21.390, 3.023],
-    materialIndex: 1,
-    integrity: 0.8710477782402146,
-    resonance: 0.7092984348357311,
-  },
-  {
-    id: 'node_0211',
-    type: 'emitter',
-    position: [-20.957, -159.044, 2.491],
-    rotation: [0.029, 3.023, 0.076],
-    scale: [4.020, 23.993, 3.901],
-    materialIndex: 0,
-    integrity: 0.5364929930149582,
-    resonance: 0.188980006346677,
-  },
-  {
-    id: 'node_0212',
-    type: 'emitter',
-    position: [4.367, 133.298, 19.991],
-    rotation: [0.077, 1.356, 0.025],
-    scale: [3.267, 7.698, 4.511],
-    materialIndex: 0,
-    integrity: 0.8782656816518428,
-    resonance: 0.6923487504203064,
-  },
-  {
-    id: 'node_0213',
-    type: 'structural',
-    position: [-42.510, -192.519, -7.130],
-    rotation: [0.079, 3.308, 0.089],
-    scale: [2.333, 16.126, 3.126],
-    materialIndex: 0,
-    integrity: 0.6999126325227788,
-    resonance: 0.7408492325945847,
-  },
-  {
-    id: 'node_0214',
-    type: 'emitter',
-    position: [-9.437, -46.112, 53.470],
-    rotation: [0.009, 1.745, 0.082],
-    scale: [1.719, 22.055, 3.016],
-    materialIndex: 0,
-    integrity: 0.7851932185733776,
-    resonance: 0.07205734410234865,
-  },
-  {
-    id: 'node_0215',
-    type: 'structural',
-    position: [18.706, -141.778, 55.899],
-    rotation: [0.092, 1.248, 0.096],
-    scale: [1.448, 14.210, 2.362],
-    materialIndex: 2,
-    integrity: 0.9215463577130618,
-    resonance: 0.99118907450413,
-  },
-  {
-    id: 'node_0216',
-    type: 'emitter',
-    position: [-8.945, -9.217, 12.798],
-    rotation: [0.035, 2.181, 0.090],
-    scale: [3.653, 19.560, 2.668],
-    materialIndex: 1,
-    integrity: 0.7859442781393213,
-    resonance: 0.8279794254898866,
-  },
-  {
-    id: 'node_0217',
-    type: 'structural',
-    position: [1.627, 133.870, 20.302],
-    rotation: [0.088, 1.491, 0.018],
-    scale: [2.532, 20.579, 2.445],
-    materialIndex: 2,
-    integrity: 0.6240418967980967,
-    resonance: 0.9194026045945392,
-  },
-  {
-    id: 'node_0218',
-    type: 'structural',
-    position: [-51.207, 187.637, 15.155],
-    rotation: [0.065, 2.854, 0.075],
-    scale: [1.508, 13.248, 1.708],
-    materialIndex: 2,
-    integrity: 0.5113494773346567,
-    resonance: 0.07361670034587176,
-  },
-  {
-    id: 'node_0219',
-    type: 'structural',
-    position: [-51.227, 148.207, 14.857],
-    rotation: [0.097, 2.859, 0.062],
-    scale: [3.906, 10.671, 4.048],
-    materialIndex: 0,
-    integrity: 0.7860316369091603,
-    resonance: 0.6170379182477425,
-  },
-  {
-    id: 'node_0220',
-    type: 'structural',
-    position: [23.799, 57.089, -3.389],
-    rotation: [0.030, 6.142, 0.092],
-    scale: [3.264, 23.846, 2.722],
-    materialIndex: 2,
-    integrity: 0.5817361916149462,
-    resonance: 0.28413996999330393,
-  },
-  {
-    id: 'node_0221',
-    type: 'structural',
-    position: [-15.387, 160.411, -3.907],
-    rotation: [0.004, 3.390, 0.076],
-    scale: [4.498, 5.713, 4.234],
-    materialIndex: 1,
-    integrity: 0.8184522582155986,
-    resonance: 0.34308342219434107,
-  },
-  {
-    id: 'node_0222',
-    type: 'structural',
-    position: [4.030, 69.285, 9.929],
-    rotation: [0.070, 1.185, 0.068],
-    scale: [3.273, 18.540, 1.455],
-    materialIndex: 2,
-    integrity: 0.7534264958957232,
-    resonance: 0.8409665365410336,
-  },
-  {
-    id: 'node_0223',
-    type: 'structural',
-    position: [7.322, 181.267, 31.383],
-    rotation: [0.057, 1.342, 0.035],
-    scale: [1.264, 13.178, 2.530],
-    materialIndex: 0,
-    integrity: 0.6265442554191936,
-    resonance: 0.08762508383117551,
-  },
-  {
-    id: 'node_0224',
-    type: 'structural',
-    position: [-10.101, 52.382, -26.932],
-    rotation: [0.018, 4.354, 0.035],
-    scale: [3.297, 17.747, 3.744],
-    materialIndex: 2,
-    integrity: 0.9577850726936012,
-    resonance: 0.48269587326587593,
-  },
-  {
-    id: 'node_0225',
-    type: 'structural',
-    position: [20.785, 9.835, 10.367],
-    rotation: [0.014, 0.463, 0.014],
-    scale: [2.334, 15.738, 3.875],
-    materialIndex: 1,
-    integrity: 0.9496311351340073,
-    resonance: 0.7638407075969011,
-  },
-  {
-    id: 'node_0226',
-    type: 'structural',
-    position: [-20.534, -13.828, 24.217],
-    rotation: [0.015, 2.274, 0.099],
-    scale: [1.335, 20.135, 3.911],
-    materialIndex: 1,
-    integrity: 0.8775841110201539,
-    resonance: 0.849515745479762,
-  },
-  {
-    id: 'node_0227',
-    type: 'structural',
-    position: [18.607, 196.840, -7.140],
-    rotation: [0.045, 5.917, 0.044],
-    scale: [3.176, 15.150, 2.619],
-    materialIndex: 0,
-    integrity: 0.5236381438494015,
-    resonance: 0.3059315718301161,
-  },
-  {
-    id: 'node_0228',
-    type: 'structural',
-    position: [-5.832, 124.934, -22.662],
-    rotation: [0.016, 4.461, 0.013],
-    scale: [2.521, 14.751, 3.920],
-    materialIndex: 2,
-    integrity: 0.7406094708376335,
-    resonance: 0.2639241004758176,
-  },
-  {
-    id: 'node_0229',
-    type: 'structural',
-    position: [48.132, -88.971, 9.112],
-    rotation: [0.036, 0.187, 0.048],
-    scale: [2.942, 10.431, 1.534],
-    materialIndex: 2,
-    integrity: 0.7623123486320527,
-    resonance: 0.6126583576947007,
-  },
-  {
-    id: 'node_0230',
-    type: 'emitter',
-    position: [-42.086, 103.399, -35.101],
-    rotation: [0.085, 3.837, 0.042],
-    scale: [4.010, 11.712, 4.210],
-    materialIndex: 1,
-    integrity: 0.8537993335802696,
-    resonance: 0.07057931585930266,
-  },
-  {
-    id: 'node_0231',
-    type: 'structural',
-    position: [-12.440, 73.756, -12.277],
-    rotation: [0.074, 3.920, 0.075],
-    scale: [2.893, 24.735, 4.573],
-    materialIndex: 2,
-    integrity: 0.7916364345452842,
-    resonance: 0.6093710591659524,
-  },
-  {
-    id: 'node_0232',
-    type: 'structural',
-    position: [46.493, 61.147, -30.588],
-    rotation: [0.078, 5.701, 0.058],
-    scale: [2.310, 16.066, 2.203],
-    materialIndex: 1,
-    integrity: 0.6927099789280524,
-    resonance: 0.4470191674008943,
-  },
-  {
-    id: 'node_0233',
-    type: 'structural',
-    position: [-47.477, -106.272, -25.735],
-    rotation: [0.016, 3.638, 0.052],
-    scale: [4.184, 12.015, 2.858],
-    materialIndex: 0,
-    integrity: 0.7507891095411665,
-    resonance: 0.9742387938347554,
-  },
-  {
-    id: 'node_0234',
-    type: 'structural',
-    position: [-4.664, 163.295, -52.849],
-    rotation: [0.046, 4.624, 0.083],
-    scale: [1.062, 7.154, 3.424],
-    materialIndex: 2,
-    integrity: 0.7027533603898428,
-    resonance: 0.25557277458325023,
-  },
-  {
-    id: 'node_0235',
-    type: 'structural',
-    position: [-20.708, -27.162, -50.508],
-    rotation: [0.018, 4.323, 0.070],
-    scale: [4.245, 6.878, 1.878],
-    materialIndex: 2,
-    integrity: 0.9311375110178564,
-    resonance: 0.23494136783685482,
-  },
-  {
-    id: 'node_0236',
-    type: 'emitter',
-    position: [30.738, -104.920, -50.486],
-    rotation: [0.005, 5.259, 0.015],
-    scale: [4.152, 7.518, 1.789],
-    materialIndex: 0,
-    integrity: 0.6714657381238787,
-    resonance: 0.2613475506244817,
-  },
-  {
-    id: 'node_0237',
-    type: 'structural',
-    position: [25.175, -5.234, 7.039],
-    rotation: [0.035, 0.273, 0.069],
-    scale: [4.276, 23.925, 1.877],
-    materialIndex: 1,
-    integrity: 0.7475785661332048,
-    resonance: 0.257681053719675,
-  },
-  {
-    id: 'node_0238',
-    type: 'emitter',
-    position: [0.718, 88.210, 47.124],
-    rotation: [0.036, 1.556, 0.008],
-    scale: [4.249, 19.816, 1.686],
-    materialIndex: 0,
-    integrity: 0.8524338677397693,
-    resonance: 0.026613936642569724,
-  },
-  {
-    id: 'node_0239',
-    type: 'structural',
-    position: [-2.401, 80.509, 43.020],
-    rotation: [0.034, 1.627, 0.083],
-    scale: [2.381, 8.112, 3.586],
-    materialIndex: 0,
-    integrity: 0.9795030240561804,
-    resonance: 0.3063329052185426,
-  },
-  {
-    id: 'node_0240',
-    type: 'structural',
-    position: [-21.059, -164.278, -7.693],
-    rotation: [0.068, 3.492, 0.079],
-    scale: [4.892, 11.011, 3.485],
-    materialIndex: 2,
-    integrity: 0.7301693331674348,
-    resonance: 0.3096605010692378,
-  },
-  {
-    id: 'node_0241',
-    type: 'structural',
-    position: [-35.913, -66.065, -27.884],
-    rotation: [0.023, 3.802, 0.002],
-    scale: [1.777, 11.567, 2.559],
-    materialIndex: 0,
-    integrity: 0.808431730879597,
-    resonance: 0.4107171062003292,
-  },
-  {
-    id: 'node_0242',
-    type: 'structural',
-    position: [33.210, -53.594, -34.830],
-    rotation: [0.045, 5.474, 0.052],
-    scale: [1.986, 14.111, 3.145],
-    materialIndex: 1,
-    integrity: 0.6153967128438285,
-    resonance: 0.17950364794325435,
-  },
-  {
-    id: 'node_0243',
-    type: 'structural',
-    position: [13.540, 17.534, 22.554],
-    rotation: [0.025, 1.030, 0.061],
-    scale: [3.288, 5.480, 1.284],
-    materialIndex: 2,
-    integrity: 0.5054856791357117,
-    resonance: 0.47694059383595033,
-  },
-  {
-    id: 'node_0244',
-    type: 'emitter',
-    position: [-29.222, -159.133, 35.483],
-    rotation: [0.003, 2.260, 0.003],
-    scale: [1.616, 23.162, 1.462],
-    materialIndex: 1,
-    integrity: 0.7784075256807819,
-    resonance: 0.47489471744359435,
-  },
-  {
-    id: 'node_0245',
-    type: 'structural',
-    position: [-25.894, 165.787, 7.439],
-    rotation: [0.099, 2.862, 0.024],
-    scale: [4.850, 6.093, 4.494],
-    materialIndex: 2,
-    integrity: 0.6924353381202581,
-    resonance: 0.40257155634308994,
-  },
-  {
-    id: 'node_0246',
-    type: 'structural',
-    position: [8.116, 25.069, -14.792],
-    rotation: [0.093, 5.214, 0.051],
-    scale: [4.418, 18.854, 3.364],
-    materialIndex: 2,
-    integrity: 0.870320646261,
-    resonance: 0.14595536420380506,
-  },
-  {
-    id: 'node_0247',
-    type: 'structural',
-    position: [26.480, 196.419, -29.354],
-    rotation: [0.038, 5.446, 0.030],
-    scale: [2.926, 21.716, 2.745],
-    materialIndex: 2,
-    integrity: 0.5579248728476005,
-    resonance: 0.10660441602995474,
-  },
-  {
-    id: 'node_0248',
-    type: 'structural',
-    position: [41.642, 132.471, 2.699],
-    rotation: [0.058, 0.065, 0.017],
-    scale: [4.338, 9.612, 3.213],
-    materialIndex: 0,
-    integrity: 0.8397729788038172,
-    resonance: 0.10493143262639282,
-  },
-  {
-    id: 'node_0249',
-    type: 'structural',
-    position: [23.067, -199.872, -6.484],
-    rotation: [0.060, 6.009, 0.041],
-    scale: [1.726, 14.747, 1.677],
-    materialIndex: 2,
-    integrity: 0.7735734659596583,
-    resonance: 0.5434431842142833,
-  },
-  {
-    id: 'node_0250',
-    type: 'structural',
-    position: [21.047, -177.763, -27.821],
-    rotation: [0.041, 5.360, 0.026],
-    scale: [1.434, 20.187, 4.772],
-    materialIndex: 1,
-    integrity: 0.5182118791787225,
-    resonance: 0.8715440590500909,
-  },
-  {
-    id: 'node_0251',
-    type: 'structural',
-    position: [34.827, 31.857, -15.611],
-    rotation: [0.054, 5.862, 0.012],
-    scale: [2.400, 14.709, 3.882],
-    materialIndex: 0,
-    integrity: 0.8216450880121532,
-    resonance: 0.2286961708801608,
-  },
-  {
-    id: 'node_0252',
-    type: 'structural',
-    position: [31.304, -148.362, 6.952],
-    rotation: [0.072, 0.219, 0.080],
-    scale: [3.871, 10.563, 2.662],
-    materialIndex: 0,
-    integrity: 0.7674902457103154,
-    resonance: 0.6381232777452028,
-  },
-  {
-    id: 'node_0253',
-    type: 'structural',
-    position: [-10.189, 101.431, 41.529],
-    rotation: [0.073, 1.811, 0.044],
-    scale: [3.757, 17.999, 3.661],
-    materialIndex: 0,
-    integrity: 0.6723439784474015,
-    resonance: 0.0827717793041498,
-  },
-  {
-    id: 'node_0254',
-    type: 'structural',
-    position: [-14.373, -113.363, -26.102],
-    rotation: [0.012, 4.209, 0.096],
-    scale: [4.714, 24.910, 1.450],
-    materialIndex: 0,
-    integrity: 0.5961508990400386,
-    resonance: 0.24527898635111245,
-  },
-  {
-    id: 'node_0255',
-    type: 'structural',
-    position: [26.652, 109.424, -41.823],
-    rotation: [0.020, 5.280, 0.076],
-    scale: [1.400, 15.835, 4.264],
-    materialIndex: 1,
-    integrity: 0.7371339559308991,
-    resonance: 0.3507022019214424,
-  },
-  {
-    id: 'node_0256',
-    type: 'structural',
-    position: [14.368, 137.651, 18.079],
-    rotation: [0.053, 0.899, 0.037],
-    scale: [3.385, 7.203, 2.546],
-    materialIndex: 0,
-    integrity: 0.6038766225902084,
-    resonance: 0.6375671182222962,
-  },
-  {
-    id: 'node_0257',
-    type: 'structural',
-    position: [27.661, -17.060, 4.680],
-    rotation: [0.038, 0.168, 0.098],
-    scale: [2.804, 11.349, 1.925],
-    materialIndex: 0,
-    integrity: 0.7539894403468895,
-    resonance: 0.6696483090295255,
-  },
-  {
-    id: 'node_0258',
-    type: 'structural',
-    position: [2.627, 99.169, -10.691],
-    rotation: [0.065, 4.953, 0.060],
-    scale: [3.291, 8.955, 4.632],
-    materialIndex: 0,
-    integrity: 0.8730637468859426,
-    resonance: 0.38519463165683565,
-  },
-  {
-    id: 'node_0259',
-    type: 'structural',
-    position: [31.102, 44.671, -10.434],
-    rotation: [0.022, 5.960, 0.085],
-    scale: [1.613, 23.324, 3.385],
-    materialIndex: 1,
-    integrity: 0.6182114731479074,
-    resonance: 0.28844559620527577,
-  },
-  {
-    id: 'node_0260',
-    type: 'structural',
-    position: [-38.772, 68.556, -15.587],
-    rotation: [0.050, 3.524, 0.020],
-    scale: [2.391, 21.912, 3.603],
-    materialIndex: 1,
-    integrity: 0.6328345522057336,
-    resonance: 0.298691705110569,
-  },
-  {
-    id: 'node_0261',
-    type: 'structural',
-    position: [-26.972, -185.041, 25.523],
-    rotation: [0.045, 2.384, 0.083],
-    scale: [4.263, 24.990, 1.075],
-    materialIndex: 1,
-    integrity: 0.6047204435763553,
-    resonance: 0.059917300418834474,
-  },
-  {
-    id: 'node_0262',
-    type: 'structural',
-    position: [-14.248, 52.599, 8.712],
-    rotation: [0.013, 2.593, 0.095],
-    scale: [2.413, 13.024, 2.961],
-    materialIndex: 2,
-    integrity: 0.904461949191879,
-    resonance: 0.47835427384747964,
-  },
-  {
-    id: 'node_0263',
-    type: 'structural',
-    position: [-32.616, 157.453, 10.325],
-    rotation: [0.040, 2.835, 0.025],
-    scale: [2.232, 14.777, 2.164],
-    materialIndex: 1,
-    integrity: 0.9677964524594462,
-    resonance: 0.3679212424846955,
-  },
-  {
-    id: 'node_0264',
-    type: 'emitter',
-    position: [-10.639, -132.884, -33.166],
-    rotation: [0.037, 4.402, 0.059],
-    scale: [1.684, 23.877, 2.848],
-    materialIndex: 0,
-    integrity: 0.9018599504355092,
-    resonance: 0.5239457267341796,
-  },
-  {
-    id: 'node_0265',
-    type: 'structural',
-    position: [33.057, -50.574, -22.755],
-    rotation: [0.092, 5.680, 0.023],
-    scale: [1.140, 20.668, 3.290],
-    materialIndex: 0,
-    integrity: 0.8004339065380304,
-    resonance: 0.5748914568965753,
-  },
-  {
-    id: 'node_0266',
-    type: 'structural',
-    position: [-13.554, -135.547, -19.628],
-    rotation: [0.025, 4.108, 0.059],
-    scale: [1.828, 15.533, 4.698],
-    materialIndex: 0,
-    integrity: 0.6638643172067498,
-    resonance: 0.8833870478385119,
-  },
-  {
-    id: 'node_0267',
-    type: 'structural',
-    position: [22.725, -121.538, -16.531],
-    rotation: [0.069, 5.654, 0.075],
-    scale: [4.034, 5.193, 1.521],
-    materialIndex: 2,
-    integrity: 0.9977715018344535,
-    resonance: 0.37228338788919846,
-  },
-  {
-    id: 'node_0268',
-    type: 'structural',
-    position: [29.775, -121.898, -7.445],
-    rotation: [0.069, 6.038, 0.021],
-    scale: [1.242, 17.179, 2.706],
-    materialIndex: 0,
-    integrity: 0.9638409321302517,
-    resonance: 0.5058591739081315,
-  },
-  {
-    id: 'node_0269',
-    type: 'structural',
-    position: [19.222, 49.957, 48.734],
-    rotation: [0.018, 1.195, 0.020],
-    scale: [4.367, 8.424, 3.433],
-    materialIndex: 0,
-    integrity: 0.636068564874944,
-    resonance: 0.31436410907005274,
-  },
-  {
-    id: 'node_0270',
-    type: 'structural',
-    position: [18.385, 188.285, 9.382],
-    rotation: [0.001, 0.472, 0.038],
-    scale: [4.075, 20.554, 1.244],
-    materialIndex: 0,
-    integrity: 0.9830350804542891,
-    resonance: 0.8188859474135872,
-  },
-  {
-    id: 'node_0271',
-    type: 'emitter',
-    position: [9.168, -76.909, -13.853],
-    rotation: [0.010, 5.297, 0.017],
-    scale: [1.735, 23.067, 4.673],
-    materialIndex: 1,
-    integrity: 0.5923611847605759,
-    resonance: 0.475048333340946,
-  },
-  {
-    id: 'node_0272',
-    type: 'structural',
-    position: [25.459, 0.326, -6.299],
-    rotation: [0.012, 6.041, 0.029],
-    scale: [2.514, 21.399, 2.318],
-    materialIndex: 0,
-    integrity: 0.7973295866422221,
-    resonance: 0.8139415260048937,
-  },
-  {
-    id: 'node_0273',
-    type: 'structural',
-    position: [-57.038, 162.077, 11.928],
-    rotation: [0.075, 2.935, 0.068],
-    scale: [4.709, 8.044, 1.161],
-    materialIndex: 2,
-    integrity: 0.9464569258051129,
-    resonance: 0.26596228433345703,
-  },
-  {
-    id: 'node_0274',
-    type: 'structural',
-    position: [-26.249, 133.298, -4.586],
-    rotation: [0.074, 3.315, 0.033],
-    scale: [1.746, 17.237, 3.412],
-    materialIndex: 1,
-    integrity: 0.833932584960325,
-    resonance: 0.9684498133937506,
-  },
-  {
-    id: 'node_0275',
-    type: 'structural',
-    position: [-13.083, -147.239, -22.954],
-    rotation: [0.072, 4.194, 0.046],
-    scale: [3.379, 16.708, 1.832],
-    materialIndex: 2,
-    integrity: 0.8101527722833428,
-    resonance: 0.4613738295904838,
-  },
-  {
-    id: 'node_0276',
-    type: 'emitter',
-    position: [-27.058, -12.243, 6.322],
-    rotation: [0.086, 2.912, 0.064],
-    scale: [2.618, 8.808, 3.017],
-    materialIndex: 0,
-    integrity: 0.7651076486120263,
-    resonance: 0.8311136308439945,
-  },
-  {
-    id: 'node_0277',
-    type: 'structural',
-    position: [-2.019, 10.557, -14.502],
-    rotation: [0.043, 4.574, 0.013],
-    scale: [2.738, 12.096, 4.809],
-    materialIndex: 2,
-    integrity: 0.6882183920046767,
-    resonance: 0.20481931362871875,
-  },
-  {
-    id: 'node_0278',
-    type: 'structural',
-    position: [-35.316, 85.365, -45.224],
-    rotation: [0.039, 4.049, 0.026],
-    scale: [4.084, 21.853, 4.926],
-    materialIndex: 2,
-    integrity: 0.7351108130273782,
-    resonance: 0.06241209234415668,
-  },
-  {
-    id: 'node_0279',
-    type: 'structural',
-    position: [50.489, 62.598, -12.451],
-    rotation: [0.081, 6.041, 0.092],
-    scale: [3.530, 17.840, 4.662],
-    materialIndex: 1,
-    integrity: 0.5169618815072905,
-    resonance: 0.35694775946334933,
-  },
-  {
-    id: 'node_0280',
-    type: 'emitter',
-    position: [-15.499, 41.969, -2.972],
-    rotation: [0.093, 3.331, 0.002],
-    scale: [2.439, 14.740, 2.514],
-    materialIndex: 1,
-    integrity: 0.5523569737568013,
-    resonance: 0.819415487046782,
-  },
-  {
-    id: 'node_0281',
-    type: 'emitter',
-    position: [55.472, 53.708, -10.353],
-    rotation: [0.010, 6.099, 0.062],
-    scale: [1.030, 13.769, 1.022],
-    materialIndex: 1,
-    integrity: 0.9247663380510271,
-    resonance: 0.03172865910667899,
-  },
-  {
-    id: 'node_0282',
-    type: 'emitter',
-    position: [-48.947, -63.332, -26.639],
-    rotation: [0.010, 3.640, 0.004],
-    scale: [4.802, 11.413, 3.459],
-    materialIndex: 2,
-    integrity: 0.6776141791589854,
-    resonance: 0.5408142828579839,
-  },
-  {
-    id: 'node_0283',
-    type: 'structural',
-    position: [-24.546, 5.283, -19.550],
-    rotation: [0.020, 3.814, 0.033],
-    scale: [1.842, 20.682, 1.186],
-    materialIndex: 0,
-    integrity: 0.6030414316265422,
-    resonance: 0.056302316922764994,
-  },
-  {
-    id: 'node_0284',
-    type: 'structural',
-    position: [55.104, 178.705, 14.852],
-    rotation: [0.063, 0.263, 0.063],
-    scale: [4.885, 18.120, 3.092],
-    materialIndex: 0,
-    integrity: 0.682990602095742,
-    resonance: 0.044449022249372194,
-  },
-  {
-    id: 'node_0285',
-    type: 'structural',
-    position: [26.094, 16.602, -6.835],
-    rotation: [0.082, 6.027, 0.007],
-    scale: [2.766, 11.571, 4.478],
-    materialIndex: 1,
-    integrity: 0.9137209677135457,
-    resonance: 0.9172801131771109,
-  },
-  {
-    id: 'node_0286',
-    type: 'structural',
-    position: [-46.895, 69.853, 33.525],
-    rotation: [0.013, 2.521, 0.066],
-    scale: [1.873, 8.477, 2.294],
-    materialIndex: 0,
-    integrity: 0.7785115310651631,
-    resonance: 0.22863621149455293,
-  },
-  {
-    id: 'node_0287',
-    type: 'structural',
-    position: [-32.082, 114.301, -40.488],
-    rotation: [0.037, 4.042, 0.099],
-    scale: [4.940, 7.109, 2.496],
-    materialIndex: 1,
-    integrity: 0.890703387252924,
-    resonance: 0.8996135405160017,
-  },
-  {
-    id: 'node_0288',
-    type: 'structural',
-    position: [-21.782, 151.797, 22.717],
-    rotation: [0.087, 2.335, 0.006],
-    scale: [1.676, 14.654, 1.851],
-    materialIndex: 2,
-    integrity: 0.7028872621168749,
-    resonance: 0.37934954853722913,
-  },
-  {
-    id: 'node_0289',
-    type: 'structural',
-    position: [10.457, -184.738, -6.510],
-    rotation: [0.095, 5.726, 0.020],
-    scale: [3.219, 9.789, 3.723],
-    materialIndex: 0,
-    integrity: 0.958242597184034,
-    resonance: 0.5731872548491326,
-  },
-  {
-    id: 'node_0290',
-    type: 'emitter',
-    position: [47.540, 66.679, -4.710],
-    rotation: [0.022, 6.184, 0.031],
-    scale: [2.659, 10.227, 4.725],
-    materialIndex: 0,
-    integrity: 0.7911284789357459,
-    resonance: 0.5383089968193191,
-  },
-  {
-    id: 'node_0291',
-    type: 'structural',
-    position: [17.838, 164.058, -26.098],
-    rotation: [0.099, 5.312, 0.015],
-    scale: [2.232, 18.506, 3.119],
-    materialIndex: 1,
-    integrity: 0.7985003893432154,
-    resonance: 0.3060117653175638,
-  },
-  {
-    id: 'node_0292',
-    type: 'structural',
-    position: [15.567, -62.713, -13.991],
-    rotation: [0.070, 5.551, 0.008],
-    scale: [4.087, 9.902, 3.179],
-    materialIndex: 1,
-    integrity: 0.8069307133199617,
-    resonance: 0.04050384962082321,
-  },
-  {
-    id: 'node_0293',
-    type: 'structural',
-    position: [21.437, -35.840, -7.173],
-    rotation: [0.083, 5.960, 0.097],
-    scale: [4.025, 6.914, 1.895],
-    materialIndex: 2,
-    integrity: 0.8570497772240835,
-    resonance: 0.6585298431331487,
-  },
-  {
-    id: 'node_0294',
-    type: 'structural',
-    position: [-7.009, 128.374, 24.589],
-    rotation: [0.058, 1.848, 0.082],
-    scale: [2.469, 24.785, 4.068],
-    materialIndex: 0,
-    integrity: 0.6880242890522403,
-    resonance: 0.8461635968119305,
-  },
-  {
-    id: 'node_0295',
-    type: 'structural',
-    position: [18.805, 142.124, 9.745],
-    rotation: [0.019, 0.478, 0.024],
-    scale: [3.367, 8.329, 3.798],
-    materialIndex: 1,
-    integrity: 0.8041342208395443,
-    resonance: 0.8321879063873409,
-  },
-  {
-    id: 'node_0296',
-    type: 'emitter',
-    position: [-38.389, 15.535, -1.555],
-    rotation: [0.015, 3.182, 0.045],
-    scale: [1.312, 5.751, 2.029],
-    materialIndex: 0,
-    integrity: 0.9696002654290059,
-    resonance: 0.5148931137623908,
-  },
-  {
-    id: 'node_0297',
-    type: 'emitter',
-    position: [-23.203, 18.188, -38.256],
-    rotation: [0.072, 4.167, 0.043],
-    scale: [4.806, 23.257, 3.197],
-    materialIndex: 0,
-    integrity: 0.953860052402775,
-    resonance: 0.3193820293427062,
-  },
-  {
-    id: 'node_0298',
-    type: 'emitter',
-    position: [-17.280, 115.530, -24.692],
-    rotation: [0.032, 4.102, 0.094],
-    scale: [4.722, 15.667, 1.756],
-    materialIndex: 1,
-    integrity: 0.732261471751568,
-    resonance: 0.5095569707886853,
-  },
-  {
-    id: 'node_0299',
-    type: 'structural',
-    position: [-17.498, -80.439, -0.290],
-    rotation: [0.039, 3.158, 0.097],
-    scale: [3.045, 21.966, 1.500],
-    materialIndex: 2,
-    integrity: 0.6385209475978841,
-    resonance: 0.5060846871179673,
-  },
-  {
-    id: 'node_0300',
-    type: 'structural',
-    position: [-34.529, 175.218, 28.478],
-    rotation: [0.048, 2.452, 0.045],
-    scale: [3.935, 22.749, 3.730],
-    materialIndex: 1,
-    integrity: 0.5618357500118074,
-    resonance: 0.6593230005471604,
-  },
-  {
-    id: 'node_0301',
-    type: 'structural',
-    position: [19.706, 199.934, -10.412],
-    rotation: [0.055, 5.797, 0.033],
-    scale: [2.827, 5.624, 1.945],
-    materialIndex: 1,
-    integrity: 0.5206329152219284,
-    resonance: 0.32110240806034474,
-  },
-  {
-    id: 'node_0302',
-    type: 'structural',
-    position: [-10.581, -122.680, 4.454],
-    rotation: [0.093, 2.743, 0.086],
-    scale: [2.352, 14.552, 4.385],
-    materialIndex: 1,
-    integrity: 0.9454109803683142,
-    resonance: 0.8863551001906288,
-  },
-  {
-    id: 'node_0303',
-    type: 'structural',
-    position: [-8.706, 151.039, 25.157],
-    rotation: [0.035, 1.904, 0.032],
-    scale: [2.985, 19.613, 3.123],
-    materialIndex: 0,
-    integrity: 0.8595269734680264,
-    resonance: 0.1440009497131668,
-  },
-  {
-    id: 'node_0304',
-    type: 'emitter',
-    position: [11.704, 35.302, -2.268],
-    rotation: [0.027, 6.092, 0.029],
-    scale: [1.423, 23.821, 4.473],
-    materialIndex: 2,
-    integrity: 0.9368065312502909,
-    resonance: 0.5662717686808024,
-  },
-  {
-    id: 'node_0305',
-    type: 'structural',
-    position: [22.095, 4.574, 24.742],
-    rotation: [0.024, 0.842, 0.007],
-    scale: [4.212, 10.261, 3.665],
-    materialIndex: 1,
-    integrity: 0.5883950078218432,
-    resonance: 0.3627166846007036,
-  },
-  {
-    id: 'node_0306',
-    type: 'structural',
-    position: [9.973, -33.935, 27.627],
-    rotation: [0.068, 1.224, 0.066],
-    scale: [4.893, 17.071, 4.980],
-    materialIndex: 0,
-    integrity: 0.6936549547940514,
-    resonance: 0.770948285380704,
-  },
-  {
-    id: 'node_0307',
-    type: 'structural',
-    position: [-20.315, 133.278, 48.664],
-    rotation: [0.018, 1.966, 0.006],
-    scale: [3.895, 10.672, 3.076],
-    materialIndex: 0,
-    integrity: 0.8386960348076962,
-    resonance: 0.05801755203776182,
-  },
-  {
-    id: 'node_0308',
-    type: 'structural',
-    position: [-2.501, -119.092, 36.422],
-    rotation: [0.046, 1.639, 0.087],
-    scale: [2.140, 17.200, 3.401],
-    materialIndex: 0,
-    integrity: 0.546427540508014,
-    resonance: 0.10092964937362692,
-  },
-  {
-    id: 'node_0309',
-    type: 'structural',
-    position: [8.860, 195.243, 30.574],
-    rotation: [0.032, 1.289, 0.043],
-    scale: [3.946, 16.508, 1.893],
-    materialIndex: 1,
-    integrity: 0.6770979149851029,
-    resonance: 0.9852978218635002,
-  },
-  {
-    id: 'node_0310',
-    type: 'emitter',
-    position: [2.433, -31.620, -15.911],
-    rotation: [0.095, 4.864, 0.017],
-    scale: [3.274, 20.200, 3.799],
-    materialIndex: 1,
-    integrity: 0.8232315848844423,
-    resonance: 0.6263616519243785,
-  },
-  {
-    id: 'node_0311',
-    type: 'emitter',
-    position: [-25.867, -53.433, -30.124],
-    rotation: [0.077, 4.003, 0.044],
-    scale: [3.278, 23.288, 2.447],
-    materialIndex: 0,
-    integrity: 0.6874356231311811,
-    resonance: 0.7716764032419103,
-  },
-  {
-    id: 'node_0312',
-    type: 'structural',
-    position: [34.934, -145.779, 46.325],
-    rotation: [0.093, 0.925, 0.031],
-    scale: [1.666, 14.831, 1.726],
-    materialIndex: 2,
-    integrity: 0.500433241846148,
-    resonance: 0.24920618495067304,
-  },
-  {
-    id: 'node_0313',
-    type: 'structural',
-    position: [5.101, 91.452, 12.537],
-    rotation: [0.050, 1.184, 0.028],
-    scale: [4.425, 9.798, 2.494],
-    materialIndex: 2,
-    integrity: 0.9186500612500976,
-    resonance: 0.2525551883167283,
-  },
-  {
-    id: 'node_0314',
-    type: 'structural',
-    position: [-21.358, -119.269, -0.032],
-    rotation: [0.099, 3.143, 0.002],
-    scale: [3.980, 19.249, 2.132],
-    materialIndex: 1,
-    integrity: 0.7466897792068143,
-    resonance: 0.31111223780630937,
-  },
-  {
-    id: 'node_0315',
-    type: 'structural',
-    position: [8.446, -164.843, -27.814],
-    rotation: [0.033, 5.007, 0.024],
-    scale: [2.959, 22.587, 2.803],
-    materialIndex: 2,
-    integrity: 0.5156560947641787,
-    resonance: 0.37178284546088824,
-  },
-  {
-    id: 'node_0316',
-    type: 'structural',
-    position: [-11.012, 46.964, -1.588],
-    rotation: [0.096, 3.285, 0.008],
-    scale: [2.745, 15.764, 3.731],
-    materialIndex: 2,
-    integrity: 0.5127817142950309,
-    resonance: 0.9613291142265974,
-  },
-  {
-    id: 'node_0317',
-    type: 'structural',
-    position: [-36.830, 160.232, -31.694],
-    rotation: [0.067, 3.852, 0.032],
-    scale: [1.504, 22.685, 1.767],
-    materialIndex: 2,
-    integrity: 0.8174149411147302,
-    resonance: 0.13985433672971825,
-  },
-  {
-    id: 'node_0318',
-    type: 'structural',
-    position: [-9.749, 70.758, -2.467],
-    rotation: [0.059, 3.389, 0.088],
-    scale: [4.677, 7.554, 2.866],
-    materialIndex: 0,
-    integrity: 0.8634586224612781,
-    resonance: 0.3571712532397592,
-  },
-  {
-    id: 'node_0319',
-    type: 'structural',
-    position: [1.079, -82.802, -14.920],
-    rotation: [0.076, 4.785, 0.001],
-    scale: [2.494, 20.261, 2.080],
-    materialIndex: 0,
-    integrity: 0.5609243247737514,
-    resonance: 0.2526041665573352,
-  },
-  {
-    id: 'node_0320',
-    type: 'emitter',
-    position: [-34.979, -26.752, 48.106],
-    rotation: [0.001, 2.199, 0.028],
-    scale: [2.500, 11.585, 4.345],
-    materialIndex: 1,
-    integrity: 0.8347683648860466,
-    resonance: 0.6192331754739033,
-  },
-  {
-    id: 'node_0321',
-    type: 'structural',
-    position: [-8.619, 27.790, 22.440],
-    rotation: [0.049, 1.938, 0.028],
-    scale: [2.041, 20.811, 1.894],
-    materialIndex: 1,
-    integrity: 0.6704856700032202,
-    resonance: 0.7012425020581654,
-  },
-  {
-    id: 'node_0322',
-    type: 'structural',
-    position: [21.823, 57.757, 14.944],
-    rotation: [0.059, 0.600, 0.083],
-    scale: [3.321, 15.987, 2.437],
-    materialIndex: 0,
-    integrity: 0.8482748864253584,
-    resonance: 0.18940051130607516,
-  },
-  {
-    id: 'node_0323',
-    type: 'structural',
-    position: [-47.883, -43.143, 12.076],
-    rotation: [0.057, 2.895, 0.042],
-    scale: [4.372, 13.636, 2.782],
-    materialIndex: 1,
-    integrity: 0.8300166019301048,
-    resonance: 0.978422069939064,
-  },
-  {
-    id: 'node_0324',
-    type: 'structural',
-    position: [24.596, -125.761, 37.747],
-    rotation: [0.081, 0.993, 0.081],
-    scale: [2.947, 21.478, 2.305],
-    materialIndex: 0,
-    integrity: 0.5824867633788013,
-    resonance: 0.6424033155299688,
-  },
-  {
-    id: 'node_0325',
-    type: 'emitter',
-    position: [-40.755, 29.044, -32.485],
-    rotation: [0.003, 3.815, 0.048],
-    scale: [1.432, 8.645, 4.881],
-    materialIndex: 0,
-    integrity: 0.7170203145036071,
-    resonance: 0.38373507842236454,
-  },
-  {
-    id: 'node_0326',
-    type: 'structural',
-    position: [7.363, 101.247, -26.474],
-    rotation: [0.043, 4.984, 0.089],
-    scale: [2.169, 9.998, 1.792],
-    materialIndex: 0,
-    integrity: 0.8849770360027809,
-    resonance: 0.4084382944086008,
-  },
-  {
-    id: 'node_0327',
-    type: 'structural',
-    position: [33.741, 80.237, -3.254],
-    rotation: [0.063, 6.187, 0.045],
-    scale: [4.311, 5.504, 3.835],
-    materialIndex: 2,
-    integrity: 0.7647392112511963,
-    resonance: 0.831664027383802,
-  },
-  {
-    id: 'node_0328',
-    type: 'structural',
-    position: [25.395, 88.170, -7.725],
-    rotation: [0.095, 5.988, 0.077],
-    scale: [2.401, 7.972, 4.441],
-    materialIndex: 1,
-    integrity: 0.7050594437973448,
-    resonance: 0.5087167378418457,
-  },
-  {
-    id: 'node_0329',
-    type: 'structural',
-    position: [20.320, 117.190, -15.533],
-    rotation: [0.072, 5.631, 0.063],
-    scale: [2.914, 11.353, 2.313],
-    materialIndex: 0,
-    integrity: 0.7997292763171074,
-    resonance: 0.523844497605561,
-  },
-  {
-    id: 'node_0330',
-    type: 'structural',
-    position: [29.449, -47.475, -28.609],
-    rotation: [0.023, 5.512, 0.015],
-    scale: [2.023, 14.543, 3.724],
-    materialIndex: 2,
-    integrity: 0.6441340831543362,
-    resonance: 0.7021153271263433,
-  },
-  {
-    id: 'node_0331',
-    type: 'structural',
-    position: [27.217, 125.312, -38.502],
-    rotation: [0.048, 5.328, 0.082],
-    scale: [4.192, 20.641, 2.610],
-    materialIndex: 1,
-    integrity: 0.8634391578039945,
-    resonance: 0.8609038621747908,
-  },
-  {
-    id: 'node_0332',
-    type: 'structural',
-    position: [-48.687, -2.955, 22.415],
-    rotation: [0.027, 2.710, 0.014],
-    scale: [2.704, 10.885, 2.773],
-    materialIndex: 1,
-    integrity: 0.9150473346696093,
-    resonance: 0.7296861350466542,
-  },
-  {
-    id: 'node_0333',
-    type: 'structural',
-    position: [12.581, -5.963, 2.992],
-    rotation: [0.001, 0.234, 0.078],
-    scale: [3.251, 16.135, 1.911],
-    materialIndex: 1,
-    integrity: 0.8861795329419555,
-    resonance: 0.7534179065848288,
-  },
-  {
-    id: 'node_0334',
-    type: 'structural',
-    position: [-55.330, 144.475, -19.659],
-    rotation: [0.092, 3.483, 0.080],
-    scale: [2.428, 13.510, 4.032],
-    materialIndex: 2,
-    integrity: 0.9463156125547832,
-    resonance: 0.017249863502180163,
-  },
-  {
-    id: 'node_0335',
-    type: 'structural',
-    position: [-44.409, -15.289, 32.670],
-    rotation: [0.022, 2.507, 0.008],
-    scale: [4.576, 20.844, 3.081],
-    materialIndex: 2,
-    integrity: 0.8912422245325705,
-    resonance: 0.7088351846891937,
-  },
-  {
-    id: 'node_0336',
-    type: 'structural',
-    position: [7.852, -176.875, 17.796],
-    rotation: [0.048, 1.155, 0.050],
-    scale: [1.343, 18.299, 4.503],
-    materialIndex: 1,
-    integrity: 0.6377270403344499,
-    resonance: 0.46976963629639656,
-  },
-  {
-    id: 'node_0337',
-    type: 'structural',
-    position: [20.392, -105.351, 34.592],
-    rotation: [0.084, 1.038, 0.033],
-    scale: [2.900, 11.161, 3.381],
-    materialIndex: 2,
-    integrity: 0.83832944275336,
-    resonance: 0.1426051031078721,
-  },
-  {
-    id: 'node_0338',
-    type: 'structural',
-    position: [-15.789, 69.441, 32.211],
-    rotation: [0.045, 2.027, 0.050],
-    scale: [3.748, 6.991, 3.720],
-    materialIndex: 2,
-    integrity: 0.8267735249356593,
-    resonance: 0.9253054354953094,
-  },
-  {
-    id: 'node_0339',
-    type: 'structural',
-    position: [-28.137, 62.015, 37.027],
-    rotation: [0.087, 2.221, 0.001],
-    scale: [4.194, 19.777, 4.282],
-    materialIndex: 1,
-    integrity: 0.8739656310404731,
-    resonance: 0.515494790697382,
-  },
-  {
-    id: 'node_0340',
-    type: 'structural',
-    position: [24.915, 20.904, -8.854],
-    rotation: [0.095, 5.942, 0.063],
-    scale: [2.503, 17.171, 4.338],
-    materialIndex: 1,
-    integrity: 0.6306033348721172,
-    resonance: 0.27883667823752634,
-  },
-  {
-    id: 'node_0341',
-    type: 'structural',
-    position: [-12.806, -38.566, 11.815],
-    rotation: [0.064, 2.396, 0.034],
-    scale: [2.638, 21.231, 1.772],
-    materialIndex: 2,
-    integrity: 0.644292902305367,
-    resonance: 0.45165739932126037,
-  },
-  {
-    id: 'node_0342',
-    type: 'emitter',
-    position: [7.651, -175.349, 9.843],
-    rotation: [0.011, 0.910, 0.084],
-    scale: [3.580, 8.401, 2.474],
-    materialIndex: 0,
-    integrity: 0.7546538387388375,
-    resonance: 0.5677138711656907,
-  },
-  {
-    id: 'node_0343',
-    type: 'structural',
-    position: [39.829, -100.394, -23.487],
-    rotation: [0.078, 5.750, 0.053],
-    scale: [4.213, 24.589, 2.755],
-    materialIndex: 2,
-    integrity: 0.5449472027807434,
-    resonance: 0.07088100189488655,
-  },
-  {
-    id: 'node_0344',
-    type: 'structural',
-    position: [25.962, -104.349, 9.122],
-    rotation: [0.034, 0.338, 0.081],
-    scale: [2.312, 14.117, 3.007],
-    materialIndex: 2,
-    integrity: 0.8184378767647871,
-    resonance: 0.7092139297915019,
-  },
-  {
-    id: 'node_0345',
-    type: 'structural',
-    position: [-28.790, 189.509, 39.290],
-    rotation: [0.056, 2.203, 0.056],
-    scale: [4.223, 20.251, 4.004],
-    materialIndex: 1,
-    integrity: 0.5822846449858827,
-    resonance: 0.28498257412216765,
-  },
-  {
-    id: 'node_0346',
-    type: 'emitter',
-    position: [44.214, -74.611, 23.725],
-    rotation: [0.004, 0.492, 0.055],
-    scale: [1.397, 18.601, 1.398],
-    materialIndex: 1,
-    integrity: 0.5069065442360049,
-    resonance: 0.9334309840519098,
-  },
-  {
-    id: 'node_0347',
-    type: 'structural',
-    position: [-44.988, 181.726, -28.105],
-    rotation: [0.043, 3.700, 0.006],
-    scale: [3.531, 17.128, 4.608],
-    materialIndex: 0,
-    integrity: 0.8459449668802601,
-    resonance: 0.45819614239481143,
-  },
-  {
-    id: 'node_0348',
-    type: 'structural',
-    position: [56.481, -64.941, -7.247],
-    rotation: [0.035, 6.156, 0.045],
-    scale: [4.903, 5.561, 1.028],
-    materialIndex: 2,
-    integrity: 0.8140559840887571,
-    resonance: 0.4024977804351043,
-  },
-  {
-    id: 'node_0349',
-    type: 'structural',
-    position: [-1.486, -154.310, -20.358],
-    rotation: [0.096, 4.640, 0.089],
-    scale: [1.601, 15.698, 4.329],
-    materialIndex: 1,
-    integrity: 0.7483024796131184,
-    resonance: 0.028754362142335843,
-  },
-  {
-    id: 'node_0350',
-    type: 'structural',
-    position: [0.339, -109.845, 46.418],
-    rotation: [0.056, 1.563, 0.002],
-    scale: [2.642, 15.689, 3.936],
-    materialIndex: 2,
-    integrity: 0.938932014487802,
-    resonance: 0.43237286088073323,
-  },
-  {
-    id: 'node_0351',
-    type: 'structural',
-    position: [-2.503, -180.913, 56.776],
-    rotation: [0.068, 1.615, 0.078],
-    scale: [3.841, 11.922, 2.504],
-    materialIndex: 1,
-    integrity: 0.8697568876346204,
-    resonance: 0.842878568869388,
-  },
-  {
-    id: 'node_0352',
-    type: 'structural',
-    position: [-16.784, 34.747, 16.490],
-    rotation: [0.075, 2.365, 0.056],
-    scale: [1.111, 12.702, 2.335],
-    materialIndex: 0,
-    integrity: 0.7347943863188137,
-    resonance: 0.11352852166781824,
-  },
-  {
-    id: 'node_0353',
-    type: 'structural',
-    position: [-43.815, -194.333, 3.725],
-    rotation: [0.004, 3.057, 0.063],
-    scale: [3.999, 13.791, 1.259],
-    materialIndex: 2,
-    integrity: 0.9071639977397165,
-    resonance: 0.3564492966308441,
-  },
-  {
-    id: 'node_0354',
-    type: 'structural',
-    position: [18.615, 178.246, -34.218],
-    rotation: [0.047, 5.211, 0.014],
-    scale: [2.829, 24.978, 1.734],
-    materialIndex: 0,
-    integrity: 0.77479536569952,
-    resonance: 0.014752581012406618,
-  },
-  {
-    id: 'node_0355',
-    type: 'emitter',
-    position: [-10.546, -28.650, -7.416],
-    rotation: [0.087, 3.754, 0.096],
-    scale: [2.285, 5.006, 2.529],
-    materialIndex: 2,
-    integrity: 0.9404221631961353,
-    resonance: 0.45166724058401286,
-  },
-  {
-    id: 'node_0356',
-    type: 'structural',
-    position: [-38.279, -196.469, 19.409],
-    rotation: [0.084, 2.672, 0.069],
-    scale: [1.329, 10.440, 2.040],
-    materialIndex: 0,
-    integrity: 0.9175740738136429,
-    resonance: 0.8187719633418843,
-  },
-  {
-    id: 'node_0357',
-    type: 'emitter',
-    position: [53.543, -148.309, -6.451],
-    rotation: [0.063, 6.163, 0.071],
-    scale: [3.276, 14.896, 2.958],
-    materialIndex: 1,
-    integrity: 0.5214023257433718,
-    resonance: 0.8884863148640125,
-  },
-  {
-    id: 'node_0358',
-    type: 'structural',
-    position: [-6.075, -23.923, 28.901],
-    rotation: [0.089, 1.778, 0.071],
-    scale: [1.201, 7.488, 2.881],
-    materialIndex: 1,
-    integrity: 0.6473005396497786,
-    resonance: 0.7003053976795547,
-  },
-  {
-    id: 'node_0359',
-    type: 'structural',
-    position: [5.568, 152.570, 24.139],
-    rotation: [0.051, 1.344, 0.097],
-    scale: [2.529, 9.343, 1.406],
-    materialIndex: 0,
-    integrity: 0.5841507441258862,
-    resonance: 0.507963621321455,
-  },
-  {
-    id: 'node_0360',
-    type: 'structural',
-    position: [-22.476, 143.462, -14.096],
-    rotation: [0.054, 3.702, 0.038],
-    scale: [4.123, 22.359, 4.326],
-    materialIndex: 0,
-    integrity: 0.6630701716625232,
-    resonance: 0.9980346850722243,
-  },
-  {
-    id: 'node_0361',
-    type: 'structural',
-    position: [4.082, 73.853, 57.965],
-    rotation: [0.093, 1.500, 0.016],
-    scale: [4.201, 24.800, 4.934],
-    materialIndex: 1,
-    integrity: 0.8202382125598475,
-    resonance: 0.5153320418779307,
-  },
-  {
-    id: 'node_0362',
-    type: 'structural',
-    position: [4.820, -28.419, -30.732],
-    rotation: [0.069, 4.868, 0.031],
-    scale: [3.012, 21.807, 3.024],
-    materialIndex: 0,
-    integrity: 0.720741631924245,
-    resonance: 0.7313032031220853,
-  },
-  {
-    id: 'node_0363',
-    type: 'structural',
-    position: [31.173, 87.951, 20.574],
-    rotation: [0.005, 0.583, 0.083],
-    scale: [1.417, 24.526, 3.785],
-    materialIndex: 1,
-    integrity: 0.554106188674203,
-    resonance: 0.11687703738284527,
-  },
-  {
-    id: 'node_0364',
-    type: 'structural',
-    position: [30.563, -36.202, 7.534],
-    rotation: [0.063, 0.242, 0.026],
-    scale: [3.480, 7.737, 1.999],
-    materialIndex: 0,
-    integrity: 0.5166689477278728,
-    resonance: 0.6533285283944206,
-  },
-  {
-    id: 'node_0365',
-    type: 'emitter',
-    position: [-4.709, -147.281, 20.818],
-    rotation: [0.021, 1.793, 0.034],
-    scale: [1.621, 18.691, 3.700],
-    materialIndex: 1,
-    integrity: 0.7018147833062953,
-    resonance: 0.42239278570003513,
-  },
-  {
-    id: 'node_0366',
-    type: 'structural',
-    position: [-28.255, 134.692, 0.615],
-    rotation: [0.033, 3.120, 0.051],
-    scale: [1.948, 24.230, 4.677],
-    materialIndex: 1,
-    integrity: 0.5743606152848604,
-    resonance: 0.7150574865271934,
-  },
-  {
-    id: 'node_0367',
-    type: 'emitter',
-    position: [30.982, -133.445, -9.489],
-    rotation: [0.068, 5.986, 0.074],
-    scale: [1.634, 7.074, 1.766],
-    materialIndex: 1,
-    integrity: 0.8292715592622628,
-    resonance: 0.1208157463063585,
-  },
-  {
-    id: 'node_0368',
-    type: 'structural',
-    position: [-5.118, -166.591, -19.303],
-    rotation: [0.082, 4.453, 0.028],
-    scale: [3.150, 24.740, 3.148],
-    materialIndex: 0,
-    integrity: 0.7369129744361854,
-    resonance: 0.999185642614156,
-  },
-  {
-    id: 'node_0369',
-    type: 'structural',
-    position: [-37.005, -157.867, 37.238],
-    rotation: [0.063, 2.353, 0.078],
-    scale: [4.521, 5.612, 4.098],
-    materialIndex: 1,
-    integrity: 0.7278314661168703,
-    resonance: 0.5312454070555802,
-  },
-  {
-    id: 'node_0370',
-    type: 'structural',
-    position: [37.726, -133.443, -38.444],
-    rotation: [0.044, 5.488, 0.011],
-    scale: [3.844, 22.671, 4.356],
-    materialIndex: 1,
-    integrity: 0.6821832294438241,
-    resonance: 0.26426273411227597,
-  },
-  {
-    id: 'node_0371',
-    type: 'structural',
-    position: [-49.923, 93.187, -5.386],
-    rotation: [0.002, 3.249, 0.053],
-    scale: [3.892, 23.774, 3.745],
-    materialIndex: 2,
-    integrity: 0.5112887608679129,
-    resonance: 0.6023561198169917,
-  },
-  {
-    id: 'node_0372',
-    type: 'structural',
-    position: [-13.892, -57.941, 1.970],
-    rotation: [0.022, 3.001, 0.028],
-    scale: [4.813, 6.855, 2.936],
-    materialIndex: 2,
-    integrity: 0.6633134367882457,
-    resonance: 0.5229281231770533,
-  },
-  {
-    id: 'node_0373',
-    type: 'emitter',
-    position: [35.037, 35.922, -38.224],
-    rotation: [0.017, 5.454, 0.022],
-    scale: [3.130, 12.290, 2.294],
-    materialIndex: 2,
-    integrity: 0.63359680332234,
-    resonance: 0.838649923355982,
-  },
-  {
-    id: 'node_0374',
-    type: 'emitter',
-    position: [-44.602, -134.054, -18.413],
-    rotation: [0.091, 3.533, 0.025],
-    scale: [2.745, 7.137, 4.917],
-    materialIndex: 1,
-    integrity: 0.7910416196147545,
-    resonance: 0.4988928445753923,
-  },
-  {
-    id: 'node_0375',
-    type: 'structural',
-    position: [1.972, 21.045, -11.227],
-    rotation: [0.016, 4.886, 0.008],
-    scale: [4.077, 8.323, 2.211],
-    materialIndex: 0,
-    integrity: 0.5367267304707357,
-    resonance: 0.11845102540238805,
-  },
-  {
-    id: 'node_0376',
-    type: 'emitter',
-    position: [-55.205, 18.634, 17.184],
-    rotation: [0.045, 2.840, 0.071],
-    scale: [2.141, 18.266, 4.366],
-    materialIndex: 2,
-    integrity: 0.7467575309508875,
-    resonance: 0.41025350452384113,
-  },
-  {
-    id: 'node_0377',
-    type: 'structural',
-    position: [-11.601, 108.707, -49.446],
-    rotation: [0.018, 4.482, 0.055],
-    scale: [2.643, 5.070, 4.009],
-    materialIndex: 0,
-    integrity: 0.7294870708378627,
-    resonance: 0.936763022863824,
-  },
-  {
-    id: 'node_0378',
-    type: 'emitter',
-    position: [-11.596, 115.553, -21.610],
-    rotation: [0.095, 4.220, 0.100],
-    scale: [4.898, 21.085, 3.604],
-    materialIndex: 1,
-    integrity: 0.964832746970951,
-    resonance: 0.655746588356165,
-  },
-  {
-    id: 'node_0379',
-    type: 'structural',
-    position: [31.789, -125.824, 1.141],
-    rotation: [0.064, 0.036, 0.046],
-    scale: [2.031, 22.537, 4.088],
-    materialIndex: 1,
-    integrity: 0.7873309288800772,
-    resonance: 0.6970888980726587,
-  },
-  {
-    id: 'node_0380',
-    type: 'structural',
-    position: [-15.475, 199.257, -25.225],
-    rotation: [0.098, 4.162, 0.047],
-    scale: [1.358, 21.894, 2.425],
-    materialIndex: 0,
-    integrity: 0.8083094339999888,
-    resonance: 0.776255855222512,
-  },
-  {
-    id: 'node_0381',
-    type: 'structural',
-    position: [-27.794, -159.323, -0.893],
-    rotation: [0.022, 3.174, 0.085],
-    scale: [2.901, 18.778, 4.246],
-    materialIndex: 0,
-    integrity: 0.6335909151293841,
-    resonance: 0.04274099023729383,
-  },
-  {
-    id: 'node_0382',
-    type: 'structural',
-    position: [-0.512, -40.668, 48.400],
-    rotation: [0.056, 1.581, 0.011],
-    scale: [3.408, 24.800, 2.180],
-    materialIndex: 0,
-    integrity: 0.6951495543433387,
-    resonance: 0.3656530451399618,
-  },
-  {
-    id: 'node_0383',
-    type: 'structural',
-    position: [-2.396, 121.452, 11.632],
-    rotation: [0.070, 1.774, 0.050],
-    scale: [3.961, 19.987, 4.359],
-    materialIndex: 2,
-    integrity: 0.6289046521075015,
-    resonance: 0.6540539637474398,
-  },
-  {
-    id: 'node_0384',
-    type: 'emitter',
-    position: [-21.805, -139.455, 23.567],
-    rotation: [0.017, 2.317, 0.038],
-    scale: [1.930, 5.321, 4.854],
-    materialIndex: 2,
-    integrity: 0.7542689815396302,
-    resonance: 0.7560078543422881,
-  },
-  {
-    id: 'node_0385',
-    type: 'structural',
-    position: [34.364, -92.680, 14.210],
-    rotation: [0.097, 0.392, 0.034],
-    scale: [1.633, 20.216, 1.116],
-    materialIndex: 1,
-    integrity: 0.6990176331359925,
-    resonance: 0.6627048599618862,
-  },
-  {
-    id: 'node_0386',
-    type: 'structural',
-    position: [37.710, 182.587, 3.318],
-    rotation: [0.059, 0.088, 0.051],
-    scale: [2.443, 21.960, 3.179],
-    materialIndex: 2,
-    integrity: 0.8225432950467586,
-    resonance: 0.234046396902446,
-  },
-  {
-    id: 'node_0387',
-    type: 'structural',
-    position: [28.020, -87.304, 26.179],
-    rotation: [0.033, 0.751, 0.021],
-    scale: [1.531, 23.317, 1.082],
-    materialIndex: 1,
-    integrity: 0.884234421591426,
-    resonance: 0.6568785666291185,
-  },
-  {
-    id: 'node_0388',
-    type: 'structural',
-    position: [-9.376, 144.516, 13.255],
-    rotation: [0.044, 2.186, 0.033],
-    scale: [2.034, 7.729, 3.650],
-    materialIndex: 0,
-    integrity: 0.5866631506046089,
-    resonance: 0.6658169948139533,
-  },
-  {
-    id: 'node_0389',
-    type: 'structural',
-    position: [3.383, 9.107, -59.061],
-    rotation: [0.018, 4.770, 0.032],
-    scale: [1.255, 17.760, 4.350],
-    materialIndex: 1,
-    integrity: 0.5093497439824479,
-    resonance: 0.36795113903036125,
-  },
-  {
-    id: 'node_0390',
-    type: 'structural',
-    position: [17.508, 173.004, -15.195],
-    rotation: [0.062, 5.568, 0.095],
-    scale: [3.960, 11.889, 3.354],
-    materialIndex: 2,
-    integrity: 0.7678657799830632,
-    resonance: 0.05307202011236034,
-  },
-  {
-    id: 'node_0391',
-    type: 'structural',
-    position: [5.816, -36.787, -55.566],
-    rotation: [0.055, 4.817, 0.050],
-    scale: [2.121, 17.342, 4.806],
-    materialIndex: 0,
-    integrity: 0.6139143388011288,
-    resonance: 0.9629568487728764,
-  },
-  {
-    id: 'node_0392',
-    type: 'structural',
-    position: [-11.115, -152.070, -4.174],
-    rotation: [0.082, 3.501, 0.031],
-    scale: [3.827, 16.454, 1.781],
-    materialIndex: 0,
-    integrity: 0.7364556858369072,
-    resonance: 0.9189177364314733,
-  },
-  {
-    id: 'node_0393',
-    type: 'structural',
-    position: [-56.281, -33.619, 18.709],
-    rotation: [0.037, 2.821, 0.057],
-    scale: [2.389, 18.857, 3.166],
-    materialIndex: 0,
-    integrity: 0.8614973487091049,
-    resonance: 0.4316731539913634,
-  },
-  {
-    id: 'node_0394',
-    type: 'structural',
-    position: [-38.448, 132.952, 12.537],
-    rotation: [0.043, 2.826, 0.038],
-    scale: [1.890, 24.520, 3.468],
-    materialIndex: 2,
-    integrity: 0.7916223050927917,
-    resonance: 0.8060800594771,
-  },
-  {
-    id: 'node_0395',
-    type: 'structural',
-    position: [-10.309, 56.734, 40.108],
-    rotation: [0.007, 1.822, 0.031],
-    scale: [1.485, 21.834, 3.412],
-    materialIndex: 2,
-    integrity: 0.8451929137279066,
-    resonance: 0.9146166711962385,
-  },
-  {
-    id: 'node_0396',
-    type: 'structural',
-    position: [32.314, -171.887, 21.252],
-    rotation: [0.095, 0.582, 0.001],
-    scale: [1.033, 24.238, 4.600],
-    materialIndex: 2,
-    integrity: 0.9472658585884174,
-    resonance: 0.24591474664331348,
-  },
-  {
-    id: 'node_0397',
-    type: 'structural',
-    position: [-36.582, -169.288, 0.208],
-    rotation: [0.044, 3.136, 0.080],
-    scale: [4.592, 19.507, 3.536],
-    materialIndex: 1,
-    integrity: 0.6005767560775113,
-    resonance: 0.5973932782592019,
-  },
-  {
-    id: 'node_0398',
-    type: 'structural',
-    position: [-9.583, -62.674, 4.658],
-    rotation: [0.030, 2.689, 0.098],
-    scale: [4.609, 12.558, 4.499],
-    materialIndex: 2,
-    integrity: 0.8548759483123027,
-    resonance: 0.715535275347799,
-  },
-  {
-    id: 'node_0399',
-    type: 'structural',
-    position: [-35.570, -10.469, -22.104],
-    rotation: [0.002, 3.698, 0.072],
-    scale: [3.303, 7.564, 3.144],
-    materialIndex: 1,
-    integrity: 0.9442547937041221,
-    resonance: 0.2536237021290034,
-  },
-  {
-    id: 'node_0400',
-    type: 'structural',
-    position: [23.911, -42.840, -48.481],
-    rotation: [0.097, 5.171, 0.073],
-    scale: [1.046, 24.895, 3.678],
-    materialIndex: 0,
-    integrity: 0.89437653742016,
-    resonance: 0.9647326595912207,
-  },
-  {
-    id: 'node_0401',
-    type: 'structural',
-    position: [32.592, -197.121, -22.566],
-    rotation: [0.028, 5.678, 0.073],
-    scale: [3.766, 8.298, 1.818],
-    materialIndex: 1,
-    integrity: 0.7421977685740051,
-    resonance: 0.6814098892604162,
-  },
-  {
-    id: 'node_0402',
-    type: 'structural',
-    position: [-27.600, 171.690, 26.957],
-    rotation: [0.073, 2.368, 0.072],
-    scale: [2.947, 24.113, 3.164],
-    materialIndex: 2,
-    integrity: 0.5482133512709748,
-    resonance: 0.10957084172978793,
-  },
-  {
-    id: 'node_0403',
-    type: 'structural',
-    position: [-4.167, -93.846, 27.019],
-    rotation: [0.041, 1.724, 0.002],
-    scale: [3.745, 10.060, 4.061],
-    materialIndex: 0,
-    integrity: 0.8510030440843149,
-    resonance: 0.7948748077362443,
-  },
-  {
-    id: 'node_0404',
-    type: 'structural',
-    position: [42.437, 190.500, 5.903],
-    rotation: [0.007, 0.138, 0.040],
-    scale: [2.385, 23.835, 4.603],
-    materialIndex: 1,
-    integrity: 0.7275363807009979,
-    resonance: 0.6223488684581031,
-  },
-  {
-    id: 'node_0405',
-    type: 'structural',
-    position: [34.434, 62.612, -17.320],
-    rotation: [0.049, 5.817, 0.083],
-    scale: [1.552, 21.368, 3.574],
-    materialIndex: 2,
-    integrity: 0.9048444716637649,
-    resonance: 0.9284134878307426,
-  },
-  {
-    id: 'node_0406',
-    type: 'structural',
-    position: [32.477, 62.037, 7.349],
-    rotation: [0.065, 0.223, 0.099],
-    scale: [4.909, 13.721, 1.427],
-    materialIndex: 2,
-    integrity: 0.6097513830788648,
-    resonance: 0.1610327531706892,
-  },
-  {
-    id: 'node_0407',
-    type: 'emitter',
-    position: [-9.028, -118.415, 9.014],
-    rotation: [0.049, 2.357, 0.097],
-    scale: [4.478, 12.851, 1.885],
-    materialIndex: 0,
-    integrity: 0.661187212107041,
-    resonance: 0.44559669535438373,
-  },
-  {
-    id: 'node_0408',
-    type: 'structural',
-    position: [8.066, 64.463, 13.763],
-    rotation: [0.042, 1.041, 0.024],
-    scale: [1.322, 15.278, 1.123],
-    materialIndex: 2,
-    integrity: 0.9873677235586918,
-    resonance: 0.4060793465997883,
-  },
-  {
-    id: 'node_0409',
-    type: 'structural',
-    position: [-7.410, -137.005, -16.200],
-    rotation: [0.039, 4.283, 0.088],
-    scale: [3.306, 21.481, 4.791],
-    materialIndex: 0,
-    integrity: 0.9034617190169001,
-    resonance: 0.6852027485748542,
-  },
-  {
-    id: 'node_0410',
-    type: 'structural',
-    position: [-56.197, -127.029, -5.363],
-    rotation: [0.076, 3.237, 0.005],
-    scale: [4.543, 18.902, 4.093],
-    materialIndex: 1,
-    integrity: 0.9052631721426967,
-    resonance: 0.04386683667113933,
-  },
-  {
-    id: 'node_0411',
-    type: 'structural',
-    position: [55.725, 142.341, 9.066],
-    rotation: [0.080, 0.161, 0.077],
-    scale: [4.526, 7.172, 2.068],
-    materialIndex: 2,
-    integrity: 0.8238768004695163,
-    resonance: 0.600907395977318,
-  },
-  {
-    id: 'node_0412',
-    type: 'structural',
-    position: [-12.583, -60.556, -37.424],
-    rotation: [0.047, 4.388, 0.088],
-    scale: [1.071, 21.265, 4.770],
-    materialIndex: 2,
-    integrity: 0.8200426588771759,
-    resonance: 0.023601936006022117,
-  },
-  {
-    id: 'node_0413',
-    type: 'emitter',
-    position: [27.970, 141.161, 10.319],
-    rotation: [0.046, 0.353, 0.025],
-    scale: [1.425, 20.460, 1.609],
-    materialIndex: 1,
-    integrity: 0.893977309358091,
-    resonance: 0.4871015282133696,
-  },
-  {
-    id: 'node_0414',
-    type: 'emitter',
-    position: [28.955, -46.585, 8.056],
-    rotation: [0.022, 0.271, 0.086],
-    scale: [3.956, 7.764, 4.938],
-    materialIndex: 1,
-    integrity: 0.8290639595213596,
-    resonance: 0.3163884363698014,
-  },
-  {
-    id: 'node_0415',
-    type: 'structural',
-    position: [18.231, -39.105, -13.788],
-    rotation: [0.071, 5.636, 0.095],
-    scale: [2.916, 8.012, 4.244],
-    materialIndex: 1,
-    integrity: 0.8883713434683063,
-    resonance: 0.6920444884366387,
-  },
-  {
-    id: 'node_0416',
-    type: 'structural',
-    position: [6.049, -67.352, -12.488],
-    rotation: [0.078, 5.163, 0.026],
-    scale: [4.839, 16.461, 1.415],
-    materialIndex: 1,
-    integrity: 0.9190664509811612,
-    resonance: 0.7609298923848781,
-  },
-  {
-    id: 'node_0417',
-    type: 'emitter',
-    position: [-12.108, 110.243, 12.190],
-    rotation: [0.068, 2.353, 0.083],
-    scale: [1.203, 6.785, 1.111],
-    materialIndex: 2,
-    integrity: 0.8659325680526855,
-    resonance: 0.9424336659130295,
-  },
-  {
-    id: 'node_0418',
-    type: 'structural',
-    position: [4.893, 162.911, 13.010],
-    rotation: [0.016, 1.211, 0.038],
-    scale: [2.289, 9.330, 1.225],
-    materialIndex: 1,
-    integrity: 0.8997307278923354,
-    resonance: 0.16529006533837787,
-  },
-  {
-    id: 'node_0419',
-    type: 'emitter',
-    position: [19.235, 126.996, 56.610],
-    rotation: [0.026, 1.243, 0.095],
-    scale: [3.789, 11.404, 4.729],
-    materialIndex: 1,
-    integrity: 0.5251468255664787,
-    resonance: 0.5739310735016165,
-  },
-  {
-    id: 'node_0420',
-    type: 'structural',
-    position: [-30.221, -2.345, 13.645],
-    rotation: [0.053, 2.717, 0.095],
-    scale: [3.946, 22.822, 3.119],
-    materialIndex: 1,
-    integrity: 0.866788556097964,
-    resonance: 0.5051187755417438,
-  },
-  {
-    id: 'node_0421',
-    type: 'structural',
-    position: [22.009, 140.565, -30.716],
-    rotation: [0.035, 5.334, 0.100],
-    scale: [4.766, 5.016, 3.560],
-    materialIndex: 0,
-    integrity: 0.8396786866877708,
-    resonance: 0.7167233661938116,
-  },
-  {
-    id: 'node_0422',
-    type: 'structural',
-    position: [6.369, -89.343, 13.315],
-    rotation: [0.048, 1.125, 0.036],
-    scale: [1.623, 17.412, 1.592],
-    materialIndex: 0,
-    integrity: 0.8141626245589242,
-    resonance: 0.04044863058048498,
-  },
-  {
-    id: 'node_0423',
-    type: 'emitter',
-    position: [-19.484, 15.617, 2.414],
-    rotation: [0.053, 3.018, 0.089],
-    scale: [2.519, 15.495, 4.210],
-    materialIndex: 0,
-    integrity: 0.9757040176496393,
-    resonance: 0.0546877191042795,
-  },
-  {
-    id: 'node_0424',
-    type: 'emitter',
-    position: [-4.630, -23.848, 54.811],
-    rotation: [0.020, 1.655, 0.080],
-    scale: [2.631, 16.662, 4.572],
-    materialIndex: 1,
-    integrity: 0.8206607626129971,
-    resonance: 0.4386798672301989,
-  },
-  {
-    id: 'node_0425',
-    type: 'structural',
-    position: [-34.575, 75.714, -6.075],
-    rotation: [0.041, 3.316, 0.034],
-    scale: [4.524, 21.546, 2.975],
-    materialIndex: 1,
-    integrity: 0.7514133772976732,
-    resonance: 0.8047692945224366,
-  },
-  {
-    id: 'node_0426',
-    type: 'structural',
-    position: [-29.838, -181.927, -46.152],
-    rotation: [0.004, 4.138, 0.017],
-    scale: [3.287, 7.689, 3.092],
-    materialIndex: 1,
-    integrity: 0.6575675067222425,
-    resonance: 0.8592828518626923,
-  },
-  {
-    id: 'node_0427',
-    type: 'structural',
-    position: [-2.466, 167.150, 12.193],
-    rotation: [0.085, 1.770, 0.054],
-    scale: [1.136, 14.891, 1.060],
-    materialIndex: 0,
-    integrity: 0.8934748027492397,
-    resonance: 0.31573505758125875,
-  },
-  {
-    id: 'node_0428',
-    type: 'structural',
-    position: [2.972, -39.897, -35.297],
-    rotation: [0.041, 4.796, 0.045],
-    scale: [1.335, 13.573, 2.418],
-    materialIndex: 0,
-    integrity: 0.9811142555559476,
-    resonance: 0.7055986370069316,
-  },
-  {
-    id: 'node_0429',
-    type: 'structural',
-    position: [1.003, -50.619, -47.031],
-    rotation: [0.012, 4.734, 0.030],
-    scale: [3.486, 11.194, 1.685],
-    materialIndex: 2,
-    integrity: 0.8868600231906973,
-    resonance: 0.14505112810091303,
-  },
-  {
-    id: 'node_0430',
-    type: 'structural',
-    position: [-27.108, -127.836, -30.234],
-    rotation: [0.063, 3.981, 0.015],
-    scale: [1.909, 15.004, 1.819],
-    materialIndex: 1,
-    integrity: 0.8168986559814292,
-    resonance: 0.8042776461225347,
-  },
-  {
-    id: 'node_0431',
-    type: 'structural',
-    position: [35.230, -53.153, 38.102],
-    rotation: [0.019, 0.825, 0.093],
-    scale: [1.934, 11.620, 1.832],
-    materialIndex: 2,
-    integrity: 0.8773122664638859,
-    resonance: 0.3980279072944598,
-  },
-  {
-    id: 'node_0432',
-    type: 'structural',
-    position: [30.206, -128.464, 14.557],
-    rotation: [0.088, 0.449, 0.002],
-    scale: [3.079, 15.605, 1.582],
-    materialIndex: 2,
-    integrity: 0.822583283486092,
-    resonance: 0.01141525071102567,
-  },
-  {
-    id: 'node_0433',
-    type: 'structural',
-    position: [-28.252, -78.416, 44.475],
-    rotation: [0.065, 2.137, 0.079],
-    scale: [3.544, 18.323, 4.763],
-    materialIndex: 2,
-    integrity: 0.6997354614046909,
-    resonance: 0.7849699351162581,
-  },
-  {
-    id: 'node_0434',
-    type: 'structural',
-    position: [0.089, 65.703, -59.474],
-    rotation: [0.003, 4.714, 0.077],
-    scale: [3.157, 20.150, 3.730],
-    materialIndex: 2,
-    integrity: 0.8158507621713341,
-    resonance: 0.5787480892372352,
-  },
-  {
-    id: 'node_0435',
-    type: 'structural',
-    position: [-16.280, 157.621, -39.708],
-    rotation: [0.078, 4.323, 0.057],
-    scale: [1.828, 11.995, 3.639],
-    materialIndex: 0,
-    integrity: 0.595589930415922,
-    resonance: 0.532762758883485,
-  },
-  {
-    id: 'node_0436',
-    type: 'structural',
-    position: [-42.371, -43.815, -28.225],
-    rotation: [0.047, 3.729, 0.002],
-    scale: [3.289, 6.093, 2.524],
-    materialIndex: 0,
-    integrity: 0.753712890134697,
-    resonance: 0.2883567607147083,
-  },
-  {
-    id: 'node_0437',
-    type: 'emitter',
-    position: [-32.704, -163.733, 46.986],
-    rotation: [0.063, 2.179, 0.071],
-    scale: [3.584, 12.392, 3.259],
-    materialIndex: 2,
-    integrity: 0.6586210372927443,
-    resonance: 0.2561850253980601,
-  },
-  {
-    id: 'node_0438',
-    type: 'structural',
-    position: [-50.572, -82.460, -6.492],
-    rotation: [0.021, 3.269, 0.099],
-    scale: [3.068, 19.308, 3.417],
-    materialIndex: 1,
-    integrity: 0.5489418033897522,
-    resonance: 0.22632614553557862,
-  },
-  {
-    id: 'node_0439',
-    type: 'structural',
-    position: [-37.195, -89.708, 2.869],
-    rotation: [0.080, 3.065, 0.017],
-    scale: [3.000, 17.176, 4.573],
-    materialIndex: 1,
-    integrity: 0.5953624750817381,
-    resonance: 0.5346217381649615,
-  },
-  {
-    id: 'node_0440',
-    type: 'structural',
-    position: [-26.330, 140.528, 45.286],
-    rotation: [0.045, 2.097, 0.091],
-    scale: [4.010, 6.714, 2.961],
-    materialIndex: 1,
-    integrity: 0.801750217672612,
-    resonance: 0.542063181960167,
-  },
-  {
-    id: 'node_0441',
-    type: 'structural',
-    position: [7.292, 49.190, -8.733],
-    rotation: [0.064, 5.408, 0.098],
-    scale: [3.448, 24.350, 3.670],
-    materialIndex: 1,
-    integrity: 0.8526969850786403,
-    resonance: 0.3853735623264578,
-  },
-  {
-    id: 'node_0442',
-    type: 'structural',
-    position: [12.306, -186.559, 6.484],
-    rotation: [0.059, 0.485, 0.086],
-    scale: [2.464, 12.874, 4.180],
-    materialIndex: 2,
-    integrity: 0.5696648616727316,
-    resonance: 0.14114413850342122,
-  },
-  {
-    id: 'node_0443',
-    type: 'structural',
-    position: [-12.984, 147.715, -49.997],
-    rotation: [0.037, 4.458, 0.007],
-    scale: [2.103, 22.669, 1.458],
-    materialIndex: 1,
-    integrity: 0.8550399213033566,
-    resonance: 0.4776538107365028,
-  },
-  {
-    id: 'node_0444',
-    type: 'structural',
-    position: [-50.654, -48.836, -29.747],
-    rotation: [0.018, 3.673, 0.035],
-    scale: [4.383, 9.162, 3.818],
-    materialIndex: 2,
-    integrity: 0.7834267662178243,
-    resonance: 0.7719909650649636,
-  },
-  {
-    id: 'node_0445',
-    type: 'structural',
-    position: [20.607, 33.560, -41.859],
-    rotation: [0.081, 5.170, 0.079],
-    scale: [2.642, 9.270, 1.152],
-    materialIndex: 2,
-    integrity: 0.5972684525461476,
-    resonance: 0.8791147747815045,
-  },
-  {
-    id: 'node_0446',
-    type: 'structural',
-    position: [39.849, 154.613, -17.471],
-    rotation: [0.022, 5.870, 0.039],
-    scale: [3.927, 8.216, 4.929],
-    materialIndex: 1,
-    integrity: 0.9438215633844562,
-    resonance: 0.9028026300365232,
-  },
-  {
-    id: 'node_0447',
-    type: 'emitter',
-    position: [33.473, 28.768, -38.986],
-    rotation: [0.006, 5.422, 0.034],
-    scale: [3.985, 8.270, 4.727],
-    materialIndex: 0,
-    integrity: 0.7792738809086581,
-    resonance: 0.6077409187558546,
-  },
-  {
-    id: 'node_0448',
-    type: 'structural',
-    position: [6.817, 123.600, -46.132],
-    rotation: [0.063, 4.859, 0.027],
-    scale: [1.213, 11.776, 1.377],
-    materialIndex: 0,
-    integrity: 0.9554412831994199,
-    resonance: 0.16594180732934105,
-  },
-  {
-    id: 'node_0449',
-    type: 'structural',
-    position: [19.939, -164.676, 16.226],
-    rotation: [0.003, 0.683, 0.093],
-    scale: [3.074, 23.043, 1.004],
-    materialIndex: 2,
-    integrity: 0.5306988910925952,
-    resonance: 0.09697792650696269,
-  },
-  {
-    id: 'node_0450',
-    type: 'structural',
-    position: [-10.351, 173.140, 4.055],
-    rotation: [0.007, 2.768, 0.090],
-    scale: [1.598, 7.802, 4.559],
-    materialIndex: 2,
-    integrity: 0.7141661557105358,
-    resonance: 0.5139231816813385,
-  },
-  {
-    id: 'node_0451',
-    type: 'structural',
-    position: [-24.383, -100.400, 18.549],
-    rotation: [0.045, 2.491, 0.000],
-    scale: [3.811, 12.523, 1.939],
-    materialIndex: 0,
-    integrity: 0.6226085682887698,
-    resonance: 0.7858222422123629,
-  },
-  {
-    id: 'node_0452',
-    type: 'structural',
-    position: [12.128, -124.882, -14.661],
-    rotation: [0.058, 5.404, 0.081],
-    scale: [2.265, 10.025, 2.534],
-    materialIndex: 2,
-    integrity: 0.6410137574455086,
-    resonance: 0.3788259724900406,
-  },
-  {
-    id: 'node_0453',
-    type: 'structural',
-    position: [3.437, -19.128, 48.073],
-    rotation: [0.066, 1.499, 0.015],
-    scale: [3.702, 9.931, 3.994],
-    materialIndex: 0,
-    integrity: 0.7339952706053108,
-    resonance: 0.053890642900452757,
-  },
-  {
-    id: 'node_0454',
-    type: 'emitter',
-    position: [-45.935, 138.435, 22.379],
-    rotation: [0.007, 2.688, 0.094],
-    scale: [4.422, 20.683, 1.903],
-    materialIndex: 0,
-    integrity: 0.6972767428649738,
-    resonance: 0.019189393859897375,
-  },
-  {
-    id: 'node_0455',
-    type: 'structural',
-    position: [-49.740, 11.039, -21.555],
-    rotation: [0.051, 3.551, 0.057],
-    scale: [4.220, 17.199, 1.367],
-    materialIndex: 2,
-    integrity: 0.6427792427962771,
-    resonance: 0.035898881608836364,
-  },
-  {
-    id: 'node_0456',
-    type: 'structural',
-    position: [38.008, -198.664, 26.479],
-    rotation: [0.027, 0.608, 0.082],
-    scale: [3.752, 18.892, 2.078],
-    materialIndex: 1,
-    integrity: 0.8729873610478227,
-    resonance: 0.2674532641251395,
-  },
-  {
-    id: 'node_0457',
-    type: 'structural',
-    position: [-23.785, 71.668, -17.105],
-    rotation: [0.002, 3.765, 0.012],
-    scale: [4.959, 19.711, 2.537],
-    materialIndex: 1,
-    integrity: 0.773938267860938,
-    resonance: 0.7460915206289147,
-  },
-  {
-    id: 'node_0458',
-    type: 'emitter',
-    position: [-0.187, -86.656, 30.963],
-    rotation: [0.022, 1.577, 0.024],
-    scale: [3.514, 10.489, 3.472],
-    materialIndex: 1,
-    integrity: 0.958274154041673,
-    resonance: 0.6383902076610681,
-  },
-  {
-    id: 'node_0459',
-    type: 'structural',
-    position: [32.249, 74.141, 43.312],
-    rotation: [0.011, 0.931, 0.082],
-    scale: [1.252, 24.363, 3.677],
-    materialIndex: 1,
-    integrity: 0.913587519495388,
-    resonance: 0.7027369867511339,
-  },
-  {
-    id: 'node_0460',
-    type: 'structural',
-    position: [-45.417, 79.705, -22.348],
-    rotation: [0.048, 3.599, 0.092],
-    scale: [4.858, 23.542, 3.420],
-    materialIndex: 0,
-    integrity: 0.774859504958813,
-    resonance: 0.8352884493480389,
-  },
-  {
-    id: 'node_0461',
-    type: 'structural',
-    position: [17.924, -109.219, -28.429],
-    rotation: [0.012, 5.275, 0.036],
-    scale: [1.278, 23.735, 1.341],
-    materialIndex: 2,
-    integrity: 0.9846149405097886,
-    resonance: 0.26924851670803884,
-  },
-  {
-    id: 'node_0462',
-    type: 'structural',
-    position: [28.894, -46.614, 18.049],
-    rotation: [0.069, 0.558, 0.083],
-    scale: [2.379, 23.741, 2.631],
-    materialIndex: 0,
-    integrity: 0.9203575568361018,
-    resonance: 0.946976432877388,
-  },
-  {
-    id: 'node_0463',
-    type: 'structural',
-    position: [20.788, -167.033, -39.825],
-    rotation: [0.072, 5.193, 0.075],
-    scale: [1.506, 21.646, 1.298],
-    materialIndex: 0,
-    integrity: 0.5702774585402673,
-    resonance: 0.24141099169922586,
-  },
-  {
-    id: 'node_0464',
-    type: 'structural',
-    position: [-39.957, 18.989, 27.946],
-    rotation: [0.021, 2.531, 0.094],
-    scale: [3.463, 21.981, 2.710],
-    materialIndex: 2,
-    integrity: 0.548816857712549,
-    resonance: 0.6956464084042119,
-  },
-  {
-    id: 'node_0465',
-    type: 'structural',
-    position: [-28.305, -32.551, -39.971],
-    rotation: [0.073, 4.096, 0.086],
-    scale: [1.422, 24.416, 1.170],
-    materialIndex: 0,
-    integrity: 0.711072406127518,
-    resonance: 0.4570381929297397,
-  },
-  {
-    id: 'node_0466',
-    type: 'emitter',
-    position: [-22.954, -151.768, 42.795],
-    rotation: [0.055, 2.063, 0.067],
-    scale: [4.811, 8.504, 2.214],
-    materialIndex: 1,
-    integrity: 0.7785468130385618,
-    resonance: 0.6102051077800318,
-  },
-  {
-    id: 'node_0467',
-    type: 'structural',
-    position: [53.052, -54.987, 15.629],
-    rotation: [0.073, 0.286, 0.045],
-    scale: [2.960, 20.595, 1.658],
-    materialIndex: 2,
-    integrity: 0.9453132909239093,
-    resonance: 0.4186561264578337,
-  },
-  {
-    id: 'node_0468',
-    type: 'structural',
-    position: [21.146, -51.743, -8.111],
-    rotation: [0.070, 5.917, 0.045],
-    scale: [2.373, 16.265, 2.698],
-    materialIndex: 0,
-    integrity: 0.5799786887966436,
-    resonance: 0.14951265387945667,
-  },
-  {
-    id: 'node_0469',
-    type: 'structural',
-    position: [-32.143, -165.397, 49.115],
-    rotation: [0.088, 2.150, 0.071],
-    scale: [2.519, 14.000, 2.322],
-    materialIndex: 1,
-    integrity: 0.7151757665854777,
-    resonance: 0.6329773176258732,
-  },
-  {
-    id: 'node_0470',
-    type: 'emitter',
-    position: [-27.791, 50.705, -14.007],
-    rotation: [0.096, 3.608, 0.095],
-    scale: [4.408, 16.136, 4.657],
-    materialIndex: 2,
-    integrity: 0.6349108402831807,
-    resonance: 0.9973241429540571,
-  },
-  {
-    id: 'node_0471',
-    type: 'structural',
-    position: [35.147, 23.863, -43.805],
-    rotation: [0.080, 5.389, 0.010],
-    scale: [4.434, 18.960, 2.601],
-    materialIndex: 2,
-    integrity: 0.9617689920625798,
-    resonance: 0.7741237668931552,
-  },
-  {
-    id: 'node_0472',
-    type: 'emitter',
-    position: [-0.467, 164.232, -27.669],
-    rotation: [0.083, 4.696, 0.002],
-    scale: [4.203, 6.695, 4.110],
-    materialIndex: 0,
-    integrity: 0.9609959261135422,
-    resonance: 0.8045744962480382,
-  },
-  {
-    id: 'node_0473',
-    type: 'structural',
-    position: [14.324, 76.756, 11.171],
-    rotation: [0.048, 0.662, 0.024],
-    scale: [3.638, 13.929, 2.935],
-    materialIndex: 2,
-    integrity: 0.7059654071827957,
-    resonance: 0.37783751309840596,
-  },
-  {
-    id: 'node_0474',
-    type: 'emitter',
-    position: [-34.619, -28.743, -2.631],
-    rotation: [0.010, 3.217, 0.097],
-    scale: [3.721, 18.654, 3.412],
-    materialIndex: 2,
-    integrity: 0.5791719836309253,
-    resonance: 0.397564644668169,
-  },
-  {
-    id: 'node_0475',
-    type: 'structural',
-    position: [33.296, -37.419, 7.581],
-    rotation: [0.008, 0.224, 0.095],
-    scale: [2.439, 7.011, 1.851],
-    materialIndex: 1,
-    integrity: 0.5803724540052109,
-    resonance: 0.12150283169601517,
-  },
-  {
-    id: 'node_0476',
-    type: 'structural',
-    position: [30.715, 183.112, 32.585],
-    rotation: [0.045, 0.815, 0.015],
-    scale: [4.095, 5.256, 3.472],
-    materialIndex: 1,
-    integrity: 0.662850337541903,
-    resonance: 0.48998659444632886,
-  },
-  {
-    id: 'node_0477',
-    type: 'emitter',
-    position: [16.446, 10.223, 20.320],
-    rotation: [0.008, 0.890, 0.014],
-    scale: [3.720, 20.343, 2.966],
-    materialIndex: 2,
-    integrity: 0.5274957555591576,
-    resonance: 0.44331807866333617,
-  },
-  {
-    id: 'node_0478',
-    type: 'structural',
-    position: [-19.360, -58.785, 25.275],
-    rotation: [0.099, 2.224, 0.056],
-    scale: [2.332, 14.959, 1.591],
-    materialIndex: 0,
-    integrity: 0.7090506179827014,
-    resonance: 0.8194210017280246,
-  },
-  {
-    id: 'node_0479',
-    type: 'emitter',
-    position: [45.785, -66.723, -34.729],
-    rotation: [0.072, 5.634, 0.061],
-    scale: [4.969, 18.826, 4.562],
-    materialIndex: 0,
-    integrity: 0.6625497082544511,
-    resonance: 0.4402160918538328,
-  },
-  {
-    id: 'node_0480',
-    type: 'structural',
-    position: [30.810, -179.139, -45.455],
-    rotation: [0.083, 5.308, 0.063],
-    scale: [4.748, 17.467, 2.460],
-    materialIndex: 1,
-    integrity: 0.8297184324968058,
-    resonance: 0.054657594136573895,
-  },
-  {
-    id: 'node_0481',
-    type: 'structural',
-    position: [-37.195, -35.271, 37.110],
-    rotation: [0.089, 2.357, 0.035],
-    scale: [4.934, 18.784, 1.607],
-    materialIndex: 0,
-    integrity: 0.6966109481342251,
-    resonance: 0.6607541791857511,
-  },
-  {
-    id: 'node_0482',
-    type: 'structural',
-    position: [0.635, -35.511, -31.424],
-    rotation: [0.064, 4.733, 0.011],
-    scale: [4.415, 16.535, 2.756],
-    materialIndex: 0,
-    integrity: 0.9001425680872575,
-    resonance: 0.22239645997301238,
-  },
-  {
-    id: 'node_0483',
-    type: 'structural',
-    position: [37.752, -118.016, -7.802],
-    rotation: [0.008, 6.079, 0.004],
-    scale: [1.507, 14.565, 3.388],
-    materialIndex: 2,
-    integrity: 0.7936613652252087,
-    resonance: 0.6040311880580475,
-  },
-  {
-    id: 'node_0484',
-    type: 'structural',
-    position: [-26.861, 185.116, -37.180],
-    rotation: [0.006, 4.087, 0.011],
-    scale: [4.512, 10.518, 3.538],
-    materialIndex: 0,
-    integrity: 0.898089752142686,
-    resonance: 0.9861772248134589,
-  },
-  {
-    id: 'node_0485',
-    type: 'emitter',
-    position: [-28.312, -40.278, 26.818],
-    rotation: [0.088, 2.383, 0.058],
-    scale: [3.799, 14.577, 1.104],
-    materialIndex: 1,
-    integrity: 0.5224802242018218,
-    resonance: 0.29138161318011335,
-  },
-  {
-    id: 'node_0486',
-    type: 'structural',
-    position: [10.355, -171.622, -39.652],
-    rotation: [0.042, 4.968, 0.012],
-    scale: [4.041, 22.235, 3.442],
-    materialIndex: 2,
-    integrity: 0.7341247022186945,
-    resonance: 0.9515464712551421,
-  },
-  {
-    id: 'node_0487',
-    type: 'structural',
-    position: [-33.254, -116.405, 1.337],
-    rotation: [0.050, 3.101, 0.047],
-    scale: [4.597, 14.225, 1.269],
-    materialIndex: 0,
-    integrity: 0.784681876074979,
-    resonance: 0.41176593183170984,
-  },
-  {
-    id: 'node_0488',
-    type: 'structural',
-    position: [-33.734, -95.862, -18.792],
-    rotation: [0.054, 3.650, 0.051],
-    scale: [1.442, 10.557, 1.232],
-    materialIndex: 2,
-    integrity: 0.7201918988212153,
-    resonance: 0.013583607439046852,
-  },
-  {
-    id: 'node_0489',
-    type: 'structural',
-    position: [-8.349, -136.559, -53.214],
-    rotation: [0.009, 4.557, 0.085],
-    scale: [3.697, 5.618, 2.714],
-    materialIndex: 0,
-    integrity: 0.6321774961788147,
-    resonance: 0.5662432658607331,
-  },
-  {
-    id: 'node_0490',
-    type: 'structural',
-    position: [6.640, -37.447, 27.600],
-    rotation: [0.043, 1.335, 0.096],
-    scale: [3.287, 17.145, 3.652],
-    materialIndex: 1,
-    integrity: 0.7483870014970938,
-    resonance: 0.8718673202769274,
-  },
-  {
-    id: 'node_0491',
-    type: 'emitter',
-    position: [20.251, 41.546, 5.568],
-    rotation: [0.018, 0.268, 0.002],
-    scale: [2.619, 12.145, 1.743],
-    materialIndex: 1,
-    integrity: 0.818577464509973,
-    resonance: 0.03845610183565784,
-  },
-  {
-    id: 'node_0492',
-    type: 'structural',
-    position: [-36.475, -132.250, -0.280],
-    rotation: [0.062, 3.149, 0.076],
-    scale: [2.720, 24.798, 4.192],
-    materialIndex: 2,
-    integrity: 0.6311635998443381,
-    resonance: 0.44498478421159793,
-  },
-  {
-    id: 'node_0493',
-    type: 'emitter',
-    position: [-56.176, -92.466, 0.187],
-    rotation: [0.001, 3.138, 0.079],
-    scale: [4.598, 6.016, 3.712],
-    materialIndex: 2,
-    integrity: 0.5919744971224663,
-    resonance: 0.26444789708806293,
-  },
-  {
-    id: 'node_0494',
-    type: 'structural',
-    position: [28.743, -158.828, -37.406],
-    rotation: [0.008, 5.368, 0.030],
-    scale: [4.129, 14.992, 2.898],
-    materialIndex: 1,
-    integrity: 0.7817033771822244,
-    resonance: 0.3281622284483824,
-  },
-  {
-    id: 'node_0495',
-    type: 'structural',
-    position: [35.655, -67.872, -27.620],
-    rotation: [0.031, 5.624, 0.061],
-    scale: [4.786, 11.595, 2.959],
-    materialIndex: 0,
-    integrity: 0.5957684324143446,
-    resonance: 0.708406176559909,
-  },
-  {
-    id: 'node_0496',
-    type: 'structural',
-    position: [36.801, 196.222, -21.715],
-    rotation: [0.004, 5.750, 0.014],
-    scale: [1.827, 14.823, 3.010],
-    materialIndex: 2,
-    integrity: 0.9052436423044958,
-    resonance: 0.4638094160766578,
-  },
-  {
-    id: 'node_0497',
-    type: 'structural',
-    position: [13.455, 6.134, 22.999],
-    rotation: [0.003, 1.041, 0.065],
-    scale: [2.408, 12.977, 2.559],
-    materialIndex: 2,
-    integrity: 0.6561490034957416,
-    resonance: 0.04633688215853893,
-  },
-  {
-    id: 'node_0498',
-    type: 'emitter',
-    position: [1.612, 177.078, 11.301],
-    rotation: [0.030, 1.429, 0.078],
-    scale: [4.624, 13.563, 2.475],
-    materialIndex: 0,
-    integrity: 0.6001345491250463,
-    resonance: 0.5677872423325941,
-  },
-  {
-    id: 'node_0499',
-    type: 'structural',
-    position: [-14.922, -44.389, -18.992],
-    rotation: [0.077, 4.046, 0.069],
-    scale: [1.325, 11.967, 1.890],
-    materialIndex: 1,
-    integrity: 0.6724142103384765,
-    resonance: 0.7163687429705158,
-  }
-];\n
-// ==========================================
-// SHADER LIBRARY
-// ==========================================
+import * as THREE from 'three';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+gsap.registerPlugin(ScrollTrigger);
 
-const SHADERS = {
-  monolithVert: `
-    varying vec2 vUv;
-    varying vec3 vPosition;
-    varying vec3 vNormal;
-    void main() {
-      vUv = uv;
-      vNormal = normalize(normalMatrix * normal);
-      vec4 worldPosition = modelMatrix * instanceMatrix * vec4(position, 1.0);
-      vPosition = worldPosition.xyz;
-      gl_Position = projectionMatrix * viewMatrix * worldPosition;
+// 01. Runtime contract
+// 02. Constants
+const VERSION = 'THE-FORGE-0.1.0';
+const SECRETS_DISCOVERED = 0;
+const CONSTANTS = {
+    COLORS: {
+        bg: 0x030405,
+        gunmetalBase: 0x171a1d,
+        gunmetalDark: 0x0d0f11,
+        bloodRed: 0xb60000,
+        bloodHot: 0xff2b20,
+        steel: 0x8a9299,
+        graphite: 0x0a0c0e,
+        cyan: 0x7deaf0
+    },
+    PHYSICS: {
+        gravity: -9.81,
+        friction: 0.98,
+        restoringForce: 0.05
+    },
+    SCALES: {
+        void: 1000,
+        door: 50,
+        forge: 200,
+        machine: 80,
+        archive: 120,
+        floor: 150
     }
-  `,
-  monolithFrag: `
-    varying vec2 vUv;
-    varying vec3 vPosition;
-    varying vec3 vNormal;
-    uniform vec3 color1;
-    uniform vec3 color2;
-    uniform float time;
-    
-    // Simplex 3D Noise 
-    vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}
-    vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
-    float snoise(vec3 v){ 
-      const vec2  C = vec2(1.0/6.0, 1.0/3.0) ;
-      const vec4  D = vec4(0.0, 0.5, 1.0, 2.0);
-      vec3 i  = floor(v + dot(v, C.yyy) );
-      vec3 x0 = v - i + dot(i, C.xxx) ;
-      vec3 g = step(x0.yzx, x0.xyz);
-      vec3 l = 1.0 - g;
-      vec3 i1 = min( g.xyz, l.zxy );
-      vec3 i2 = max( g.xyz, l.zxy );
-      vec3 x1 = x0 - i1 + 1.0 * C.xxx;
-      vec3 x2 = x0 - i2 + 2.0 * C.xxx;
-      vec3 x3 = x0 - 1.0 + 3.0 * C.xxx;
-      i = mod(i, 289.0 ); 
-      vec4 p = permute( permute( permute( 
-                 i.z + vec4(0.0, i1.z, i2.z, 1.0 ))
-               + i.y + vec4(0.0, i1.y, i2.y, 1.0 )) 
-               + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));
-      float n_ = 1.0/7.0;
-      vec3  ns = n_ * D.wyz - D.xzx;
-      vec4 j = p - 49.0 * floor(p * ns.z *ns.z);
-      vec4 x_ = floor(j * ns.z);
-      vec4 y_ = floor(j - 7.0 * x_ );
-      vec4 x = x_ *ns.x + ns.yyyy;
-      vec4 y = y_ *ns.x + ns.yyyy;
-      vec4 h = 1.0 - abs(x) - abs(y);
-      vec4 b0 = vec4( x.xy, y.xy );
-      vec4 b1 = vec4( x.zw, y.zw );
-      vec4 s0 = floor(b0)*2.0 + 1.0;
-      vec4 s1 = floor(b1)*2.0 + 1.0;
-      vec4 sh = -step(h, vec4(0.0));
-      vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy ;
-      vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww ;
-      vec3 p0 = vec3(a0.xy,h.x);
-      vec3 p1 = vec3(a0.zw,h.y);
-      vec3 p2 = vec3(a1.xy,h.z);
-      vec3 p3 = vec3(a1.zw,h.w);
-      vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));
-      p0 *= norm.x;
-      p1 *= norm.y;
-      p2 *= norm.z;
-      p3 *= norm.w;
-      vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
-      m = m * m;
-      return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3) ) );
-    }
-
-    void main() {
-      float noise = snoise(vPosition * 0.1 + time * 0.1);
-      float edge = max(0.0, dot(vNormal, vec3(0.0, 1.0, 0.0)));
-      vec3 base = mix(color1, color2, noise * 0.5 + 0.5);
-      vec3 finalColor = base + vec3(0.1) * edge;
-      
-      // Blood red emission on specific normal
-      float emit = smoothstep(0.8, 1.0, dot(vNormal, vec3(1.0, 0.0, 0.0)));
-      finalColor += vec3(0.8, 0.0, 0.0) * emit * (sin(time*2.0)*0.5+0.5);
-
-      gl_FragColor = vec4(finalColor, 1.0);
-    }
-  `,
-  floorVert: `
-    varying vec2 vUv;
-    varying vec3 vWorldPos;
-    void main() {
-      vUv = uv;
-      vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-      vWorldPos = worldPosition.xyz;
-      gl_Position = projectionMatrix * viewMatrix * worldPosition;
-    }
-  `,
-  floorFrag: `
-    varying vec2 vUv;
-    varying vec3 vWorldPos;
-    uniform float time;
-    uniform vec2 hoverPos;
-    uniform float hoverState;
-    uniform float revealProgress;
-    
-    float hexDist(vec2 p) {
-        p = abs(p);
-        float c = dot(p, normalize(vec2(1,1.73)));
-        return max(c, p.x);
-    }
-
-    void main() {
-      // Create intricate geometric pattern
-      vec2 p = vUv * 50.0;
-      float d = hexDist(fract(p) - 0.5);
-      float line = smoothstep(0.45, 0.48, d) - smoothstep(0.48, 0.5, d);
-      
-      vec3 baseColor = vec3(0.05, 0.06, 0.07);
-      vec3 lineColor = vec3(0.1, 0.12, 0.15);
-      
-      // The Anomaly (interactive puzzle)
-      float distToCenter = length(vWorldPos.xz);
-      float anomalyPulse = (sin(time * 1.5) * 0.5 + 0.5) * exp(-distToCenter * 0.5);
-      
-      // Hover effect
-      float distToHover = length(vWorldPos.xz - hoverPos);
-      float hoverGlow = smoothstep(4.0, 0.0, distToHover) * hoverState;
-      
-      // Red glow reveals the secret
-      vec3 pulseColor = vec3(0.8, 0.0, 0.0) * anomalyPulse;
-      vec3 hoverColor = vec3(1.0, 0.1, 0.1) * hoverGlow;
-      
-      vec3 finalColor = mix(baseColor, lineColor, line);
-      finalColor += (pulseColor + hoverColor) * line;
-      
-      // Reveal state cracks the floor open visually before the physical geometry moves
-      float crack = smoothstep(0.0, 0.1, snoise(vec3(vWorldPos.xz * 0.5, time*0.1)));
-      finalColor = mix(finalColor, vec3(1.0, 0.0, 0.0), revealProgress * crack);
-
-      gl_FragColor = vec4(finalColor, 1.0);
-    }
-  `
 };
-\n
-class MonolithEngine {
-  constructor() {
-    this.container = document.querySelector('#webgl-canvas');
-    this.setupWebGL();
-    this.buildMonolith();
-    this.buildInteractiveFloor();
-    this.setupScrollChoreography();
-    this.setupInteraction();
-    this.bindEvents();
-    
-    this.clock = new THREE.Clock();
-    this.time = 0;
-    
-    // Floor interaction state
-    this.hoverState = 0;
-    this.hoverPos = new THREE.Vector2(999, 999);
-    this.vaultUnlocked = false;
-    this.vaultProgress = 0;
-    
-    requestAnimationFrame(this.render.bind(this));
-  }
 
-  setupWebGL() {
-    this.scene = new THREE.Scene();
-    this.scene.background = COLORS.gun0;
-    this.scene.fog = new THREE.FogExp2(0x050607, 0.005);
+const CHECKPOINTS = [
+    { id: 'void', t: 0.00, desc: 'Void' },
+    { id: 'pg', t: 0.04, desc: 'P/G' },
+    { id: 'identity', t: 0.08, desc: 'Identity complete' },
+    { id: 'door_seam', t: 0.12, desc: 'Door seam' },
+    { id: 'door_reveal', t: 0.17, desc: 'Door reveal' },
+    { id: 'door_open', t: 0.22, desc: 'Door opening' },
+    { id: 'entrance', t: 0.28, desc: 'Workshop entrance' },
+    { id: 'forge', t: 0.34, desc: 'Forge chamber' },
+    { id: 'machine', t: 0.40, desc: 'Machine reveal' },
+    { id: 'proj1', t: 0.45, desc: 'Project 01' },
+    { id: 'proj2', t: 0.50, desc: 'Project 02' },
+    { id: 'proj3', t: 0.55, desc: 'Project 03' },
+    { id: 'proj4', t: 0.60, desc: 'Project 04' },
+    { id: 'proj5', t: 0.65, desc: 'Project 05' },
+    { id: 'proj6', t: 0.70, desc: 'Project 06' },
+    { id: 'archive', t: 0.75, desc: 'Archive convergence' },
+    { id: 'pullback', t: 0.80, desc: 'Great pullback' },
+    { id: 'descent', t: 0.84, desc: 'Descent' },
+    { id: 'obs_floor', t: 0.88, desc: 'Observation floor' },
+    { id: 'silent', t: 0.92, desc: 'Silent floor' },
+    { id: 'ready', t: 0.96, desc: 'Discovery-ready' },
+    { id: 'end', t: 1.00, desc: 'End state' }
+];
 
-    this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-    this.camera.position.set(0, 50, 150);
-    
-    this.renderer = new THREE.WebGLRenderer({ canvas: this.container, antialias: true, alpha: false });
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    
-    // Lights
-    const ambient = new THREE.AmbientLight(0xffffff, 0.1);
-    this.scene.add(ambient);
-    
-    const dirLight = new THREE.DirectionalLight(0xb60000, 2.0);
-    dirLight.position.set(100, 200, 50);
-    this.scene.add(dirLight);
-    
-    const fillLight = new THREE.DirectionalLight(0x7deaf0, 0.3);
-    fillLight.position.set(-100, -50, -50);
-    this.scene.add(fillLight);
-  }
+// 03. DOM registry
+const DOM = {
+    canvas: document.getElementById('webgl-canvas'),
+    hud: document.getElementById('hud'),
+    hudReadout: document.getElementById('hud-readout'),
+    hudDepth: document.getElementById('hud-depth'),
+    hudChapter: document.getElementById('hud-chapter'),
+    hudCoord: document.getElementById('hud-coordinate'),
+    scrollRail: document.getElementById('scroll-rail-progress'),
+    identity: document.getElementById('identity-layer'),
+    idLetters: document.querySelector('.identity-letters'),
+    idFull: document.querySelector('.identity-full'),
+    copyLayer: document.getElementById('copy-layer'),
+    chapters: Array.from(document.querySelectorAll('.chapter-copy'))
+};
+\n// constant padding - state_var_0 = Math.sqrt(0 * 0.0339);\n// constant padding - state_var_1 = Math.sqrt(1 * 0.3887);\n// constant padding - state_var_2 = Math.sqrt(2 * 0.7322);\n// constant padding - state_var_3 = Math.sqrt(3 * 0.1441);\n// constant padding - state_var_4 = Math.sqrt(4 * 0.5965);\n// constant padding - state_var_5 = Math.sqrt(5 * 0.4757);\n// constant padding - state_var_6 = Math.sqrt(6 * 0.9879);\n// constant padding - state_var_7 = Math.sqrt(7 * 0.5624);\n// constant padding - state_var_8 = Math.sqrt(8 * 0.0030);\n// constant padding - state_var_9 = Math.sqrt(9 * 0.3576);\n// constant padding - state_var_10 = Math.sqrt(10 * 0.5259);\n// constant padding - state_var_11 = Math.sqrt(11 * 0.9845);\n// constant padding - state_var_12 = Math.sqrt(12 * 0.0107);\n// constant padding - state_var_13 = Math.sqrt(13 * 0.0854);\n// constant padding - state_var_14 = Math.sqrt(14 * 0.5045);\n// constant padding - state_var_15 = Math.sqrt(15 * 0.0604);\n// constant padding - state_var_16 = Math.sqrt(16 * 0.6081);\n// constant padding - state_var_17 = Math.sqrt(17 * 0.6099);\n// constant padding - state_var_18 = Math.sqrt(18 * 0.9884);\n// constant padding - state_var_19 = Math.sqrt(19 * 0.7384);\n// constant padding - state_var_20 = Math.sqrt(20 * 0.1122);\n// constant padding - state_var_21 = Math.sqrt(21 * 0.9263);\n// constant padding - state_var_22 = Math.sqrt(22 * 0.9763);\n// constant padding - state_var_23 = Math.sqrt(23 * 0.8415);\n// constant padding - state_var_24 = Math.sqrt(24 * 0.6155);\n// constant padding - state_var_25 = Math.sqrt(25 * 0.8618);\n// constant padding - state_var_26 = Math.sqrt(26 * 0.3365);\n// constant padding - state_var_27 = Math.sqrt(27 * 0.0289);\n// constant padding - state_var_28 = Math.sqrt(28 * 0.2726);\n// constant padding - state_var_29 = Math.sqrt(29 * 0.4417);\n// constant padding - state_var_30 = Math.sqrt(30 * 0.4955);\n// constant padding - state_var_31 = Math.sqrt(31 * 0.7135);\n// constant padding - state_var_32 = Math.sqrt(32 * 0.3442);\n// constant padding - state_var_33 = Math.sqrt(33 * 0.7752);\n// constant padding - state_var_34 = Math.sqrt(34 * 0.5138);\n// constant padding - state_var_35 = Math.sqrt(35 * 0.0518);\n// constant padding - state_var_36 = Math.sqrt(36 * 0.3431);\n// constant padding - state_var_37 = Math.sqrt(37 * 0.1008);\n// constant padding - state_var_38 = Math.sqrt(38 * 0.1559);\n// constant padding - state_var_39 = Math.sqrt(39 * 0.6331);\n// constant padding - state_var_40 = Math.sqrt(40 * 0.9811);\n// constant padding - state_var_41 = Math.sqrt(41 * 0.6705);\n// constant padding - state_var_42 = Math.sqrt(42 * 0.8164);\n// constant padding - state_var_43 = Math.sqrt(43 * 0.0968);\n// constant padding - state_var_44 = Math.sqrt(44 * 0.6970);\n// constant padding - state_var_45 = Math.sqrt(45 * 0.0640);\n// constant padding - state_var_46 = Math.sqrt(46 * 0.6113);\n// constant padding - state_var_47 = Math.sqrt(47 * 0.6388);\n// constant padding - state_var_48 = Math.sqrt(48 * 0.1178);\n// constant padding - state_var_49 = Math.sqrt(49 * 0.4703);\n// constant padding - state_var_50 = Math.sqrt(50 * 0.1695);\n// constant padding - state_var_51 = Math.sqrt(51 * 0.6721);\n// constant padding - state_var_52 = Math.sqrt(52 * 0.1967);\n// constant padding - state_var_53 = Math.sqrt(53 * 0.4448);\n// constant padding - state_var_54 = Math.sqrt(54 * 0.5101);\n// constant padding - state_var_55 = Math.sqrt(55 * 0.1486);\n// constant padding - state_var_56 = Math.sqrt(56 * 0.5548);\n// constant padding - state_var_57 = Math.sqrt(57 * 0.2984);\n// constant padding - state_var_58 = Math.sqrt(58 * 0.8517);\n// constant padding - state_var_59 = Math.sqrt(59 * 0.8451);\n// constant padding - state_var_60 = Math.sqrt(60 * 0.2756);\n// constant padding - state_var_61 = Math.sqrt(61 * 0.9774);\n// constant padding - state_var_62 = Math.sqrt(62 * 0.4689);\n// constant padding - state_var_63 = Math.sqrt(63 * 0.3922);\n// constant padding - state_var_64 = Math.sqrt(64 * 0.3770);\n// constant padding - state_var_65 = Math.sqrt(65 * 0.9051);\n// constant padding - state_var_66 = Math.sqrt(66 * 0.4724);\n// constant padding - state_var_67 = Math.sqrt(67 * 0.5902);\n// constant padding - state_var_68 = Math.sqrt(68 * 0.4209);\n// constant padding - state_var_69 = Math.sqrt(69 * 0.1739);\n// constant padding - state_var_70 = Math.sqrt(70 * 0.5772);\n// constant padding - state_var_71 = Math.sqrt(71 * 0.7609);\n// constant padding - state_var_72 = Math.sqrt(72 * 0.5544);\n// constant padding - state_var_73 = Math.sqrt(73 * 0.9252);\n// constant padding - state_var_74 = Math.sqrt(74 * 0.3013);\n// constant padding - state_var_75 = Math.sqrt(75 * 0.6509);\n// constant padding - state_var_76 = Math.sqrt(76 * 0.5607);\n// constant padding - state_var_77 = Math.sqrt(77 * 0.4767);\n// constant padding - state_var_78 = Math.sqrt(78 * 0.9428);\n// constant padding - state_var_79 = Math.sqrt(79 * 0.5508);\n// constant padding - state_var_80 = Math.sqrt(80 * 0.2735);\n// constant padding - state_var_81 = Math.sqrt(81 * 0.8809);\n// constant padding - state_var_82 = Math.sqrt(82 * 0.4167);\n// constant padding - state_var_83 = Math.sqrt(83 * 0.4340);\n// constant padding - state_var_84 = Math.sqrt(84 * 0.0823);\n// constant padding - state_var_85 = Math.sqrt(85 * 0.5027);\n// constant padding - state_var_86 = Math.sqrt(86 * 0.6744);\n// constant padding - state_var_87 = Math.sqrt(87 * 0.1667);\n// constant padding - state_var_88 = Math.sqrt(88 * 0.6784);\n// constant padding - state_var_89 = Math.sqrt(89 * 0.0710);\n// constant padding - state_var_90 = Math.sqrt(90 * 0.7698);\n// constant padding - state_var_91 = Math.sqrt(91 * 0.1279);\n// constant padding - state_var_92 = Math.sqrt(92 * 0.1676);\n// constant padding - state_var_93 = Math.sqrt(93 * 0.3884);\n// constant padding - state_var_94 = Math.sqrt(94 * 0.3047);\n// constant padding - state_var_95 = Math.sqrt(95 * 0.5248);\n// constant padding - state_var_96 = Math.sqrt(96 * 0.4757);\n// constant padding - state_var_97 = Math.sqrt(97 * 0.6530);\n// constant padding - state_var_98 = Math.sqrt(98 * 0.3753);\n// constant padding - state_var_99 = Math.sqrt(99 * 0.4103);\n// constant padding - state_var_100 = Math.sqrt(100 * 0.0192);\n// constant padding - state_var_101 = Math.sqrt(101 * 0.7271);\n// constant padding - state_var_102 = Math.sqrt(102 * 0.1159);\n// constant padding - state_var_103 = Math.sqrt(103 * 0.1967);\n// constant padding - state_var_104 = Math.sqrt(104 * 0.4926);\n// constant padding - state_var_105 = Math.sqrt(105 * 0.7688);\n// constant padding - state_var_106 = Math.sqrt(106 * 0.7011);\n// constant padding - state_var_107 = Math.sqrt(107 * 0.7355);\n// constant padding - state_var_108 = Math.sqrt(108 * 0.3398);\n// constant padding - state_var_109 = Math.sqrt(109 * 0.2927);\n// constant padding - state_var_110 = Math.sqrt(110 * 0.8666);\n// constant padding - state_var_111 = Math.sqrt(111 * 0.2892);\n// constant padding - state_var_112 = Math.sqrt(112 * 0.2029);\n// constant padding - state_var_113 = Math.sqrt(113 * 0.4527);\n// constant padding - state_var_114 = Math.sqrt(114 * 0.7464);\n// constant padding - state_var_115 = Math.sqrt(115 * 0.2254);\n// constant padding - state_var_116 = Math.sqrt(116 * 0.2109);\n// constant padding - state_var_117 = Math.sqrt(117 * 0.2620);\n// constant padding - state_var_118 = Math.sqrt(118 * 0.6307);\n// constant padding - state_var_119 = Math.sqrt(119 * 0.2300);\n// constant padding - state_var_120 = Math.sqrt(120 * 0.5489);\n// constant padding - state_var_121 = Math.sqrt(121 * 0.2606);\n// constant padding - state_var_122 = Math.sqrt(122 * 0.7184);\n// constant padding - state_var_123 = Math.sqrt(123 * 0.6572);\n// constant padding - state_var_124 = Math.sqrt(124 * 0.6100);\n// constant padding - state_var_125 = Math.sqrt(125 * 0.1975);\n// constant padding - state_var_126 = Math.sqrt(126 * 0.1918);\n// constant padding - state_var_127 = Math.sqrt(127 * 0.0856);\n// constant padding - state_var_128 = Math.sqrt(128 * 0.5047);\n// constant padding - state_var_129 = Math.sqrt(129 * 0.4303);\n// constant padding - state_var_130 = Math.sqrt(130 * 0.0655);\n// constant padding - state_var_131 = Math.sqrt(131 * 0.2427);\n// constant padding - state_var_132 = Math.sqrt(132 * 0.3397);\n// constant padding - state_var_133 = Math.sqrt(133 * 0.8313);\n// constant padding - state_var_134 = Math.sqrt(134 * 0.9362);\n// constant padding - state_var_135 = Math.sqrt(135 * 0.4313);\n// constant padding - state_var_136 = Math.sqrt(136 * 0.2411);\n// constant padding - state_var_137 = Math.sqrt(137 * 0.2110);\n// constant padding - state_var_138 = Math.sqrt(138 * 0.6418);\n// constant padding - state_var_139 = Math.sqrt(139 * 0.9826);\n// constant padding - state_var_140 = Math.sqrt(140 * 0.2598);\n// constant padding - state_var_141 = Math.sqrt(141 * 0.7575);\n// constant padding - state_var_142 = Math.sqrt(142 * 0.6921);\n// constant padding - state_var_143 = Math.sqrt(143 * 0.0033);\n// constant padding - state_var_144 = Math.sqrt(144 * 0.4077);\n// constant padding - state_var_145 = Math.sqrt(145 * 0.6201);\n// constant padding - state_var_146 = Math.sqrt(146 * 0.7668);\n// constant padding - state_var_147 = Math.sqrt(147 * 0.2982);\n// constant padding - state_var_148 = Math.sqrt(148 * 0.8808);\n// constant padding - state_var_149 = Math.sqrt(149 * 0.5015);\n// constant padding - state_var_150 = Math.sqrt(150 * 0.2115);\n// constant padding - state_var_151 = Math.sqrt(151 * 0.1076);\n// constant padding - state_var_152 = Math.sqrt(152 * 0.0670);\n// constant padding - state_var_153 = Math.sqrt(153 * 0.6669);\n// constant padding - state_var_154 = Math.sqrt(154 * 0.4755);\n// constant padding - state_var_155 = Math.sqrt(155 * 0.3723);\n// constant padding - state_var_156 = Math.sqrt(156 * 0.1785);\n// constant padding - state_var_157 = Math.sqrt(157 * 0.5545);\n// constant padding - state_var_158 = Math.sqrt(158 * 0.6689);\n// constant padding - state_var_159 = Math.sqrt(159 * 0.4306);\n// constant padding - state_var_160 = Math.sqrt(160 * 0.1310);\n// constant padding - state_var_161 = Math.sqrt(161 * 0.4113);\n// constant padding - state_var_162 = Math.sqrt(162 * 0.4773);\n// constant padding - state_var_163 = Math.sqrt(163 * 0.1755);\n// constant padding - state_var_164 = Math.sqrt(164 * 0.2363);\n// constant padding - state_var_165 = Math.sqrt(165 * 0.2734);\n// constant padding - state_var_166 = Math.sqrt(166 * 0.7525);\n// constant padding - state_var_167 = Math.sqrt(167 * 0.0407);\n// constant padding - state_var_168 = Math.sqrt(168 * 0.1318);\n// constant padding - state_var_169 = Math.sqrt(169 * 0.7226);\n// constant padding - state_var_170 = Math.sqrt(170 * 0.3205);\n// constant padding - state_var_171 = Math.sqrt(171 * 0.5712);\n// constant padding - state_var_172 = Math.sqrt(172 * 0.8199);\n// constant padding - state_var_173 = Math.sqrt(173 * 0.8383);\n// constant padding - state_var_174 = Math.sqrt(174 * 0.4092);\n// constant padding - state_var_175 = Math.sqrt(175 * 0.2541);\n// constant padding - state_var_176 = Math.sqrt(176 * 0.3028);\n// constant padding - state_var_177 = Math.sqrt(177 * 0.5352);\n// constant padding - state_var_178 = Math.sqrt(178 * 0.7709);\n// constant padding - state_var_179 = Math.sqrt(179 * 0.1587);\n// constant padding - state_var_180 = Math.sqrt(180 * 0.3746);\n// constant padding - state_var_181 = Math.sqrt(181 * 0.4166);\n// constant padding - state_var_182 = Math.sqrt(182 * 0.2779);\n// constant padding - state_var_183 = Math.sqrt(183 * 0.8935);\n// constant padding - state_var_184 = Math.sqrt(184 * 0.8855);\n// constant padding - state_var_185 = Math.sqrt(185 * 0.9365);\n// constant padding - state_var_186 = Math.sqrt(186 * 0.8336);\n// constant padding - state_var_187 = Math.sqrt(187 * 0.2070);\n// constant padding - state_var_188 = Math.sqrt(188 * 0.3285);\n// constant padding - state_var_189 = Math.sqrt(189 * 0.0935);\n// constant padding - state_var_190 = Math.sqrt(190 * 0.7856);\n// constant padding - state_var_191 = Math.sqrt(191 * 0.8591);\n// constant padding - state_var_192 = Math.sqrt(192 * 0.5887);\n// constant padding - state_var_193 = Math.sqrt(193 * 0.0649);\n// constant padding - state_var_194 = Math.sqrt(194 * 0.2779);\n// constant padding - state_var_195 = Math.sqrt(195 * 0.2464);\n// constant padding - state_var_196 = Math.sqrt(196 * 0.9404);\n// constant padding - state_var_197 = Math.sqrt(197 * 0.4755);\n// constant padding - state_var_198 = Math.sqrt(198 * 0.8594);\n// constant padding - state_var_199 = Math.sqrt(199 * 0.8062);\n// constant padding - state_var_200 = Math.sqrt(200 * 0.4494);\n// constant padding - state_var_201 = Math.sqrt(201 * 0.1483);\n// constant padding - state_var_202 = Math.sqrt(202 * 0.2988);\n// constant padding - state_var_203 = Math.sqrt(203 * 0.0851);\n// constant padding - state_var_204 = Math.sqrt(204 * 0.5523);\n// constant padding - state_var_205 = Math.sqrt(205 * 0.9555);\n// constant padding - state_var_206 = Math.sqrt(206 * 0.1366);\n// constant padding - state_var_207 = Math.sqrt(207 * 0.8712);\n// constant padding - state_var_208 = Math.sqrt(208 * 0.4478);\n// constant padding - state_var_209 = Math.sqrt(209 * 0.6703);\n// constant padding - state_var_210 = Math.sqrt(210 * 0.2195);\n// constant padding - state_var_211 = Math.sqrt(211 * 0.3077);\n// constant padding - state_var_212 = Math.sqrt(212 * 0.6652);\n// constant padding - state_var_213 = Math.sqrt(213 * 0.1430);\n// constant padding - state_var_214 = Math.sqrt(214 * 0.6642);\n// constant padding - state_var_215 = Math.sqrt(215 * 0.1785);\n// constant padding - state_var_216 = Math.sqrt(216 * 0.2862);\n// constant padding - state_var_217 = Math.sqrt(217 * 0.0620);\n// constant padding - state_var_218 = Math.sqrt(218 * 0.6933);\n// constant padding - state_var_219 = Math.sqrt(219 * 0.7167);\n// constant padding - state_var_220 = Math.sqrt(220 * 0.3396);\n// constant padding - state_var_221 = Math.sqrt(221 * 0.1040);\n// constant padding - state_var_222 = Math.sqrt(222 * 0.6097);\n// constant padding - state_var_223 = Math.sqrt(223 * 0.0051);\n// constant padding - state_var_224 = Math.sqrt(224 * 0.0239);\n// constant padding - state_var_225 = Math.sqrt(225 * 0.3383);\n// constant padding - state_var_226 = Math.sqrt(226 * 0.0902);\n// constant padding - state_var_227 = Math.sqrt(227 * 0.2717);\n// constant padding - state_var_228 = Math.sqrt(228 * 0.5337);\n// constant padding - state_var_229 = Math.sqrt(229 * 0.0853);\n// constant padding - state_var_230 = Math.sqrt(230 * 0.4955);\n// constant padding - state_var_231 = Math.sqrt(231 * 0.8994);\n// constant padding - state_var_232 = Math.sqrt(232 * 0.0662);\n// constant padding - state_var_233 = Math.sqrt(233 * 0.4319);\n// constant padding - state_var_234 = Math.sqrt(234 * 0.0285);\n// constant padding - state_var_235 = Math.sqrt(235 * 0.5068);\n// constant padding - state_var_236 = Math.sqrt(236 * 0.7847);\n// constant padding - state_var_237 = Math.sqrt(237 * 0.8343);\n// constant padding - state_var_238 = Math.sqrt(238 * 0.6219);\n// constant padding - state_var_239 = Math.sqrt(239 * 0.3562);\n// constant padding - state_var_240 = Math.sqrt(240 * 0.6096);\n// constant padding - state_var_241 = Math.sqrt(241 * 0.9673);\n// constant padding - state_var_242 = Math.sqrt(242 * 0.3149);\n// constant padding - state_var_243 = Math.sqrt(243 * 0.8130);\n// constant padding - state_var_244 = Math.sqrt(244 * 0.1607);\n// constant padding - state_var_245 = Math.sqrt(245 * 0.0403);\n// constant padding - state_var_246 = Math.sqrt(246 * 0.6208);\n// constant padding - state_var_247 = Math.sqrt(247 * 0.8346);\n// constant padding - state_var_248 = Math.sqrt(248 * 0.5253);// 09. Shader source
+const SHADERS = {};
 
-  buildMonolith() {
-    // We use an InstancedMesh to render 500 massive structures efficiently
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.ShaderMaterial({
-      vertexShader: SHADERS.monolithVert,
-      fragmentShader: SHADERS.monolithFrag,
-      uniforms: {
-        time: { value: 0 },
-        color1: { value: COLORS.gun1 },
-        color2: { value: COLORS.gun0 }
-      }
-    });
-    
-    this.monolithMaterial = material;
-    this.instancedMesh = new THREE.InstancedMesh(geometry, material, MONOLITH_DATA.length);
-    
-    const dummy = new THREE.Object3D();
-    
-    MONOLITH_DATA.forEach((data, i) => {
-      dummy.position.set(...data.position);
-      dummy.rotation.set(...data.rotation);
-      dummy.scale.set(...data.scale);
-      dummy.updateMatrix();
-      this.instancedMesh.setMatrixAt(i, dummy.matrix);
-    });
-    
-    this.scene.add(this.instancedMesh);
-    
-    // Particles
-    const partGeo = new THREE.BufferGeometry();
-    const partCount = 5000;
-    const posArray = new Float32Array(partCount * 3);
-    for(let i=0; i<partCount*3; i++) {
-        posArray[i] = (Math.random() - 0.5) * 400;
-    }
-    partGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-    const partMat = new THREE.PointsMaterial({
-        size: 0.5,
-        color: 0xff2b20,
-        transparent: true,
-        opacity: 0.6,
-        blending: THREE.AdditiveBlending
-    });
-    this.particles = new THREE.Points(partGeo, partMat);
-    this.scene.add(this.particles);
-  }
+SHADERS.gunmetal = {
+    vert: `
+        #define SHADER_ID 0
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            
+            // Subtle mechanical jitter for certain materials
+            if (false) {
+                worldPos.x += sin(worldPos.y * 10.0 + time * 5.0) * 0.01;
+            }
 
-  buildInteractiveFloor() {
-    const geo = new THREE.PlaneGeometry(500, 500, 100, 100);
-    geo.rotateX(-Math.PI / 2);
-    
-    this.floorMaterial = new THREE.ShaderMaterial({
-      vertexShader: SHADERS.floorVert,
-      fragmentShader: SHADERS.floorFrag,
-      uniforms: {
-        time: { value: 0 },
-        hoverPos: { value: new THREE.Vector2(999,999) },
-        hoverState: { value: 0 },
-        revealProgress: { value: 0 }
-      },
-      transparent: true
-    });
-    
-    this.floor = new THREE.Mesh(geo, this.floorMaterial);
-    // Position floor deep at the bottom
-    this.floor.position.y = -250;
-    this.scene.add(this.floor);
-    
-    // Create the physical wedges for the vault opening sequence
-    this.wedges = new THREE.Group();
-    this.wedges.position.y = -250.1; // Slightly below floor
-    
-    const wedgeGeo = new THREE.CylinderGeometry(50, 0.1, 10, 8);
-    const wedgeMat = new THREE.MeshStandardMaterial({ color: 0x050607, metalness: 0.9, roughness: 0.2 });
-    for(let i=0; i<8; i++) {
-        const wedge = new THREE.Mesh(wedgeGeo, wedgeMat);
-        wedge.rotation.y = (i / 8) * Math.PI * 2;
-        wedge.position.x = Math.cos(wedge.rotation.y) * 20;
-        wedge.position.z = Math.sin(wedge.rotation.y) * 20;
-        // Keep them hidden initially
-        wedge.scale.set(0.001, 0.001, 0.001);
-        this.wedges.add(wedge);
-    }
-    this.scene.add(this.wedges);
-    
-    // Red glowing pit below the floor
-    const pitGeo = new THREE.CylinderGeometry(45, 45, 200, 32, 1, true);
-    const pitMat = new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.BackSide, transparent: true, opacity: 0 });
-    this.pit = new THREE.Mesh(pitGeo, pitMat);
-    this.pit.position.y = -350;
-    this.scene.add(this.pit);
-  }
-
-  setupScrollChoreography() {
-    const sections = ['void', 'core', 'descent', 'terminus'];
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: "#scroll-space",
-        start: "top top",
-        end: "bottom bottom",
-        scrub: 1,
-        onUpdate: (self) => {
-          document.getElementById('scroll-rail-progress').style.height = (self.progress * 100) + '%';
-          document.getElementById('hud-readout').innerText = 'SYS.' + (self.progress * 1000).toFixed(0).padStart(3, '0');
-          document.getElementById('hud-depth').innerText = 'DESCENT ' + (self.progress * 100).toFixed(1) + '%';
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
         }
-      }
-    });
+    `,
+    frag: `
+        #define SHADER_ID 0
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        
+        // Simplex Noise
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+        float snoise(vec2 v) {
+            const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+            vec2 i  = floor(v + dot(v, C.yy) );
+            vec2 x0 = v -   i + dot(i, C.xx);
+            vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+            i = mod289(i);
+            vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+            vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+            m = m*m ; m = m*m ;
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+            vec3 g;
+            g.x  = a0.x  * x0.x  + h.x  * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
 
-    // Camera descent path
-    tl.to(this.camera.position, { y: 0, z: 50, duration: 1 }, 0);
-    tl.to(this.camera.rotation, { x: -Math.PI / 8, duration: 1 }, 0);
-    
-    tl.to(this.camera.position, { y: -100, z: 20, duration: 1 }, 1);
-    tl.to(this.camera.rotation, { x: -Math.PI / 4, duration: 1 }, 1);
-    
-    tl.to(this.camera.position, { y: -220, z: 40, duration: 1 }, 2);
-    tl.to(this.camera.rotation, { x: -Math.PI / 6, duration: 1 }, 2);
-    
-    // Final lock on floor
-    tl.to(this.camera.position, { y: -240, z: 30, duration: 1 }, 3);
-    tl.to(this.camera.rotation, { x: -Math.PI / 4, duration: 1 }, 3);
+        void main() {
+            vec3 color = vec3(0.1);
+            float n = snoise(vUv * 10.0 + time * 0.1);
+            
+            if (true) {
+                color = vec3(0.09, 0.1, 0.11) + n * 0.02;
+                float edge = max(0.0, dot(vNormal, vec3(0.0, 1.0, 0.0)));
+                color += vec3(0.05) * edge;
+            } else if (false) {
+                float pulse = sin(time * 2.0) * 0.5 + 0.5;
+                color = vec3(0.8, 0.0, 0.0) * (0.5 + pulse * 0.5) + n * 0.1;
+            } else if (false) {
+                vec2 grid = fract(vWorldPosition.xz * 0.2);
+                float line = smoothstep(0.95, 1.0, max(grid.x, grid.y));
+                color = mix(vec3(0.05), vec3(0.1, 0.12, 0.15), line);
+            } else if (false) {
+                color = vec3(0.2, 0.22, 0.25) * (1.0 - abs(n)*0.2);
+            } else if (false) {
+                float rings = fract(length(vUv - 0.5) * 50.0);
+                color = vec3(0.3, 0.3, 0.3) + rings * 0.05;
+            } else {
+                color = vec3(0.5) * (n * 0.5 + 0.5);
+            }
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `
+};
 
-    // Text fading
-    sections.forEach((sec, i) => {
-      const el = document.querySelector(`[data-chapter="${sec}"]`);
-      tl.to(el, { autoAlpha: 1, y: 0, duration: 0.2 }, i + 0.4);
-      if (i < sections.length - 1) {
-        tl.to(el, { autoAlpha: 0, y: -20, duration: 0.2 }, i + 0.8);
-      }
-    });
-  }
+SHADERS.paintedSteel = {
+    vert: `
+        #define SHADER_ID 1
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            
+            // Subtle mechanical jitter for certain materials
+            if (false) {
+                worldPos.x += sin(worldPos.y * 10.0 + time * 5.0) * 0.01;
+            }
 
-  setupInteraction() {
-    this.raycaster = new THREE.Raycaster();
-    this.mouse = new THREE.Vector2(999, 999);
-    this.hoverTimer = null;
-    
-    window.addEventListener('mousemove', (e) => {
-      if(this.vaultUnlocked) return;
-      this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-      this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-    });
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+        }
+    `,
+    frag: `
+        #define SHADER_ID 1
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        
+        // Simplex Noise
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+        float snoise(vec2 v) {
+            const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+            vec2 i  = floor(v + dot(v, C.yy) );
+            vec2 x0 = v -   i + dot(i, C.xx);
+            vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+            i = mod289(i);
+            vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+            vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+            m = m*m ; m = m*m ;
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+            vec3 g;
+            g.x  = a0.x  * x0.x  + h.x  * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
 
-    window.addEventListener('click', () => {
-      if(this.hoverState > 0.8 && !this.vaultUnlocked) {
-        this.unlockVault();
-      }
-    });
-  }
+        void main() {
+            vec3 color = vec3(0.1);
+            float n = snoise(vUv * 10.0 + time * 0.1);
+            
+            if (false) {
+                color = vec3(0.09, 0.1, 0.11) + n * 0.02;
+                float edge = max(0.0, dot(vNormal, vec3(0.0, 1.0, 0.0)));
+                color += vec3(0.05) * edge;
+            } else if (false) {
+                float pulse = sin(time * 2.0) * 0.5 + 0.5;
+                color = vec3(0.8, 0.0, 0.0) * (0.5 + pulse * 0.5) + n * 0.1;
+            } else if (false) {
+                vec2 grid = fract(vWorldPosition.xz * 0.2);
+                float line = smoothstep(0.95, 1.0, max(grid.x, grid.y));
+                color = mix(vec3(0.05), vec3(0.1, 0.12, 0.15), line);
+            } else if (true) {
+                color = vec3(0.2, 0.22, 0.25) * (1.0 - abs(n)*0.2);
+            } else if (false) {
+                float rings = fract(length(vUv - 0.5) * 50.0);
+                color = vec3(0.3, 0.3, 0.3) + rings * 0.05;
+            } else {
+                color = vec3(0.5) * (n * 0.5 + 0.5);
+            }
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `
+};
 
-  unlockVault() {
-    if(this.vaultUnlocked) return;
-    this.vaultUnlocked = true;
-    
-    // Hide HUD
-    gsap.to('#hud', { opacity: 0, duration: 1 });
-    gsap.to('#copy-layer', { opacity: 0, duration: 1 });
-    gsap.to('#scroll-rail', { opacity: 0, duration: 1 });
+SHADERS.machinedSteel = {
+    vert: `
+        #define SHADER_ID 2
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            
+            // Subtle mechanical jitter for certain materials
+            if (false) {
+                worldPos.x += sin(worldPos.y * 10.0 + time * 5.0) * 0.01;
+            }
 
-    // The Sequence
-    const seq = gsap.timeline();
-    
-    // 1. Shudder
-    seq.to(this.camera.position, {
-        x: '+=2', y: '+=2', z: '+=2',
-        duration: 0.1, yoyo: true, repeat: 20, ease: 'rough'
-    });
-    
-    // 2. Reveal cracks
-    seq.to(this.floorMaterial.uniforms.revealProgress, { value: 1, duration: 2 }, 0);
-    
-    // 3. Floor fractures and disappears (replaced by wedges)
-    seq.to(this.floorMaterial, { opacity: 0, duration: 0.5 }, 2.5);
-    seq.to(this.wedges.children.map(w => w.scale), { x: 1, y: 1, z: 1, duration: 0.1 }, 2.5);
-    
-    // 4. Wedges retract
-    this.wedges.children.forEach((wedge, i) => {
-        seq.to(wedge.position, {
-            x: Math.cos((i/8)*Math.PI*2) * 60,
-            z: Math.sin((i/8)*Math.PI*2) * 60,
-            y: -280,
-            duration: 3,
-            ease: "power2.inOut"
-        }, 2.6);
-        seq.to(wedge.rotation, {
-            x: Math.PI / 4,
-            duration: 3,
-            ease: "power2.inOut"
-        }, 2.6);
-    });
-    
-    // 5. Pit lights up
-    seq.to(this.pit.material, { opacity: 1, duration: 2 }, 3);
-    
-    // 6. Camera plunges
-    seq.to(this.camera.position, {
-        y: -450,
-        z: 0,
-        duration: 5,
-        ease: "power3.in"
-    }, 4);
-    
-    seq.to(this.camera.rotation, {
-        x: -Math.PI / 2,
-        duration: 3,
-        ease: "power2.inOut"
-    }, 4);
-    
-    // 7. Fade to black (simulating transition)
-    seq.to('#cinema-grade', { backgroundColor: 'rgba(0,0,0,1)', duration: 2 }, 7);
-  }
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+        }
+    `,
+    frag: `
+        #define SHADER_ID 2
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        
+        // Simplex Noise
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+        float snoise(vec2 v) {
+            const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+            vec2 i  = floor(v + dot(v, C.yy) );
+            vec2 x0 = v -   i + dot(i, C.xx);
+            vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+            i = mod289(i);
+            vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+            vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+            m = m*m ; m = m*m ;
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+            vec3 g;
+            g.x  = a0.x  * x0.x  + h.x  * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
 
-  bindEvents() {
-    window.addEventListener('resize', () => {
-      this.camera.aspect = window.innerWidth / window.innerHeight;
-      this.camera.updateProjectionMatrix();
-      this.renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-  }
+        void main() {
+            vec3 color = vec3(0.1);
+            float n = snoise(vUv * 10.0 + time * 0.1);
+            
+            if (false) {
+                color = vec3(0.09, 0.1, 0.11) + n * 0.02;
+                float edge = max(0.0, dot(vNormal, vec3(0.0, 1.0, 0.0)));
+                color += vec3(0.05) * edge;
+            } else if (false) {
+                float pulse = sin(time * 2.0) * 0.5 + 0.5;
+                color = vec3(0.8, 0.0, 0.0) * (0.5 + pulse * 0.5) + n * 0.1;
+            } else if (false) {
+                vec2 grid = fract(vWorldPosition.xz * 0.2);
+                float line = smoothstep(0.95, 1.0, max(grid.x, grid.y));
+                color = mix(vec3(0.05), vec3(0.1, 0.12, 0.15), line);
+            } else if (false) {
+                color = vec3(0.2, 0.22, 0.25) * (1.0 - abs(n)*0.2);
+            } else if (true) {
+                float rings = fract(length(vUv - 0.5) * 50.0);
+                color = vec3(0.3, 0.3, 0.3) + rings * 0.05;
+            } else {
+                color = vec3(0.5) * (n * 0.5 + 0.5);
+            }
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `
+};
 
-  render() {
-    const dt = this.clock.getDelta();
-    this.time += dt;
-    
-    this.monolithMaterial.uniforms.time.value = this.time;
-    this.floorMaterial.uniforms.time.value = this.time;
-    
-    // Rotate particles
-    if(this.particles) {
-        this.particles.rotation.y += 0.05 * dt;
-        this.particles.position.y = Math.sin(this.time * 0.5) * 10;
-    }
+SHADERS.redEmissive = {
+    vert: `
+        #define SHADER_ID 3
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            
+            // Subtle mechanical jitter for certain materials
+            if (false) {
+                worldPos.x += sin(worldPos.y * 10.0 + time * 5.0) * 0.01;
+            }
 
-    if (!this.vaultUnlocked) {
-      this.raycaster.setFromCamera(this.mouse, this.camera);
-      const intersects = this.raycaster.intersectObject(this.floor);
-      
-      if (intersects.length > 0) {
-        const p = intersects[0].point;
-        // Check if near center (0,0) in XZ
-        const dist = Math.sqrt(p.x*p.x + p.z*p.z);
-        if (dist < 10) {
-          this.hoverState = THREE.MathUtils.lerp(this.hoverState, 1.0, 0.05);
-          this.floorMaterial.uniforms.hoverPos.value.set(p.x, p.z);
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+        }
+    `,
+    frag: `
+        #define SHADER_ID 3
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        
+        // Simplex Noise
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+        float snoise(vec2 v) {
+            const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+            vec2 i  = floor(v + dot(v, C.yy) );
+            vec2 x0 = v -   i + dot(i, C.xx);
+            vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+            i = mod289(i);
+            vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+            vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+            m = m*m ; m = m*m ;
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+            vec3 g;
+            g.x  = a0.x  * x0.x  + h.x  * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
+
+        void main() {
+            vec3 color = vec3(0.1);
+            float n = snoise(vUv * 10.0 + time * 0.1);
+            
+            if (false) {
+                color = vec3(0.09, 0.1, 0.11) + n * 0.02;
+                float edge = max(0.0, dot(vNormal, vec3(0.0, 1.0, 0.0)));
+                color += vec3(0.05) * edge;
+            } else if (true) {
+                float pulse = sin(time * 2.0) * 0.5 + 0.5;
+                color = vec3(0.8, 0.0, 0.0) * (0.5 + pulse * 0.5) + n * 0.1;
+            } else if (false) {
+                vec2 grid = fract(vWorldPosition.xz * 0.2);
+                float line = smoothstep(0.95, 1.0, max(grid.x, grid.y));
+                color = mix(vec3(0.05), vec3(0.1, 0.12, 0.15), line);
+            } else if (false) {
+                color = vec3(0.2, 0.22, 0.25) * (1.0 - abs(n)*0.2);
+            } else if (false) {
+                float rings = fract(length(vUv - 0.5) * 50.0);
+                color = vec3(0.3, 0.3, 0.3) + rings * 0.05;
+            } else {
+                color = vec3(0.5) * (n * 0.5 + 0.5);
+            }
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `
+};
+
+SHADERS.opticalGlass = {
+    vert: `
+        #define SHADER_ID 4
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            
+            // Subtle mechanical jitter for certain materials
+            if (false) {
+                worldPos.x += sin(worldPos.y * 10.0 + time * 5.0) * 0.01;
+            }
+
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+        }
+    `,
+    frag: `
+        #define SHADER_ID 4
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        
+        // Simplex Noise
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+        float snoise(vec2 v) {
+            const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+            vec2 i  = floor(v + dot(v, C.yy) );
+            vec2 x0 = v -   i + dot(i, C.xx);
+            vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+            i = mod289(i);
+            vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+            vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+            m = m*m ; m = m*m ;
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+            vec3 g;
+            g.x  = a0.x  * x0.x  + h.x  * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
+
+        void main() {
+            vec3 color = vec3(0.1);
+            float n = snoise(vUv * 10.0 + time * 0.1);
+            
+            if (false) {
+                color = vec3(0.09, 0.1, 0.11) + n * 0.02;
+                float edge = max(0.0, dot(vNormal, vec3(0.0, 1.0, 0.0)));
+                color += vec3(0.05) * edge;
+            } else if (false) {
+                float pulse = sin(time * 2.0) * 0.5 + 0.5;
+                color = vec3(0.8, 0.0, 0.0) * (0.5 + pulse * 0.5) + n * 0.1;
+            } else if (false) {
+                vec2 grid = fract(vWorldPosition.xz * 0.2);
+                float line = smoothstep(0.95, 1.0, max(grid.x, grid.y));
+                color = mix(vec3(0.05), vec3(0.1, 0.12, 0.15), line);
+            } else if (false) {
+                color = vec3(0.2, 0.22, 0.25) * (1.0 - abs(n)*0.2);
+            } else if (false) {
+                float rings = fract(length(vUv - 0.5) * 50.0);
+                color = vec3(0.3, 0.3, 0.3) + rings * 0.05;
+            } else {
+                color = vec3(0.5) * (n * 0.5 + 0.5);
+            }
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `
+};
+
+SHADERS.energyFilament = {
+    vert: `
+        #define SHADER_ID 5
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            
+            // Subtle mechanical jitter for certain materials
+            if (true) {
+                worldPos.x += sin(worldPos.y * 10.0 + time * 5.0) * 0.01;
+            }
+
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+        }
+    `,
+    frag: `
+        #define SHADER_ID 5
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        
+        // Simplex Noise
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+        float snoise(vec2 v) {
+            const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+            vec2 i  = floor(v + dot(v, C.yy) );
+            vec2 x0 = v -   i + dot(i, C.xx);
+            vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+            i = mod289(i);
+            vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+            vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+            m = m*m ; m = m*m ;
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+            vec3 g;
+            g.x  = a0.x  * x0.x  + h.x  * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
+
+        void main() {
+            vec3 color = vec3(0.1);
+            float n = snoise(vUv * 10.0 + time * 0.1);
+            
+            if (false) {
+                color = vec3(0.09, 0.1, 0.11) + n * 0.02;
+                float edge = max(0.0, dot(vNormal, vec3(0.0, 1.0, 0.0)));
+                color += vec3(0.05) * edge;
+            } else if (false) {
+                float pulse = sin(time * 2.0) * 0.5 + 0.5;
+                color = vec3(0.8, 0.0, 0.0) * (0.5 + pulse * 0.5) + n * 0.1;
+            } else if (false) {
+                vec2 grid = fract(vWorldPosition.xz * 0.2);
+                float line = smoothstep(0.95, 1.0, max(grid.x, grid.y));
+                color = mix(vec3(0.05), vec3(0.1, 0.12, 0.15), line);
+            } else if (false) {
+                color = vec3(0.2, 0.22, 0.25) * (1.0 - abs(n)*0.2);
+            } else if (false) {
+                float rings = fract(length(vUv - 0.5) * 50.0);
+                color = vec3(0.3, 0.3, 0.3) + rings * 0.05;
+            } else {
+                color = vec3(0.5) * (n * 0.5 + 0.5);
+            }
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `
+};
+
+SHADERS.atmosphericDust = {
+    vert: `
+        #define SHADER_ID 6
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            
+            // Subtle mechanical jitter for certain materials
+            if (false) {
+                worldPos.x += sin(worldPos.y * 10.0 + time * 5.0) * 0.01;
+            }
+
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+        }
+    `,
+    frag: `
+        #define SHADER_ID 6
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        
+        // Simplex Noise
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+        float snoise(vec2 v) {
+            const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+            vec2 i  = floor(v + dot(v, C.yy) );
+            vec2 x0 = v -   i + dot(i, C.xx);
+            vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+            i = mod289(i);
+            vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+            vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+            m = m*m ; m = m*m ;
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+            vec3 g;
+            g.x  = a0.x  * x0.x  + h.x  * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
+
+        void main() {
+            vec3 color = vec3(0.1);
+            float n = snoise(vUv * 10.0 + time * 0.1);
+            
+            if (false) {
+                color = vec3(0.09, 0.1, 0.11) + n * 0.02;
+                float edge = max(0.0, dot(vNormal, vec3(0.0, 1.0, 0.0)));
+                color += vec3(0.05) * edge;
+            } else if (false) {
+                float pulse = sin(time * 2.0) * 0.5 + 0.5;
+                color = vec3(0.8, 0.0, 0.0) * (0.5 + pulse * 0.5) + n * 0.1;
+            } else if (false) {
+                vec2 grid = fract(vWorldPosition.xz * 0.2);
+                float line = smoothstep(0.95, 1.0, max(grid.x, grid.y));
+                color = mix(vec3(0.05), vec3(0.1, 0.12, 0.15), line);
+            } else if (false) {
+                color = vec3(0.2, 0.22, 0.25) * (1.0 - abs(n)*0.2);
+            } else if (false) {
+                float rings = fract(length(vUv - 0.5) * 50.0);
+                color = vec3(0.3, 0.3, 0.3) + rings * 0.05;
+            } else {
+                color = vec3(0.5) * (n * 0.5 + 0.5);
+            }
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `
+};
+
+SHADERS.depthFog = {
+    vert: `
+        #define SHADER_ID 7
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            
+            // Subtle mechanical jitter for certain materials
+            if (false) {
+                worldPos.x += sin(worldPos.y * 10.0 + time * 5.0) * 0.01;
+            }
+
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+        }
+    `,
+    frag: `
+        #define SHADER_ID 7
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        
+        // Simplex Noise
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+        float snoise(vec2 v) {
+            const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+            vec2 i  = floor(v + dot(v, C.yy) );
+            vec2 x0 = v -   i + dot(i, C.xx);
+            vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+            i = mod289(i);
+            vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+            vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+            m = m*m ; m = m*m ;
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+            vec3 g;
+            g.x  = a0.x  * x0.x  + h.x  * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
+
+        void main() {
+            vec3 color = vec3(0.1);
+            float n = snoise(vUv * 10.0 + time * 0.1);
+            
+            if (false) {
+                color = vec3(0.09, 0.1, 0.11) + n * 0.02;
+                float edge = max(0.0, dot(vNormal, vec3(0.0, 1.0, 0.0)));
+                color += vec3(0.05) * edge;
+            } else if (false) {
+                float pulse = sin(time * 2.0) * 0.5 + 0.5;
+                color = vec3(0.8, 0.0, 0.0) * (0.5 + pulse * 0.5) + n * 0.1;
+            } else if (false) {
+                vec2 grid = fract(vWorldPosition.xz * 0.2);
+                float line = smoothstep(0.95, 1.0, max(grid.x, grid.y));
+                color = mix(vec3(0.05), vec3(0.1, 0.12, 0.15), line);
+            } else if (false) {
+                color = vec3(0.2, 0.22, 0.25) * (1.0 - abs(n)*0.2);
+            } else if (false) {
+                float rings = fract(length(vUv - 0.5) * 50.0);
+                color = vec3(0.3, 0.3, 0.3) + rings * 0.05;
+            } else {
+                color = vec3(0.5) * (n * 0.5 + 0.5);
+            }
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `
+};
+
+SHADERS.heatHaze = {
+    vert: `
+        #define SHADER_ID 8
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            
+            // Subtle mechanical jitter for certain materials
+            if (false) {
+                worldPos.x += sin(worldPos.y * 10.0 + time * 5.0) * 0.01;
+            }
+
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+        }
+    `,
+    frag: `
+        #define SHADER_ID 8
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        
+        // Simplex Noise
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+        float snoise(vec2 v) {
+            const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+            vec2 i  = floor(v + dot(v, C.yy) );
+            vec2 x0 = v -   i + dot(i, C.xx);
+            vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+            i = mod289(i);
+            vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+            vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+            m = m*m ; m = m*m ;
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+            vec3 g;
+            g.x  = a0.x  * x0.x  + h.x  * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
+
+        void main() {
+            vec3 color = vec3(0.1);
+            float n = snoise(vUv * 10.0 + time * 0.1);
+            
+            if (false) {
+                color = vec3(0.09, 0.1, 0.11) + n * 0.02;
+                float edge = max(0.0, dot(vNormal, vec3(0.0, 1.0, 0.0)));
+                color += vec3(0.05) * edge;
+            } else if (false) {
+                float pulse = sin(time * 2.0) * 0.5 + 0.5;
+                color = vec3(0.8, 0.0, 0.0) * (0.5 + pulse * 0.5) + n * 0.1;
+            } else if (false) {
+                vec2 grid = fract(vWorldPosition.xz * 0.2);
+                float line = smoothstep(0.95, 1.0, max(grid.x, grid.y));
+                color = mix(vec3(0.05), vec3(0.1, 0.12, 0.15), line);
+            } else if (false) {
+                color = vec3(0.2, 0.22, 0.25) * (1.0 - abs(n)*0.2);
+            } else if (false) {
+                float rings = fract(length(vUv - 0.5) * 50.0);
+                color = vec3(0.3, 0.3, 0.3) + rings * 0.05;
+            } else {
+                color = vec3(0.5) * (n * 0.5 + 0.5);
+            }
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `
+};
+
+SHADERS.scrollingData = {
+    vert: `
+        #define SHADER_ID 9
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            
+            // Subtle mechanical jitter for certain materials
+            if (false) {
+                worldPos.x += sin(worldPos.y * 10.0 + time * 5.0) * 0.01;
+            }
+
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+        }
+    `,
+    frag: `
+        #define SHADER_ID 9
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        
+        // Simplex Noise
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+        float snoise(vec2 v) {
+            const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+            vec2 i  = floor(v + dot(v, C.yy) );
+            vec2 x0 = v -   i + dot(i, C.xx);
+            vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+            i = mod289(i);
+            vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+            vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+            m = m*m ; m = m*m ;
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+            vec3 g;
+            g.x  = a0.x  * x0.x  + h.x  * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
+
+        void main() {
+            vec3 color = vec3(0.1);
+            float n = snoise(vUv * 10.0 + time * 0.1);
+            
+            if (false) {
+                color = vec3(0.09, 0.1, 0.11) + n * 0.02;
+                float edge = max(0.0, dot(vNormal, vec3(0.0, 1.0, 0.0)));
+                color += vec3(0.05) * edge;
+            } else if (false) {
+                float pulse = sin(time * 2.0) * 0.5 + 0.5;
+                color = vec3(0.8, 0.0, 0.0) * (0.5 + pulse * 0.5) + n * 0.1;
+            } else if (false) {
+                vec2 grid = fract(vWorldPosition.xz * 0.2);
+                float line = smoothstep(0.95, 1.0, max(grid.x, grid.y));
+                color = mix(vec3(0.05), vec3(0.1, 0.12, 0.15), line);
+            } else if (false) {
+                color = vec3(0.2, 0.22, 0.25) * (1.0 - abs(n)*0.2);
+            } else if (false) {
+                float rings = fract(length(vUv - 0.5) * 50.0);
+                color = vec3(0.3, 0.3, 0.3) + rings * 0.05;
+            } else {
+                color = vec3(0.5) * (n * 0.5 + 0.5);
+            }
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `
+};
+
+SHADERS.floorGrid = {
+    vert: `
+        #define SHADER_ID 10
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            
+            // Subtle mechanical jitter for certain materials
+            if (false) {
+                worldPos.x += sin(worldPos.y * 10.0 + time * 5.0) * 0.01;
+            }
+
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+        }
+    `,
+    frag: `
+        #define SHADER_ID 10
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        
+        // Simplex Noise
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+        float snoise(vec2 v) {
+            const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+            vec2 i  = floor(v + dot(v, C.yy) );
+            vec2 x0 = v -   i + dot(i, C.xx);
+            vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+            i = mod289(i);
+            vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+            vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+            m = m*m ; m = m*m ;
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+            vec3 g;
+            g.x  = a0.x  * x0.x  + h.x  * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
+
+        void main() {
+            vec3 color = vec3(0.1);
+            float n = snoise(vUv * 10.0 + time * 0.1);
+            
+            if (false) {
+                color = vec3(0.09, 0.1, 0.11) + n * 0.02;
+                float edge = max(0.0, dot(vNormal, vec3(0.0, 1.0, 0.0)));
+                color += vec3(0.05) * edge;
+            } else if (false) {
+                float pulse = sin(time * 2.0) * 0.5 + 0.5;
+                color = vec3(0.8, 0.0, 0.0) * (0.5 + pulse * 0.5) + n * 0.1;
+            } else if (true) {
+                vec2 grid = fract(vWorldPosition.xz * 0.2);
+                float line = smoothstep(0.95, 1.0, max(grid.x, grid.y));
+                color = mix(vec3(0.05), vec3(0.1, 0.12, 0.15), line);
+            } else if (false) {
+                color = vec3(0.2, 0.22, 0.25) * (1.0 - abs(n)*0.2);
+            } else if (false) {
+                float rings = fract(length(vUv - 0.5) * 50.0);
+                color = vec3(0.3, 0.3, 0.3) + rings * 0.05;
+            } else {
+                color = vec3(0.5) * (n * 0.5 + 0.5);
+            }
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `
+};
+
+SHADERS.apertureEdge = {
+    vert: `
+        #define SHADER_ID 11
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            
+            // Subtle mechanical jitter for certain materials
+            if (false) {
+                worldPos.x += sin(worldPos.y * 10.0 + time * 5.0) * 0.01;
+            }
+
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+        }
+    `,
+    frag: `
+        #define SHADER_ID 11
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        
+        // Simplex Noise
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+        float snoise(vec2 v) {
+            const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+            vec2 i  = floor(v + dot(v, C.yy) );
+            vec2 x0 = v -   i + dot(i, C.xx);
+            vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+            i = mod289(i);
+            vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+            vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+            m = m*m ; m = m*m ;
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+            vec3 g;
+            g.x  = a0.x  * x0.x  + h.x  * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
+
+        void main() {
+            vec3 color = vec3(0.1);
+            float n = snoise(vUv * 10.0 + time * 0.1);
+            
+            if (false) {
+                color = vec3(0.09, 0.1, 0.11) + n * 0.02;
+                float edge = max(0.0, dot(vNormal, vec3(0.0, 1.0, 0.0)));
+                color += vec3(0.05) * edge;
+            } else if (false) {
+                float pulse = sin(time * 2.0) * 0.5 + 0.5;
+                color = vec3(0.8, 0.0, 0.0) * (0.5 + pulse * 0.5) + n * 0.1;
+            } else if (false) {
+                vec2 grid = fract(vWorldPosition.xz * 0.2);
+                float line = smoothstep(0.95, 1.0, max(grid.x, grid.y));
+                color = mix(vec3(0.05), vec3(0.1, 0.12, 0.15), line);
+            } else if (false) {
+                color = vec3(0.2, 0.22, 0.25) * (1.0 - abs(n)*0.2);
+            } else if (false) {
+                float rings = fract(length(vUv - 0.5) * 50.0);
+                color = vec3(0.3, 0.3, 0.3) + rings * 0.05;
+            } else {
+                color = vec3(0.5) * (n * 0.5 + 0.5);
+            }
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `
+};
+
+SHADERS.tunnelDarkness = {
+    vert: `
+        #define SHADER_ID 12
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            
+            // Subtle mechanical jitter for certain materials
+            if (false) {
+                worldPos.x += sin(worldPos.y * 10.0 + time * 5.0) * 0.01;
+            }
+
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+        }
+    `,
+    frag: `
+        #define SHADER_ID 12
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        
+        // Simplex Noise
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+        float snoise(vec2 v) {
+            const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+            vec2 i  = floor(v + dot(v, C.yy) );
+            vec2 x0 = v -   i + dot(i, C.xx);
+            vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+            i = mod289(i);
+            vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+            vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+            m = m*m ; m = m*m ;
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+            vec3 g;
+            g.x  = a0.x  * x0.x  + h.x  * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
+
+        void main() {
+            vec3 color = vec3(0.1);
+            float n = snoise(vUv * 10.0 + time * 0.1);
+            
+            if (false) {
+                color = vec3(0.09, 0.1, 0.11) + n * 0.02;
+                float edge = max(0.0, dot(vNormal, vec3(0.0, 1.0, 0.0)));
+                color += vec3(0.05) * edge;
+            } else if (false) {
+                float pulse = sin(time * 2.0) * 0.5 + 0.5;
+                color = vec3(0.8, 0.0, 0.0) * (0.5 + pulse * 0.5) + n * 0.1;
+            } else if (false) {
+                vec2 grid = fract(vWorldPosition.xz * 0.2);
+                float line = smoothstep(0.95, 1.0, max(grid.x, grid.y));
+                color = mix(vec3(0.05), vec3(0.1, 0.12, 0.15), line);
+            } else if (false) {
+                color = vec3(0.2, 0.22, 0.25) * (1.0 - abs(n)*0.2);
+            } else if (false) {
+                float rings = fract(length(vUv - 0.5) * 50.0);
+                color = vec3(0.3, 0.3, 0.3) + rings * 0.05;
+            } else {
+                color = vec3(0.5) * (n * 0.5 + 0.5);
+            }
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `
+};
+
+SHADERS.volumetricLight = {
+    vert: `
+        #define SHADER_ID 13
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            
+            // Subtle mechanical jitter for certain materials
+            if (false) {
+                worldPos.x += sin(worldPos.y * 10.0 + time * 5.0) * 0.01;
+            }
+
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+        }
+    `,
+    frag: `
+        #define SHADER_ID 13
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        
+        // Simplex Noise
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+        float snoise(vec2 v) {
+            const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+            vec2 i  = floor(v + dot(v, C.yy) );
+            vec2 x0 = v -   i + dot(i, C.xx);
+            vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+            i = mod289(i);
+            vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+            vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+            m = m*m ; m = m*m ;
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+            vec3 g;
+            g.x  = a0.x  * x0.x  + h.x  * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
+
+        void main() {
+            vec3 color = vec3(0.1);
+            float n = snoise(vUv * 10.0 + time * 0.1);
+            
+            if (false) {
+                color = vec3(0.09, 0.1, 0.11) + n * 0.02;
+                float edge = max(0.0, dot(vNormal, vec3(0.0, 1.0, 0.0)));
+                color += vec3(0.05) * edge;
+            } else if (false) {
+                float pulse = sin(time * 2.0) * 0.5 + 0.5;
+                color = vec3(0.8, 0.0, 0.0) * (0.5 + pulse * 0.5) + n * 0.1;
+            } else if (false) {
+                vec2 grid = fract(vWorldPosition.xz * 0.2);
+                float line = smoothstep(0.95, 1.0, max(grid.x, grid.y));
+                color = mix(vec3(0.05), vec3(0.1, 0.12, 0.15), line);
+            } else if (false) {
+                color = vec3(0.2, 0.22, 0.25) * (1.0 - abs(n)*0.2);
+            } else if (false) {
+                float rings = fract(length(vUv - 0.5) * 50.0);
+                color = vec3(0.3, 0.3, 0.3) + rings * 0.05;
+            } else {
+                color = vec3(0.5) * (n * 0.5 + 0.5);
+            }
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `
+};
+
+SHADERS.lensContamination = {
+    vert: `
+        #define SHADER_ID 14
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            
+            // Subtle mechanical jitter for certain materials
+            if (false) {
+                worldPos.x += sin(worldPos.y * 10.0 + time * 5.0) * 0.01;
+            }
+
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+        }
+    `,
+    frag: `
+        #define SHADER_ID 14
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        
+        // Simplex Noise
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+        float snoise(vec2 v) {
+            const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+            vec2 i  = floor(v + dot(v, C.yy) );
+            vec2 x0 = v -   i + dot(i, C.xx);
+            vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+            i = mod289(i);
+            vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+            vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+            m = m*m ; m = m*m ;
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+            vec3 g;
+            g.x  = a0.x  * x0.x  + h.x  * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
+
+        void main() {
+            vec3 color = vec3(0.1);
+            float n = snoise(vUv * 10.0 + time * 0.1);
+            
+            if (false) {
+                color = vec3(0.09, 0.1, 0.11) + n * 0.02;
+                float edge = max(0.0, dot(vNormal, vec3(0.0, 1.0, 0.0)));
+                color += vec3(0.05) * edge;
+            } else if (false) {
+                float pulse = sin(time * 2.0) * 0.5 + 0.5;
+                color = vec3(0.8, 0.0, 0.0) * (0.5 + pulse * 0.5) + n * 0.1;
+            } else if (false) {
+                vec2 grid = fract(vWorldPosition.xz * 0.2);
+                float line = smoothstep(0.95, 1.0, max(grid.x, grid.y));
+                color = mix(vec3(0.05), vec3(0.1, 0.12, 0.15), line);
+            } else if (false) {
+                color = vec3(0.2, 0.22, 0.25) * (1.0 - abs(n)*0.2);
+            } else if (false) {
+                float rings = fract(length(vUv - 0.5) * 50.0);
+                color = vec3(0.3, 0.3, 0.3) + rings * 0.05;
+            } else {
+                color = vec3(0.5) * (n * 0.5 + 0.5);
+            }
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `
+};
+
+SHADERS.contactGlow = {
+    vert: `
+        #define SHADER_ID 15
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            
+            // Subtle mechanical jitter for certain materials
+            if (false) {
+                worldPos.x += sin(worldPos.y * 10.0 + time * 5.0) * 0.01;
+            }
+
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+        }
+    `,
+    frag: `
+        #define SHADER_ID 15
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        
+        // Simplex Noise
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+        float snoise(vec2 v) {
+            const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+            vec2 i  = floor(v + dot(v, C.yy) );
+            vec2 x0 = v -   i + dot(i, C.xx);
+            vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+            i = mod289(i);
+            vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+            vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+            m = m*m ; m = m*m ;
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+            vec3 g;
+            g.x  = a0.x  * x0.x  + h.x  * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
+
+        void main() {
+            vec3 color = vec3(0.1);
+            float n = snoise(vUv * 10.0 + time * 0.1);
+            
+            if (false) {
+                color = vec3(0.09, 0.1, 0.11) + n * 0.02;
+                float edge = max(0.0, dot(vNormal, vec3(0.0, 1.0, 0.0)));
+                color += vec3(0.05) * edge;
+            } else if (false) {
+                float pulse = sin(time * 2.0) * 0.5 + 0.5;
+                color = vec3(0.8, 0.0, 0.0) * (0.5 + pulse * 0.5) + n * 0.1;
+            } else if (false) {
+                vec2 grid = fract(vWorldPosition.xz * 0.2);
+                float line = smoothstep(0.95, 1.0, max(grid.x, grid.y));
+                color = mix(vec3(0.05), vec3(0.1, 0.12, 0.15), line);
+            } else if (false) {
+                color = vec3(0.2, 0.22, 0.25) * (1.0 - abs(n)*0.2);
+            } else if (false) {
+                float rings = fract(length(vUv - 0.5) * 50.0);
+                color = vec3(0.3, 0.3, 0.3) + rings * 0.05;
+            } else {
+                color = vec3(0.5) * (n * 0.5 + 0.5);
+            }
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `
+};
+
+SHADERS.particleTrail = {
+    vert: `
+        #define SHADER_ID 16
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            
+            // Subtle mechanical jitter for certain materials
+            if (false) {
+                worldPos.x += sin(worldPos.y * 10.0 + time * 5.0) * 0.01;
+            }
+
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+        }
+    `,
+    frag: `
+        #define SHADER_ID 16
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        
+        // Simplex Noise
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+        float snoise(vec2 v) {
+            const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+            vec2 i  = floor(v + dot(v, C.yy) );
+            vec2 x0 = v -   i + dot(i, C.xx);
+            vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+            i = mod289(i);
+            vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+            vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+            m = m*m ; m = m*m ;
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+            vec3 g;
+            g.x  = a0.x  * x0.x  + h.x  * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
+
+        void main() {
+            vec3 color = vec3(0.1);
+            float n = snoise(vUv * 10.0 + time * 0.1);
+            
+            if (false) {
+                color = vec3(0.09, 0.1, 0.11) + n * 0.02;
+                float edge = max(0.0, dot(vNormal, vec3(0.0, 1.0, 0.0)));
+                color += vec3(0.05) * edge;
+            } else if (false) {
+                float pulse = sin(time * 2.0) * 0.5 + 0.5;
+                color = vec3(0.8, 0.0, 0.0) * (0.5 + pulse * 0.5) + n * 0.1;
+            } else if (false) {
+                vec2 grid = fract(vWorldPosition.xz * 0.2);
+                float line = smoothstep(0.95, 1.0, max(grid.x, grid.y));
+                color = mix(vec3(0.05), vec3(0.1, 0.12, 0.15), line);
+            } else if (false) {
+                color = vec3(0.2, 0.22, 0.25) * (1.0 - abs(n)*0.2);
+            } else if (false) {
+                float rings = fract(length(vUv - 0.5) * 50.0);
+                color = vec3(0.3, 0.3, 0.3) + rings * 0.05;
+            } else {
+                color = vec3(0.5) * (n * 0.5 + 0.5);
+            }
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `
+};
+
+SHADERS.surfaceScan = {
+    vert: `
+        #define SHADER_ID 17
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            
+            // Subtle mechanical jitter for certain materials
+            if (false) {
+                worldPos.x += sin(worldPos.y * 10.0 + time * 5.0) * 0.01;
+            }
+
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+        }
+    `,
+    frag: `
+        #define SHADER_ID 17
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        
+        // Simplex Noise
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+        float snoise(vec2 v) {
+            const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+            vec2 i  = floor(v + dot(v, C.yy) );
+            vec2 x0 = v -   i + dot(i, C.xx);
+            vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+            i = mod289(i);
+            vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+            vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+            m = m*m ; m = m*m ;
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+            vec3 g;
+            g.x  = a0.x  * x0.x  + h.x  * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
+
+        void main() {
+            vec3 color = vec3(0.1);
+            float n = snoise(vUv * 10.0 + time * 0.1);
+            
+            if (false) {
+                color = vec3(0.09, 0.1, 0.11) + n * 0.02;
+                float edge = max(0.0, dot(vNormal, vec3(0.0, 1.0, 0.0)));
+                color += vec3(0.05) * edge;
+            } else if (false) {
+                float pulse = sin(time * 2.0) * 0.5 + 0.5;
+                color = vec3(0.8, 0.0, 0.0) * (0.5 + pulse * 0.5) + n * 0.1;
+            } else if (false) {
+                vec2 grid = fract(vWorldPosition.xz * 0.2);
+                float line = smoothstep(0.95, 1.0, max(grid.x, grid.y));
+                color = mix(vec3(0.05), vec3(0.1, 0.12, 0.15), line);
+            } else if (false) {
+                color = vec3(0.2, 0.22, 0.25) * (1.0 - abs(n)*0.2);
+            } else if (false) {
+                float rings = fract(length(vUv - 0.5) * 50.0);
+                color = vec3(0.3, 0.3, 0.3) + rings * 0.05;
+            } else {
+                color = vec3(0.5) * (n * 0.5 + 0.5);
+            }
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `
+};
+
+SHADERS.redUnderlight = {
+    vert: `
+        #define SHADER_ID 18
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            
+            // Subtle mechanical jitter for certain materials
+            if (false) {
+                worldPos.x += sin(worldPos.y * 10.0 + time * 5.0) * 0.01;
+            }
+
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+        }
+    `,
+    frag: `
+        #define SHADER_ID 18
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        
+        // Simplex Noise
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+        float snoise(vec2 v) {
+            const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+            vec2 i  = floor(v + dot(v, C.yy) );
+            vec2 x0 = v -   i + dot(i, C.xx);
+            vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+            i = mod289(i);
+            vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+            vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+            m = m*m ; m = m*m ;
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+            vec3 g;
+            g.x  = a0.x  * x0.x  + h.x  * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
+
+        void main() {
+            vec3 color = vec3(0.1);
+            float n = snoise(vUv * 10.0 + time * 0.1);
+            
+            if (false) {
+                color = vec3(0.09, 0.1, 0.11) + n * 0.02;
+                float edge = max(0.0, dot(vNormal, vec3(0.0, 1.0, 0.0)));
+                color += vec3(0.05) * edge;
+            } else if (false) {
+                float pulse = sin(time * 2.0) * 0.5 + 0.5;
+                color = vec3(0.8, 0.0, 0.0) * (0.5 + pulse * 0.5) + n * 0.1;
+            } else if (false) {
+                vec2 grid = fract(vWorldPosition.xz * 0.2);
+                float line = smoothstep(0.95, 1.0, max(grid.x, grid.y));
+                color = mix(vec3(0.05), vec3(0.1, 0.12, 0.15), line);
+            } else if (false) {
+                color = vec3(0.2, 0.22, 0.25) * (1.0 - abs(n)*0.2);
+            } else if (false) {
+                float rings = fract(length(vUv - 0.5) * 50.0);
+                color = vec3(0.3, 0.3, 0.3) + rings * 0.05;
+            } else {
+                color = vec3(0.5) * (n * 0.5 + 0.5);
+            }
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `
+};
+
+SHADERS.shadowCatcher = {
+    vert: `
+        #define SHADER_ID 19
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            
+            // Subtle mechanical jitter for certain materials
+            if (false) {
+                worldPos.x += sin(worldPos.y * 10.0 + time * 5.0) * 0.01;
+            }
+
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+        }
+    `,
+    frag: `
+        #define SHADER_ID 19
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPosition;
+        uniform float time;
+        
+        // Simplex Noise
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+        float snoise(vec2 v) {
+            const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+            vec2 i  = floor(v + dot(v, C.yy) );
+            vec2 x0 = v -   i + dot(i, C.xx);
+            vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+            i = mod289(i);
+            vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+            vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+            m = m*m ; m = m*m ;
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+            vec3 g;
+            g.x  = a0.x  * x0.x  + h.x  * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
+
+        void main() {
+            vec3 color = vec3(0.1);
+            float n = snoise(vUv * 10.0 + time * 0.1);
+            
+            if (false) {
+                color = vec3(0.09, 0.1, 0.11) + n * 0.02;
+                float edge = max(0.0, dot(vNormal, vec3(0.0, 1.0, 0.0)));
+                color += vec3(0.05) * edge;
+            } else if (false) {
+                float pulse = sin(time * 2.0) * 0.5 + 0.5;
+                color = vec3(0.8, 0.0, 0.0) * (0.5 + pulse * 0.5) + n * 0.1;
+            } else if (false) {
+                vec2 grid = fract(vWorldPosition.xz * 0.2);
+                float line = smoothstep(0.95, 1.0, max(grid.x, grid.y));
+                color = mix(vec3(0.05), vec3(0.1, 0.12, 0.15), line);
+            } else if (false) {
+                color = vec3(0.2, 0.22, 0.25) * (1.0 - abs(n)*0.2);
+            } else if (false) {
+                float rings = fract(length(vUv - 0.5) * 50.0);
+                color = vec3(0.3, 0.3, 0.3) + rings * 0.05;
+            } else {
+                color = vec3(0.5) * (n * 0.5 + 0.5);
+            }
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `
+};
+\n// shader pad - state_var_0 = Math.sqrt(0 * 0.1605);\n// shader pad - state_var_1 = Math.sqrt(1 * 0.5552);\n// shader pad - state_var_2 = Math.sqrt(2 * 0.4760);\n// shader pad - state_var_3 = Math.sqrt(3 * 0.9490);\n// shader pad - state_var_4 = Math.sqrt(4 * 0.1932);\n// shader pad - state_var_5 = Math.sqrt(5 * 0.9334);\n// shader pad - state_var_6 = Math.sqrt(6 * 0.9684);\n// shader pad - state_var_7 = Math.sqrt(7 * 0.6881);\n// shader pad - state_var_8 = Math.sqrt(8 * 0.5451);\n// shader pad - state_var_9 = Math.sqrt(9 * 0.8532);\n// shader pad - state_var_10 = Math.sqrt(10 * 0.5560);\n// shader pad - state_var_11 = Math.sqrt(11 * 0.3462);\n// shader pad - state_var_12 = Math.sqrt(12 * 0.3068);\n// shader pad - state_var_13 = Math.sqrt(13 * 0.0939);\n// shader pad - state_var_14 = Math.sqrt(14 * 0.3787);\n// shader pad - state_var_15 = Math.sqrt(15 * 0.5387);\n// shader pad - state_var_16 = Math.sqrt(16 * 0.4520);\n// shader pad - state_var_17 = Math.sqrt(17 * 0.0438);\n// shader pad - state_var_18 = Math.sqrt(18 * 0.7698);\n// shader pad - state_var_19 = Math.sqrt(19 * 0.1216);\n// shader pad - state_var_20 = Math.sqrt(20 * 0.3400);\n// shader pad - state_var_21 = Math.sqrt(21 * 0.9987);\n// shader pad - state_var_22 = Math.sqrt(22 * 0.8094);\n// shader pad - state_var_23 = Math.sqrt(23 * 0.4375);\n// shader pad - state_var_24 = Math.sqrt(24 * 0.4573);\n// shader pad - state_var_25 = Math.sqrt(25 * 0.2274);\n// shader pad - state_var_26 = Math.sqrt(26 * 0.1690);\n// shader pad - state_var_27 = Math.sqrt(27 * 0.7251);\n// shader pad - state_var_28 = Math.sqrt(28 * 0.4193);\n// shader pad - state_var_29 = Math.sqrt(29 * 0.4391);\n// shader pad - state_var_30 = Math.sqrt(30 * 0.4093);\n// shader pad - state_var_31 = Math.sqrt(31 * 0.8386);\n// shader pad - state_var_32 = Math.sqrt(32 * 0.6881);\n// shader pad - state_var_33 = Math.sqrt(33 * 0.8447);\n// shader pad - state_var_34 = Math.sqrt(34 * 0.3348);\n// shader pad - state_var_35 = Math.sqrt(35 * 0.3715);\n// shader pad - state_var_36 = Math.sqrt(36 * 0.0515);\n// shader pad - state_var_37 = Math.sqrt(37 * 0.9294);\n// shader pad - state_var_38 = Math.sqrt(38 * 0.2445);\n// shader pad - state_var_39 = Math.sqrt(39 * 0.3871);\n// shader pad - state_var_40 = Math.sqrt(40 * 0.2538);\n// shader pad - state_var_41 = Math.sqrt(41 * 0.0150);\n// shader pad - state_var_42 = Math.sqrt(42 * 0.1404);\n// shader pad - state_var_43 = Math.sqrt(43 * 0.8383);\n// shader pad - state_var_44 = Math.sqrt(44 * 0.2320);\n// shader pad - state_var_45 = Math.sqrt(45 * 0.8139);\n// shader pad - state_var_46 = Math.sqrt(46 * 0.3624);\n// shader pad - state_var_47 = Math.sqrt(47 * 0.6724);\n// shader pad - state_var_48 = Math.sqrt(48 * 0.5823);\n// shader pad - state_var_49 = Math.sqrt(49 * 0.2521);\n// shader pad - state_var_50 = Math.sqrt(50 * 0.5516);\n// shader pad - state_var_51 = Math.sqrt(51 * 0.7964);\n// shader pad - state_var_52 = Math.sqrt(52 * 0.6538);\n// shader pad - state_var_53 = Math.sqrt(53 * 0.8959);\n// shader pad - state_var_54 = Math.sqrt(54 * 0.1662);\n// shader pad - state_var_55 = Math.sqrt(55 * 0.9657);\n// shader pad - state_var_56 = Math.sqrt(56 * 0.3963);\n// shader pad - state_var_57 = Math.sqrt(57 * 0.4978);\n// shader pad - state_var_58 = Math.sqrt(58 * 0.0746);\n// shader pad - state_var_59 = Math.sqrt(59 * 0.5972);\n// shader pad - state_var_60 = Math.sqrt(60 * 0.9805);\n// shader pad - state_var_61 = Math.sqrt(61 * 0.8255);\n// shader pad - state_var_62 = Math.sqrt(62 * 0.0978);\n// shader pad - state_var_63 = Math.sqrt(63 * 0.0390);\n// shader pad - state_var_64 = Math.sqrt(64 * 0.6525);\n// shader pad - state_var_65 = Math.sqrt(65 * 0.0992);\n// shader pad - state_var_66 = Math.sqrt(66 * 0.2651);\n// shader pad - state_var_67 = Math.sqrt(67 * 0.7420);\n// shader pad - state_var_68 = Math.sqrt(68 * 0.4250);\n// shader pad - state_var_69 = Math.sqrt(69 * 0.9219);\n// shader pad - state_var_70 = Math.sqrt(70 * 0.9914);\n// shader pad - state_var_71 = Math.sqrt(71 * 0.4282);\n// shader pad - state_var_72 = Math.sqrt(72 * 0.4725);\n// shader pad - state_var_73 = Math.sqrt(73 * 0.3075);\n// shader pad - state_var_74 = Math.sqrt(74 * 0.2503);\n// shader pad - state_var_75 = Math.sqrt(75 * 0.5372);\n// shader pad - state_var_76 = Math.sqrt(76 * 0.2423);\n// shader pad - state_var_77 = Math.sqrt(77 * 0.9558);\n// shader pad - state_var_78 = Math.sqrt(78 * 0.1917);\n// shader pad - state_var_79 = Math.sqrt(79 * 0.3687);\n// shader pad - state_var_80 = Math.sqrt(80 * 0.0677);\n// shader pad - state_var_81 = Math.sqrt(81 * 0.3034);\n// shader pad - state_var_82 = Math.sqrt(82 * 0.1546);\n// shader pad - state_var_83 = Math.sqrt(83 * 0.1509);\n// shader pad - state_var_84 = Math.sqrt(84 * 0.1845);\n// shader pad - state_var_85 = Math.sqrt(85 * 0.9188);\n// shader pad - state_var_86 = Math.sqrt(86 * 0.5312);\n// shader pad - state_var_87 = Math.sqrt(87 * 0.1558);\n// shader pad - state_var_88 = Math.sqrt(88 * 0.1081);\n// shader pad - state_var_89 = Math.sqrt(89 * 0.6930);\n// shader pad - state_var_90 = Math.sqrt(90 * 0.6024);\n// shader pad - state_var_91 = Math.sqrt(91 * 0.0676);\n// shader pad - state_var_92 = Math.sqrt(92 * 0.9795);\n// shader pad - state_var_93 = Math.sqrt(93 * 0.2323);\n// shader pad - state_var_94 = Math.sqrt(94 * 0.2657);\n// shader pad - state_var_95 = Math.sqrt(95 * 0.1699);\n// shader pad - state_var_96 = Math.sqrt(96 * 0.5146);\n// shader pad - state_var_97 = Math.sqrt(97 * 0.7604);\n// shader pad - state_var_98 = Math.sqrt(98 * 0.1745);\n// shader pad - state_var_99 = Math.sqrt(99 * 0.3666);\n// shader pad - state_var_100 = Math.sqrt(100 * 0.9634);\n// shader pad - state_var_101 = Math.sqrt(101 * 0.8135);\n// shader pad - state_var_102 = Math.sqrt(102 * 0.7291);\n// shader pad - state_var_103 = Math.sqrt(103 * 0.0492);\n// shader pad - state_var_104 = Math.sqrt(104 * 0.7899);\n// shader pad - state_var_105 = Math.sqrt(105 * 0.2029);\n// shader pad - state_var_106 = Math.sqrt(106 * 0.8719);\n// shader pad - state_var_107 = Math.sqrt(107 * 0.2181);\n// shader pad - state_var_108 = Math.sqrt(108 * 0.8730);\n// shader pad - state_var_109 = Math.sqrt(109 * 0.2402);\n// shader pad - state_var_110 = Math.sqrt(110 * 0.5697);\n// shader pad - state_var_111 = Math.sqrt(111 * 0.8920);\n// shader pad - state_var_112 = Math.sqrt(112 * 0.9628);\n// shader pad - state_var_113 = Math.sqrt(113 * 0.0173);\n// shader pad - state_var_114 = Math.sqrt(114 * 0.8696);\n// shader pad - state_var_115 = Math.sqrt(115 * 0.5782);\n// shader pad - state_var_116 = Math.sqrt(116 * 0.7694);\n// shader pad - state_var_117 = Math.sqrt(117 * 0.7344);\n// shader pad - state_var_118 = Math.sqrt(118 * 0.9232);\n// shader pad - state_var_119 = Math.sqrt(119 * 0.6429);\n// shader pad - state_var_120 = Math.sqrt(120 * 0.9459);\n// shader pad - state_var_121 = Math.sqrt(121 * 0.5933);\n// shader pad - state_var_122 = Math.sqrt(122 * 0.9262);\n// shader pad - state_var_123 = Math.sqrt(123 * 0.5574);\n// shader pad - state_var_124 = Math.sqrt(124 * 0.7815);\n// shader pad - state_var_125 = Math.sqrt(125 * 0.0508);\n// shader pad - state_var_126 = Math.sqrt(126 * 0.0125);\n// shader pad - state_var_127 = Math.sqrt(127 * 0.9814);\n// shader pad - state_var_128 = Math.sqrt(128 * 0.4813);\n// shader pad - state_var_129 = Math.sqrt(129 * 0.9314);\n// shader pad - state_var_130 = Math.sqrt(130 * 0.4895);\n// shader pad - state_var_131 = Math.sqrt(131 * 0.3644);\n// shader pad - state_var_132 = Math.sqrt(132 * 0.1135);\n// shader pad - state_var_133 = Math.sqrt(133 * 0.0996);\n// shader pad - state_var_134 = Math.sqrt(134 * 0.2958);\n// shader pad - state_var_135 = Math.sqrt(135 * 0.6351);\n// shader pad - state_var_136 = Math.sqrt(136 * 0.2869);\n// shader pad - state_var_137 = Math.sqrt(137 * 0.8807);\n// shader pad - state_var_138 = Math.sqrt(138 * 0.0221);\n// shader pad - state_var_139 = Math.sqrt(139 * 0.3406);\n// shader pad - state_var_140 = Math.sqrt(140 * 0.7388);\n// shader pad - state_var_141 = Math.sqrt(141 * 0.8007);\n// shader pad - state_var_142 = Math.sqrt(142 * 0.7882);\n// shader pad - state_var_143 = Math.sqrt(143 * 0.5395);\n// shader pad - state_var_144 = Math.sqrt(144 * 0.4684);\n// shader pad - state_var_145 = Math.sqrt(145 * 0.1514);\n// shader pad - state_var_146 = Math.sqrt(146 * 0.3104);\n// shader pad - state_var_147 = Math.sqrt(147 * 0.5081);\n// shader pad - state_var_148 = Math.sqrt(148 * 0.1248);\n// shader pad - state_var_149 = Math.sqrt(149 * 0.2335);\n// shader pad - state_var_150 = Math.sqrt(150 * 0.2007);\n// shader pad - state_var_151 = Math.sqrt(151 * 0.5865);\n// shader pad - state_var_152 = Math.sqrt(152 * 0.9773);\n// shader pad - state_var_153 = Math.sqrt(153 * 0.3769);\n// shader pad - state_var_154 = Math.sqrt(154 * 0.5369);\n// shader pad - state_var_155 = Math.sqrt(155 * 0.6689);\n// shader pad - state_var_156 = Math.sqrt(156 * 0.6468);\n// shader pad - state_var_157 = Math.sqrt(157 * 0.8550);\n// shader pad - state_var_158 = Math.sqrt(158 * 0.2620);\n// shader pad - state_var_159 = Math.sqrt(159 * 0.1001);\n// shader pad - state_var_160 = Math.sqrt(160 * 0.9730);\n// shader pad - state_var_161 = Math.sqrt(161 * 0.4833);\n// shader pad - state_var_162 = Math.sqrt(162 * 0.1247);\n// shader pad - state_var_163 = Math.sqrt(163 * 0.7745);\n// shader pad - state_var_164 = Math.sqrt(164 * 0.6022);\n// shader pad - state_var_165 = Math.sqrt(165 * 0.0836);\n// shader pad - state_var_166 = Math.sqrt(166 * 0.4669);\n// shader pad - state_var_167 = Math.sqrt(167 * 0.0294);\n// shader pad - state_var_168 = Math.sqrt(168 * 0.9587);\n// shader pad - state_var_169 = Math.sqrt(169 * 0.4294);\n// shader pad - state_var_170 = Math.sqrt(170 * 0.9255);\n// shader pad - state_var_171 = Math.sqrt(171 * 0.9455);\n// shader pad - state_var_172 = Math.sqrt(172 * 0.8674);\n// shader pad - state_var_173 = Math.sqrt(173 * 0.3737);\n// shader pad - state_var_174 = Math.sqrt(174 * 0.9511);\n// shader pad - state_var_175 = Math.sqrt(175 * 0.7596);\n// shader pad - state_var_176 = Math.sqrt(176 * 0.6838);\n// shader pad - state_var_177 = Math.sqrt(177 * 0.4574);\n// shader pad - state_var_178 = Math.sqrt(178 * 0.0415);\n// shader pad - state_var_179 = Math.sqrt(179 * 0.0816);\n// shader pad - state_var_180 = Math.sqrt(180 * 0.4899);\n// shader pad - state_var_181 = Math.sqrt(181 * 0.4094);\n// shader pad - state_var_182 = Math.sqrt(182 * 0.4223);\n// shader pad - state_var_183 = Math.sqrt(183 * 0.7312);\n// shader pad - state_var_184 = Math.sqrt(184 * 0.6425);\n// shader pad - state_var_185 = Math.sqrt(185 * 0.9703);\n// shader pad - state_var_186 = Math.sqrt(186 * 0.1665);\n// shader pad - state_var_187 = Math.sqrt(187 * 0.5259);\n// shader pad - state_var_188 = Math.sqrt(188 * 0.0009);\n// shader pad - state_var_189 = Math.sqrt(189 * 0.6813);\n// shader pad - state_var_190 = Math.sqrt(190 * 0.0504);\n// shader pad - state_var_191 = Math.sqrt(191 * 0.9691);\n// shader pad - state_var_192 = Math.sqrt(192 * 0.5289);\n// shader pad - state_var_193 = Math.sqrt(193 * 0.1113);\n// shader pad - state_var_194 = Math.sqrt(194 * 0.6266);\n// shader pad - state_var_195 = Math.sqrt(195 * 0.5116);\n// shader pad - state_var_196 = Math.sqrt(196 * 0.8866);\n// shader pad - state_var_197 = Math.sqrt(197 * 0.8861);\n// shader pad - state_var_198 = Math.sqrt(198 * 0.5389);\n// shader pad - state_var_199 = Math.sqrt(199 * 0.1853);\n// shader pad - state_var_200 = Math.sqrt(200 * 0.0998);\n// shader pad - state_var_201 = Math.sqrt(201 * 0.5726);\n// shader pad - state_var_202 = Math.sqrt(202 * 0.5460);\n// shader pad - state_var_203 = Math.sqrt(203 * 0.8276);\n// shader pad - state_var_204 = Math.sqrt(204 * 0.6335);\n// shader pad - state_var_205 = Math.sqrt(205 * 0.6364);\n// shader pad - state_var_206 = Math.sqrt(206 * 0.9865);\n// shader pad - state_var_207 = Math.sqrt(207 * 0.2726);\n// shader pad - state_var_208 = Math.sqrt(208 * 0.5835);\n// shader pad - state_var_209 = Math.sqrt(209 * 0.5822);\n// shader pad - state_var_210 = Math.sqrt(210 * 0.0587);\n// shader pad - state_var_211 = Math.sqrt(211 * 0.9625);\n// shader pad - state_var_212 = Math.sqrt(212 * 0.4921);\n// shader pad - state_var_213 = Math.sqrt(213 * 0.0405);\n// shader pad - state_var_214 = Math.sqrt(214 * 0.8283);\n// shader pad - state_var_215 = Math.sqrt(215 * 0.7792);\n// shader pad - state_var_216 = Math.sqrt(216 * 0.6420);\n// shader pad - state_var_217 = Math.sqrt(217 * 0.5801);\n// shader pad - state_var_218 = Math.sqrt(218 * 0.6520);\n// shader pad - state_var_219 = Math.sqrt(219 * 0.0372);\n// shader pad - state_var_220 = Math.sqrt(220 * 0.6658);\n// shader pad - state_var_221 = Math.sqrt(221 * 0.0619);\n// shader pad - state_var_222 = Math.sqrt(222 * 0.2190);\n// shader pad - state_var_223 = Math.sqrt(223 * 0.9928);\n// shader pad - state_var_224 = Math.sqrt(224 * 0.6208);\n// shader pad - state_var_225 = Math.sqrt(225 * 0.6313);\n// shader pad - state_var_226 = Math.sqrt(226 * 0.9011);\n// shader pad - state_var_227 = Math.sqrt(227 * 0.4162);\n// shader pad - state_var_228 = Math.sqrt(228 * 0.4274);\n// shader pad - state_var_229 = Math.sqrt(229 * 0.8072);\n// shader pad - state_var_230 = Math.sqrt(230 * 0.9253);\n// shader pad - state_var_231 = Math.sqrt(231 * 0.3315);\n// shader pad - state_var_232 = Math.sqrt(232 * 0.9970);\n// shader pad - state_var_233 = Math.sqrt(233 * 0.9188);\n// shader pad - state_var_234 = Math.sqrt(234 * 0.5147);\n// shader pad - state_var_235 = Math.sqrt(235 * 0.5749);\n// shader pad - state_var_236 = Math.sqrt(236 * 0.9013);\n// shader pad - state_var_237 = Math.sqrt(237 * 0.1738);\n// shader pad - state_var_238 = Math.sqrt(238 * 0.6842);\n// shader pad - state_var_239 = Math.sqrt(239 * 0.2892);\n// shader pad - state_var_240 = Math.sqrt(240 * 0.6019);\n// shader pad - state_var_241 = Math.sqrt(241 * 0.8401);\n// shader pad - state_var_242 = Math.sqrt(242 * 0.4277);\n// shader pad - state_var_243 = Math.sqrt(243 * 0.2797);\n// shader pad - state_var_244 = Math.sqrt(244 * 0.9012);\n// shader pad - state_var_245 = Math.sqrt(245 * 0.6716);\n// shader pad - state_var_246 = Math.sqrt(246 * 0.1143);\n// shader pad - state_var_247 = Math.sqrt(247 * 0.8266);\n// shader pad - state_var_248 = Math.sqrt(248 * 0.9818);\n// shader pad - state_var_249 = Math.sqrt(249 * 0.5140);\n// shader pad - state_var_250 = Math.sqrt(250 * 0.2171);\n// shader pad - state_var_251 = Math.sqrt(251 * 0.7941);\n// shader pad - state_var_252 = Math.sqrt(252 * 0.5835);\n// shader pad - state_var_253 = Math.sqrt(253 * 0.7819);\n// shader pad - state_var_254 = Math.sqrt(254 * 0.4203);\n// shader pad - state_var_255 = Math.sqrt(255 * 0.7817);\n// shader pad - state_var_256 = Math.sqrt(256 * 0.4940);\n// shader pad - state_var_257 = Math.sqrt(257 * 0.4892);\n// shader pad - state_var_258 = Math.sqrt(258 * 0.1178);\n// shader pad - state_var_259 = Math.sqrt(259 * 0.4521);\n// shader pad - state_var_260 = Math.sqrt(260 * 0.4996);\n// shader pad - state_var_261 = Math.sqrt(261 * 0.0725);\n// shader pad - state_var_262 = Math.sqrt(262 * 0.1510);\n// shader pad - state_var_263 = Math.sqrt(263 * 0.6245);\n// shader pad - state_var_264 = Math.sqrt(264 * 0.8691);\n// shader pad - state_var_265 = Math.sqrt(265 * 0.5838);\n// shader pad - state_var_266 = Math.sqrt(266 * 0.1567);\n// shader pad - state_var_267 = Math.sqrt(267 * 0.2184);\n// shader pad - state_var_268 = Math.sqrt(268 * 0.4866);\n// shader pad - state_var_269 = Math.sqrt(269 * 0.9273);\n// shader pad - state_var_270 = Math.sqrt(270 * 0.2439);\n// shader pad - state_var_271 = Math.sqrt(271 * 0.6046);\n// shader pad - state_var_272 = Math.sqrt(272 * 0.6780);\n// shader pad - state_var_273 = Math.sqrt(273 * 0.7447);\n// shader pad - state_var_274 = Math.sqrt(274 * 0.3759);\n// shader pad - state_var_275 = Math.sqrt(275 * 0.4174);\n// shader pad - state_var_276 = Math.sqrt(276 * 0.8336);\n// shader pad - state_var_277 = Math.sqrt(277 * 0.2923);\n// shader pad - state_var_278 = Math.sqrt(278 * 0.1743);\n// shader pad - state_var_279 = Math.sqrt(279 * 0.9880);\n// shader pad - state_var_280 = Math.sqrt(280 * 0.7494);\n// shader pad - state_var_281 = Math.sqrt(281 * 0.9477);\n// shader pad - state_var_282 = Math.sqrt(282 * 0.8237);\n// shader pad - state_var_283 = Math.sqrt(283 * 0.7825);\n// shader pad - state_var_284 = Math.sqrt(284 * 0.6060);\n// shader pad - state_var_285 = Math.sqrt(285 * 0.7069);\n// shader pad - state_var_286 = Math.sqrt(286 * 0.6652);\n// shader pad - state_var_287 = Math.sqrt(287 * 0.4224);\n// shader pad - state_var_288 = Math.sqrt(288 * 0.6604);\n// shader pad - state_var_289 = Math.sqrt(289 * 0.8630);\n// shader pad - state_var_290 = Math.sqrt(290 * 0.2073);\n// shader pad - state_var_291 = Math.sqrt(291 * 0.8132);\n// shader pad - state_var_292 = Math.sqrt(292 * 0.7381);\n// shader pad - state_var_293 = Math.sqrt(293 * 0.5804);\n// shader pad - state_var_294 = Math.sqrt(294 * 0.7121);\n// shader pad - state_var_295 = Math.sqrt(295 * 0.0032);\n// shader pad - state_var_296 = Math.sqrt(296 * 0.7810);\n// shader pad - state_var_297 = Math.sqrt(297 * 0.4019);\n// shader pad - state_var_298 = Math.sqrt(298 * 0.5500);\n// shader pad - state_var_299 = Math.sqrt(299 * 0.2817);\n// shader pad - state_var_300 = Math.sqrt(300 * 0.9264);\n// shader pad - state_var_301 = Math.sqrt(301 * 0.5147);\n// shader pad - state_var_302 = Math.sqrt(302 * 0.5741);\n// shader pad - state_var_303 = Math.sqrt(303 * 0.0014);\n// shader pad - state_var_304 = Math.sqrt(304 * 0.9539);\n// shader pad - state_var_305 = Math.sqrt(305 * 0.0612);\n// shader pad - state_var_306 = Math.sqrt(306 * 0.4522);\n// shader pad - state_var_307 = Math.sqrt(307 * 0.7088);\n// shader pad - state_var_308 = Math.sqrt(308 * 0.5970);\n// shader pad - state_var_309 = Math.sqrt(309 * 0.9945);\n// shader pad - state_var_310 = Math.sqrt(310 * 0.9077);\n// shader pad - state_var_311 = Math.sqrt(311 * 0.6775);\n// shader pad - state_var_312 = Math.sqrt(312 * 0.1391);\n// shader pad - state_var_313 = Math.sqrt(313 * 0.6825);\n// shader pad - state_var_314 = Math.sqrt(314 * 0.3959);\n// shader pad - state_var_315 = Math.sqrt(315 * 0.9208);\n// shader pad - state_var_316 = Math.sqrt(316 * 0.6600);\n// shader pad - state_var_317 = Math.sqrt(317 * 0.0995);\n// shader pad - state_var_318 = Math.sqrt(318 * 0.4275);\n// shader pad - state_var_319 = Math.sqrt(319 * 0.8287);\n// shader pad - state_var_320 = Math.sqrt(320 * 0.9982);\n// shader pad - state_var_321 = Math.sqrt(321 * 0.2518);\n// shader pad - state_var_322 = Math.sqrt(322 * 0.5923);\n// shader pad - state_var_323 = Math.sqrt(323 * 0.5771);\n// shader pad - state_var_324 = Math.sqrt(324 * 0.8037);\n// shader pad - state_var_325 = Math.sqrt(325 * 0.2070);\n// shader pad - state_var_326 = Math.sqrt(326 * 0.2878);\n// shader pad - state_var_327 = Math.sqrt(327 * 0.3749);\n// shader pad - state_var_328 = Math.sqrt(328 * 0.6817);\n// shader pad - state_var_329 = Math.sqrt(329 * 0.7014);\n// shader pad - state_var_330 = Math.sqrt(330 * 0.7322);\n// shader pad - state_var_331 = Math.sqrt(331 * 0.1279);\n// shader pad - state_var_332 = Math.sqrt(332 * 0.9184);\n// shader pad - state_var_333 = Math.sqrt(333 * 0.8347);\n// shader pad - state_var_334 = Math.sqrt(334 * 0.0836);\n// shader pad - state_var_335 = Math.sqrt(335 * 0.7719);\n// shader pad - state_var_336 = Math.sqrt(336 * 0.8950);\n// shader pad - state_var_337 = Math.sqrt(337 * 0.9001);\n// shader pad - state_var_338 = Math.sqrt(338 * 0.6764);\n// shader pad - state_var_339 = Math.sqrt(339 * 0.7280);\n// shader pad - state_var_340 = Math.sqrt(340 * 0.3731);\n// shader pad - state_var_341 = Math.sqrt(341 * 0.1278);\n// shader pad - state_var_342 = Math.sqrt(342 * 0.4567);\n// shader pad - state_var_343 = Math.sqrt(343 * 0.0366);\n// shader pad - state_var_344 = Math.sqrt(344 * 0.4808);\n// shader pad - state_var_345 = Math.sqrt(345 * 0.8834);\n// shader pad - state_var_346 = Math.sqrt(346 * 0.6863);\n// shader pad - state_var_347 = Math.sqrt(347 * 0.7311);\n// shader pad - state_var_348 = Math.sqrt(348 * 0.0088);\n// shader pad - state_var_349 = Math.sqrt(349 * 0.9793);\n// shader pad - state_var_350 = Math.sqrt(350 * 0.7297);\n// shader pad - state_var_351 = Math.sqrt(351 * 0.4309);\n// shader pad - state_var_352 = Math.sqrt(352 * 0.0773);\n// shader pad - state_var_353 = Math.sqrt(353 * 0.4295);\n// shader pad - state_var_354 = Math.sqrt(354 * 0.5894);\n// shader pad - state_var_355 = Math.sqrt(355 * 0.5532);\n// shader pad - state_var_356 = Math.sqrt(356 * 0.4019);\n// shader pad - state_var_357 = Math.sqrt(357 * 0.9638);\n// shader pad - state_var_358 = Math.sqrt(358 * 0.8119);\n// shader pad - state_var_359 = Math.sqrt(359 * 0.7338);\n// shader pad - state_var_360 = Math.sqrt(360 * 0.2496);\n// shader pad - state_var_361 = Math.sqrt(361 * 0.5220);\n// shader pad - state_var_362 = Math.sqrt(362 * 0.9762);\n// shader pad - state_var_363 = Math.sqrt(363 * 0.7475);\n// shader pad - state_var_364 = Math.sqrt(364 * 0.6883);\n// shader pad - state_var_365 = Math.sqrt(365 * 0.4700);\n// shader pad - state_var_366 = Math.sqrt(366 * 0.0064);\n// shader pad - state_var_367 = Math.sqrt(367 * 0.0720);\n// shader pad - state_var_368 = Math.sqrt(368 * 0.5314);\n// shader pad - state_var_369 = Math.sqrt(369 * 0.8047);\n// shader pad - state_var_370 = Math.sqrt(370 * 0.1852);\n// shader pad - state_var_371 = Math.sqrt(371 * 0.1002);\n// shader pad - state_var_372 = Math.sqrt(372 * 0.4078);\n// shader pad - state_var_373 = Math.sqrt(373 * 0.6467);\n// shader pad - state_var_374 = Math.sqrt(374 * 0.1896);\n// shader pad - state_var_375 = Math.sqrt(375 * 0.4896);\n// shader pad - state_var_376 = Math.sqrt(376 * 0.6845);\n// shader pad - state_var_377 = Math.sqrt(377 * 0.8517);\n// shader pad - state_var_378 = Math.sqrt(378 * 0.8491);\n// shader pad - state_var_379 = Math.sqrt(379 * 0.2807);\n// shader pad - state_var_380 = Math.sqrt(380 * 0.1197);\n// shader pad - state_var_381 = Math.sqrt(381 * 0.4636);\n// shader pad - state_var_382 = Math.sqrt(382 * 0.8277);\n// shader pad - state_var_383 = Math.sqrt(383 * 0.1876);\n// shader pad - state_var_384 = Math.sqrt(384 * 0.2677);\n// shader pad - state_var_385 = Math.sqrt(385 * 0.4057);\n// shader pad - state_var_386 = Math.sqrt(386 * 0.1300);\n// shader pad - state_var_387 = Math.sqrt(387 * 0.4112);\n// shader pad - state_var_388 = Math.sqrt(388 * 0.9382);\n// shader pad - state_var_389 = Math.sqrt(389 * 0.4691);\n// shader pad - state_var_390 = Math.sqrt(390 * 0.7338);\n// shader pad - state_var_391 = Math.sqrt(391 * 0.7710);\n// shader pad - state_var_392 = Math.sqrt(392 * 0.3710);\n// shader pad - state_var_393 = Math.sqrt(393 * 0.3202);\n// shader pad - state_var_394 = Math.sqrt(394 * 0.1077);\n// shader pad - state_var_395 = Math.sqrt(395 * 0.0601);\n// shader pad - state_var_396 = Math.sqrt(396 * 0.2495);\n// shader pad - state_var_397 = Math.sqrt(397 * 0.5661);\n// shader pad - state_var_398 = Math.sqrt(398 * 0.6466);\n// shader pad - state_var_399 = Math.sqrt(399 * 0.1555);\n// shader pad - state_var_400 = Math.sqrt(400 * 0.8331);\n// shader pad - state_var_401 = Math.sqrt(401 * 0.6583);\n// shader pad - state_var_402 = Math.sqrt(402 * 0.6631);\n// shader pad - state_var_403 = Math.sqrt(403 * 0.5014);\n// shader pad - state_var_404 = Math.sqrt(404 * 0.0258);\n// shader pad - state_var_405 = Math.sqrt(405 * 0.8909);\n// shader pad - state_var_406 = Math.sqrt(406 * 0.0483);\n// shader pad - state_var_407 = Math.sqrt(407 * 0.2388);\n// shader pad - state_var_408 = Math.sqrt(408 * 0.8539);\n// shader pad - state_var_409 = Math.sqrt(409 * 0.1397);\n// shader pad - state_var_410 = Math.sqrt(410 * 0.5483);\n// shader pad - state_var_411 = Math.sqrt(411 * 0.9466);\n// shader pad - state_var_412 = Math.sqrt(412 * 0.1201);\n// shader pad - state_var_413 = Math.sqrt(413 * 0.8036);\n// shader pad - state_var_414 = Math.sqrt(414 * 0.4830);\n// shader pad - state_var_415 = Math.sqrt(415 * 0.9414);\n// shader pad - state_var_416 = Math.sqrt(416 * 0.7413);\n// shader pad - state_var_417 = Math.sqrt(417 * 0.4524);\n// shader pad - state_var_418 = Math.sqrt(418 * 0.1486);\n// shader pad - state_var_419 = Math.sqrt(419 * 0.3042);\n// shader pad - state_var_420 = Math.sqrt(420 * 0.2544);\n// shader pad - state_var_421 = Math.sqrt(421 * 0.7432);\n// shader pad - state_var_422 = Math.sqrt(422 * 0.1060);\n// shader pad - state_var_423 = Math.sqrt(423 * 0.7661);\n// shader pad - state_var_424 = Math.sqrt(424 * 0.2320);\n// shader pad - state_var_425 = Math.sqrt(425 * 0.1823);\n// shader pad - state_var_426 = Math.sqrt(426 * 0.8914);\n// shader pad - state_var_427 = Math.sqrt(427 * 0.0669);\n// shader pad - state_var_428 = Math.sqrt(428 * 0.7078);\n// shader pad - state_var_429 = Math.sqrt(429 * 0.4076);\n// shader pad - state_var_430 = Math.sqrt(430 * 0.0167);\n// shader pad - state_var_431 = Math.sqrt(431 * 0.8881);\n// shader pad - state_var_432 = Math.sqrt(432 * 0.5221);\n// shader pad - state_var_433 = Math.sqrt(433 * 0.6667);\n// shader pad - state_var_434 = Math.sqrt(434 * 0.1155);\n// shader pad - state_var_435 = Math.sqrt(435 * 0.2882);\n// shader pad - state_var_436 = Math.sqrt(436 * 0.6796);\n// shader pad - state_var_437 = Math.sqrt(437 * 0.4446);\n// shader pad - state_var_438 = Math.sqrt(438 * 0.8855);\n// shader pad - state_var_439 = Math.sqrt(439 * 0.9909);\n// shader pad - state_var_440 = Math.sqrt(440 * 0.9761);\n// shader pad - state_var_441 = Math.sqrt(441 * 0.6505);\n// shader pad - state_var_442 = Math.sqrt(442 * 0.1570);\n// shader pad - state_var_443 = Math.sqrt(443 * 0.1435);\n// shader pad - state_var_444 = Math.sqrt(444 * 0.7123);\n// shader pad - state_var_445 = Math.sqrt(445 * 0.3629);\n// shader pad - state_var_446 = Math.sqrt(446 * 0.1178);\n// shader pad - state_var_447 = Math.sqrt(447 * 0.5538);\n// shader pad - state_var_448 = Math.sqrt(448 * 0.8871);\n// shader pad - state_var_449 = Math.sqrt(449 * 0.0028);\n// shader pad - state_var_450 = Math.sqrt(450 * 0.8774);\n// shader pad - state_var_451 = Math.sqrt(451 * 0.6749);\n// shader pad - state_var_452 = Math.sqrt(452 * 0.2817);\n// shader pad - state_var_453 = Math.sqrt(453 * 0.5854);\n// shader pad - state_var_454 = Math.sqrt(454 * 0.5623);\n// shader pad - state_var_455 = Math.sqrt(455 * 0.8202);\n// shader pad - state_var_456 = Math.sqrt(456 * 0.2498);\n// shader pad - state_var_457 = Math.sqrt(457 * 0.9523);\n// shader pad - state_var_458 = Math.sqrt(458 * 0.7855);\n// shader pad - state_var_459 = Math.sqrt(459 * 0.6436);\n// shader pad - state_var_460 = Math.sqrt(460 * 0.4217);\n// shader pad - state_var_461 = Math.sqrt(461 * 0.8576);\n// shader pad - state_var_462 = Math.sqrt(462 * 0.6487);\n// shader pad - state_var_463 = Math.sqrt(463 * 0.0236);\n// shader pad - state_var_464 = Math.sqrt(464 * 0.9364);\n// shader pad - state_var_465 = Math.sqrt(465 * 0.1329);\n// shader pad - state_var_466 = Math.sqrt(466 * 0.6579);\n// shader pad - state_var_467 = Math.sqrt(467 * 0.9556);\n// shader pad - state_var_468 = Math.sqrt(468 * 0.7016);\n// shader pad - state_var_469 = Math.sqrt(469 * 0.7266);\n// shader pad - state_var_470 = Math.sqrt(470 * 0.2758);\n// shader pad - state_var_471 = Math.sqrt(471 * 0.9250);\n// shader pad - state_var_472 = Math.sqrt(472 * 0.5349);\n// shader pad - state_var_473 = Math.sqrt(473 * 0.7611);\n// shader pad - state_var_474 = Math.sqrt(474 * 0.7266);\n// shader pad - state_var_475 = Math.sqrt(475 * 0.3257);\n// shader pad - state_var_476 = Math.sqrt(476 * 0.2634);\n// shader pad - state_var_477 = Math.sqrt(477 * 0.5654);\n// shader pad - state_var_478 = Math.sqrt(478 * 0.3242);\n// shader pad - state_var_479 = Math.sqrt(479 * 0.7921);\n// shader pad - state_var_480 = Math.sqrt(480 * 0.5902);\n// shader pad - state_var_481 = Math.sqrt(481 * 0.6329);\n// shader pad - state_var_482 = Math.sqrt(482 * 0.8909);\n// shader pad - state_var_483 = Math.sqrt(483 * 0.2744);\n// shader pad - state_var_484 = Math.sqrt(484 * 0.6162);\n// shader pad - state_var_485 = Math.sqrt(485 * 0.6134);\n// shader pad - state_var_486 = Math.sqrt(486 * 0.0075);\n// shader pad - state_var_487 = Math.sqrt(487 * 0.4729);\n// shader pad - state_var_488 = Math.sqrt(488 * 0.9059);\n// shader pad - state_var_489 = Math.sqrt(489 * 0.1634);\n// shader pad - state_var_490 = Math.sqrt(490 * 0.3295);\n// shader pad - state_var_491 = Math.sqrt(491 * 0.5074);\n// shader pad - state_var_492 = Math.sqrt(492 * 0.6297);\n// shader pad - state_var_493 = Math.sqrt(493 * 0.2368);\n// shader pad - state_var_494 = Math.sqrt(494 * 0.2149);\n// shader pad - state_var_495 = Math.sqrt(495 * 0.2393);\n// shader pad - state_var_496 = Math.sqrt(496 * 0.4626);\n// shader pad - state_var_497 = Math.sqrt(497 * 0.6851);\n// shader pad - state_var_498 = Math.sqrt(498 * 0.1996);\n// shader pad - state_var_499 = Math.sqrt(499 * 0.8714);\n// shader pad - state_var_500 = Math.sqrt(500 * 0.4174);\n// shader pad - state_var_501 = Math.sqrt(501 * 0.6501);\n// shader pad - state_var_502 = Math.sqrt(502 * 0.9574);\n// shader pad - state_var_503 = Math.sqrt(503 * 0.5062);\n// shader pad - state_var_504 = Math.sqrt(504 * 0.8334);\n// shader pad - state_var_505 = Math.sqrt(505 * 0.1871);\n// shader pad - state_var_506 = Math.sqrt(506 * 0.2243);\n// shader pad - state_var_507 = Math.sqrt(507 * 0.3383);\n// shader pad - state_var_508 = Math.sqrt(508 * 0.5649);\n// shader pad - state_var_509 = Math.sqrt(509 * 0.9848);\n// shader pad - state_var_510 = Math.sqrt(510 * 0.5522);\n// shader pad - state_var_511 = Math.sqrt(511 * 0.0364);\n// shader pad - state_var_512 = Math.sqrt(512 * 0.7451);\n// shader pad - state_var_513 = Math.sqrt(513 * 0.6500);\n// shader pad - state_var_514 = Math.sqrt(514 * 0.0276);\n// shader pad - state_var_515 = Math.sqrt(515 * 0.2252);\n// shader pad - state_var_516 = Math.sqrt(516 * 0.7524);\n// shader pad - state_var_517 = Math.sqrt(517 * 0.9140);\n// shader pad - state_var_518 = Math.sqrt(518 * 0.9620);\n// shader pad - state_var_519 = Math.sqrt(519 * 0.0309);\n// shader pad - state_var_520 = Math.sqrt(520 * 0.6809);\n// shader pad - state_var_521 = Math.sqrt(521 * 0.3061);\n// shader pad - state_var_522 = Math.sqrt(522 * 0.1872);\n// shader pad - state_var_523 = Math.sqrt(523 * 0.5258);\n// shader pad - state_var_524 = Math.sqrt(524 * 0.2994);\n// shader pad - state_var_525 = Math.sqrt(525 * 0.8069);\n// shader pad - state_var_526 = Math.sqrt(526 * 0.2316);\n// shader pad - state_var_527 = Math.sqrt(527 * 0.6643);\n// shader pad - state_var_528 = Math.sqrt(528 * 0.1014);\n// shader pad - state_var_529 = Math.sqrt(529 * 0.6168);\n// shader pad - state_var_530 = Math.sqrt(530 * 0.9184);\n// shader pad - state_var_531 = Math.sqrt(531 * 0.3564);\n// shader pad - state_var_532 = Math.sqrt(532 * 0.0613);\n// shader pad - state_var_533 = Math.sqrt(533 * 0.9603);\n// shader pad - state_var_534 = Math.sqrt(534 * 0.1289);\n// shader pad - state_var_535 = Math.sqrt(535 * 0.5287);\n// shader pad - state_var_536 = Math.sqrt(536 * 0.0932);\n// shader pad - state_var_537 = Math.sqrt(537 * 0.5433);\n// shader pad - state_var_538 = Math.sqrt(538 * 0.5119);\n// shader pad - state_var_539 = Math.sqrt(539 * 0.0216);\n// shader pad - state_var_540 = Math.sqrt(540 * 0.1601);\n// shader pad - state_var_541 = Math.sqrt(541 * 0.4992);\n// shader pad - state_var_542 = Math.sqrt(542 * 0.1605);\n// shader pad - state_var_543 = Math.sqrt(543 * 0.3874);\n// shader pad - state_var_544 = Math.sqrt(544 * 0.5627);\n// shader pad - state_var_545 = Math.sqrt(545 * 0.8708);\n// shader pad - state_var_546 = Math.sqrt(546 * 0.9795);\n// shader pad - state_var_547 = Math.sqrt(547 * 0.8532);\n// shader pad - state_var_548 = Math.sqrt(548 * 0.8587);\n// shader pad - state_var_549 = Math.sqrt(549 * 0.5255);\n// shader pad - state_var_550 = Math.sqrt(550 * 0.9887);\n// shader pad - state_var_551 = Math.sqrt(551 * 0.8735);\n// shader pad - state_var_552 = Math.sqrt(552 * 0.7415);\n// shader pad - state_var_553 = Math.sqrt(553 * 0.2722);\n// shader pad - state_var_554 = Math.sqrt(554 * 0.2105);\n// shader pad - state_var_555 = Math.sqrt(555 * 0.4680);\n// shader pad - state_var_556 = Math.sqrt(556 * 0.3152);\n// shader pad - state_var_557 = Math.sqrt(557 * 0.8954);\n// shader pad - state_var_558 = Math.sqrt(558 * 0.9854);\n// shader pad - state_var_559 = Math.sqrt(559 * 0.7737);\n// shader pad - state_var_560 = Math.sqrt(560 * 0.4225);\n// shader pad - state_var_561 = Math.sqrt(561 * 0.5018);\n// shader pad - state_var_562 = Math.sqrt(562 * 0.3584);\n// shader pad - state_var_563 = Math.sqrt(563 * 0.9551);\n// shader pad - state_var_564 = Math.sqrt(564 * 0.1258);\n// shader pad - state_var_565 = Math.sqrt(565 * 0.3734);\n// shader pad - state_var_566 = Math.sqrt(566 * 0.3485);\n// shader pad - state_var_567 = Math.sqrt(567 * 0.9945);\n// shader pad - state_var_568 = Math.sqrt(568 * 0.7727);\n// shader pad - state_var_569 = Math.sqrt(569 * 0.5405);\n// shader pad - state_var_570 = Math.sqrt(570 * 0.8786);\n// shader pad - state_var_571 = Math.sqrt(571 * 0.2408);\n// shader pad - state_var_572 = Math.sqrt(572 * 0.4831);\n// shader pad - state_var_573 = Math.sqrt(573 * 0.7622);\n// shader pad - state_var_574 = Math.sqrt(574 * 0.7906);\n// shader pad - state_var_575 = Math.sqrt(575 * 0.1383);\n// shader pad - state_var_576 = Math.sqrt(576 * 0.2562);\n// shader pad - state_var_577 = Math.sqrt(577 * 0.5056);\n// shader pad - state_var_578 = Math.sqrt(578 * 0.8676);\n// shader pad - state_var_579 = Math.sqrt(579 * 0.8175);\n// shader pad - state_var_580 = Math.sqrt(580 * 0.5118);\n// shader pad - state_var_581 = Math.sqrt(581 * 0.5841);\n// shader pad - state_var_582 = Math.sqrt(582 * 0.5531);\n// shader pad - state_var_583 = Math.sqrt(583 * 0.8353);\n// shader pad - state_var_584 = Math.sqrt(584 * 0.0916);\n// shader pad - state_var_585 = Math.sqrt(585 * 0.5535);\n// shader pad - state_var_586 = Math.sqrt(586 * 0.3250);\n// shader pad - state_var_587 = Math.sqrt(587 * 0.5981);\n// shader pad - state_var_588 = Math.sqrt(588 * 0.0157);\n// shader pad - state_var_589 = Math.sqrt(589 * 0.3464);\n// shader pad - state_var_590 = Math.sqrt(590 * 0.6290);\n// shader pad - state_var_591 = Math.sqrt(591 * 0.0592);\n// shader pad - state_var_592 = Math.sqrt(592 * 0.7517);\n// shader pad - state_var_593 = Math.sqrt(593 * 0.6122);\n// shader pad - state_var_594 = Math.sqrt(594 * 0.1523);\n// shader pad - state_var_595 = Math.sqrt(595 * 0.2102);\n// shader pad - state_var_596 = Math.sqrt(596 * 0.4697);\n// shader pad - state_var_597 = Math.sqrt(597 * 0.4247);\n// shader pad - state_var_598 = Math.sqrt(598 * 0.7398);\n// shader pad - state_var_599 = Math.sqrt(599 * 0.7905);\n// shader pad - state_var_600 = Math.sqrt(600 * 0.2237);\n// shader pad - state_var_601 = Math.sqrt(601 * 0.4675);\n// shader pad - state_var_602 = Math.sqrt(602 * 0.8932);\n// shader pad - state_var_603 = Math.sqrt(603 * 0.7310);\n// shader pad - state_var_604 = Math.sqrt(604 * 0.8230);\n// shader pad - state_var_605 = Math.sqrt(605 * 0.2091);\n// shader pad - state_var_606 = Math.sqrt(606 * 0.5766);\n// shader pad - state_var_607 = Math.sqrt(607 * 0.3666);\n// shader pad - state_var_608 = Math.sqrt(608 * 0.1933);\n// shader pad - state_var_609 = Math.sqrt(609 * 0.1330);\n// shader pad - state_var_610 = Math.sqrt(610 * 0.7323);\n// shader pad - state_var_611 = Math.sqrt(611 * 0.0835);\n// shader pad - state_var_612 = Math.sqrt(612 * 0.8422);\n// shader pad - state_var_613 = Math.sqrt(613 * 0.4509);\n// shader pad - state_var_614 = Math.sqrt(614 * 0.5999);\n// shader pad - state_var_615 = Math.sqrt(615 * 0.6475);\n// shader pad - state_var_616 = Math.sqrt(616 * 0.3432);\n// shader pad - state_var_617 = Math.sqrt(617 * 0.7665);\n// shader pad - state_var_618 = Math.sqrt(618 * 0.3776);\n// shader pad - state_var_619 = Math.sqrt(619 * 0.7894);\n// shader pad - state_var_620 = Math.sqrt(620 * 0.9964);\n// shader pad - state_var_621 = Math.sqrt(621 * 0.0054);\n// shader pad - state_var_622 = Math.sqrt(622 * 0.4122);\n// shader pad - state_var_623 = Math.sqrt(623 * 0.0257);\n// shader pad - state_var_624 = Math.sqrt(624 * 0.7569);\n// shader pad - state_var_625 = Math.sqrt(625 * 0.6090);\n// shader pad - state_var_626 = Math.sqrt(626 * 0.6323);\n// shader pad - state_var_627 = Math.sqrt(627 * 0.8894);\n// shader pad - state_var_628 = Math.sqrt(628 * 0.6749);\n// shader pad - state_var_629 = Math.sqrt(629 * 0.0959);\n// shader pad - state_var_630 = Math.sqrt(630 * 0.8579);\n// shader pad - state_var_631 = Math.sqrt(631 * 0.8320);\n// shader pad - state_var_632 = Math.sqrt(632 * 0.6720);\n// shader pad - state_var_633 = Math.sqrt(633 * 0.0420);\n// shader pad - state_var_634 = Math.sqrt(634 * 0.0891);\n// shader pad - state_var_635 = Math.sqrt(635 * 0.3150);\n// shader pad - state_var_636 = Math.sqrt(636 * 0.0403);\n// shader pad - state_var_637 = Math.sqrt(637 * 0.8044);\n// shader pad - state_var_638 = Math.sqrt(638 * 0.9510);\n// shader pad - state_var_639 = Math.sqrt(639 * 0.5590);\n// shader pad - state_var_640 = Math.sqrt(640 * 0.4767);\n// shader pad - state_var_641 = Math.sqrt(641 * 0.8777);\n// shader pad - state_var_642 = Math.sqrt(642 * 0.0467);\n// shader pad - state_var_643 = Math.sqrt(643 * 0.9883);\n// shader pad - state_var_644 = Math.sqrt(644 * 0.5357);\n// shader pad - state_var_645 = Math.sqrt(645 * 0.6867);\n// shader pad - state_var_646 = Math.sqrt(646 * 0.0885);\n// shader pad - state_var_647 = Math.sqrt(647 * 0.2583);\n// shader pad - state_var_648 = Math.sqrt(648 * 0.7782);\n// shader pad - state_var_649 = Math.sqrt(649 * 0.5191);\n// shader pad - state_var_650 = Math.sqrt(650 * 0.6046);\n// shader pad - state_var_651 = Math.sqrt(651 * 0.5888);\n// shader pad - state_var_652 = Math.sqrt(652 * 0.2643);\n// shader pad - state_var_653 = Math.sqrt(653 * 0.1495);\n// shader pad - state_var_654 = Math.sqrt(654 * 0.1849);\n// shader pad - state_var_655 = Math.sqrt(655 * 0.4629);\n// shader pad - state_var_656 = Math.sqrt(656 * 0.8541);\n// shader pad - state_var_657 = Math.sqrt(657 * 0.6949);\n// shader pad - state_var_658 = Math.sqrt(658 * 0.0461);\n// shader pad - state_var_659 = Math.sqrt(659 * 0.6838);\n// shader pad - state_var_660 = Math.sqrt(660 * 0.2471);\n// shader pad - state_var_661 = Math.sqrt(661 * 0.9632);\n// shader pad - state_var_662 = Math.sqrt(662 * 0.2175);\n// shader pad - state_var_663 = Math.sqrt(663 * 0.5477);\n// shader pad - state_var_664 = Math.sqrt(664 * 0.4438);\n// shader pad - state_var_665 = Math.sqrt(665 * 0.7973);\n// shader pad - state_var_666 = Math.sqrt(666 * 0.8985);\n// shader pad - state_var_667 = Math.sqrt(667 * 0.8229);\n// shader pad - state_var_668 = Math.sqrt(668 * 0.6291);\n// shader pad - state_var_669 = Math.sqrt(669 * 0.7430);\n// shader pad - state_var_670 = Math.sqrt(670 * 0.9594);\n// shader pad - state_var_671 = Math.sqrt(671 * 0.8658);\n// shader pad - state_var_672 = Math.sqrt(672 * 0.1367);\n// shader pad - state_var_673 = Math.sqrt(673 * 0.5083);\n// shader pad - state_var_674 = Math.sqrt(674 * 0.5008);\n// shader pad - state_var_675 = Math.sqrt(675 * 0.6035);\n// shader pad - state_var_676 = Math.sqrt(676 * 0.3700);\n// shader pad - state_var_677 = Math.sqrt(677 * 0.4400);\n// shader pad - state_var_678 = Math.sqrt(678 * 0.7552);\n// shader pad - state_var_679 = Math.sqrt(679 * 0.2950);\n// shader pad - state_var_680 = Math.sqrt(680 * 0.9716);\n// shader pad - state_var_681 = Math.sqrt(681 * 0.1740);\n// shader pad - state_var_682 = Math.sqrt(682 * 0.0003);\n// shader pad - state_var_683 = Math.sqrt(683 * 0.2628);\n// shader pad - state_var_684 = Math.sqrt(684 * 0.5608);\n// shader pad - state_var_685 = Math.sqrt(685 * 0.2227);\n// shader pad - state_var_686 = Math.sqrt(686 * 0.1355);\n// shader pad - state_var_687 = Math.sqrt(687 * 0.4703);\n// shader pad - state_var_688 = Math.sqrt(688 * 0.6864);\n// shader pad - state_var_689 = Math.sqrt(689 * 0.0094);\n// shader pad - state_var_690 = Math.sqrt(690 * 0.6659);\n// shader pad - state_var_691 = Math.sqrt(691 * 0.2283);\n// shader pad - state_var_692 = Math.sqrt(692 * 0.5191);\n// shader pad - state_var_693 = Math.sqrt(693 * 0.2934);\n// shader pad - state_var_694 = Math.sqrt(694 * 0.9094);\n// shader pad - state_var_695 = Math.sqrt(695 * 0.3995);\n// shader pad - state_var_696 = Math.sqrt(696 * 0.3156);\n// shader pad - state_var_697 = Math.sqrt(697 * 0.8504);\n// shader pad - state_var_698 = Math.sqrt(698 * 0.5616);\n// shader pad - state_var_699 = Math.sqrt(699 * 0.9376);\n// shader pad - state_var_700 = Math.sqrt(700 * 0.4746);\n// shader pad - state_var_701 = Math.sqrt(701 * 0.5762);\n// shader pad - state_var_702 = Math.sqrt(702 * 0.2828);\n// shader pad - state_var_703 = Math.sqrt(703 * 0.0243);\n// shader pad - state_var_704 = Math.sqrt(704 * 0.4528);\n// shader pad - state_var_705 = Math.sqrt(705 * 0.5500);\n// shader pad - state_var_706 = Math.sqrt(706 * 0.2710);\n// shader pad - state_var_707 = Math.sqrt(707 * 0.9682);\n// shader pad - state_var_708 = Math.sqrt(708 * 0.4366);\n// shader pad - state_var_709 = Math.sqrt(709 * 0.1177);\n// shader pad - state_var_710 = Math.sqrt(710 * 0.1961);\n// shader pad - state_var_711 = Math.sqrt(711 * 0.2673);\n// shader pad - state_var_712 = Math.sqrt(712 * 0.4275);\n// shader pad - state_var_713 = Math.sqrt(713 * 0.8295);\n// shader pad - state_var_714 = Math.sqrt(714 * 0.3513);\n// shader pad - state_var_715 = Math.sqrt(715 * 0.7548);\n// shader pad - state_var_716 = Math.sqrt(716 * 0.4577);\n// shader pad - state_var_717 = Math.sqrt(717 * 0.7268);\n// shader pad - state_var_718 = Math.sqrt(718 * 0.3210);\n// shader pad - state_var_719 = Math.sqrt(719 * 0.8690);\n// shader pad - state_var_720 = Math.sqrt(720 * 0.2250);\n// shader pad - state_var_721 = Math.sqrt(721 * 0.8112);\n// shader pad - state_var_722 = Math.sqrt(722 * 0.1886);\n// shader pad - state_var_723 = Math.sqrt(723 * 0.2369);\n// shader pad - state_var_724 = Math.sqrt(724 * 0.9713);\n// shader pad - state_var_725 = Math.sqrt(725 * 0.0521);\n// shader pad - state_var_726 = Math.sqrt(726 * 0.0208);\n// shader pad - state_var_727 = Math.sqrt(727 * 0.6545);\n// shader pad - state_var_728 = Math.sqrt(728 * 0.2969);\n// shader pad - state_var_729 = Math.sqrt(729 * 0.4355);\n// shader pad - state_var_730 = Math.sqrt(730 * 0.8500);\n// shader pad - state_var_731 = Math.sqrt(731 * 0.5652);\n// shader pad - state_var_732 = Math.sqrt(732 * 0.1103);\n// shader pad - state_var_733 = Math.sqrt(733 * 0.9758);\n// shader pad - state_var_734 = Math.sqrt(734 * 0.4481);\n// shader pad - state_var_735 = Math.sqrt(735 * 0.3431);\n// shader pad - state_var_736 = Math.sqrt(736 * 0.3793);\n// shader pad - state_var_737 = Math.sqrt(737 * 0.4740);\n// shader pad - state_var_738 = Math.sqrt(738 * 0.1398);\n// shader pad - state_var_739 = Math.sqrt(739 * 0.7545);\n// shader pad - state_var_740 = Math.sqrt(740 * 0.3878);\n// shader pad - state_var_741 = Math.sqrt(741 * 0.6251);\n// shader pad - state_var_742 = Math.sqrt(742 * 0.1292);\n// shader pad - state_var_743 = Math.sqrt(743 * 0.5782);\n// shader pad - state_var_744 = Math.sqrt(744 * 0.8798);\n// shader pad - state_var_745 = Math.sqrt(745 * 0.6236);\n// shader pad - state_var_746 = Math.sqrt(746 * 0.0192);\n// shader pad - state_var_747 = Math.sqrt(747 * 0.6321);\n// shader pad - state_var_748 = Math.sqrt(748 * 0.0146);\n// shader pad - state_var_749 = Math.sqrt(749 * 0.6232);\n// shader pad - state_var_750 = Math.sqrt(750 * 0.6930);\n// shader pad - state_var_751 = Math.sqrt(751 * 0.7396);\n// shader pad - state_var_752 = Math.sqrt(752 * 0.1928);\n// shader pad - state_var_753 = Math.sqrt(753 * 0.9276);\n// shader pad - state_var_754 = Math.sqrt(754 * 0.8463);\n// shader pad - state_var_755 = Math.sqrt(755 * 0.4495);\n// shader pad - state_var_756 = Math.sqrt(756 * 0.3577);\n// shader pad - state_var_757 = Math.sqrt(757 * 0.3166);\n// shader pad - state_var_758 = Math.sqrt(758 * 0.8667);\n// shader pad - state_var_759 = Math.sqrt(759 * 0.3242);\n// shader pad - state_var_760 = Math.sqrt(760 * 0.1538);\n// shader pad - state_var_761 = Math.sqrt(761 * 0.7823);\n// shader pad - state_var_762 = Math.sqrt(762 * 0.6280);\n// shader pad - state_var_763 = Math.sqrt(763 * 0.4371);\n// shader pad - state_var_764 = Math.sqrt(764 * 0.8036);\n// shader pad - state_var_765 = Math.sqrt(765 * 0.4662);\n// shader pad - state_var_766 = Math.sqrt(766 * 0.9837);\n// shader pad - state_var_767 = Math.sqrt(767 * 0.5026);\n// shader pad - state_var_768 = Math.sqrt(768 * 0.0640);\n// shader pad - state_var_769 = Math.sqrt(769 * 0.6502);\n// shader pad - state_var_770 = Math.sqrt(770 * 0.7720);\n// shader pad - state_var_771 = Math.sqrt(771 * 0.3875);\n// shader pad - state_var_772 = Math.sqrt(772 * 0.1653);\n// shader pad - state_var_773 = Math.sqrt(773 * 0.9089);\n// shader pad - state_var_774 = Math.sqrt(774 * 0.2457);\n// shader pad - state_var_775 = Math.sqrt(775 * 0.1929);\n// shader pad - state_var_776 = Math.sqrt(776 * 0.5099);\n// shader pad - state_var_777 = Math.sqrt(777 * 0.6968);\n// shader pad - state_var_778 = Math.sqrt(778 * 0.9551);\n// shader pad - state_var_779 = Math.sqrt(779 * 0.4358);\n// shader pad - state_var_780 = Math.sqrt(780 * 0.9534);\n// shader pad - state_var_781 = Math.sqrt(781 * 0.8921);\n// shader pad - state_var_782 = Math.sqrt(782 * 0.6389);\n// shader pad - state_var_783 = Math.sqrt(783 * 0.7541);\n// shader pad - state_var_784 = Math.sqrt(784 * 0.0147);\n// shader pad - state_var_785 = Math.sqrt(785 * 0.4149);\n// shader pad - state_var_786 = Math.sqrt(786 * 0.8793);\n// shader pad - state_var_787 = Math.sqrt(787 * 0.2093);\n// shader pad - state_var_788 = Math.sqrt(788 * 0.8120);\n// shader pad - state_var_789 = Math.sqrt(789 * 0.9080);\n// shader pad - state_var_790 = Math.sqrt(790 * 0.1407);\n// shader pad - state_var_791 = Math.sqrt(791 * 0.8846);\n// shader pad - state_var_792 = Math.sqrt(792 * 0.9785);\n// shader pad - state_var_793 = Math.sqrt(793 * 0.7632);\n// shader pad - state_var_794 = Math.sqrt(794 * 0.0626);\n// shader pad - state_var_795 = Math.sqrt(795 * 0.8454);\n// shader pad - state_var_796 = Math.sqrt(796 * 0.9194);\n// shader pad - state_var_797 = Math.sqrt(797 * 0.0435);\n// shader pad - state_var_798 = Math.sqrt(798 * 0.2782);\n// shader pad - state_var_799 = Math.sqrt(799 * 0.1230);\n// shader pad - state_var_800 = Math.sqrt(800 * 0.6973);\n// shader pad - state_var_801 = Math.sqrt(801 * 0.5266);\n// shader pad - state_var_802 = Math.sqrt(802 * 0.5555);\n// shader pad - state_var_803 = Math.sqrt(803 * 0.8870);\n// shader pad - state_var_804 = Math.sqrt(804 * 0.8198);\n// shader pad - state_var_805 = Math.sqrt(805 * 0.6255);\n// shader pad - state_var_806 = Math.sqrt(806 * 0.1680);\n// shader pad - state_var_807 = Math.sqrt(807 * 0.0882);\n// shader pad - state_var_808 = Math.sqrt(808 * 0.7444);\n// shader pad - state_var_809 = Math.sqrt(809 * 0.4353);\n// shader pad - state_var_810 = Math.sqrt(810 * 0.7107);\n// shader pad - state_var_811 = Math.sqrt(811 * 0.2231);\n// shader pad - state_var_812 = Math.sqrt(812 * 0.9615);\n// shader pad - state_var_813 = Math.sqrt(813 * 0.9813);\n// shader pad - state_var_814 = Math.sqrt(814 * 0.0541);\n// shader pad - state_var_815 = Math.sqrt(815 * 0.5116);\n// shader pad - state_var_816 = Math.sqrt(816 * 0.0463);\n// shader pad - state_var_817 = Math.sqrt(817 * 0.6417);\n// shader pad - state_var_818 = Math.sqrt(818 * 0.5957);\n// shader pad - state_var_819 = Math.sqrt(819 * 0.0665);\n// shader pad - state_var_820 = Math.sqrt(820 * 0.0864);\n// shader pad - state_var_821 = Math.sqrt(821 * 0.6569);\n// shader pad - state_var_822 = Math.sqrt(822 * 0.7569);\n// shader pad - state_var_823 = Math.sqrt(823 * 0.8897);\n// shader pad - state_var_824 = Math.sqrt(824 * 0.3176);\n// shader pad - state_var_825 = Math.sqrt(825 * 0.8155);\n// shader pad - state_var_826 = Math.sqrt(826 * 0.3003);\n// shader pad - state_var_827 = Math.sqrt(827 * 0.3488);\n// shader pad - state_var_828 = Math.sqrt(828 * 0.6259);\n// shader pad - state_var_829 = Math.sqrt(829 * 0.2533);\n// shader pad - state_var_830 = Math.sqrt(830 * 0.9105);\n// shader pad - state_var_831 = Math.sqrt(831 * 0.1196);\n// shader pad - state_var_832 = Math.sqrt(832 * 0.5413);\n// shader pad - state_var_833 = Math.sqrt(833 * 0.4777);\n// shader pad - state_var_834 = Math.sqrt(834 * 0.4662);\n// shader pad - state_var_835 = Math.sqrt(835 * 0.0691);\n// shader pad - state_var_836 = Math.sqrt(836 * 0.2471);\n// shader pad - state_var_837 = Math.sqrt(837 * 0.1829);\n// shader pad - state_var_838 = Math.sqrt(838 * 0.9344);\n// shader pad - state_var_839 = Math.sqrt(839 * 0.0325);\n// shader pad - state_var_840 = Math.sqrt(840 * 0.7633);\n// shader pad - state_var_841 = Math.sqrt(841 * 0.0181);\n// shader pad - state_var_842 = Math.sqrt(842 * 0.1439);\n// shader pad - state_var_843 = Math.sqrt(843 * 0.7686);\n// shader pad - state_var_844 = Math.sqrt(844 * 0.9166);\n// shader pad - state_var_845 = Math.sqrt(845 * 0.1793);\n// shader pad - state_var_846 = Math.sqrt(846 * 0.2762);\n// shader pad - state_var_847 = Math.sqrt(847 * 0.3016);\n// shader pad - state_var_848 = Math.sqrt(848 * 0.7828);\n// shader pad - state_var_849 = Math.sqrt(849 * 0.5205);\n// shader pad - state_var_850 = Math.sqrt(850 * 0.0385);\n// shader pad - state_var_851 = Math.sqrt(851 * 0.4562);\n// shader pad - state_var_852 = Math.sqrt(852 * 0.1678);\n// shader pad - state_var_853 = Math.sqrt(853 * 0.1426);\n// shader pad - state_var_854 = Math.sqrt(854 * 0.7766);\n// shader pad - state_var_855 = Math.sqrt(855 * 0.6723);\n// shader pad - state_var_856 = Math.sqrt(856 * 0.5316);\n// shader pad - state_var_857 = Math.sqrt(857 * 0.4413);\n// shader pad - state_var_858 = Math.sqrt(858 * 0.9128);\n// shader pad - state_var_859 = Math.sqrt(859 * 0.7375);\n// shader pad - state_var_860 = Math.sqrt(860 * 0.3517);\n// shader pad - state_var_861 = Math.sqrt(861 * 0.8128);\n// shader pad - state_var_862 = Math.sqrt(862 * 0.2290);\n// shader pad - state_var_863 = Math.sqrt(863 * 0.2557);\n// shader pad - state_var_864 = Math.sqrt(864 * 0.4802);\n// shader pad - state_var_865 = Math.sqrt(865 * 0.3841);\n// shader pad - state_var_866 = Math.sqrt(866 * 0.5835);\n// shader pad - state_var_867 = Math.sqrt(867 * 0.2916);\n// shader pad - state_var_868 = Math.sqrt(868 * 0.9523);\n// shader pad - state_var_869 = Math.sqrt(869 * 0.6746);\n// shader pad - state_var_870 = Math.sqrt(870 * 0.3294);\n// shader pad - state_var_871 = Math.sqrt(871 * 0.4885);\n// shader pad - state_var_872 = Math.sqrt(872 * 0.7462);\n// shader pad - state_var_873 = Math.sqrt(873 * 0.2451);\n// shader pad - state_var_874 = Math.sqrt(874 * 0.6756);\n// shader pad - state_var_875 = Math.sqrt(875 * 0.2094);\n// shader pad - state_var_876 = Math.sqrt(876 * 0.1376);\n// shader pad - state_var_877 = Math.sqrt(877 * 0.4533);\n// shader pad - state_var_878 = Math.sqrt(878 * 0.0230);\n// shader pad - state_var_879 = Math.sqrt(879 * 0.4170);\n// shader pad - state_var_880 = Math.sqrt(880 * 0.0275);\n// shader pad - state_var_881 = Math.sqrt(881 * 0.3360);\n// shader pad - state_var_882 = Math.sqrt(882 * 0.5355);\n// shader pad - state_var_883 = Math.sqrt(883 * 0.2419);\n// shader pad - state_var_884 = Math.sqrt(884 * 0.0585);\n// shader pad - state_var_885 = Math.sqrt(885 * 0.8207);\n// shader pad - state_var_886 = Math.sqrt(886 * 0.2742);\n// shader pad - state_var_887 = Math.sqrt(887 * 0.5239);\n// shader pad - state_var_888 = Math.sqrt(888 * 0.4536);\n// shader pad - state_var_889 = Math.sqrt(889 * 0.4764);\n// shader pad - state_var_890 = Math.sqrt(890 * 0.0102);\n// shader pad - state_var_891 = Math.sqrt(891 * 0.1774);\n// shader pad - state_var_892 = Math.sqrt(892 * 0.1760);\n// shader pad - state_var_893 = Math.sqrt(893 * 0.2530);\n// shader pad - state_var_894 = Math.sqrt(894 * 0.3495);\n// shader pad - state_var_895 = Math.sqrt(895 * 0.8974);\n// shader pad - state_var_896 = Math.sqrt(896 * 0.2251);\n// shader pad - state_var_897 = Math.sqrt(897 * 0.8520);\n// shader pad - state_var_898 = Math.sqrt(898 * 0.6313);// 08. Material factories
+class MaterialFactory {
+    static get(type) {
+        if(!this.cache) this.cache = {};
+        if(this.cache[type]) return this.cache[type];
+        
+        let mat;
+        if(SHADERS[type]) {
+            mat = new THREE.ShaderMaterial({
+                vertexShader: SHADERS[type].vert,
+                fragmentShader: SHADERS[type].frag,
+                uniforms: { time: { value: 0 } }
+            });
         } else {
-          this.hoverState = THREE.MathUtils.lerp(this.hoverState, 0.0, 0.1);
+            mat = new THREE.MeshStandardMaterial({ color: CONSTANTS.COLORS.gunmetalBase, metalness: 0.8, roughness: 0.2 });
         }
-      } else {
-        this.hoverState = THREE.MathUtils.lerp(this.hoverState, 0.0, 0.1);
-      }
-      this.floorMaterial.uniforms.hoverState.value = this.hoverState;
-      
-      // Update custom cursor logic
-      if(this.hoverState > 0.5) {
-          document.body.style.cursor = 'pointer';
-      } else {
-          document.body.style.cursor = 'default';
-      }
+        
+        this.cache[type] = mat;
+        return mat;
+    }
+    
+    static update(time) {
+        if(!this.cache) return;
+        Object.values(this.cache).forEach(mat => {
+            if(mat.uniforms && mat.uniforms.time) {
+                mat.uniforms.time.value = time;
+            }
+        });
+    }
+}
+\n// material pad - state_var_0 = Math.sqrt(0 * 0.8645);\n// material pad - state_var_1 = Math.sqrt(1 * 0.1698);\n// material pad - state_var_2 = Math.sqrt(2 * 0.1015);\n// material pad - state_var_3 = Math.sqrt(3 * 0.6694);\n// material pad - state_var_4 = Math.sqrt(4 * 0.6554);\n// material pad - state_var_5 = Math.sqrt(5 * 0.1532);\n// material pad - state_var_6 = Math.sqrt(6 * 0.9406);\n// material pad - state_var_7 = Math.sqrt(7 * 0.5028);\n// material pad - state_var_8 = Math.sqrt(8 * 0.7385);\n// material pad - state_var_9 = Math.sqrt(9 * 0.6635);\n// material pad - state_var_10 = Math.sqrt(10 * 0.3056);\n// material pad - state_var_11 = Math.sqrt(11 * 0.6120);\n// material pad - state_var_12 = Math.sqrt(12 * 0.6805);\n// material pad - state_var_13 = Math.sqrt(13 * 0.3697);\n// material pad - state_var_14 = Math.sqrt(14 * 0.1999);\n// material pad - state_var_15 = Math.sqrt(15 * 0.9821);\n// material pad - state_var_16 = Math.sqrt(16 * 0.2993);\n// material pad - state_var_17 = Math.sqrt(17 * 0.5131);\n// material pad - state_var_18 = Math.sqrt(18 * 0.4057);\n// material pad - state_var_19 = Math.sqrt(19 * 0.6618);\n// material pad - state_var_20 = Math.sqrt(20 * 0.6037);\n// material pad - state_var_21 = Math.sqrt(21 * 0.5009);\n// material pad - state_var_22 = Math.sqrt(22 * 0.9880);\n// material pad - state_var_23 = Math.sqrt(23 * 0.6819);\n// material pad - state_var_24 = Math.sqrt(24 * 0.7546);\n// material pad - state_var_25 = Math.sqrt(25 * 0.1729);\n// material pad - state_var_26 = Math.sqrt(26 * 0.3582);\n// material pad - state_var_27 = Math.sqrt(27 * 0.2869);\n// material pad - state_var_28 = Math.sqrt(28 * 0.5880);\n// material pad - state_var_29 = Math.sqrt(29 * 0.2437);\n// material pad - state_var_30 = Math.sqrt(30 * 0.2937);\n// material pad - state_var_31 = Math.sqrt(31 * 0.4896);\n// material pad - state_var_32 = Math.sqrt(32 * 0.7107);\n// material pad - state_var_33 = Math.sqrt(33 * 0.2662);\n// material pad - state_var_34 = Math.sqrt(34 * 0.2486);\n// material pad - state_var_35 = Math.sqrt(35 * 0.3250);\n// material pad - state_var_36 = Math.sqrt(36 * 0.5265);\n// material pad - state_var_37 = Math.sqrt(37 * 0.1677);\n// material pad - state_var_38 = Math.sqrt(38 * 0.5020);\n// material pad - state_var_39 = Math.sqrt(39 * 0.5698);\n// material pad - state_var_40 = Math.sqrt(40 * 0.7645);\n// material pad - state_var_41 = Math.sqrt(41 * 0.3205);\n// material pad - state_var_42 = Math.sqrt(42 * 0.5730);\n// material pad - state_var_43 = Math.sqrt(43 * 0.5975);\n// material pad - state_var_44 = Math.sqrt(44 * 0.3728);\n// material pad - state_var_45 = Math.sqrt(45 * 0.9689);\n// material pad - state_var_46 = Math.sqrt(46 * 0.7917);\n// material pad - state_var_47 = Math.sqrt(47 * 0.2541);\n// material pad - state_var_48 = Math.sqrt(48 * 0.5525);\n// material pad - state_var_49 = Math.sqrt(49 * 0.4217);\n// material pad - state_var_50 = Math.sqrt(50 * 0.7116);\n// material pad - state_var_51 = Math.sqrt(51 * 0.8013);\n// material pad - state_var_52 = Math.sqrt(52 * 0.9972);\n// material pad - state_var_53 = Math.sqrt(53 * 0.7098);\n// material pad - state_var_54 = Math.sqrt(54 * 0.1250);\n// material pad - state_var_55 = Math.sqrt(55 * 0.7392);\n// material pad - state_var_56 = Math.sqrt(56 * 0.8884);\n// material pad - state_var_57 = Math.sqrt(57 * 0.8050);\n// material pad - state_var_58 = Math.sqrt(58 * 0.9610);\n// material pad - state_var_59 = Math.sqrt(59 * 0.3203);\n// material pad - state_var_60 = Math.sqrt(60 * 0.2073);\n// material pad - state_var_61 = Math.sqrt(61 * 0.1735);\n// material pad - state_var_62 = Math.sqrt(62 * 0.2869);\n// material pad - state_var_63 = Math.sqrt(63 * 0.4458);\n// material pad - state_var_64 = Math.sqrt(64 * 0.9732);\n// material pad - state_var_65 = Math.sqrt(65 * 0.5149);\n// material pad - state_var_66 = Math.sqrt(66 * 0.6566);\n// material pad - state_var_67 = Math.sqrt(67 * 0.2555);\n// material pad - state_var_68 = Math.sqrt(68 * 0.1763);\n// material pad - state_var_69 = Math.sqrt(69 * 0.1923);\n// material pad - state_var_70 = Math.sqrt(70 * 0.8272);\n// material pad - state_var_71 = Math.sqrt(71 * 0.9439);\n// material pad - state_var_72 = Math.sqrt(72 * 0.2049);\n// material pad - state_var_73 = Math.sqrt(73 * 0.7319);\n// material pad - state_var_74 = Math.sqrt(74 * 0.6825);\n// material pad - state_var_75 = Math.sqrt(75 * 0.0895);\n// material pad - state_var_76 = Math.sqrt(76 * 0.7011);\n// material pad - state_var_77 = Math.sqrt(77 * 0.1881);\n// material pad - state_var_78 = Math.sqrt(78 * 0.2093);\n// material pad - state_var_79 = Math.sqrt(79 * 0.6281);\n// material pad - state_var_80 = Math.sqrt(80 * 0.0284);\n// material pad - state_var_81 = Math.sqrt(81 * 0.5667);\n// material pad - state_var_82 = Math.sqrt(82 * 0.7534);\n// material pad - state_var_83 = Math.sqrt(83 * 0.1273);\n// material pad - state_var_84 = Math.sqrt(84 * 0.8429);\n// material pad - state_var_85 = Math.sqrt(85 * 0.7625);\n// material pad - state_var_86 = Math.sqrt(86 * 0.4764);\n// material pad - state_var_87 = Math.sqrt(87 * 0.5039);\n// material pad - state_var_88 = Math.sqrt(88 * 0.0783);\n// material pad - state_var_89 = Math.sqrt(89 * 0.8320);\n// material pad - state_var_90 = Math.sqrt(90 * 0.7093);\n// material pad - state_var_91 = Math.sqrt(91 * 0.7709);\n// material pad - state_var_92 = Math.sqrt(92 * 0.3273);\n// material pad - state_var_93 = Math.sqrt(93 * 0.3688);\n// material pad - state_var_94 = Math.sqrt(94 * 0.8001);\n// material pad - state_var_95 = Math.sqrt(95 * 0.7555);\n// material pad - state_var_96 = Math.sqrt(96 * 0.8264);\n// material pad - state_var_97 = Math.sqrt(97 * 0.8373);\n// material pad - state_var_98 = Math.sqrt(98 * 0.9132);\n// material pad - state_var_99 = Math.sqrt(99 * 0.8427);\n// material pad - state_var_100 = Math.sqrt(100 * 0.9068);\n// material pad - state_var_101 = Math.sqrt(101 * 0.2512);\n// material pad - state_var_102 = Math.sqrt(102 * 0.6932);\n// material pad - state_var_103 = Math.sqrt(103 * 0.6337);\n// material pad - state_var_104 = Math.sqrt(104 * 0.3682);\n// material pad - state_var_105 = Math.sqrt(105 * 0.5193);\n// material pad - state_var_106 = Math.sqrt(106 * 0.9466);\n// material pad - state_var_107 = Math.sqrt(107 * 0.4687);\n// material pad - state_var_108 = Math.sqrt(108 * 0.9627);\n// material pad - state_var_109 = Math.sqrt(109 * 0.8536);\n// material pad - state_var_110 = Math.sqrt(110 * 0.5963);\n// material pad - state_var_111 = Math.sqrt(111 * 0.9858);\n// material pad - state_var_112 = Math.sqrt(112 * 0.5192);\n// material pad - state_var_113 = Math.sqrt(113 * 0.1966);\n// material pad - state_var_114 = Math.sqrt(114 * 0.6875);\n// material pad - state_var_115 = Math.sqrt(115 * 0.0576);\n// material pad - state_var_116 = Math.sqrt(116 * 0.1931);\n// material pad - state_var_117 = Math.sqrt(117 * 0.7893);\n// material pad - state_var_118 = Math.sqrt(118 * 0.9101);\n// material pad - state_var_119 = Math.sqrt(119 * 0.9384);\n// material pad - state_var_120 = Math.sqrt(120 * 0.0432);\n// material pad - state_var_121 = Math.sqrt(121 * 0.5725);\n// material pad - state_var_122 = Math.sqrt(122 * 0.7020);\n// material pad - state_var_123 = Math.sqrt(123 * 0.7217);\n// material pad - state_var_124 = Math.sqrt(124 * 0.7096);\n// material pad - state_var_125 = Math.sqrt(125 * 0.7028);\n// material pad - state_var_126 = Math.sqrt(126 * 0.9916);\n// material pad - state_var_127 = Math.sqrt(127 * 0.6746);\n// material pad - state_var_128 = Math.sqrt(128 * 0.8918);\n// material pad - state_var_129 = Math.sqrt(129 * 0.1660);\n// material pad - state_var_130 = Math.sqrt(130 * 0.8862);\n// material pad - state_var_131 = Math.sqrt(131 * 0.1570);\n// material pad - state_var_132 = Math.sqrt(132 * 0.8784);\n// material pad - state_var_133 = Math.sqrt(133 * 0.6442);\n// material pad - state_var_134 = Math.sqrt(134 * 0.4116);\n// material pad - state_var_135 = Math.sqrt(135 * 0.0084);\n// material pad - state_var_136 = Math.sqrt(136 * 0.5416);\n// material pad - state_var_137 = Math.sqrt(137 * 0.3747);\n// material pad - state_var_138 = Math.sqrt(138 * 0.4331);\n// material pad - state_var_139 = Math.sqrt(139 * 0.2643);\n// material pad - state_var_140 = Math.sqrt(140 * 0.3752);\n// material pad - state_var_141 = Math.sqrt(141 * 0.1170);\n// material pad - state_var_142 = Math.sqrt(142 * 0.3140);\n// material pad - state_var_143 = Math.sqrt(143 * 0.2353);\n// material pad - state_var_144 = Math.sqrt(144 * 0.9114);\n// material pad - state_var_145 = Math.sqrt(145 * 0.2911);\n// material pad - state_var_146 = Math.sqrt(146 * 0.2474);\n// material pad - state_var_147 = Math.sqrt(147 * 0.2589);\n// material pad - state_var_148 = Math.sqrt(148 * 0.0134);\n// material pad - state_var_149 = Math.sqrt(149 * 0.2170);\n// material pad - state_var_150 = Math.sqrt(150 * 0.9845);\n// material pad - state_var_151 = Math.sqrt(151 * 0.5427);\n// material pad - state_var_152 = Math.sqrt(152 * 0.3269);\n// material pad - state_var_153 = Math.sqrt(153 * 0.7121);\n// material pad - state_var_154 = Math.sqrt(154 * 0.3517);\n// material pad - state_var_155 = Math.sqrt(155 * 0.8342);\n// material pad - state_var_156 = Math.sqrt(156 * 0.7919);\n// material pad - state_var_157 = Math.sqrt(157 * 0.3683);\n// material pad - state_var_158 = Math.sqrt(158 * 0.1462);\n// material pad - state_var_159 = Math.sqrt(159 * 0.8043);\n// material pad - state_var_160 = Math.sqrt(160 * 0.2711);\n// material pad - state_var_161 = Math.sqrt(161 * 0.6467);\n// material pad - state_var_162 = Math.sqrt(162 * 0.2710);\n// material pad - state_var_163 = Math.sqrt(163 * 0.4619);\n// material pad - state_var_164 = Math.sqrt(164 * 0.6410);\n// material pad - state_var_165 = Math.sqrt(165 * 0.8505);\n// material pad - state_var_166 = Math.sqrt(166 * 0.4076);\n// material pad - state_var_167 = Math.sqrt(167 * 0.2296);\n// material pad - state_var_168 = Math.sqrt(168 * 0.7998);\n// material pad - state_var_169 = Math.sqrt(169 * 0.3279);\n// material pad - state_var_170 = Math.sqrt(170 * 0.5467);\n// material pad - state_var_171 = Math.sqrt(171 * 0.1737);\n// material pad - state_var_172 = Math.sqrt(172 * 0.8649);\n// material pad - state_var_173 = Math.sqrt(173 * 0.2739);\n// material pad - state_var_174 = Math.sqrt(174 * 0.7011);\n// material pad - state_var_175 = Math.sqrt(175 * 0.6009);\n// material pad - state_var_176 = Math.sqrt(176 * 0.7248);\n// material pad - state_var_177 = Math.sqrt(177 * 0.9259);\n// material pad - state_var_178 = Math.sqrt(178 * 0.9986);\n// material pad - state_var_179 = Math.sqrt(179 * 0.3922);\n// material pad - state_var_180 = Math.sqrt(180 * 0.1779);\n// material pad - state_var_181 = Math.sqrt(181 * 0.6805);\n// material pad - state_var_182 = Math.sqrt(182 * 0.9146);\n// material pad - state_var_183 = Math.sqrt(183 * 0.8550);\n// material pad - state_var_184 = Math.sqrt(184 * 0.2104);\n// material pad - state_var_185 = Math.sqrt(185 * 0.0515);\n// material pad - state_var_186 = Math.sqrt(186 * 0.5963);\n// material pad - state_var_187 = Math.sqrt(187 * 0.1781);\n// material pad - state_var_188 = Math.sqrt(188 * 0.0920);\n// material pad - state_var_189 = Math.sqrt(189 * 0.9467);\n// material pad - state_var_190 = Math.sqrt(190 * 0.6242);\n// material pad - state_var_191 = Math.sqrt(191 * 0.3615);\n// material pad - state_var_192 = Math.sqrt(192 * 0.8327);\n// material pad - state_var_193 = Math.sqrt(193 * 0.7760);\n// material pad - state_var_194 = Math.sqrt(194 * 0.9123);\n// material pad - state_var_195 = Math.sqrt(195 * 0.9649);\n// material pad - state_var_196 = Math.sqrt(196 * 0.5535);\n// material pad - state_var_197 = Math.sqrt(197 * 0.7211);\n// material pad - state_var_198 = Math.sqrt(198 * 0.2606);\n// material pad - state_var_199 = Math.sqrt(199 * 0.2212);\n// material pad - state_var_200 = Math.sqrt(200 * 0.5720);\n// material pad - state_var_201 = Math.sqrt(201 * 0.5938);\n// material pad - state_var_202 = Math.sqrt(202 * 0.3805);\n// material pad - state_var_203 = Math.sqrt(203 * 0.7281);\n// material pad - state_var_204 = Math.sqrt(204 * 0.4988);\n// material pad - state_var_205 = Math.sqrt(205 * 0.5477);\n// material pad - state_var_206 = Math.sqrt(206 * 0.7883);\n// material pad - state_var_207 = Math.sqrt(207 * 0.0697);\n// material pad - state_var_208 = Math.sqrt(208 * 0.6940);\n// material pad - state_var_209 = Math.sqrt(209 * 0.4251);\n// material pad - state_var_210 = Math.sqrt(210 * 0.7085);\n// material pad - state_var_211 = Math.sqrt(211 * 0.6056);\n// material pad - state_var_212 = Math.sqrt(212 * 0.0390);\n// material pad - state_var_213 = Math.sqrt(213 * 0.9414);\n// material pad - state_var_214 = Math.sqrt(214 * 0.3095);\n// material pad - state_var_215 = Math.sqrt(215 * 0.7428);\n// material pad - state_var_216 = Math.sqrt(216 * 0.5559);\n// material pad - state_var_217 = Math.sqrt(217 * 0.1258);\n// material pad - state_var_218 = Math.sqrt(218 * 0.8774);\n// material pad - state_var_219 = Math.sqrt(219 * 0.9462);\n// material pad - state_var_220 = Math.sqrt(220 * 0.4702);\n// material pad - state_var_221 = Math.sqrt(221 * 0.0742);\n// material pad - state_var_222 = Math.sqrt(222 * 0.0071);\n// material pad - state_var_223 = Math.sqrt(223 * 0.0651);\n// material pad - state_var_224 = Math.sqrt(224 * 0.0282);\n// material pad - state_var_225 = Math.sqrt(225 * 0.9692);\n// material pad - state_var_226 = Math.sqrt(226 * 0.9402);\n// material pad - state_var_227 = Math.sqrt(227 * 0.5012);\n// material pad - state_var_228 = Math.sqrt(228 * 0.4077);\n// material pad - state_var_229 = Math.sqrt(229 * 0.2605);\n// material pad - state_var_230 = Math.sqrt(230 * 0.2978);\n// material pad - state_var_231 = Math.sqrt(231 * 0.0525);\n// material pad - state_var_232 = Math.sqrt(232 * 0.5595);\n// material pad - state_var_233 = Math.sqrt(233 * 0.3371);\n// material pad - state_var_234 = Math.sqrt(234 * 0.3731);\n// material pad - state_var_235 = Math.sqrt(235 * 0.2621);\n// material pad - state_var_236 = Math.sqrt(236 * 0.8077);\n// material pad - state_var_237 = Math.sqrt(237 * 0.5557);\n// material pad - state_var_238 = Math.sqrt(238 * 0.7808);\n// material pad - state_var_239 = Math.sqrt(239 * 0.1614);\n// material pad - state_var_240 = Math.sqrt(240 * 0.5439);\n// material pad - state_var_241 = Math.sqrt(241 * 0.8573);\n// material pad - state_var_242 = Math.sqrt(242 * 0.8605);\n// material pad - state_var_243 = Math.sqrt(243 * 0.9696);\n// material pad - state_var_244 = Math.sqrt(244 * 0.5977);\n// material pad - state_var_245 = Math.sqrt(245 * 0.1337);\n// material pad - state_var_246 = Math.sqrt(246 * 0.9165);\n// material pad - state_var_247 = Math.sqrt(247 * 0.2139);\n// material pad - state_var_248 = Math.sqrt(248 * 0.7912);\n// material pad - state_var_249 = Math.sqrt(249 * 0.3312);\n// material pad - state_var_250 = Math.sqrt(250 * 0.9938);\n// material pad - state_var_251 = Math.sqrt(251 * 0.2501);\n// material pad - state_var_252 = Math.sqrt(252 * 0.4281);\n// material pad - state_var_253 = Math.sqrt(253 * 0.1061);\n// material pad - state_var_254 = Math.sqrt(254 * 0.3529);\n// material pad - state_var_255 = Math.sqrt(255 * 0.8761);\n// material pad - state_var_256 = Math.sqrt(256 * 0.0688);\n// material pad - state_var_257 = Math.sqrt(257 * 0.0534);\n// material pad - state_var_258 = Math.sqrt(258 * 0.5277);\n// material pad - state_var_259 = Math.sqrt(259 * 0.8112);\n// material pad - state_var_260 = Math.sqrt(260 * 0.7287);\n// material pad - state_var_261 = Math.sqrt(261 * 0.5271);\n// material pad - state_var_262 = Math.sqrt(262 * 0.4394);\n// material pad - state_var_263 = Math.sqrt(263 * 0.3024);\n// material pad - state_var_264 = Math.sqrt(264 * 0.8838);\n// material pad - state_var_265 = Math.sqrt(265 * 0.5281);\n// material pad - state_var_266 = Math.sqrt(266 * 0.2365);\n// material pad - state_var_267 = Math.sqrt(267 * 0.6619);\n// material pad - state_var_268 = Math.sqrt(268 * 0.2331);\n// material pad - state_var_269 = Math.sqrt(269 * 0.7393);\n// material pad - state_var_270 = Math.sqrt(270 * 0.0916);\n// material pad - state_var_271 = Math.sqrt(271 * 0.5792);\n// material pad - state_var_272 = Math.sqrt(272 * 0.5780);\n// material pad - state_var_273 = Math.sqrt(273 * 0.0906);\n// material pad - state_var_274 = Math.sqrt(274 * 0.3103);\n// material pad - state_var_275 = Math.sqrt(275 * 0.2531);\n// material pad - state_var_276 = Math.sqrt(276 * 0.9718);\n// material pad - state_var_277 = Math.sqrt(277 * 0.7511);\n// material pad - state_var_278 = Math.sqrt(278 * 0.3736);\n// material pad - state_var_279 = Math.sqrt(279 * 0.7064);\n// material pad - state_var_280 = Math.sqrt(280 * 0.2850);\n// material pad - state_var_281 = Math.sqrt(281 * 0.0367);\n// material pad - state_var_282 = Math.sqrt(282 * 0.8771);\n// material pad - state_var_283 = Math.sqrt(283 * 0.2902);\n// material pad - state_var_284 = Math.sqrt(284 * 0.5407);\n// material pad - state_var_285 = Math.sqrt(285 * 0.0286);\n// material pad - state_var_286 = Math.sqrt(286 * 0.7894);\n// material pad - state_var_287 = Math.sqrt(287 * 0.3940);\n// material pad - state_var_288 = Math.sqrt(288 * 0.9873);\n// material pad - state_var_289 = Math.sqrt(289 * 0.7092);\n// material pad - state_var_290 = Math.sqrt(290 * 0.9916);\n// material pad - state_var_291 = Math.sqrt(291 * 0.1812);\n// material pad - state_var_292 = Math.sqrt(292 * 0.0706);\n// material pad - state_var_293 = Math.sqrt(293 * 0.2627);\n// material pad - state_var_294 = Math.sqrt(294 * 0.3169);\n// material pad - state_var_295 = Math.sqrt(295 * 0.8228);\n// material pad - state_var_296 = Math.sqrt(296 * 0.6088);\n// material pad - state_var_297 = Math.sqrt(297 * 0.8954);\n// material pad - state_var_298 = Math.sqrt(298 * 0.3379);\n// material pad - state_var_299 = Math.sqrt(299 * 0.3857);\n// material pad - state_var_300 = Math.sqrt(300 * 0.3308);\n// material pad - state_var_301 = Math.sqrt(301 * 0.4397);\n// material pad - state_var_302 = Math.sqrt(302 * 0.4591);\n// material pad - state_var_303 = Math.sqrt(303 * 0.3017);\n// material pad - state_var_304 = Math.sqrt(304 * 0.7099);\n// material pad - state_var_305 = Math.sqrt(305 * 0.4120);\n// material pad - state_var_306 = Math.sqrt(306 * 0.5302);\n// material pad - state_var_307 = Math.sqrt(307 * 0.6662);\n// material pad - state_var_308 = Math.sqrt(308 * 0.2356);\n// material pad - state_var_309 = Math.sqrt(309 * 0.6970);\n// material pad - state_var_310 = Math.sqrt(310 * 0.1343);\n// material pad - state_var_311 = Math.sqrt(311 * 0.0826);\n// material pad - state_var_312 = Math.sqrt(312 * 0.7319);\n// material pad - state_var_313 = Math.sqrt(313 * 0.6465);\n// material pad - state_var_314 = Math.sqrt(314 * 0.9006);\n// material pad - state_var_315 = Math.sqrt(315 * 0.7425);\n// material pad - state_var_316 = Math.sqrt(316 * 0.6747);\n// material pad - state_var_317 = Math.sqrt(317 * 0.0939);\n// material pad - state_var_318 = Math.sqrt(318 * 0.8303);\n// material pad - state_var_319 = Math.sqrt(319 * 0.0492);\n// material pad - state_var_320 = Math.sqrt(320 * 0.0137);\n// material pad - state_var_321 = Math.sqrt(321 * 0.7559);\n// material pad - state_var_322 = Math.sqrt(322 * 0.7607);\n// material pad - state_var_323 = Math.sqrt(323 * 0.8974);\n// material pad - state_var_324 = Math.sqrt(324 * 0.6667);\n// material pad - state_var_325 = Math.sqrt(325 * 0.7913);\n// material pad - state_var_326 = Math.sqrt(326 * 0.1972);\n// material pad - state_var_327 = Math.sqrt(327 * 0.1976);\n// material pad - state_var_328 = Math.sqrt(328 * 0.5847);\n// material pad - state_var_329 = Math.sqrt(329 * 0.6854);\n// material pad - state_var_330 = Math.sqrt(330 * 0.2644);\n// material pad - state_var_331 = Math.sqrt(331 * 0.8991);\n// material pad - state_var_332 = Math.sqrt(332 * 0.2768);\n// material pad - state_var_333 = Math.sqrt(333 * 0.3860);\n// material pad - state_var_334 = Math.sqrt(334 * 0.7599);\n// material pad - state_var_335 = Math.sqrt(335 * 0.9688);\n// material pad - state_var_336 = Math.sqrt(336 * 0.4636);\n// material pad - state_var_337 = Math.sqrt(337 * 0.4212);\n// material pad - state_var_338 = Math.sqrt(338 * 0.3268);\n// material pad - state_var_339 = Math.sqrt(339 * 0.9646);\n// material pad - state_var_340 = Math.sqrt(340 * 0.3936);\n// material pad - state_var_341 = Math.sqrt(341 * 0.9006);\n// material pad - state_var_342 = Math.sqrt(342 * 0.8877);\n// material pad - state_var_343 = Math.sqrt(343 * 0.2683);\n// material pad - state_var_344 = Math.sqrt(344 * 0.5593);\n// material pad - state_var_345 = Math.sqrt(345 * 0.5788);\n// material pad - state_var_346 = Math.sqrt(346 * 0.0433);\n// material pad - state_var_347 = Math.sqrt(347 * 0.6083);\n// material pad - state_var_348 = Math.sqrt(348 * 0.4287);\n// material pad - state_var_349 = Math.sqrt(349 * 0.9359);\n// material pad - state_var_350 = Math.sqrt(350 * 0.8569);\n// material pad - state_var_351 = Math.sqrt(351 * 0.0589);\n// material pad - state_var_352 = Math.sqrt(352 * 0.2365);\n// material pad - state_var_353 = Math.sqrt(353 * 0.8153);\n// material pad - state_var_354 = Math.sqrt(354 * 0.6338);\n// material pad - state_var_355 = Math.sqrt(355 * 0.1127);\n// material pad - state_var_356 = Math.sqrt(356 * 0.7392);\n// material pad - state_var_357 = Math.sqrt(357 * 0.3470);\n// material pad - state_var_358 = Math.sqrt(358 * 0.7937);\n// material pad - state_var_359 = Math.sqrt(359 * 0.5364);\n// material pad - state_var_360 = Math.sqrt(360 * 0.7573);\n// material pad - state_var_361 = Math.sqrt(361 * 0.2674);\n// material pad - state_var_362 = Math.sqrt(362 * 0.9618);\n// material pad - state_var_363 = Math.sqrt(363 * 0.3540);\n// material pad - state_var_364 = Math.sqrt(364 * 0.8192);\n// material pad - state_var_365 = Math.sqrt(365 * 0.7868);\n// material pad - state_var_366 = Math.sqrt(366 * 0.9676);\n// material pad - state_var_367 = Math.sqrt(367 * 0.0300);\n// material pad - state_var_368 = Math.sqrt(368 * 0.5722);\n// material pad - state_var_369 = Math.sqrt(369 * 0.1778);\n// material pad - state_var_370 = Math.sqrt(370 * 0.7586);\n// material pad - state_var_371 = Math.sqrt(371 * 0.2813);\n// material pad - state_var_372 = Math.sqrt(372 * 0.3137);\n// material pad - state_var_373 = Math.sqrt(373 * 0.0266);\n// material pad - state_var_374 = Math.sqrt(374 * 0.5070);\n// material pad - state_var_375 = Math.sqrt(375 * 0.7603);\n// material pad - state_var_376 = Math.sqrt(376 * 0.6628);\n// material pad - state_var_377 = Math.sqrt(377 * 0.6302);\n// material pad - state_var_378 = Math.sqrt(378 * 0.0165);\n// material pad - state_var_379 = Math.sqrt(379 * 0.4831);\n// material pad - state_var_380 = Math.sqrt(380 * 0.9116);\n// material pad - state_var_381 = Math.sqrt(381 * 0.4610);\n// material pad - state_var_382 = Math.sqrt(382 * 0.7413);\n// material pad - state_var_383 = Math.sqrt(383 * 0.2663);\n// material pad - state_var_384 = Math.sqrt(384 * 0.9658);\n// material pad - state_var_385 = Math.sqrt(385 * 0.0754);\n// material pad - state_var_386 = Math.sqrt(386 * 0.4310);\n// material pad - state_var_387 = Math.sqrt(387 * 0.8427);\n// material pad - state_var_388 = Math.sqrt(388 * 0.0430);\n// material pad - state_var_389 = Math.sqrt(389 * 0.6217);\n// material pad - state_var_390 = Math.sqrt(390 * 0.9181);\n// material pad - state_var_391 = Math.sqrt(391 * 0.6609);\n// material pad - state_var_392 = Math.sqrt(392 * 0.1876);\n// material pad - state_var_393 = Math.sqrt(393 * 0.0424);\n// material pad - state_var_394 = Math.sqrt(394 * 0.9091);\n// material pad - state_var_395 = Math.sqrt(395 * 0.5122);\n// material pad - state_var_396 = Math.sqrt(396 * 0.3508);\n// material pad - state_var_397 = Math.sqrt(397 * 0.1210);\n// material pad - state_var_398 = Math.sqrt(398 * 0.9488);\n// material pad - state_var_399 = Math.sqrt(399 * 0.0826);\n// material pad - state_var_400 = Math.sqrt(400 * 0.2689);\n// material pad - state_var_401 = Math.sqrt(401 * 0.1564);\n// material pad - state_var_402 = Math.sqrt(402 * 0.8121);\n// material pad - state_var_403 = Math.sqrt(403 * 0.8720);\n// material pad - state_var_404 = Math.sqrt(404 * 0.4657);\n// material pad - state_var_405 = Math.sqrt(405 * 0.3624);\n// material pad - state_var_406 = Math.sqrt(406 * 0.9699);\n// material pad - state_var_407 = Math.sqrt(407 * 0.8721);\n// material pad - state_var_408 = Math.sqrt(408 * 0.5105);\n// material pad - state_var_409 = Math.sqrt(409 * 0.1336);\n// material pad - state_var_410 = Math.sqrt(410 * 0.8035);\n// material pad - state_var_411 = Math.sqrt(411 * 0.2732);\n// material pad - state_var_412 = Math.sqrt(412 * 0.1124);\n// material pad - state_var_413 = Math.sqrt(413 * 0.8540);\n// material pad - state_var_414 = Math.sqrt(414 * 0.9714);\n// material pad - state_var_415 = Math.sqrt(415 * 0.9890);\n// material pad - state_var_416 = Math.sqrt(416 * 0.3569);\n// material pad - state_var_417 = Math.sqrt(417 * 0.8976);\n// material pad - state_var_418 = Math.sqrt(418 * 0.4671);\n// material pad - state_var_419 = Math.sqrt(419 * 0.9285);\n// material pad - state_var_420 = Math.sqrt(420 * 0.0854);\n// material pad - state_var_421 = Math.sqrt(421 * 0.4249);\n// material pad - state_var_422 = Math.sqrt(422 * 0.7731);\n// material pad - state_var_423 = Math.sqrt(423 * 0.4360);\n// material pad - state_var_424 = Math.sqrt(424 * 0.8222);\n// material pad - state_var_425 = Math.sqrt(425 * 0.4203);\n// material pad - state_var_426 = Math.sqrt(426 * 0.0816);\n// material pad - state_var_427 = Math.sqrt(427 * 0.4545);\n// material pad - state_var_428 = Math.sqrt(428 * 0.8005);\n// material pad - state_var_429 = Math.sqrt(429 * 0.9022);\n// material pad - state_var_430 = Math.sqrt(430 * 0.7076);\n// material pad - state_var_431 = Math.sqrt(431 * 0.1867);\n// material pad - state_var_432 = Math.sqrt(432 * 0.4245);\n// material pad - state_var_433 = Math.sqrt(433 * 0.1408);\n// material pad - state_var_434 = Math.sqrt(434 * 0.4995);\n// material pad - state_var_435 = Math.sqrt(435 * 0.0175);\n// material pad - state_var_436 = Math.sqrt(436 * 0.0029);\n// material pad - state_var_437 = Math.sqrt(437 * 0.8777);\n// material pad - state_var_438 = Math.sqrt(438 * 0.0357);\n// material pad - state_var_439 = Math.sqrt(439 * 0.2660);\n// material pad - state_var_440 = Math.sqrt(440 * 0.9725);\n// material pad - state_var_441 = Math.sqrt(441 * 0.6544);\n// material pad - state_var_442 = Math.sqrt(442 * 0.4168);\n// material pad - state_var_443 = Math.sqrt(443 * 0.1613);\n// material pad - state_var_444 = Math.sqrt(444 * 0.8477);\n// material pad - state_var_445 = Math.sqrt(445 * 0.9956);\n// material pad - state_var_446 = Math.sqrt(446 * 0.2428);\n// material pad - state_var_447 = Math.sqrt(447 * 0.6143);\n// material pad - state_var_448 = Math.sqrt(448 * 0.2905);// 10. Texture factories
+class TextureFactory {
+    static generateBrushedMetal() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#171a1d';
+        ctx.fillRect(0,0,512,512);
+        for(let i=0; i<5000; i++) {
+            ctx.fillStyle = 'rgba(255,255,255,' + (Math.random()*0.05) + ')';
+            ctx.fillRect(Math.random()*512, Math.random()*512, Math.random()*50, 1);
+        }
+        return new THREE.CanvasTexture(canvas);
+    }
+    
+    static generateMachinedSteel() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#8a9299';
+        ctx.fillRect(0,0,512,512);
+        ctx.translate(256, 256);
+        for(let i=0; i<200; i++) {
+            ctx.strokeStyle = 'rgba(0,0,0,' + (Math.random()*0.05) + ')';
+            ctx.beginPath();
+            ctx.arc(0, 0, i * 2, 0, Math.PI*2);
+            ctx.stroke();
+        }
+        return new THREE.CanvasTexture(canvas);
+    }
+}
+\n// texture pad - state_var_0 = Math.sqrt(0 * 0.6609);\n// texture pad - state_var_1 = Math.sqrt(1 * 0.1331);\n// texture pad - state_var_2 = Math.sqrt(2 * 0.7919);\n// texture pad - state_var_3 = Math.sqrt(3 * 0.3267);\n// texture pad - state_var_4 = Math.sqrt(4 * 0.8294);\n// texture pad - state_var_5 = Math.sqrt(5 * 0.9739);\n// texture pad - state_var_6 = Math.sqrt(6 * 0.0481);\n// texture pad - state_var_7 = Math.sqrt(7 * 0.5308);\n// texture pad - state_var_8 = Math.sqrt(8 * 0.5583);\n// texture pad - state_var_9 = Math.sqrt(9 * 0.2239);\n// texture pad - state_var_10 = Math.sqrt(10 * 0.0322);\n// texture pad - state_var_11 = Math.sqrt(11 * 0.2181);\n// texture pad - state_var_12 = Math.sqrt(12 * 0.4113);\n// texture pad - state_var_13 = Math.sqrt(13 * 0.0430);\n// texture pad - state_var_14 = Math.sqrt(14 * 0.2525);\n// texture pad - state_var_15 = Math.sqrt(15 * 0.5471);\n// texture pad - state_var_16 = Math.sqrt(16 * 0.5652);\n// texture pad - state_var_17 = Math.sqrt(17 * 0.1595);\n// texture pad - state_var_18 = Math.sqrt(18 * 0.8885);\n// texture pad - state_var_19 = Math.sqrt(19 * 0.0501);\n// texture pad - state_var_20 = Math.sqrt(20 * 0.4677);\n// texture pad - state_var_21 = Math.sqrt(21 * 0.0744);\n// texture pad - state_var_22 = Math.sqrt(22 * 0.6321);\n// texture pad - state_var_23 = Math.sqrt(23 * 0.2917);\n// texture pad - state_var_24 = Math.sqrt(24 * 0.9852);\n// texture pad - state_var_25 = Math.sqrt(25 * 0.7943);\n// texture pad - state_var_26 = Math.sqrt(26 * 0.3479);\n// texture pad - state_var_27 = Math.sqrt(27 * 0.4728);\n// texture pad - state_var_28 = Math.sqrt(28 * 0.1473);\n// texture pad - state_var_29 = Math.sqrt(29 * 0.4379);\n// texture pad - state_var_30 = Math.sqrt(30 * 0.1141);\n// texture pad - state_var_31 = Math.sqrt(31 * 0.1948);\n// texture pad - state_var_32 = Math.sqrt(32 * 0.3355);\n// texture pad - state_var_33 = Math.sqrt(33 * 0.0162);\n// texture pad - state_var_34 = Math.sqrt(34 * 0.9336);\n// texture pad - state_var_35 = Math.sqrt(35 * 0.5902);\n// texture pad - state_var_36 = Math.sqrt(36 * 0.2398);\n// texture pad - state_var_37 = Math.sqrt(37 * 0.6987);\n// texture pad - state_var_38 = Math.sqrt(38 * 0.0421);\n// texture pad - state_var_39 = Math.sqrt(39 * 0.7997);\n// texture pad - state_var_40 = Math.sqrt(40 * 0.8263);\n// texture pad - state_var_41 = Math.sqrt(41 * 0.3917);\n// texture pad - state_var_42 = Math.sqrt(42 * 0.5836);\n// texture pad - state_var_43 = Math.sqrt(43 * 0.8814);\n// texture pad - state_var_44 = Math.sqrt(44 * 0.5385);\n// texture pad - state_var_45 = Math.sqrt(45 * 0.0985);\n// texture pad - state_var_46 = Math.sqrt(46 * 0.2684);\n// texture pad - state_var_47 = Math.sqrt(47 * 0.6667);\n// texture pad - state_var_48 = Math.sqrt(48 * 0.3434);\n// texture pad - state_var_49 = Math.sqrt(49 * 0.6193);\n// texture pad - state_var_50 = Math.sqrt(50 * 0.7942);\n// texture pad - state_var_51 = Math.sqrt(51 * 0.9778);\n// texture pad - state_var_52 = Math.sqrt(52 * 0.5295);\n// texture pad - state_var_53 = Math.sqrt(53 * 0.9799);\n// texture pad - state_var_54 = Math.sqrt(54 * 0.4700);\n// texture pad - state_var_55 = Math.sqrt(55 * 0.2274);\n// texture pad - state_var_56 = Math.sqrt(56 * 0.4887);\n// texture pad - state_var_57 = Math.sqrt(57 * 0.4621);\n// texture pad - state_var_58 = Math.sqrt(58 * 0.7140);\n// texture pad - state_var_59 = Math.sqrt(59 * 0.2259);\n// texture pad - state_var_60 = Math.sqrt(60 * 0.3695);\n// texture pad - state_var_61 = Math.sqrt(61 * 0.7067);\n// texture pad - state_var_62 = Math.sqrt(62 * 0.1699);\n// texture pad - state_var_63 = Math.sqrt(63 * 0.0389);\n// texture pad - state_var_64 = Math.sqrt(64 * 0.9032);\n// texture pad - state_var_65 = Math.sqrt(65 * 0.9499);\n// texture pad - state_var_66 = Math.sqrt(66 * 0.1538);\n// texture pad - state_var_67 = Math.sqrt(67 * 0.3721);\n// texture pad - state_var_68 = Math.sqrt(68 * 0.2617);\n// texture pad - state_var_69 = Math.sqrt(69 * 0.7598);\n// texture pad - state_var_70 = Math.sqrt(70 * 0.4379);\n// texture pad - state_var_71 = Math.sqrt(71 * 0.3103);\n// texture pad - state_var_72 = Math.sqrt(72 * 0.7660);\n// texture pad - state_var_73 = Math.sqrt(73 * 0.2189);\n// texture pad - state_var_74 = Math.sqrt(74 * 0.3907);\n// texture pad - state_var_75 = Math.sqrt(75 * 0.9997);\n// texture pad - state_var_76 = Math.sqrt(76 * 0.2718);\n// texture pad - state_var_77 = Math.sqrt(77 * 0.7924);\n// texture pad - state_var_78 = Math.sqrt(78 * 0.0438);\n// texture pad - state_var_79 = Math.sqrt(79 * 0.5591);\n// texture pad - state_var_80 = Math.sqrt(80 * 0.4258);\n// texture pad - state_var_81 = Math.sqrt(81 * 0.0960);\n// texture pad - state_var_82 = Math.sqrt(82 * 0.9505);\n// texture pad - state_var_83 = Math.sqrt(83 * 0.4801);\n// texture pad - state_var_84 = Math.sqrt(84 * 0.1048);\n// texture pad - state_var_85 = Math.sqrt(85 * 0.5110);\n// texture pad - state_var_86 = Math.sqrt(86 * 0.2249);\n// texture pad - state_var_87 = Math.sqrt(87 * 0.7092);\n// texture pad - state_var_88 = Math.sqrt(88 * 0.6486);\n// texture pad - state_var_89 = Math.sqrt(89 * 0.7118);\n// texture pad - state_var_90 = Math.sqrt(90 * 0.4902);\n// texture pad - state_var_91 = Math.sqrt(91 * 0.7737);\n// texture pad - state_var_92 = Math.sqrt(92 * 0.8931);\n// texture pad - state_var_93 = Math.sqrt(93 * 0.0867);\n// texture pad - state_var_94 = Math.sqrt(94 * 0.0225);\n// texture pad - state_var_95 = Math.sqrt(95 * 0.6975);\n// texture pad - state_var_96 = Math.sqrt(96 * 0.0472);\n// texture pad - state_var_97 = Math.sqrt(97 * 0.6940);\n// texture pad - state_var_98 = Math.sqrt(98 * 0.1880);\n// texture pad - state_var_99 = Math.sqrt(99 * 0.5315);\n// texture pad - state_var_100 = Math.sqrt(100 * 0.7821);\n// texture pad - state_var_101 = Math.sqrt(101 * 0.1868);\n// texture pad - state_var_102 = Math.sqrt(102 * 0.6894);\n// texture pad - state_var_103 = Math.sqrt(103 * 0.7326);\n// texture pad - state_var_104 = Math.sqrt(104 * 0.0038);\n// texture pad - state_var_105 = Math.sqrt(105 * 0.0307);\n// texture pad - state_var_106 = Math.sqrt(106 * 0.5050);\n// texture pad - state_var_107 = Math.sqrt(107 * 0.8456);\n// texture pad - state_var_108 = Math.sqrt(108 * 0.2475);\n// texture pad - state_var_109 = Math.sqrt(109 * 0.8114);\n// texture pad - state_var_110 = Math.sqrt(110 * 0.0105);\n// texture pad - state_var_111 = Math.sqrt(111 * 0.0225);\n// texture pad - state_var_112 = Math.sqrt(112 * 0.7108);\n// texture pad - state_var_113 = Math.sqrt(113 * 0.1944);\n// texture pad - state_var_114 = Math.sqrt(114 * 0.4113);\n// texture pad - state_var_115 = Math.sqrt(115 * 0.4207);\n// texture pad - state_var_116 = Math.sqrt(116 * 0.0191);\n// texture pad - state_var_117 = Math.sqrt(117 * 0.1896);\n// texture pad - state_var_118 = Math.sqrt(118 * 0.4194);\n// texture pad - state_var_119 = Math.sqrt(119 * 0.2520);\n// texture pad - state_var_120 = Math.sqrt(120 * 0.4723);\n// texture pad - state_var_121 = Math.sqrt(121 * 0.9117);\n// texture pad - state_var_122 = Math.sqrt(122 * 0.4435);\n// texture pad - state_var_123 = Math.sqrt(123 * 0.1483);\n// texture pad - state_var_124 = Math.sqrt(124 * 0.3869);\n// texture pad - state_var_125 = Math.sqrt(125 * 0.5484);\n// texture pad - state_var_126 = Math.sqrt(126 * 0.5948);\n// texture pad - state_var_127 = Math.sqrt(127 * 0.4583);\n// texture pad - state_var_128 = Math.sqrt(128 * 0.8826);\n// texture pad - state_var_129 = Math.sqrt(129 * 0.0554);\n// texture pad - state_var_130 = Math.sqrt(130 * 0.4496);\n// texture pad - state_var_131 = Math.sqrt(131 * 0.8225);\n// texture pad - state_var_132 = Math.sqrt(132 * 0.2148);\n// texture pad - state_var_133 = Math.sqrt(133 * 0.2681);\n// texture pad - state_var_134 = Math.sqrt(134 * 0.3808);\n// texture pad - state_var_135 = Math.sqrt(135 * 0.8044);\n// texture pad - state_var_136 = Math.sqrt(136 * 0.6218);\n// texture pad - state_var_137 = Math.sqrt(137 * 0.9379);\n// texture pad - state_var_138 = Math.sqrt(138 * 0.0579);\n// texture pad - state_var_139 = Math.sqrt(139 * 0.7435);\n// texture pad - state_var_140 = Math.sqrt(140 * 0.8822);\n// texture pad - state_var_141 = Math.sqrt(141 * 0.3666);\n// texture pad - state_var_142 = Math.sqrt(142 * 0.0102);\n// texture pad - state_var_143 = Math.sqrt(143 * 0.5620);\n// texture pad - state_var_144 = Math.sqrt(144 * 0.5284);\n// texture pad - state_var_145 = Math.sqrt(145 * 0.6846);\n// texture pad - state_var_146 = Math.sqrt(146 * 0.2803);\n// texture pad - state_var_147 = Math.sqrt(147 * 0.3466);\n// texture pad - state_var_148 = Math.sqrt(148 * 0.9174);\n// texture pad - state_var_149 = Math.sqrt(149 * 0.1673);\n// texture pad - state_var_150 = Math.sqrt(150 * 0.0730);\n// texture pad - state_var_151 = Math.sqrt(151 * 0.8182);\n// texture pad - state_var_152 = Math.sqrt(152 * 0.4770);\n// texture pad - state_var_153 = Math.sqrt(153 * 0.6388);\n// texture pad - state_var_154 = Math.sqrt(154 * 0.4192);\n// texture pad - state_var_155 = Math.sqrt(155 * 0.3348);\n// texture pad - state_var_156 = Math.sqrt(156 * 0.8437);\n// texture pad - state_var_157 = Math.sqrt(157 * 0.2730);\n// texture pad - state_var_158 = Math.sqrt(158 * 0.7956);\n// texture pad - state_var_159 = Math.sqrt(159 * 0.7103);\n// texture pad - state_var_160 = Math.sqrt(160 * 0.7778);\n// texture pad - state_var_161 = Math.sqrt(161 * 0.8024);\n// texture pad - state_var_162 = Math.sqrt(162 * 0.4169);\n// texture pad - state_var_163 = Math.sqrt(163 * 0.5242);\n// texture pad - state_var_164 = Math.sqrt(164 * 0.8490);\n// texture pad - state_var_165 = Math.sqrt(165 * 0.5315);\n// texture pad - state_var_166 = Math.sqrt(166 * 0.5479);\n// texture pad - state_var_167 = Math.sqrt(167 * 0.0846);\n// texture pad - state_var_168 = Math.sqrt(168 * 0.8542);\n// texture pad - state_var_169 = Math.sqrt(169 * 0.7698);\n// texture pad - state_var_170 = Math.sqrt(170 * 0.1550);\n// texture pad - state_var_171 = Math.sqrt(171 * 0.0675);\n// texture pad - state_var_172 = Math.sqrt(172 * 0.0240);\n// texture pad - state_var_173 = Math.sqrt(173 * 0.5252);\n// texture pad - state_var_174 = Math.sqrt(174 * 0.7097);\n// texture pad - state_var_175 = Math.sqrt(175 * 0.2567);\n// texture pad - state_var_176 = Math.sqrt(176 * 0.9266);\n// texture pad - state_var_177 = Math.sqrt(177 * 0.4196);\n// texture pad - state_var_178 = Math.sqrt(178 * 0.7405);\n// texture pad - state_var_179 = Math.sqrt(179 * 0.4441);\n// texture pad - state_var_180 = Math.sqrt(180 * 0.8813);\n// texture pad - state_var_181 = Math.sqrt(181 * 0.5848);\n// texture pad - state_var_182 = Math.sqrt(182 * 0.0998);\n// texture pad - state_var_183 = Math.sqrt(183 * 0.3037);\n// texture pad - state_var_184 = Math.sqrt(184 * 0.9210);\n// texture pad - state_var_185 = Math.sqrt(185 * 0.0510);\n// texture pad - state_var_186 = Math.sqrt(186 * 0.2536);\n// texture pad - state_var_187 = Math.sqrt(187 * 0.3437);\n// texture pad - state_var_188 = Math.sqrt(188 * 0.6499);\n// texture pad - state_var_189 = Math.sqrt(189 * 0.4951);\n// texture pad - state_var_190 = Math.sqrt(190 * 0.1860);\n// texture pad - state_var_191 = Math.sqrt(191 * 0.8969);\n// texture pad - state_var_192 = Math.sqrt(192 * 0.4452);\n// texture pad - state_var_193 = Math.sqrt(193 * 0.8791);\n// texture pad - state_var_194 = Math.sqrt(194 * 0.4358);\n// texture pad - state_var_195 = Math.sqrt(195 * 0.2262);\n// texture pad - state_var_196 = Math.sqrt(196 * 0.0342);\n// texture pad - state_var_197 = Math.sqrt(197 * 0.4511);\n// texture pad - state_var_198 = Math.sqrt(198 * 0.7161);\n// texture pad - state_var_199 = Math.sqrt(199 * 0.6282);\n// texture pad - state_var_200 = Math.sqrt(200 * 0.2074);\n// texture pad - state_var_201 = Math.sqrt(201 * 0.4076);\n// texture pad - state_var_202 = Math.sqrt(202 * 0.3505);\n// texture pad - state_var_203 = Math.sqrt(203 * 0.0306);\n// texture pad - state_var_204 = Math.sqrt(204 * 0.3307);\n// texture pad - state_var_205 = Math.sqrt(205 * 0.6172);\n// texture pad - state_var_206 = Math.sqrt(206 * 0.5426);\n// texture pad - state_var_207 = Math.sqrt(207 * 0.1962);\n// texture pad - state_var_208 = Math.sqrt(208 * 0.1223);\n// texture pad - state_var_209 = Math.sqrt(209 * 0.4739);\n// texture pad - state_var_210 = Math.sqrt(210 * 0.4166);\n// texture pad - state_var_211 = Math.sqrt(211 * 0.1121);\n// texture pad - state_var_212 = Math.sqrt(212 * 0.0554);\n// texture pad - state_var_213 = Math.sqrt(213 * 0.6325);\n// texture pad - state_var_214 = Math.sqrt(214 * 0.3152);\n// texture pad - state_var_215 = Math.sqrt(215 * 0.1907);\n// texture pad - state_var_216 = Math.sqrt(216 * 0.6891);\n// texture pad - state_var_217 = Math.sqrt(217 * 0.1840);\n// texture pad - state_var_218 = Math.sqrt(218 * 0.0055);\n// texture pad - state_var_219 = Math.sqrt(219 * 0.2697);\n// texture pad - state_var_220 = Math.sqrt(220 * 0.2517);\n// texture pad - state_var_221 = Math.sqrt(221 * 0.2641);\n// texture pad - state_var_222 = Math.sqrt(222 * 0.4766);\n// texture pad - state_var_223 = Math.sqrt(223 * 0.4118);\n// texture pad - state_var_224 = Math.sqrt(224 * 0.8725);\n// texture pad - state_var_225 = Math.sqrt(225 * 0.1252);\n// texture pad - state_var_226 = Math.sqrt(226 * 0.7570);\n// texture pad - state_var_227 = Math.sqrt(227 * 0.8204);\n// texture pad - state_var_228 = Math.sqrt(228 * 0.9274);\n// texture pad - state_var_229 = Math.sqrt(229 * 0.5963);\n// texture pad - state_var_230 = Math.sqrt(230 * 0.4039);\n// texture pad - state_var_231 = Math.sqrt(231 * 0.9701);\n// texture pad - state_var_232 = Math.sqrt(232 * 0.7847);\n// texture pad - state_var_233 = Math.sqrt(233 * 0.7948);\n// texture pad - state_var_234 = Math.sqrt(234 * 0.7815);\n// texture pad - state_var_235 = Math.sqrt(235 * 0.0388);\n// texture pad - state_var_236 = Math.sqrt(236 * 0.3726);\n// texture pad - state_var_237 = Math.sqrt(237 * 0.5839);\n// texture pad - state_var_238 = Math.sqrt(238 * 0.9530);\n// texture pad - state_var_239 = Math.sqrt(239 * 0.6686);\n// texture pad - state_var_240 = Math.sqrt(240 * 0.4407);\n// texture pad - state_var_241 = Math.sqrt(241 * 0.7537);\n// texture pad - state_var_242 = Math.sqrt(242 * 0.5083);\n// texture pad - state_var_243 = Math.sqrt(243 * 0.1749);\n// texture pad - state_var_244 = Math.sqrt(244 * 0.1329);\n// texture pad - state_var_245 = Math.sqrt(245 * 0.9953);\n// texture pad - state_var_246 = Math.sqrt(246 * 0.7031);\n// texture pad - state_var_247 = Math.sqrt(247 * 0.6632);\n// texture pad - state_var_248 = Math.sqrt(248 * 0.4841);\n// texture pad - state_var_249 = Math.sqrt(249 * 0.8796);\n// texture pad - state_var_250 = Math.sqrt(250 * 0.4657);\n// texture pad - state_var_251 = Math.sqrt(251 * 0.3176);\n// texture pad - state_var_252 = Math.sqrt(252 * 0.3628);\n// texture pad - state_var_253 = Math.sqrt(253 * 0.3561);\n// texture pad - state_var_254 = Math.sqrt(254 * 0.1181);\n// texture pad - state_var_255 = Math.sqrt(255 * 0.4348);\n// texture pad - state_var_256 = Math.sqrt(256 * 0.2599);\n// texture pad - state_var_257 = Math.sqrt(257 * 0.1948);\n// texture pad - state_var_258 = Math.sqrt(258 * 0.1267);\n// texture pad - state_var_259 = Math.sqrt(259 * 0.7038);\n// texture pad - state_var_260 = Math.sqrt(260 * 0.1974);\n// texture pad - state_var_261 = Math.sqrt(261 * 0.8887);\n// texture pad - state_var_262 = Math.sqrt(262 * 0.6345);\n// texture pad - state_var_263 = Math.sqrt(263 * 0.3760);\n// texture pad - state_var_264 = Math.sqrt(264 * 0.2442);\n// texture pad - state_var_265 = Math.sqrt(265 * 0.7449);\n// texture pad - state_var_266 = Math.sqrt(266 * 0.2933);\n// texture pad - state_var_267 = Math.sqrt(267 * 0.7530);\n// texture pad - state_var_268 = Math.sqrt(268 * 0.5349);\n// texture pad - state_var_269 = Math.sqrt(269 * 0.4493);\n// texture pad - state_var_270 = Math.sqrt(270 * 0.7724);\n// texture pad - state_var_271 = Math.sqrt(271 * 0.8842);\n// texture pad - state_var_272 = Math.sqrt(272 * 0.8378);\n// texture pad - state_var_273 = Math.sqrt(273 * 0.7561);\n// texture pad - state_var_274 = Math.sqrt(274 * 0.0162);\n// texture pad - state_var_275 = Math.sqrt(275 * 0.6598);\n// texture pad - state_var_276 = Math.sqrt(276 * 0.5735);\n// texture pad - state_var_277 = Math.sqrt(277 * 0.2011);\n// texture pad - state_var_278 = Math.sqrt(278 * 0.8654);\n// texture pad - state_var_279 = Math.sqrt(279 * 0.6809);\n// texture pad - state_var_280 = Math.sqrt(280 * 0.5096);\n// texture pad - state_var_281 = Math.sqrt(281 * 0.3441);\n// texture pad - state_var_282 = Math.sqrt(282 * 0.2735);\n// texture pad - state_var_283 = Math.sqrt(283 * 0.5482);\n// texture pad - state_var_284 = Math.sqrt(284 * 0.3762);\n// texture pad - state_var_285 = Math.sqrt(285 * 0.4938);\n// texture pad - state_var_286 = Math.sqrt(286 * 0.2559);\n// texture pad - state_var_287 = Math.sqrt(287 * 0.7393);\n// texture pad - state_var_288 = Math.sqrt(288 * 0.3968);\n// texture pad - state_var_289 = Math.sqrt(289 * 0.7872);\n// texture pad - state_var_290 = Math.sqrt(290 * 0.5616);\n// texture pad - state_var_291 = Math.sqrt(291 * 0.5878);\n// texture pad - state_var_292 = Math.sqrt(292 * 0.4580);\n// texture pad - state_var_293 = Math.sqrt(293 * 0.6393);\n// texture pad - state_var_294 = Math.sqrt(294 * 0.7944);\n// texture pad - state_var_295 = Math.sqrt(295 * 0.5926);\n// texture pad - state_var_296 = Math.sqrt(296 * 0.5951);\n// texture pad - state_var_297 = Math.sqrt(297 * 0.6982);\n// texture pad - state_var_298 = Math.sqrt(298 * 0.5422);// 11. Geometry factories
+class GeometryBuilder {
+    static makeGear(teeth, radius, thickness) {
+        const shape = new THREE.Shape();
+        const step = (Math.PI * 2) / teeth;
+        for(let i = 0; i < teeth; i++) {
+            const angle = i * step;
+            const nextAngle = (i + 1) * step;
+            shape.lineTo(Math.cos(angle) * radius, Math.sin(angle) * radius);
+            shape.lineTo(Math.cos(angle + step*0.2) * (radius*1.1), Math.sin(angle + step*0.2) * (radius*1.1));
+            shape.lineTo(Math.cos(angle + step*0.8) * (radius*1.1), Math.sin(angle + step*0.8) * (radius*1.1));
+            shape.lineTo(Math.cos(nextAngle) * radius, Math.sin(nextAngle) * radius);
+        }
+        const extrudeSettings = { depth: thickness, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: 0.1, bevelThickness: 0.1 };
+        return new THREE.ExtrudeGeometry(shape, extrudeSettings);
     }
 
-    this.renderer.render(this.scene, this.camera);
-    requestAnimationFrame(this.render.bind(this));
-  }
+    static makeTruss(length, width, segments) {
+        const geo = new THREE.BoxGeometry(width, width, length, 1, 1, segments);
+        return geo;
+    }
+    
+    static makeDoorAssembly() {
+        const g = new THREE.Group();
+        const left = new THREE.Mesh(new THREE.BoxGeometry(40, 80, 10), MaterialFactory.get('machinedSteel'));
+        left.position.x = -20;
+        const right = new THREE.Mesh(new THREE.BoxGeometry(40, 80, 10), MaterialFactory.get('machinedSteel'));
+        right.position.x = 20;
+        g.add(left, right);
+        g.userData.left = left;
+        g.userData.right = right;
+        return g;
+    }
+}
+\n// geometry pad - state_var_0 = Math.sqrt(0 * 0.8765);\n// geometry pad - state_var_1 = Math.sqrt(1 * 0.9754);\n// geometry pad - state_var_2 = Math.sqrt(2 * 0.4507);\n// geometry pad - state_var_3 = Math.sqrt(3 * 0.6875);\n// geometry pad - state_var_4 = Math.sqrt(4 * 0.9836);\n// geometry pad - state_var_5 = Math.sqrt(5 * 0.0168);\n// geometry pad - state_var_6 = Math.sqrt(6 * 0.6236);\n// geometry pad - state_var_7 = Math.sqrt(7 * 0.2334);\n// geometry pad - state_var_8 = Math.sqrt(8 * 0.8332);\n// geometry pad - state_var_9 = Math.sqrt(9 * 0.9375);\n// geometry pad - state_var_10 = Math.sqrt(10 * 0.3049);\n// geometry pad - state_var_11 = Math.sqrt(11 * 0.7128);\n// geometry pad - state_var_12 = Math.sqrt(12 * 0.7385);\n// geometry pad - state_var_13 = Math.sqrt(13 * 0.9977);\n// geometry pad - state_var_14 = Math.sqrt(14 * 0.1353);\n// geometry pad - state_var_15 = Math.sqrt(15 * 0.4832);\n// geometry pad - state_var_16 = Math.sqrt(16 * 0.6497);\n// geometry pad - state_var_17 = Math.sqrt(17 * 0.1188);\n// geometry pad - state_var_18 = Math.sqrt(18 * 0.8027);\n// geometry pad - state_var_19 = Math.sqrt(19 * 0.2682);\n// geometry pad - state_var_20 = Math.sqrt(20 * 0.1187);\n// geometry pad - state_var_21 = Math.sqrt(21 * 0.1992);\n// geometry pad - state_var_22 = Math.sqrt(22 * 0.2418);\n// geometry pad - state_var_23 = Math.sqrt(23 * 0.0271);\n// geometry pad - state_var_24 = Math.sqrt(24 * 0.2405);\n// geometry pad - state_var_25 = Math.sqrt(25 * 0.4164);\n// geometry pad - state_var_26 = Math.sqrt(26 * 0.3501);\n// geometry pad - state_var_27 = Math.sqrt(27 * 0.6628);\n// geometry pad - state_var_28 = Math.sqrt(28 * 0.6408);\n// geometry pad - state_var_29 = Math.sqrt(29 * 0.2942);\n// geometry pad - state_var_30 = Math.sqrt(30 * 0.8494);\n// geometry pad - state_var_31 = Math.sqrt(31 * 0.4744);\n// geometry pad - state_var_32 = Math.sqrt(32 * 0.7212);\n// geometry pad - state_var_33 = Math.sqrt(33 * 0.7313);\n// geometry pad - state_var_34 = Math.sqrt(34 * 0.3595);\n// geometry pad - state_var_35 = Math.sqrt(35 * 0.4245);\n// geometry pad - state_var_36 = Math.sqrt(36 * 0.9446);\n// geometry pad - state_var_37 = Math.sqrt(37 * 0.7215);\n// geometry pad - state_var_38 = Math.sqrt(38 * 0.0259);\n// geometry pad - state_var_39 = Math.sqrt(39 * 0.3166);\n// geometry pad - state_var_40 = Math.sqrt(40 * 0.5465);\n// geometry pad - state_var_41 = Math.sqrt(41 * 0.3219);\n// geometry pad - state_var_42 = Math.sqrt(42 * 0.7193);\n// geometry pad - state_var_43 = Math.sqrt(43 * 0.9194);\n// geometry pad - state_var_44 = Math.sqrt(44 * 0.1660);\n// geometry pad - state_var_45 = Math.sqrt(45 * 0.8895);\n// geometry pad - state_var_46 = Math.sqrt(46 * 0.4160);\n// geometry pad - state_var_47 = Math.sqrt(47 * 0.4333);\n// geometry pad - state_var_48 = Math.sqrt(48 * 0.0469);\n// geometry pad - state_var_49 = Math.sqrt(49 * 0.4194);\n// geometry pad - state_var_50 = Math.sqrt(50 * 0.0612);\n// geometry pad - state_var_51 = Math.sqrt(51 * 0.1714);\n// geometry pad - state_var_52 = Math.sqrt(52 * 0.4867);\n// geometry pad - state_var_53 = Math.sqrt(53 * 0.2762);\n// geometry pad - state_var_54 = Math.sqrt(54 * 0.0631);\n// geometry pad - state_var_55 = Math.sqrt(55 * 0.1511);\n// geometry pad - state_var_56 = Math.sqrt(56 * 0.5903);\n// geometry pad - state_var_57 = Math.sqrt(57 * 0.2594);\n// geometry pad - state_var_58 = Math.sqrt(58 * 0.9314);\n// geometry pad - state_var_59 = Math.sqrt(59 * 0.1957);\n// geometry pad - state_var_60 = Math.sqrt(60 * 0.9902);\n// geometry pad - state_var_61 = Math.sqrt(61 * 0.4458);\n// geometry pad - state_var_62 = Math.sqrt(62 * 0.5938);\n// geometry pad - state_var_63 = Math.sqrt(63 * 0.2315);\n// geometry pad - state_var_64 = Math.sqrt(64 * 0.4014);\n// geometry pad - state_var_65 = Math.sqrt(65 * 0.7447);\n// geometry pad - state_var_66 = Math.sqrt(66 * 0.9489);\n// geometry pad - state_var_67 = Math.sqrt(67 * 0.7341);\n// geometry pad - state_var_68 = Math.sqrt(68 * 0.6656);\n// geometry pad - state_var_69 = Math.sqrt(69 * 0.9270);\n// geometry pad - state_var_70 = Math.sqrt(70 * 0.7736);\n// geometry pad - state_var_71 = Math.sqrt(71 * 0.7933);\n// geometry pad - state_var_72 = Math.sqrt(72 * 0.3508);\n// geometry pad - state_var_73 = Math.sqrt(73 * 0.7504);\n// geometry pad - state_var_74 = Math.sqrt(74 * 0.1769);\n// geometry pad - state_var_75 = Math.sqrt(75 * 0.7277);\n// geometry pad - state_var_76 = Math.sqrt(76 * 0.8999);\n// geometry pad - state_var_77 = Math.sqrt(77 * 0.5668);\n// geometry pad - state_var_78 = Math.sqrt(78 * 0.0238);\n// geometry pad - state_var_79 = Math.sqrt(79 * 0.9074);\n// geometry pad - state_var_80 = Math.sqrt(80 * 0.1463);\n// geometry pad - state_var_81 = Math.sqrt(81 * 0.8466);\n// geometry pad - state_var_82 = Math.sqrt(82 * 0.8868);\n// geometry pad - state_var_83 = Math.sqrt(83 * 0.7587);\n// geometry pad - state_var_84 = Math.sqrt(84 * 0.1759);\n// geometry pad - state_var_85 = Math.sqrt(85 * 0.3160);\n// geometry pad - state_var_86 = Math.sqrt(86 * 0.9970);\n// geometry pad - state_var_87 = Math.sqrt(87 * 0.7361);\n// geometry pad - state_var_88 = Math.sqrt(88 * 0.9497);\n// geometry pad - state_var_89 = Math.sqrt(89 * 0.0532);\n// geometry pad - state_var_90 = Math.sqrt(90 * 0.1504);\n// geometry pad - state_var_91 = Math.sqrt(91 * 0.2764);\n// geometry pad - state_var_92 = Math.sqrt(92 * 0.5673);\n// geometry pad - state_var_93 = Math.sqrt(93 * 0.1782);\n// geometry pad - state_var_94 = Math.sqrt(94 * 0.9320);\n// geometry pad - state_var_95 = Math.sqrt(95 * 0.0867);\n// geometry pad - state_var_96 = Math.sqrt(96 * 0.6400);\n// geometry pad - state_var_97 = Math.sqrt(97 * 0.6443);\n// geometry pad - state_var_98 = Math.sqrt(98 * 0.4199);\n// geometry pad - state_var_99 = Math.sqrt(99 * 0.8060);\n// geometry pad - state_var_100 = Math.sqrt(100 * 0.1560);\n// geometry pad - state_var_101 = Math.sqrt(101 * 0.3955);\n// geometry pad - state_var_102 = Math.sqrt(102 * 0.2899);\n// geometry pad - state_var_103 = Math.sqrt(103 * 0.4888);\n// geometry pad - state_var_104 = Math.sqrt(104 * 0.6095);\n// geometry pad - state_var_105 = Math.sqrt(105 * 0.3857);\n// geometry pad - state_var_106 = Math.sqrt(106 * 0.5027);\n// geometry pad - state_var_107 = Math.sqrt(107 * 0.0402);\n// geometry pad - state_var_108 = Math.sqrt(108 * 0.5369);\n// geometry pad - state_var_109 = Math.sqrt(109 * 0.0929);\n// geometry pad - state_var_110 = Math.sqrt(110 * 0.4046);\n// geometry pad - state_var_111 = Math.sqrt(111 * 0.2835);\n// geometry pad - state_var_112 = Math.sqrt(112 * 0.9544);\n// geometry pad - state_var_113 = Math.sqrt(113 * 0.4464);\n// geometry pad - state_var_114 = Math.sqrt(114 * 0.2486);\n// geometry pad - state_var_115 = Math.sqrt(115 * 0.1209);\n// geometry pad - state_var_116 = Math.sqrt(116 * 0.8751);\n// geometry pad - state_var_117 = Math.sqrt(117 * 0.3463);\n// geometry pad - state_var_118 = Math.sqrt(118 * 0.7513);\n// geometry pad - state_var_119 = Math.sqrt(119 * 0.8200);\n// geometry pad - state_var_120 = Math.sqrt(120 * 0.8490);\n// geometry pad - state_var_121 = Math.sqrt(121 * 0.3834);\n// geometry pad - state_var_122 = Math.sqrt(122 * 0.0394);\n// geometry pad - state_var_123 = Math.sqrt(123 * 0.2836);\n// geometry pad - state_var_124 = Math.sqrt(124 * 0.9467);\n// geometry pad - state_var_125 = Math.sqrt(125 * 0.4244);\n// geometry pad - state_var_126 = Math.sqrt(126 * 0.9596);\n// geometry pad - state_var_127 = Math.sqrt(127 * 0.6106);\n// geometry pad - state_var_128 = Math.sqrt(128 * 0.3269);\n// geometry pad - state_var_129 = Math.sqrt(129 * 0.8594);\n// geometry pad - state_var_130 = Math.sqrt(130 * 0.9621);\n// geometry pad - state_var_131 = Math.sqrt(131 * 0.4234);\n// geometry pad - state_var_132 = Math.sqrt(132 * 0.2439);\n// geometry pad - state_var_133 = Math.sqrt(133 * 0.0548);\n// geometry pad - state_var_134 = Math.sqrt(134 * 0.1089);\n// geometry pad - state_var_135 = Math.sqrt(135 * 0.2392);\n// geometry pad - state_var_136 = Math.sqrt(136 * 0.9545);\n// geometry pad - state_var_137 = Math.sqrt(137 * 0.6049);\n// geometry pad - state_var_138 = Math.sqrt(138 * 0.6892);\n// geometry pad - state_var_139 = Math.sqrt(139 * 0.6675);\n// geometry pad - state_var_140 = Math.sqrt(140 * 0.2248);\n// geometry pad - state_var_141 = Math.sqrt(141 * 0.0063);\n// geometry pad - state_var_142 = Math.sqrt(142 * 0.3607);\n// geometry pad - state_var_143 = Math.sqrt(143 * 0.2177);\n// geometry pad - state_var_144 = Math.sqrt(144 * 0.8394);\n// geometry pad - state_var_145 = Math.sqrt(145 * 0.4223);\n// geometry pad - state_var_146 = Math.sqrt(146 * 0.5154);\n// geometry pad - state_var_147 = Math.sqrt(147 * 0.4014);\n// geometry pad - state_var_148 = Math.sqrt(148 * 0.0221);\n// geometry pad - state_var_149 = Math.sqrt(149 * 0.3808);\n// geometry pad - state_var_150 = Math.sqrt(150 * 0.2989);\n// geometry pad - state_var_151 = Math.sqrt(151 * 0.9748);\n// geometry pad - state_var_152 = Math.sqrt(152 * 0.1226);\n// geometry pad - state_var_153 = Math.sqrt(153 * 0.3357);\n// geometry pad - state_var_154 = Math.sqrt(154 * 0.7097);\n// geometry pad - state_var_155 = Math.sqrt(155 * 0.0494);\n// geometry pad - state_var_156 = Math.sqrt(156 * 0.3997);\n// geometry pad - state_var_157 = Math.sqrt(157 * 0.4004);\n// geometry pad - state_var_158 = Math.sqrt(158 * 0.7592);\n// geometry pad - state_var_159 = Math.sqrt(159 * 0.2720);\n// geometry pad - state_var_160 = Math.sqrt(160 * 0.4717);\n// geometry pad - state_var_161 = Math.sqrt(161 * 0.2173);\n// geometry pad - state_var_162 = Math.sqrt(162 * 0.7875);\n// geometry pad - state_var_163 = Math.sqrt(163 * 0.1113);\n// geometry pad - state_var_164 = Math.sqrt(164 * 0.0958);\n// geometry pad - state_var_165 = Math.sqrt(165 * 0.0776);\n// geometry pad - state_var_166 = Math.sqrt(166 * 0.3082);\n// geometry pad - state_var_167 = Math.sqrt(167 * 0.7259);\n// geometry pad - state_var_168 = Math.sqrt(168 * 0.2015);\n// geometry pad - state_var_169 = Math.sqrt(169 * 0.3854);\n// geometry pad - state_var_170 = Math.sqrt(170 * 0.3284);\n// geometry pad - state_var_171 = Math.sqrt(171 * 0.3620);\n// geometry pad - state_var_172 = Math.sqrt(172 * 0.7708);\n// geometry pad - state_var_173 = Math.sqrt(173 * 0.3623);\n// geometry pad - state_var_174 = Math.sqrt(174 * 0.3966);\n// geometry pad - state_var_175 = Math.sqrt(175 * 0.3090);\n// geometry pad - state_var_176 = Math.sqrt(176 * 0.4277);\n// geometry pad - state_var_177 = Math.sqrt(177 * 0.2828);\n// geometry pad - state_var_178 = Math.sqrt(178 * 0.0681);\n// geometry pad - state_var_179 = Math.sqrt(179 * 0.6107);\n// geometry pad - state_var_180 = Math.sqrt(180 * 0.0628);\n// geometry pad - state_var_181 = Math.sqrt(181 * 0.5692);\n// geometry pad - state_var_182 = Math.sqrt(182 * 0.6576);\n// geometry pad - state_var_183 = Math.sqrt(183 * 0.2909);\n// geometry pad - state_var_184 = Math.sqrt(184 * 0.8398);\n// geometry pad - state_var_185 = Math.sqrt(185 * 0.0875);\n// geometry pad - state_var_186 = Math.sqrt(186 * 0.2589);\n// geometry pad - state_var_187 = Math.sqrt(187 * 0.6079);\n// geometry pad - state_var_188 = Math.sqrt(188 * 0.7429);\n// geometry pad - state_var_189 = Math.sqrt(189 * 0.1696);\n// geometry pad - state_var_190 = Math.sqrt(190 * 0.3955);\n// geometry pad - state_var_191 = Math.sqrt(191 * 0.0682);\n// geometry pad - state_var_192 = Math.sqrt(192 * 0.7590);\n// geometry pad - state_var_193 = Math.sqrt(193 * 0.3177);\n// geometry pad - state_var_194 = Math.sqrt(194 * 0.0415);\n// geometry pad - state_var_195 = Math.sqrt(195 * 0.9879);\n// geometry pad - state_var_196 = Math.sqrt(196 * 0.0991);\n// geometry pad - state_var_197 = Math.sqrt(197 * 0.4387);\n// geometry pad - state_var_198 = Math.sqrt(198 * 0.7935);\n// geometry pad - state_var_199 = Math.sqrt(199 * 0.5085);\n// geometry pad - state_var_200 = Math.sqrt(200 * 0.0340);\n// geometry pad - state_var_201 = Math.sqrt(201 * 0.6696);\n// geometry pad - state_var_202 = Math.sqrt(202 * 0.3390);\n// geometry pad - state_var_203 = Math.sqrt(203 * 0.5159);\n// geometry pad - state_var_204 = Math.sqrt(204 * 0.0357);\n// geometry pad - state_var_205 = Math.sqrt(205 * 0.8574);\n// geometry pad - state_var_206 = Math.sqrt(206 * 0.3101);\n// geometry pad - state_var_207 = Math.sqrt(207 * 0.5626);\n// geometry pad - state_var_208 = Math.sqrt(208 * 0.7116);\n// geometry pad - state_var_209 = Math.sqrt(209 * 0.6563);\n// geometry pad - state_var_210 = Math.sqrt(210 * 0.1654);\n// geometry pad - state_var_211 = Math.sqrt(211 * 0.4950);\n// geometry pad - state_var_212 = Math.sqrt(212 * 0.0907);\n// geometry pad - state_var_213 = Math.sqrt(213 * 0.1007);\n// geometry pad - state_var_214 = Math.sqrt(214 * 0.7168);\n// geometry pad - state_var_215 = Math.sqrt(215 * 0.0681);\n// geometry pad - state_var_216 = Math.sqrt(216 * 0.9507);\n// geometry pad - state_var_217 = Math.sqrt(217 * 0.2578);\n// geometry pad - state_var_218 = Math.sqrt(218 * 0.9698);\n// geometry pad - state_var_219 = Math.sqrt(219 * 0.5798);\n// geometry pad - state_var_220 = Math.sqrt(220 * 0.5116);\n// geometry pad - state_var_221 = Math.sqrt(221 * 0.0435);\n// geometry pad - state_var_222 = Math.sqrt(222 * 0.3159);\n// geometry pad - state_var_223 = Math.sqrt(223 * 0.2909);\n// geometry pad - state_var_224 = Math.sqrt(224 * 0.4307);\n// geometry pad - state_var_225 = Math.sqrt(225 * 0.6049);\n// geometry pad - state_var_226 = Math.sqrt(226 * 0.6362);\n// geometry pad - state_var_227 = Math.sqrt(227 * 0.7914);\n// geometry pad - state_var_228 = Math.sqrt(228 * 0.9840);\n// geometry pad - state_var_229 = Math.sqrt(229 * 0.2848);\n// geometry pad - state_var_230 = Math.sqrt(230 * 0.3402);\n// geometry pad - state_var_231 = Math.sqrt(231 * 0.5980);\n// geometry pad - state_var_232 = Math.sqrt(232 * 0.6785);\n// geometry pad - state_var_233 = Math.sqrt(233 * 0.4586);\n// geometry pad - state_var_234 = Math.sqrt(234 * 0.1730);\n// geometry pad - state_var_235 = Math.sqrt(235 * 0.9932);\n// geometry pad - state_var_236 = Math.sqrt(236 * 0.2126);\n// geometry pad - state_var_237 = Math.sqrt(237 * 0.5459);\n// geometry pad - state_var_238 = Math.sqrt(238 * 0.4892);\n// geometry pad - state_var_239 = Math.sqrt(239 * 0.4302);\n// geometry pad - state_var_240 = Math.sqrt(240 * 0.5244);\n// geometry pad - state_var_241 = Math.sqrt(241 * 0.0006);\n// geometry pad - state_var_242 = Math.sqrt(242 * 0.8565);\n// geometry pad - state_var_243 = Math.sqrt(243 * 0.1953);\n// geometry pad - state_var_244 = Math.sqrt(244 * 0.5053);\n// geometry pad - state_var_245 = Math.sqrt(245 * 0.1265);\n// geometry pad - state_var_246 = Math.sqrt(246 * 0.4692);\n// geometry pad - state_var_247 = Math.sqrt(247 * 0.0823);\n// geometry pad - state_var_248 = Math.sqrt(248 * 0.4803);\n// geometry pad - state_var_249 = Math.sqrt(249 * 0.7885);\n// geometry pad - state_var_250 = Math.sqrt(250 * 0.0689);\n// geometry pad - state_var_251 = Math.sqrt(251 * 0.4976);\n// geometry pad - state_var_252 = Math.sqrt(252 * 0.8019);\n// geometry pad - state_var_253 = Math.sqrt(253 * 0.8778);\n// geometry pad - state_var_254 = Math.sqrt(254 * 0.8391);\n// geometry pad - state_var_255 = Math.sqrt(255 * 0.8249);\n// geometry pad - state_var_256 = Math.sqrt(256 * 0.0087);\n// geometry pad - state_var_257 = Math.sqrt(257 * 0.4445);\n// geometry pad - state_var_258 = Math.sqrt(258 * 0.5287);\n// geometry pad - state_var_259 = Math.sqrt(259 * 0.5037);\n// geometry pad - state_var_260 = Math.sqrt(260 * 0.3250);\n// geometry pad - state_var_261 = Math.sqrt(261 * 0.4328);\n// geometry pad - state_var_262 = Math.sqrt(262 * 0.9883);\n// geometry pad - state_var_263 = Math.sqrt(263 * 0.2522);\n// geometry pad - state_var_264 = Math.sqrt(264 * 0.1632);\n// geometry pad - state_var_265 = Math.sqrt(265 * 0.9767);\n// geometry pad - state_var_266 = Math.sqrt(266 * 0.5957);\n// geometry pad - state_var_267 = Math.sqrt(267 * 0.1675);\n// geometry pad - state_var_268 = Math.sqrt(268 * 0.9898);\n// geometry pad - state_var_269 = Math.sqrt(269 * 0.6435);\n// geometry pad - state_var_270 = Math.sqrt(270 * 0.5922);\n// geometry pad - state_var_271 = Math.sqrt(271 * 0.4915);\n// geometry pad - state_var_272 = Math.sqrt(272 * 0.5367);\n// geometry pad - state_var_273 = Math.sqrt(273 * 0.8263);\n// geometry pad - state_var_274 = Math.sqrt(274 * 0.0021);\n// geometry pad - state_var_275 = Math.sqrt(275 * 0.1864);\n// geometry pad - state_var_276 = Math.sqrt(276 * 0.8200);\n// geometry pad - state_var_277 = Math.sqrt(277 * 0.4999);\n// geometry pad - state_var_278 = Math.sqrt(278 * 0.9956);\n// geometry pad - state_var_279 = Math.sqrt(279 * 0.8846);\n// geometry pad - state_var_280 = Math.sqrt(280 * 0.9605);\n// geometry pad - state_var_281 = Math.sqrt(281 * 0.8533);\n// geometry pad - state_var_282 = Math.sqrt(282 * 0.2946);\n// geometry pad - state_var_283 = Math.sqrt(283 * 0.1929);\n// geometry pad - state_var_284 = Math.sqrt(284 * 0.8981);\n// geometry pad - state_var_285 = Math.sqrt(285 * 0.3680);\n// geometry pad - state_var_286 = Math.sqrt(286 * 0.8453);\n// geometry pad - state_var_287 = Math.sqrt(287 * 0.2456);\n// geometry pad - state_var_288 = Math.sqrt(288 * 0.2623);\n// geometry pad - state_var_289 = Math.sqrt(289 * 0.1797);\n// geometry pad - state_var_290 = Math.sqrt(290 * 0.0349);\n// geometry pad - state_var_291 = Math.sqrt(291 * 0.6669);\n// geometry pad - state_var_292 = Math.sqrt(292 * 0.4222);\n// geometry pad - state_var_293 = Math.sqrt(293 * 0.9965);\n// geometry pad - state_var_294 = Math.sqrt(294 * 0.0450);\n// geometry pad - state_var_295 = Math.sqrt(295 * 0.1621);\n// geometry pad - state_var_296 = Math.sqrt(296 * 0.6945);\n// geometry pad - state_var_297 = Math.sqrt(297 * 0.9290);\n// geometry pad - state_var_298 = Math.sqrt(298 * 0.9528);\n// geometry pad - state_var_299 = Math.sqrt(299 * 0.6737);\n// geometry pad - state_var_300 = Math.sqrt(300 * 0.7743);\n// geometry pad - state_var_301 = Math.sqrt(301 * 0.1656);\n// geometry pad - state_var_302 = Math.sqrt(302 * 0.7179);\n// geometry pad - state_var_303 = Math.sqrt(303 * 0.0568);\n// geometry pad - state_var_304 = Math.sqrt(304 * 0.1859);\n// geometry pad - state_var_305 = Math.sqrt(305 * 0.0348);\n// geometry pad - state_var_306 = Math.sqrt(306 * 0.8163);\n// geometry pad - state_var_307 = Math.sqrt(307 * 0.7032);\n// geometry pad - state_var_308 = Math.sqrt(308 * 0.3420);\n// geometry pad - state_var_309 = Math.sqrt(309 * 0.7424);\n// geometry pad - state_var_310 = Math.sqrt(310 * 0.3340);\n// geometry pad - state_var_311 = Math.sqrt(311 * 0.8927);\n// geometry pad - state_var_312 = Math.sqrt(312 * 0.5443);\n// geometry pad - state_var_313 = Math.sqrt(313 * 0.3807);\n// geometry pad - state_var_314 = Math.sqrt(314 * 0.1818);\n// geometry pad - state_var_315 = Math.sqrt(315 * 0.5739);\n// geometry pad - state_var_316 = Math.sqrt(316 * 0.6095);\n// geometry pad - state_var_317 = Math.sqrt(317 * 0.4844);\n// geometry pad - state_var_318 = Math.sqrt(318 * 0.4721);\n// geometry pad - state_var_319 = Math.sqrt(319 * 0.5015);\n// geometry pad - state_var_320 = Math.sqrt(320 * 0.7025);\n// geometry pad - state_var_321 = Math.sqrt(321 * 0.9562);\n// geometry pad - state_var_322 = Math.sqrt(322 * 0.0913);\n// geometry pad - state_var_323 = Math.sqrt(323 * 0.4048);\n// geometry pad - state_var_324 = Math.sqrt(324 * 0.9015);\n// geometry pad - state_var_325 = Math.sqrt(325 * 0.9872);\n// geometry pad - state_var_326 = Math.sqrt(326 * 0.9480);\n// geometry pad - state_var_327 = Math.sqrt(327 * 0.1217);\n// geometry pad - state_var_328 = Math.sqrt(328 * 0.6710);\n// geometry pad - state_var_329 = Math.sqrt(329 * 0.2256);\n// geometry pad - state_var_330 = Math.sqrt(330 * 0.7894);\n// geometry pad - state_var_331 = Math.sqrt(331 * 0.7577);\n// geometry pad - state_var_332 = Math.sqrt(332 * 0.5349);\n// geometry pad - state_var_333 = Math.sqrt(333 * 0.6331);\n// geometry pad - state_var_334 = Math.sqrt(334 * 0.3802);\n// geometry pad - state_var_335 = Math.sqrt(335 * 0.6447);\n// geometry pad - state_var_336 = Math.sqrt(336 * 0.3159);\n// geometry pad - state_var_337 = Math.sqrt(337 * 0.8687);\n// geometry pad - state_var_338 = Math.sqrt(338 * 0.1196);\n// geometry pad - state_var_339 = Math.sqrt(339 * 0.1203);\n// geometry pad - state_var_340 = Math.sqrt(340 * 0.2537);\n// geometry pad - state_var_341 = Math.sqrt(341 * 0.5602);\n// geometry pad - state_var_342 = Math.sqrt(342 * 0.5970);\n// geometry pad - state_var_343 = Math.sqrt(343 * 0.7630);\n// geometry pad - state_var_344 = Math.sqrt(344 * 0.4458);\n// geometry pad - state_var_345 = Math.sqrt(345 * 0.7539);\n// geometry pad - state_var_346 = Math.sqrt(346 * 0.9890);\n// geometry pad - state_var_347 = Math.sqrt(347 * 0.8800);\n// geometry pad - state_var_348 = Math.sqrt(348 * 0.9766);\n// geometry pad - state_var_349 = Math.sqrt(349 * 0.6697);\n// geometry pad - state_var_350 = Math.sqrt(350 * 0.5071);\n// geometry pad - state_var_351 = Math.sqrt(351 * 0.4573);\n// geometry pad - state_var_352 = Math.sqrt(352 * 0.5347);\n// geometry pad - state_var_353 = Math.sqrt(353 * 0.2990);\n// geometry pad - state_var_354 = Math.sqrt(354 * 0.8142);\n// geometry pad - state_var_355 = Math.sqrt(355 * 0.9950);\n// geometry pad - state_var_356 = Math.sqrt(356 * 0.0393);\n// geometry pad - state_var_357 = Math.sqrt(357 * 0.4883);\n// geometry pad - state_var_358 = Math.sqrt(358 * 0.4093);\n// geometry pad - state_var_359 = Math.sqrt(359 * 0.8187);\n// geometry pad - state_var_360 = Math.sqrt(360 * 0.2624);\n// geometry pad - state_var_361 = Math.sqrt(361 * 0.8684);\n// geometry pad - state_var_362 = Math.sqrt(362 * 0.7616);\n// geometry pad - state_var_363 = Math.sqrt(363 * 0.0161);\n// geometry pad - state_var_364 = Math.sqrt(364 * 0.0586);\n// geometry pad - state_var_365 = Math.sqrt(365 * 0.3731);\n// geometry pad - state_var_366 = Math.sqrt(366 * 0.2260);\n// geometry pad - state_var_367 = Math.sqrt(367 * 0.0037);\n// geometry pad - state_var_368 = Math.sqrt(368 * 0.2175);\n// geometry pad - state_var_369 = Math.sqrt(369 * 0.9677);\n// geometry pad - state_var_370 = Math.sqrt(370 * 0.0825);\n// geometry pad - state_var_371 = Math.sqrt(371 * 0.9111);\n// geometry pad - state_var_372 = Math.sqrt(372 * 0.2537);\n// geometry pad - state_var_373 = Math.sqrt(373 * 0.8337);\n// geometry pad - state_var_374 = Math.sqrt(374 * 0.5624);\n// geometry pad - state_var_375 = Math.sqrt(375 * 0.7344);\n// geometry pad - state_var_376 = Math.sqrt(376 * 0.5241);\n// geometry pad - state_var_377 = Math.sqrt(377 * 0.1157);\n// geometry pad - state_var_378 = Math.sqrt(378 * 0.8956);\n// geometry pad - state_var_379 = Math.sqrt(379 * 0.0040);\n// geometry pad - state_var_380 = Math.sqrt(380 * 0.8542);\n// geometry pad - state_var_381 = Math.sqrt(381 * 0.7065);\n// geometry pad - state_var_382 = Math.sqrt(382 * 0.0585);\n// geometry pad - state_var_383 = Math.sqrt(383 * 0.4303);\n// geometry pad - state_var_384 = Math.sqrt(384 * 0.8789);\n// geometry pad - state_var_385 = Math.sqrt(385 * 0.1954);\n// geometry pad - state_var_386 = Math.sqrt(386 * 0.5862);\n// geometry pad - state_var_387 = Math.sqrt(387 * 0.1131);\n// geometry pad - state_var_388 = Math.sqrt(388 * 0.6912);\n// geometry pad - state_var_389 = Math.sqrt(389 * 0.3566);\n// geometry pad - state_var_390 = Math.sqrt(390 * 0.2383);\n// geometry pad - state_var_391 = Math.sqrt(391 * 0.8868);\n// geometry pad - state_var_392 = Math.sqrt(392 * 0.9309);\n// geometry pad - state_var_393 = Math.sqrt(393 * 0.1881);\n// geometry pad - state_var_394 = Math.sqrt(394 * 0.1598);\n// geometry pad - state_var_395 = Math.sqrt(395 * 0.9826);\n// geometry pad - state_var_396 = Math.sqrt(396 * 0.0469);\n// geometry pad - state_var_397 = Math.sqrt(397 * 0.4238);\n// geometry pad - state_var_398 = Math.sqrt(398 * 0.6598);\n// geometry pad - state_var_399 = Math.sqrt(399 * 0.0002);\n// geometry pad - state_var_400 = Math.sqrt(400 * 0.3846);\n// geometry pad - state_var_401 = Math.sqrt(401 * 0.1164);\n// geometry pad - state_var_402 = Math.sqrt(402 * 0.3537);\n// geometry pad - state_var_403 = Math.sqrt(403 * 0.4751);\n// geometry pad - state_var_404 = Math.sqrt(404 * 0.3918);\n// geometry pad - state_var_405 = Math.sqrt(405 * 0.8342);\n// geometry pad - state_var_406 = Math.sqrt(406 * 0.5510);\n// geometry pad - state_var_407 = Math.sqrt(407 * 0.2616);\n// geometry pad - state_var_408 = Math.sqrt(408 * 0.3899);\n// geometry pad - state_var_409 = Math.sqrt(409 * 0.7556);\n// geometry pad - state_var_410 = Math.sqrt(410 * 0.0757);\n// geometry pad - state_var_411 = Math.sqrt(411 * 0.9420);\n// geometry pad - state_var_412 = Math.sqrt(412 * 0.6385);\n// geometry pad - state_var_413 = Math.sqrt(413 * 0.6428);\n// geometry pad - state_var_414 = Math.sqrt(414 * 0.4083);\n// geometry pad - state_var_415 = Math.sqrt(415 * 0.5774);\n// geometry pad - state_var_416 = Math.sqrt(416 * 0.9140);\n// geometry pad - state_var_417 = Math.sqrt(417 * 0.4055);\n// geometry pad - state_var_418 = Math.sqrt(418 * 0.8241);\n// geometry pad - state_var_419 = Math.sqrt(419 * 0.2585);\n// geometry pad - state_var_420 = Math.sqrt(420 * 0.3573);\n// geometry pad - state_var_421 = Math.sqrt(421 * 0.5555);\n// geometry pad - state_var_422 = Math.sqrt(422 * 0.2541);\n// geometry pad - state_var_423 = Math.sqrt(423 * 0.7759);\n// geometry pad - state_var_424 = Math.sqrt(424 * 0.4131);\n// geometry pad - state_var_425 = Math.sqrt(425 * 0.2418);\n// geometry pad - state_var_426 = Math.sqrt(426 * 0.7594);\n// geometry pad - state_var_427 = Math.sqrt(427 * 0.7419);\n// geometry pad - state_var_428 = Math.sqrt(428 * 0.7840);\n// geometry pad - state_var_429 = Math.sqrt(429 * 0.1523);\n// geometry pad - state_var_430 = Math.sqrt(430 * 0.0958);\n// geometry pad - state_var_431 = Math.sqrt(431 * 0.5656);\n// geometry pad - state_var_432 = Math.sqrt(432 * 0.9699);\n// geometry pad - state_var_433 = Math.sqrt(433 * 0.3502);\n// geometry pad - state_var_434 = Math.sqrt(434 * 0.9055);\n// geometry pad - state_var_435 = Math.sqrt(435 * 0.0715);\n// geometry pad - state_var_436 = Math.sqrt(436 * 0.4836);\n// geometry pad - state_var_437 = Math.sqrt(437 * 0.9328);\n// geometry pad - state_var_438 = Math.sqrt(438 * 0.3527);\n// geometry pad - state_var_439 = Math.sqrt(439 * 0.9397);\n// geometry pad - state_var_440 = Math.sqrt(440 * 0.3524);\n// geometry pad - state_var_441 = Math.sqrt(441 * 0.9252);\n// geometry pad - state_var_442 = Math.sqrt(442 * 0.9116);\n// geometry pad - state_var_443 = Math.sqrt(443 * 0.1640);\n// geometry pad - state_var_444 = Math.sqrt(444 * 0.6390);\n// geometry pad - state_var_445 = Math.sqrt(445 * 0.6347);\n// geometry pad - state_var_446 = Math.sqrt(446 * 0.5871);\n// geometry pad - state_var_447 = Math.sqrt(447 * 0.4550);\n// geometry pad - state_var_448 = Math.sqrt(448 * 0.3844);\n// geometry pad - state_var_449 = Math.sqrt(449 * 0.3997);\n// geometry pad - state_var_450 = Math.sqrt(450 * 0.4084);\n// geometry pad - state_var_451 = Math.sqrt(451 * 0.3734);\n// geometry pad - state_var_452 = Math.sqrt(452 * 0.7128);\n// geometry pad - state_var_453 = Math.sqrt(453 * 0.1220);\n// geometry pad - state_var_454 = Math.sqrt(454 * 0.4853);\n// geometry pad - state_var_455 = Math.sqrt(455 * 0.3801);\n// geometry pad - state_var_456 = Math.sqrt(456 * 0.9511);\n// geometry pad - state_var_457 = Math.sqrt(457 * 0.8401);\n// geometry pad - state_var_458 = Math.sqrt(458 * 0.7546);\n// geometry pad - state_var_459 = Math.sqrt(459 * 0.8636);\n// geometry pad - state_var_460 = Math.sqrt(460 * 0.1436);\n// geometry pad - state_var_461 = Math.sqrt(461 * 0.2740);\n// geometry pad - state_var_462 = Math.sqrt(462 * 0.3631);\n// geometry pad - state_var_463 = Math.sqrt(463 * 0.7225);\n// geometry pad - state_var_464 = Math.sqrt(464 * 0.4156);\n// geometry pad - state_var_465 = Math.sqrt(465 * 0.2937);\n// geometry pad - state_var_466 = Math.sqrt(466 * 0.1088);\n// geometry pad - state_var_467 = Math.sqrt(467 * 0.3855);\n// geometry pad - state_var_468 = Math.sqrt(468 * 0.0658);\n// geometry pad - state_var_469 = Math.sqrt(469 * 0.2144);\n// geometry pad - state_var_470 = Math.sqrt(470 * 0.6159);\n// geometry pad - state_var_471 = Math.sqrt(471 * 0.3477);\n// geometry pad - state_var_472 = Math.sqrt(472 * 0.6282);\n// geometry pad - state_var_473 = Math.sqrt(473 * 0.7545);\n// geometry pad - state_var_474 = Math.sqrt(474 * 0.6730);\n// geometry pad - state_var_475 = Math.sqrt(475 * 0.1565);\n// geometry pad - state_var_476 = Math.sqrt(476 * 0.9297);\n// geometry pad - state_var_477 = Math.sqrt(477 * 0.5613);\n// geometry pad - state_var_478 = Math.sqrt(478 * 0.0065);\n// geometry pad - state_var_479 = Math.sqrt(479 * 0.7281);\n// geometry pad - state_var_480 = Math.sqrt(480 * 0.4344);\n// geometry pad - state_var_481 = Math.sqrt(481 * 0.0656);\n// geometry pad - state_var_482 = Math.sqrt(482 * 0.3798);\n// geometry pad - state_var_483 = Math.sqrt(483 * 0.1890);\n// geometry pad - state_var_484 = Math.sqrt(484 * 0.0387);\n// geometry pad - state_var_485 = Math.sqrt(485 * 0.1360);\n// geometry pad - state_var_486 = Math.sqrt(486 * 0.7919);\n// geometry pad - state_var_487 = Math.sqrt(487 * 0.8935);\n// geometry pad - state_var_488 = Math.sqrt(488 * 0.7131);\n// geometry pad - state_var_489 = Math.sqrt(489 * 0.5719);\n// geometry pad - state_var_490 = Math.sqrt(490 * 0.0096);\n// geometry pad - state_var_491 = Math.sqrt(491 * 0.7428);\n// geometry pad - state_var_492 = Math.sqrt(492 * 0.9591);\n// geometry pad - state_var_493 = Math.sqrt(493 * 0.2158);\n// geometry pad - state_var_494 = Math.sqrt(494 * 0.2689);\n// geometry pad - state_var_495 = Math.sqrt(495 * 0.7702);\n// geometry pad - state_var_496 = Math.sqrt(496 * 0.5160);\n// geometry pad - state_var_497 = Math.sqrt(497 * 0.4232);\n// geometry pad - state_var_498 = Math.sqrt(498 * 0.8074);\n// geometry pad - state_var_499 = Math.sqrt(499 * 0.9033);\n// geometry pad - state_var_500 = Math.sqrt(500 * 0.3367);\n// geometry pad - state_var_501 = Math.sqrt(501 * 0.0661);\n// geometry pad - state_var_502 = Math.sqrt(502 * 0.0294);\n// geometry pad - state_var_503 = Math.sqrt(503 * 0.2357);\n// geometry pad - state_var_504 = Math.sqrt(504 * 0.1941);\n// geometry pad - state_var_505 = Math.sqrt(505 * 0.6718);\n// geometry pad - state_var_506 = Math.sqrt(506 * 0.2680);\n// geometry pad - state_var_507 = Math.sqrt(507 * 0.6634);\n// geometry pad - state_var_508 = Math.sqrt(508 * 0.7140);\n// geometry pad - state_var_509 = Math.sqrt(509 * 0.1127);\n// geometry pad - state_var_510 = Math.sqrt(510 * 0.1830);\n// geometry pad - state_var_511 = Math.sqrt(511 * 0.8401);\n// geometry pad - state_var_512 = Math.sqrt(512 * 0.8121);\n// geometry pad - state_var_513 = Math.sqrt(513 * 0.2913);\n// geometry pad - state_var_514 = Math.sqrt(514 * 0.6564);\n// geometry pad - state_var_515 = Math.sqrt(515 * 0.0807);\n// geometry pad - state_var_516 = Math.sqrt(516 * 0.6007);\n// geometry pad - state_var_517 = Math.sqrt(517 * 0.8954);\n// geometry pad - state_var_518 = Math.sqrt(518 * 0.5033);\n// geometry pad - state_var_519 = Math.sqrt(519 * 0.7765);\n// geometry pad - state_var_520 = Math.sqrt(520 * 0.0412);\n// geometry pad - state_var_521 = Math.sqrt(521 * 0.2508);\n// geometry pad - state_var_522 = Math.sqrt(522 * 0.2833);\n// geometry pad - state_var_523 = Math.sqrt(523 * 0.1167);\n// geometry pad - state_var_524 = Math.sqrt(524 * 0.0653);\n// geometry pad - state_var_525 = Math.sqrt(525 * 0.1637);\n// geometry pad - state_var_526 = Math.sqrt(526 * 0.2696);\n// geometry pad - state_var_527 = Math.sqrt(527 * 0.4483);\n// geometry pad - state_var_528 = Math.sqrt(528 * 0.8142);\n// geometry pad - state_var_529 = Math.sqrt(529 * 0.0529);\n// geometry pad - state_var_530 = Math.sqrt(530 * 0.6106);\n// geometry pad - state_var_531 = Math.sqrt(531 * 0.6167);\n// geometry pad - state_var_532 = Math.sqrt(532 * 0.8834);\n// geometry pad - state_var_533 = Math.sqrt(533 * 0.4973);\n// geometry pad - state_var_534 = Math.sqrt(534 * 0.1308);\n// geometry pad - state_var_535 = Math.sqrt(535 * 0.7195);\n// geometry pad - state_var_536 = Math.sqrt(536 * 0.2348);\n// geometry pad - state_var_537 = Math.sqrt(537 * 0.8753);\n// geometry pad - state_var_538 = Math.sqrt(538 * 0.4658);\n// geometry pad - state_var_539 = Math.sqrt(539 * 0.9342);\n// geometry pad - state_var_540 = Math.sqrt(540 * 0.3089);\n// geometry pad - state_var_541 = Math.sqrt(541 * 0.3412);\n// geometry pad - state_var_542 = Math.sqrt(542 * 0.8562);\n// geometry pad - state_var_543 = Math.sqrt(543 * 0.6516);\n// geometry pad - state_var_544 = Math.sqrt(544 * 0.7763);\n// geometry pad - state_var_545 = Math.sqrt(545 * 0.9775);\n// geometry pad - state_var_546 = Math.sqrt(546 * 0.3552);\n// geometry pad - state_var_547 = Math.sqrt(547 * 0.2624);\n// geometry pad - state_var_548 = Math.sqrt(548 * 0.2237);\n// geometry pad - state_var_549 = Math.sqrt(549 * 0.4240);\n// geometry pad - state_var_550 = Math.sqrt(550 * 0.1580);\n// geometry pad - state_var_551 = Math.sqrt(551 * 0.6838);\n// geometry pad - state_var_552 = Math.sqrt(552 * 0.7441);\n// geometry pad - state_var_553 = Math.sqrt(553 * 0.7589);\n// geometry pad - state_var_554 = Math.sqrt(554 * 0.8885);\n// geometry pad - state_var_555 = Math.sqrt(555 * 0.6674);\n// geometry pad - state_var_556 = Math.sqrt(556 * 0.2432);\n// geometry pad - state_var_557 = Math.sqrt(557 * 0.5310);\n// geometry pad - state_var_558 = Math.sqrt(558 * 0.6468);\n// geometry pad - state_var_559 = Math.sqrt(559 * 0.7691);\n// geometry pad - state_var_560 = Math.sqrt(560 * 0.2360);\n// geometry pad - state_var_561 = Math.sqrt(561 * 0.7471);\n// geometry pad - state_var_562 = Math.sqrt(562 * 0.0040);\n// geometry pad - state_var_563 = Math.sqrt(563 * 0.6394);\n// geometry pad - state_var_564 = Math.sqrt(564 * 0.4170);\n// geometry pad - state_var_565 = Math.sqrt(565 * 0.2028);\n// geometry pad - state_var_566 = Math.sqrt(566 * 0.7247);\n// geometry pad - state_var_567 = Math.sqrt(567 * 0.9900);\n// geometry pad - state_var_568 = Math.sqrt(568 * 0.4088);\n// geometry pad - state_var_569 = Math.sqrt(569 * 0.9299);\n// geometry pad - state_var_570 = Math.sqrt(570 * 0.4697);\n// geometry pad - state_var_571 = Math.sqrt(571 * 0.5106);\n// geometry pad - state_var_572 = Math.sqrt(572 * 0.6059);\n// geometry pad - state_var_573 = Math.sqrt(573 * 0.1947);\n// geometry pad - state_var_574 = Math.sqrt(574 * 0.5659);\n// geometry pad - state_var_575 = Math.sqrt(575 * 0.5924);\n// geometry pad - state_var_576 = Math.sqrt(576 * 0.2975);\n// geometry pad - state_var_577 = Math.sqrt(577 * 0.6140);\n// geometry pad - state_var_578 = Math.sqrt(578 * 0.3053);\n// geometry pad - state_var_579 = Math.sqrt(579 * 0.2635);\n// geometry pad - state_var_580 = Math.sqrt(580 * 0.9247);\n// geometry pad - state_var_581 = Math.sqrt(581 * 0.9880);\n// geometry pad - state_var_582 = Math.sqrt(582 * 0.3738);\n// geometry pad - state_var_583 = Math.sqrt(583 * 0.7305);\n// geometry pad - state_var_584 = Math.sqrt(584 * 0.0151);\n// geometry pad - state_var_585 = Math.sqrt(585 * 0.8406);\n// geometry pad - state_var_586 = Math.sqrt(586 * 0.0802);\n// geometry pad - state_var_587 = Math.sqrt(587 * 0.9242);\n// geometry pad - state_var_588 = Math.sqrt(588 * 0.3763);\n// geometry pad - state_var_589 = Math.sqrt(589 * 0.0306);\n// geometry pad - state_var_590 = Math.sqrt(590 * 0.7728);\n// geometry pad - state_var_591 = Math.sqrt(591 * 0.0280);\n// geometry pad - state_var_592 = Math.sqrt(592 * 0.1676);\n// geometry pad - state_var_593 = Math.sqrt(593 * 0.1484);\n// geometry pad - state_var_594 = Math.sqrt(594 * 0.9850);\n// geometry pad - state_var_595 = Math.sqrt(595 * 0.6474);\n// geometry pad - state_var_596 = Math.sqrt(596 * 0.3499);\n// geometry pad - state_var_597 = Math.sqrt(597 * 0.1237);\n// geometry pad - state_var_598 = Math.sqrt(598 * 0.9401);\n// geometry pad - state_var_599 = Math.sqrt(599 * 0.9985);\n// geometry pad - state_var_600 = Math.sqrt(600 * 0.4073);\n// geometry pad - state_var_601 = Math.sqrt(601 * 0.6233);\n// geometry pad - state_var_602 = Math.sqrt(602 * 0.4953);\n// geometry pad - state_var_603 = Math.sqrt(603 * 0.4493);\n// geometry pad - state_var_604 = Math.sqrt(604 * 0.3243);\n// geometry pad - state_var_605 = Math.sqrt(605 * 0.8915);\n// geometry pad - state_var_606 = Math.sqrt(606 * 0.8971);\n// geometry pad - state_var_607 = Math.sqrt(607 * 0.6257);\n// geometry pad - state_var_608 = Math.sqrt(608 * 0.2971);\n// geometry pad - state_var_609 = Math.sqrt(609 * 0.1488);\n// geometry pad - state_var_610 = Math.sqrt(610 * 0.3742);\n// geometry pad - state_var_611 = Math.sqrt(611 * 0.1038);\n// geometry pad - state_var_612 = Math.sqrt(612 * 0.5519);\n// geometry pad - state_var_613 = Math.sqrt(613 * 0.2205);\n// geometry pad - state_var_614 = Math.sqrt(614 * 0.8970);\n// geometry pad - state_var_615 = Math.sqrt(615 * 0.9833);\n// geometry pad - state_var_616 = Math.sqrt(616 * 0.5908);\n// geometry pad - state_var_617 = Math.sqrt(617 * 0.4716);\n// geometry pad - state_var_618 = Math.sqrt(618 * 0.6514);\n// geometry pad - state_var_619 = Math.sqrt(619 * 0.7902);\n// geometry pad - state_var_620 = Math.sqrt(620 * 0.8552);\n// geometry pad - state_var_621 = Math.sqrt(621 * 0.5304);\n// geometry pad - state_var_622 = Math.sqrt(622 * 0.9513);\n// geometry pad - state_var_623 = Math.sqrt(623 * 0.4546);\n// geometry pad - state_var_624 = Math.sqrt(624 * 0.5595);\n// geometry pad - state_var_625 = Math.sqrt(625 * 0.1225);\n// geometry pad - state_var_626 = Math.sqrt(626 * 0.2593);\n// geometry pad - state_var_627 = Math.sqrt(627 * 0.6678);\n// geometry pad - state_var_628 = Math.sqrt(628 * 0.3640);\n// geometry pad - state_var_629 = Math.sqrt(629 * 0.7881);\n// geometry pad - state_var_630 = Math.sqrt(630 * 0.8379);\n// geometry pad - state_var_631 = Math.sqrt(631 * 0.0132);\n// geometry pad - state_var_632 = Math.sqrt(632 * 0.2103);\n// geometry pad - state_var_633 = Math.sqrt(633 * 0.9010);\n// geometry pad - state_var_634 = Math.sqrt(634 * 0.7028);\n// geometry pad - state_var_635 = Math.sqrt(635 * 0.7298);\n// geometry pad - state_var_636 = Math.sqrt(636 * 0.8868);\n// geometry pad - state_var_637 = Math.sqrt(637 * 0.0028);\n// geometry pad - state_var_638 = Math.sqrt(638 * 0.0328);\n// geometry pad - state_var_639 = Math.sqrt(639 * 0.4052);\n// geometry pad - state_var_640 = Math.sqrt(640 * 0.4143);\n// geometry pad - state_var_641 = Math.sqrt(641 * 0.0955);\n// geometry pad - state_var_642 = Math.sqrt(642 * 0.0153);\n// geometry pad - state_var_643 = Math.sqrt(643 * 0.3106);\n// geometry pad - state_var_644 = Math.sqrt(644 * 0.7450);\n// geometry pad - state_var_645 = Math.sqrt(645 * 0.0180);\n// geometry pad - state_var_646 = Math.sqrt(646 * 0.4910);\n// geometry pad - state_var_647 = Math.sqrt(647 * 0.3733);\n// geometry pad - state_var_648 = Math.sqrt(648 * 0.9389);\n// geometry pad - state_var_649 = Math.sqrt(649 * 0.3010);\n// geometry pad - state_var_650 = Math.sqrt(650 * 0.1213);\n// geometry pad - state_var_651 = Math.sqrt(651 * 0.4902);\n// geometry pad - state_var_652 = Math.sqrt(652 * 0.2274);\n// geometry pad - state_var_653 = Math.sqrt(653 * 0.1809);\n// geometry pad - state_var_654 = Math.sqrt(654 * 0.6208);\n// geometry pad - state_var_655 = Math.sqrt(655 * 0.1754);\n// geometry pad - state_var_656 = Math.sqrt(656 * 0.7376);\n// geometry pad - state_var_657 = Math.sqrt(657 * 0.3067);\n// geometry pad - state_var_658 = Math.sqrt(658 * 0.3003);\n// geometry pad - state_var_659 = Math.sqrt(659 * 0.4047);\n// geometry pad - state_var_660 = Math.sqrt(660 * 0.9898);\n// geometry pad - state_var_661 = Math.sqrt(661 * 0.3393);\n// geometry pad - state_var_662 = Math.sqrt(662 * 0.6820);\n// geometry pad - state_var_663 = Math.sqrt(663 * 0.5607);\n// geometry pad - state_var_664 = Math.sqrt(664 * 0.6333);\n// geometry pad - state_var_665 = Math.sqrt(665 * 0.7124);\n// geometry pad - state_var_666 = Math.sqrt(666 * 0.7113);\n// geometry pad - state_var_667 = Math.sqrt(667 * 0.2901);\n// geometry pad - state_var_668 = Math.sqrt(668 * 0.8242);\n// geometry pad - state_var_669 = Math.sqrt(669 * 0.7624);\n// geometry pad - state_var_670 = Math.sqrt(670 * 0.6418);\n// geometry pad - state_var_671 = Math.sqrt(671 * 0.9266);\n// geometry pad - state_var_672 = Math.sqrt(672 * 0.8662);\n// geometry pad - state_var_673 = Math.sqrt(673 * 0.1031);\n// geometry pad - state_var_674 = Math.sqrt(674 * 0.8898);\n// geometry pad - state_var_675 = Math.sqrt(675 * 0.6012);\n// geometry pad - state_var_676 = Math.sqrt(676 * 0.2526);\n// geometry pad - state_var_677 = Math.sqrt(677 * 0.6250);\n// geometry pad - state_var_678 = Math.sqrt(678 * 0.6024);\n// geometry pad - state_var_679 = Math.sqrt(679 * 0.8805);\n// geometry pad - state_var_680 = Math.sqrt(680 * 0.5989);\n// geometry pad - state_var_681 = Math.sqrt(681 * 0.9947);\n// geometry pad - state_var_682 = Math.sqrt(682 * 0.3267);\n// geometry pad - state_var_683 = Math.sqrt(683 * 0.0137);\n// geometry pad - state_var_684 = Math.sqrt(684 * 0.7379);\n// geometry pad - state_var_685 = Math.sqrt(685 * 0.3507);\n// geometry pad - state_var_686 = Math.sqrt(686 * 0.5853);\n// geometry pad - state_var_687 = Math.sqrt(687 * 0.4374);\n// geometry pad - state_var_688 = Math.sqrt(688 * 0.2248);\n// geometry pad - state_var_689 = Math.sqrt(689 * 0.4176);\n// geometry pad - state_var_690 = Math.sqrt(690 * 0.0836);\n// geometry pad - state_var_691 = Math.sqrt(691 * 0.7896);\n// geometry pad - state_var_692 = Math.sqrt(692 * 0.3262);\n// geometry pad - state_var_693 = Math.sqrt(693 * 0.5301);\n// geometry pad - state_var_694 = Math.sqrt(694 * 0.6685);\n// geometry pad - state_var_695 = Math.sqrt(695 * 0.9725);\n// geometry pad - state_var_696 = Math.sqrt(696 * 0.7222);\n// geometry pad - state_var_697 = Math.sqrt(697 * 0.5871);\n// geometry pad - state_var_698 = Math.sqrt(698 * 0.9622);\n// geometry pad - state_var_699 = Math.sqrt(699 * 0.2644);\n// geometry pad - state_var_700 = Math.sqrt(700 * 0.2648);\n// geometry pad - state_var_701 = Math.sqrt(701 * 0.1332);\n// geometry pad - state_var_702 = Math.sqrt(702 * 0.0629);\n// geometry pad - state_var_703 = Math.sqrt(703 * 0.5233);\n// geometry pad - state_var_704 = Math.sqrt(704 * 0.3497);\n// geometry pad - state_var_705 = Math.sqrt(705 * 0.9485);\n// geometry pad - state_var_706 = Math.sqrt(706 * 0.0496);\n// geometry pad - state_var_707 = Math.sqrt(707 * 0.2692);\n// geometry pad - state_var_708 = Math.sqrt(708 * 0.0683);\n// geometry pad - state_var_709 = Math.sqrt(709 * 0.4634);\n// geometry pad - state_var_710 = Math.sqrt(710 * 0.9103);\n// geometry pad - state_var_711 = Math.sqrt(711 * 0.6157);\n// geometry pad - state_var_712 = Math.sqrt(712 * 0.6985);\n// geometry pad - state_var_713 = Math.sqrt(713 * 0.0209);\n// geometry pad - state_var_714 = Math.sqrt(714 * 0.5682);\n// geometry pad - state_var_715 = Math.sqrt(715 * 0.6778);\n// geometry pad - state_var_716 = Math.sqrt(716 * 0.6387);\n// geometry pad - state_var_717 = Math.sqrt(717 * 0.8450);\n// geometry pad - state_var_718 = Math.sqrt(718 * 0.6485);\n// geometry pad - state_var_719 = Math.sqrt(719 * 0.2897);\n// geometry pad - state_var_720 = Math.sqrt(720 * 0.5204);\n// geometry pad - state_var_721 = Math.sqrt(721 * 0.4401);\n// geometry pad - state_var_722 = Math.sqrt(722 * 0.6541);\n// geometry pad - state_var_723 = Math.sqrt(723 * 0.1187);\n// geometry pad - state_var_724 = Math.sqrt(724 * 0.9164);\n// geometry pad - state_var_725 = Math.sqrt(725 * 0.0721);\n// geometry pad - state_var_726 = Math.sqrt(726 * 0.6904);\n// geometry pad - state_var_727 = Math.sqrt(727 * 0.1366);\n// geometry pad - state_var_728 = Math.sqrt(728 * 0.5654);\n// geometry pad - state_var_729 = Math.sqrt(729 * 0.3961);\n// geometry pad - state_var_730 = Math.sqrt(730 * 0.8894);\n// geometry pad - state_var_731 = Math.sqrt(731 * 0.1118);\n// geometry pad - state_var_732 = Math.sqrt(732 * 0.2867);\n// geometry pad - state_var_733 = Math.sqrt(733 * 0.6484);\n// geometry pad - state_var_734 = Math.sqrt(734 * 0.2229);\n// geometry pad - state_var_735 = Math.sqrt(735 * 0.2527);\n// geometry pad - state_var_736 = Math.sqrt(736 * 0.7945);\n// geometry pad - state_var_737 = Math.sqrt(737 * 0.1061);\n// geometry pad - state_var_738 = Math.sqrt(738 * 0.3397);\n// geometry pad - state_var_739 = Math.sqrt(739 * 0.8689);\n// geometry pad - state_var_740 = Math.sqrt(740 * 0.2204);\n// geometry pad - state_var_741 = Math.sqrt(741 * 0.1237);\n// geometry pad - state_var_742 = Math.sqrt(742 * 0.9892);\n// geometry pad - state_var_743 = Math.sqrt(743 * 0.4238);\n// geometry pad - state_var_744 = Math.sqrt(744 * 0.3778);\n// geometry pad - state_var_745 = Math.sqrt(745 * 0.5396);\n// geometry pad - state_var_746 = Math.sqrt(746 * 0.1641);\n// geometry pad - state_var_747 = Math.sqrt(747 * 0.4565);\n// geometry pad - state_var_748 = Math.sqrt(748 * 0.1335);\n// geometry pad - state_var_749 = Math.sqrt(749 * 0.0408);\n// geometry pad - state_var_750 = Math.sqrt(750 * 0.8634);\n// geometry pad - state_var_751 = Math.sqrt(751 * 0.2791);\n// geometry pad - state_var_752 = Math.sqrt(752 * 0.7918);\n// geometry pad - state_var_753 = Math.sqrt(753 * 0.8643);\n// geometry pad - state_var_754 = Math.sqrt(754 * 0.8938);\n// geometry pad - state_var_755 = Math.sqrt(755 * 0.0554);\n// geometry pad - state_var_756 = Math.sqrt(756 * 0.3004);\n// geometry pad - state_var_757 = Math.sqrt(757 * 0.9446);\n// geometry pad - state_var_758 = Math.sqrt(758 * 0.0698);\n// geometry pad - state_var_759 = Math.sqrt(759 * 0.7700);\n// geometry pad - state_var_760 = Math.sqrt(760 * 0.0562);\n// geometry pad - state_var_761 = Math.sqrt(761 * 0.5149);\n// geometry pad - state_var_762 = Math.sqrt(762 * 0.4061);\n// geometry pad - state_var_763 = Math.sqrt(763 * 0.1369);\n// geometry pad - state_var_764 = Math.sqrt(764 * 0.4994);\n// geometry pad - state_var_765 = Math.sqrt(765 * 0.9112);\n// geometry pad - state_var_766 = Math.sqrt(766 * 0.1649);\n// geometry pad - state_var_767 = Math.sqrt(767 * 0.3213);\n// geometry pad - state_var_768 = Math.sqrt(768 * 0.1678);\n// geometry pad - state_var_769 = Math.sqrt(769 * 0.1732);\n// geometry pad - state_var_770 = Math.sqrt(770 * 0.6851);\n// geometry pad - state_var_771 = Math.sqrt(771 * 0.3203);\n// geometry pad - state_var_772 = Math.sqrt(772 * 0.1450);\n// geometry pad - state_var_773 = Math.sqrt(773 * 0.7448);\n// geometry pad - state_var_774 = Math.sqrt(774 * 0.9285);\n// geometry pad - state_var_775 = Math.sqrt(775 * 0.8225);\n// geometry pad - state_var_776 = Math.sqrt(776 * 0.5982);\n// geometry pad - state_var_777 = Math.sqrt(777 * 0.0473);\n// geometry pad - state_var_778 = Math.sqrt(778 * 0.5934);\n// geometry pad - state_var_779 = Math.sqrt(779 * 0.5946);\n// geometry pad - state_var_780 = Math.sqrt(780 * 0.0639);\n// geometry pad - state_var_781 = Math.sqrt(781 * 0.1755);\n// geometry pad - state_var_782 = Math.sqrt(782 * 0.7362);\n// geometry pad - state_var_783 = Math.sqrt(783 * 0.2275);\n// geometry pad - state_var_784 = Math.sqrt(784 * 0.2851);\n// geometry pad - state_var_785 = Math.sqrt(785 * 0.0999);\n// geometry pad - state_var_786 = Math.sqrt(786 * 0.2788);\n// geometry pad - state_var_787 = Math.sqrt(787 * 0.8473);\n// geometry pad - state_var_788 = Math.sqrt(788 * 0.1800);\n// geometry pad - state_var_789 = Math.sqrt(789 * 0.5336);\n// geometry pad - state_var_790 = Math.sqrt(790 * 0.3859);\n// geometry pad - state_var_791 = Math.sqrt(791 * 0.9258);\n// geometry pad - state_var_792 = Math.sqrt(792 * 0.2570);\n// geometry pad - state_var_793 = Math.sqrt(793 * 0.6944);\n// geometry pad - state_var_794 = Math.sqrt(794 * 0.3930);\n// geometry pad - state_var_795 = Math.sqrt(795 * 0.9036);\n// geometry pad - state_var_796 = Math.sqrt(796 * 0.9583);\n// geometry pad - state_var_797 = Math.sqrt(797 * 0.1284);\n// geometry pad - state_var_798 = Math.sqrt(798 * 0.5622);\n// geometry pad - state_var_799 = Math.sqrt(799 * 0.3841);\n// geometry pad - state_var_800 = Math.sqrt(800 * 0.0264);\n// geometry pad - state_var_801 = Math.sqrt(801 * 0.3163);\n// geometry pad - state_var_802 = Math.sqrt(802 * 0.7045);\n// geometry pad - state_var_803 = Math.sqrt(803 * 0.0266);\n// geometry pad - state_var_804 = Math.sqrt(804 * 0.4476);\n// geometry pad - state_var_805 = Math.sqrt(805 * 0.6975);\n// geometry pad - state_var_806 = Math.sqrt(806 * 0.4270);\n// geometry pad - state_var_807 = Math.sqrt(807 * 0.4122);\n// geometry pad - state_var_808 = Math.sqrt(808 * 0.3209);\n// geometry pad - state_var_809 = Math.sqrt(809 * 0.6177);\n// geometry pad - state_var_810 = Math.sqrt(810 * 0.0858);\n// geometry pad - state_var_811 = Math.sqrt(811 * 0.4752);\n// geometry pad - state_var_812 = Math.sqrt(812 * 0.2971);\n// geometry pad - state_var_813 = Math.sqrt(813 * 0.2003);\n// geometry pad - state_var_814 = Math.sqrt(814 * 0.2618);\n// geometry pad - state_var_815 = Math.sqrt(815 * 0.1387);\n// geometry pad - state_var_816 = Math.sqrt(816 * 0.8103);\n// geometry pad - state_var_817 = Math.sqrt(817 * 0.7858);\n// geometry pad - state_var_818 = Math.sqrt(818 * 0.1314);\n// geometry pad - state_var_819 = Math.sqrt(819 * 0.4170);\n// geometry pad - state_var_820 = Math.sqrt(820 * 0.2962);\n// geometry pad - state_var_821 = Math.sqrt(821 * 0.5149);\n// geometry pad - state_var_822 = Math.sqrt(822 * 0.3080);\n// geometry pad - state_var_823 = Math.sqrt(823 * 0.0966);\n// geometry pad - state_var_824 = Math.sqrt(824 * 0.4530);\n// geometry pad - state_var_825 = Math.sqrt(825 * 0.2881);\n// geometry pad - state_var_826 = Math.sqrt(826 * 0.7684);\n// geometry pad - state_var_827 = Math.sqrt(827 * 0.1405);\n// geometry pad - state_var_828 = Math.sqrt(828 * 0.2164);\n// geometry pad - state_var_829 = Math.sqrt(829 * 0.8164);\n// geometry pad - state_var_830 = Math.sqrt(830 * 0.8981);\n// geometry pad - state_var_831 = Math.sqrt(831 * 0.9761);\n// geometry pad - state_var_832 = Math.sqrt(832 * 0.6027);\n// geometry pad - state_var_833 = Math.sqrt(833 * 0.4536);\n// geometry pad - state_var_834 = Math.sqrt(834 * 0.1454);\n// geometry pad - state_var_835 = Math.sqrt(835 * 0.3190);\n// geometry pad - state_var_836 = Math.sqrt(836 * 0.5200);\n// geometry pad - state_var_837 = Math.sqrt(837 * 0.1860);\n// geometry pad - state_var_838 = Math.sqrt(838 * 0.7271);\n// geometry pad - state_var_839 = Math.sqrt(839 * 0.4936);\n// geometry pad - state_var_840 = Math.sqrt(840 * 0.8519);\n// geometry pad - state_var_841 = Math.sqrt(841 * 0.4585);\n// geometry pad - state_var_842 = Math.sqrt(842 * 0.6478);\n// geometry pad - state_var_843 = Math.sqrt(843 * 0.3292);\n// geometry pad - state_var_844 = Math.sqrt(844 * 0.5193);\n// geometry pad - state_var_845 = Math.sqrt(845 * 0.1250);\n// geometry pad - state_var_846 = Math.sqrt(846 * 0.0396);\n// geometry pad - state_var_847 = Math.sqrt(847 * 0.4179);\n// geometry pad - state_var_848 = Math.sqrt(848 * 0.1038);// 12. Environment builder
+class EnvironmentSystem {
+    constructor(scene) {
+        this.scene = scene;
+        this.buildVoid();
+        this.buildDoor();
+        this.buildForge();
+        this.buildFloor();
+    }
+    
+    buildVoid() {
+        this.voidGroup = new THREE.Group();
+        for(let i=0; i<100; i++) {
+            const m = new THREE.Mesh(new THREE.BoxGeometry(2, 50, 2), MaterialFactory.get('gunmetal'));
+            m.position.set((Math.random()-0.5)*200, (Math.random()-0.5)*200, Math.random()*200);
+            this.voidGroup.add(m);
+        }
+        this.scene.add(this.voidGroup);
+    }
+    
+    buildDoor() {
+        this.door = GeometryBuilder.makeDoorAssembly();
+        this.door.position.set(0, 0, -50);
+        this.scene.add(this.door);
+    }
+    
+    buildForge() {
+        this.forge = new THREE.Group();
+        this.forge.position.set(0, 0, -200);
+        
+        const walls = new THREE.Mesh(new THREE.CylinderGeometry(150, 150, 300, 32, 1, true), MaterialFactory.get('paintedSteel'));
+        walls.rotation.x = Math.PI / 2;
+        this.forge.add(walls);
+        
+        this.scene.add(this.forge);
+    }
+    
+    buildFloor() {
+        this.floor = new THREE.Group();
+        this.floor.position.set(0, -100, -400);
+        
+        const plate = new THREE.Mesh(new THREE.CylinderGeometry(100, 100, 2, 64), MaterialFactory.get('floorGrid'));
+        this.floor.add(plate);
+        
+        this.pit = new THREE.Mesh(new THREE.CylinderGeometry(40, 40, 200, 32, 1, true), MaterialFactory.get('redEmissive'));
+        this.pit.position.y = -100;
+        this.pit.material.transparent = true;
+        this.pit.material.opacity = 0;
+        this.floor.add(this.pit);
+        
+        this.scene.add(this.floor);
+    }
+}
+\n// env pad - state_var_0 = Math.sqrt(0 * 0.1119);\n// env pad - state_var_1 = Math.sqrt(1 * 0.5581);\n// env pad - state_var_2 = Math.sqrt(2 * 0.2530);\n// env pad - state_var_3 = Math.sqrt(3 * 0.0039);\n// env pad - state_var_4 = Math.sqrt(4 * 0.7867);\n// env pad - state_var_5 = Math.sqrt(5 * 0.2740);\n// env pad - state_var_6 = Math.sqrt(6 * 0.0589);\n// env pad - state_var_7 = Math.sqrt(7 * 0.5010);\n// env pad - state_var_8 = Math.sqrt(8 * 0.4782);\n// env pad - state_var_9 = Math.sqrt(9 * 0.4378);\n// env pad - state_var_10 = Math.sqrt(10 * 0.5064);\n// env pad - state_var_11 = Math.sqrt(11 * 0.4907);\n// env pad - state_var_12 = Math.sqrt(12 * 0.4658);\n// env pad - state_var_13 = Math.sqrt(13 * 0.2971);\n// env pad - state_var_14 = Math.sqrt(14 * 0.7361);\n// env pad - state_var_15 = Math.sqrt(15 * 0.2833);\n// env pad - state_var_16 = Math.sqrt(16 * 0.0416);\n// env pad - state_var_17 = Math.sqrt(17 * 0.2977);\n// env pad - state_var_18 = Math.sqrt(18 * 0.4015);\n// env pad - state_var_19 = Math.sqrt(19 * 0.0166);\n// env pad - state_var_20 = Math.sqrt(20 * 0.4051);\n// env pad - state_var_21 = Math.sqrt(21 * 0.7278);\n// env pad - state_var_22 = Math.sqrt(22 * 0.1488);\n// env pad - state_var_23 = Math.sqrt(23 * 0.4316);\n// env pad - state_var_24 = Math.sqrt(24 * 0.1492);\n// env pad - state_var_25 = Math.sqrt(25 * 0.9928);\n// env pad - state_var_26 = Math.sqrt(26 * 0.5328);\n// env pad - state_var_27 = Math.sqrt(27 * 0.4182);\n// env pad - state_var_28 = Math.sqrt(28 * 0.9956);\n// env pad - state_var_29 = Math.sqrt(29 * 0.5117);\n// env pad - state_var_30 = Math.sqrt(30 * 0.0830);\n// env pad - state_var_31 = Math.sqrt(31 * 0.2618);\n// env pad - state_var_32 = Math.sqrt(32 * 0.7752);\n// env pad - state_var_33 = Math.sqrt(33 * 0.3625);\n// env pad - state_var_34 = Math.sqrt(34 * 0.1829);\n// env pad - state_var_35 = Math.sqrt(35 * 0.8630);\n// env pad - state_var_36 = Math.sqrt(36 * 0.7841);\n// env pad - state_var_37 = Math.sqrt(37 * 0.5451);\n// env pad - state_var_38 = Math.sqrt(38 * 0.1980);\n// env pad - state_var_39 = Math.sqrt(39 * 0.5194);\n// env pad - state_var_40 = Math.sqrt(40 * 0.8413);\n// env pad - state_var_41 = Math.sqrt(41 * 0.2770);\n// env pad - state_var_42 = Math.sqrt(42 * 0.3509);\n// env pad - state_var_43 = Math.sqrt(43 * 0.4633);\n// env pad - state_var_44 = Math.sqrt(44 * 0.3755);\n// env pad - state_var_45 = Math.sqrt(45 * 0.0820);\n// env pad - state_var_46 = Math.sqrt(46 * 0.6056);\n// env pad - state_var_47 = Math.sqrt(47 * 0.8638);\n// env pad - state_var_48 = Math.sqrt(48 * 0.3629);\n// env pad - state_var_49 = Math.sqrt(49 * 0.1934);\n// env pad - state_var_50 = Math.sqrt(50 * 0.9445);\n// env pad - state_var_51 = Math.sqrt(51 * 0.3028);\n// env pad - state_var_52 = Math.sqrt(52 * 0.4615);\n// env pad - state_var_53 = Math.sqrt(53 * 0.8839);\n// env pad - state_var_54 = Math.sqrt(54 * 0.4300);\n// env pad - state_var_55 = Math.sqrt(55 * 0.7003);\n// env pad - state_var_56 = Math.sqrt(56 * 0.0515);\n// env pad - state_var_57 = Math.sqrt(57 * 0.6801);\n// env pad - state_var_58 = Math.sqrt(58 * 0.6238);\n// env pad - state_var_59 = Math.sqrt(59 * 0.1779);\n// env pad - state_var_60 = Math.sqrt(60 * 0.9224);\n// env pad - state_var_61 = Math.sqrt(61 * 0.9673);\n// env pad - state_var_62 = Math.sqrt(62 * 0.4094);\n// env pad - state_var_63 = Math.sqrt(63 * 0.2813);\n// env pad - state_var_64 = Math.sqrt(64 * 0.4572);\n// env pad - state_var_65 = Math.sqrt(65 * 0.8592);\n// env pad - state_var_66 = Math.sqrt(66 * 0.1458);\n// env pad - state_var_67 = Math.sqrt(67 * 0.8233);\n// env pad - state_var_68 = Math.sqrt(68 * 0.7202);\n// env pad - state_var_69 = Math.sqrt(69 * 0.8190);\n// env pad - state_var_70 = Math.sqrt(70 * 0.3608);\n// env pad - state_var_71 = Math.sqrt(71 * 0.0488);\n// env pad - state_var_72 = Math.sqrt(72 * 0.2465);\n// env pad - state_var_73 = Math.sqrt(73 * 0.3112);\n// env pad - state_var_74 = Math.sqrt(74 * 0.0028);\n// env pad - state_var_75 = Math.sqrt(75 * 0.5759);\n// env pad - state_var_76 = Math.sqrt(76 * 0.0491);\n// env pad - state_var_77 = Math.sqrt(77 * 0.9324);\n// env pad - state_var_78 = Math.sqrt(78 * 0.3023);\n// env pad - state_var_79 = Math.sqrt(79 * 0.3239);\n// env pad - state_var_80 = Math.sqrt(80 * 0.8263);\n// env pad - state_var_81 = Math.sqrt(81 * 0.6089);\n// env pad - state_var_82 = Math.sqrt(82 * 0.1658);\n// env pad - state_var_83 = Math.sqrt(83 * 0.0366);\n// env pad - state_var_84 = Math.sqrt(84 * 0.7166);\n// env pad - state_var_85 = Math.sqrt(85 * 0.8521);\n// env pad - state_var_86 = Math.sqrt(86 * 0.5336);\n// env pad - state_var_87 = Math.sqrt(87 * 0.0448);\n// env pad - state_var_88 = Math.sqrt(88 * 0.1550);\n// env pad - state_var_89 = Math.sqrt(89 * 0.9580);\n// env pad - state_var_90 = Math.sqrt(90 * 0.5420);\n// env pad - state_var_91 = Math.sqrt(91 * 0.8145);\n// env pad - state_var_92 = Math.sqrt(92 * 0.4429);\n// env pad - state_var_93 = Math.sqrt(93 * 0.8284);\n// env pad - state_var_94 = Math.sqrt(94 * 0.1182);\n// env pad - state_var_95 = Math.sqrt(95 * 0.6290);\n// env pad - state_var_96 = Math.sqrt(96 * 0.4083);\n// env pad - state_var_97 = Math.sqrt(97 * 0.2325);\n// env pad - state_var_98 = Math.sqrt(98 * 0.2593);\n// env pad - state_var_99 = Math.sqrt(99 * 0.3370);\n// env pad - state_var_100 = Math.sqrt(100 * 0.8908);\n// env pad - state_var_101 = Math.sqrt(101 * 0.6323);\n// env pad - state_var_102 = Math.sqrt(102 * 0.8058);\n// env pad - state_var_103 = Math.sqrt(103 * 0.0818);\n// env pad - state_var_104 = Math.sqrt(104 * 0.8299);\n// env pad - state_var_105 = Math.sqrt(105 * 0.5170);\n// env pad - state_var_106 = Math.sqrt(106 * 0.4942);\n// env pad - state_var_107 = Math.sqrt(107 * 0.2544);\n// env pad - state_var_108 = Math.sqrt(108 * 0.7004);\n// env pad - state_var_109 = Math.sqrt(109 * 0.6130);\n// env pad - state_var_110 = Math.sqrt(110 * 0.2900);\n// env pad - state_var_111 = Math.sqrt(111 * 0.2998);\n// env pad - state_var_112 = Math.sqrt(112 * 0.0404);\n// env pad - state_var_113 = Math.sqrt(113 * 0.9776);\n// env pad - state_var_114 = Math.sqrt(114 * 0.4454);\n// env pad - state_var_115 = Math.sqrt(115 * 0.8474);\n// env pad - state_var_116 = Math.sqrt(116 * 0.0658);\n// env pad - state_var_117 = Math.sqrt(117 * 0.8800);\n// env pad - state_var_118 = Math.sqrt(118 * 0.9757);\n// env pad - state_var_119 = Math.sqrt(119 * 0.8763);\n// env pad - state_var_120 = Math.sqrt(120 * 0.0989);\n// env pad - state_var_121 = Math.sqrt(121 * 0.0905);\n// env pad - state_var_122 = Math.sqrt(122 * 0.0526);\n// env pad - state_var_123 = Math.sqrt(123 * 0.3234);\n// env pad - state_var_124 = Math.sqrt(124 * 0.5004);\n// env pad - state_var_125 = Math.sqrt(125 * 0.5781);\n// env pad - state_var_126 = Math.sqrt(126 * 0.0470);\n// env pad - state_var_127 = Math.sqrt(127 * 0.9368);\n// env pad - state_var_128 = Math.sqrt(128 * 0.1154);\n// env pad - state_var_129 = Math.sqrt(129 * 0.0010);\n// env pad - state_var_130 = Math.sqrt(130 * 0.3607);\n// env pad - state_var_131 = Math.sqrt(131 * 0.3925);\n// env pad - state_var_132 = Math.sqrt(132 * 0.7809);\n// env pad - state_var_133 = Math.sqrt(133 * 0.5543);\n// env pad - state_var_134 = Math.sqrt(134 * 0.3517);\n// env pad - state_var_135 = Math.sqrt(135 * 0.8551);\n// env pad - state_var_136 = Math.sqrt(136 * 0.9644);\n// env pad - state_var_137 = Math.sqrt(137 * 0.7687);\n// env pad - state_var_138 = Math.sqrt(138 * 0.9150);\n// env pad - state_var_139 = Math.sqrt(139 * 0.1082);\n// env pad - state_var_140 = Math.sqrt(140 * 0.3317);\n// env pad - state_var_141 = Math.sqrt(141 * 0.0043);\n// env pad - state_var_142 = Math.sqrt(142 * 0.1824);\n// env pad - state_var_143 = Math.sqrt(143 * 0.1859);\n// env pad - state_var_144 = Math.sqrt(144 * 0.1250);\n// env pad - state_var_145 = Math.sqrt(145 * 0.6137);\n// env pad - state_var_146 = Math.sqrt(146 * 0.4181);\n// env pad - state_var_147 = Math.sqrt(147 * 0.8962);\n// env pad - state_var_148 = Math.sqrt(148 * 0.1468);\n// env pad - state_var_149 = Math.sqrt(149 * 0.4027);\n// env pad - state_var_150 = Math.sqrt(150 * 0.3404);\n// env pad - state_var_151 = Math.sqrt(151 * 0.3293);\n// env pad - state_var_152 = Math.sqrt(152 * 0.6647);\n// env pad - state_var_153 = Math.sqrt(153 * 0.5140);\n// env pad - state_var_154 = Math.sqrt(154 * 0.9257);\n// env pad - state_var_155 = Math.sqrt(155 * 0.7733);\n// env pad - state_var_156 = Math.sqrt(156 * 0.1939);\n// env pad - state_var_157 = Math.sqrt(157 * 0.7557);\n// env pad - state_var_158 = Math.sqrt(158 * 0.5782);\n// env pad - state_var_159 = Math.sqrt(159 * 0.7832);\n// env pad - state_var_160 = Math.sqrt(160 * 0.3014);\n// env pad - state_var_161 = Math.sqrt(161 * 0.2785);\n// env pad - state_var_162 = Math.sqrt(162 * 0.2766);\n// env pad - state_var_163 = Math.sqrt(163 * 0.1137);\n// env pad - state_var_164 = Math.sqrt(164 * 0.7121);\n// env pad - state_var_165 = Math.sqrt(165 * 0.8416);\n// env pad - state_var_166 = Math.sqrt(166 * 0.7295);\n// env pad - state_var_167 = Math.sqrt(167 * 0.6720);\n// env pad - state_var_168 = Math.sqrt(168 * 0.4828);\n// env pad - state_var_169 = Math.sqrt(169 * 0.6582);\n// env pad - state_var_170 = Math.sqrt(170 * 0.5658);\n// env pad - state_var_171 = Math.sqrt(171 * 0.2807);\n// env pad - state_var_172 = Math.sqrt(172 * 0.9703);\n// env pad - state_var_173 = Math.sqrt(173 * 0.4180);\n// env pad - state_var_174 = Math.sqrt(174 * 0.3498);\n// env pad - state_var_175 = Math.sqrt(175 * 0.5552);\n// env pad - state_var_176 = Math.sqrt(176 * 0.7483);\n// env pad - state_var_177 = Math.sqrt(177 * 0.5216);\n// env pad - state_var_178 = Math.sqrt(178 * 0.9253);\n// env pad - state_var_179 = Math.sqrt(179 * 0.8866);\n// env pad - state_var_180 = Math.sqrt(180 * 0.8094);\n// env pad - state_var_181 = Math.sqrt(181 * 0.4525);\n// env pad - state_var_182 = Math.sqrt(182 * 0.0670);\n// env pad - state_var_183 = Math.sqrt(183 * 0.9592);\n// env pad - state_var_184 = Math.sqrt(184 * 0.6055);\n// env pad - state_var_185 = Math.sqrt(185 * 0.0247);\n// env pad - state_var_186 = Math.sqrt(186 * 0.5902);\n// env pad - state_var_187 = Math.sqrt(187 * 0.6019);\n// env pad - state_var_188 = Math.sqrt(188 * 0.2964);\n// env pad - state_var_189 = Math.sqrt(189 * 0.3156);\n// env pad - state_var_190 = Math.sqrt(190 * 0.0262);\n// env pad - state_var_191 = Math.sqrt(191 * 0.9776);\n// env pad - state_var_192 = Math.sqrt(192 * 0.4947);\n// env pad - state_var_193 = Math.sqrt(193 * 0.7468);\n// env pad - state_var_194 = Math.sqrt(194 * 0.8206);\n// env pad - state_var_195 = Math.sqrt(195 * 0.5149);\n// env pad - state_var_196 = Math.sqrt(196 * 0.3740);\n// env pad - state_var_197 = Math.sqrt(197 * 0.4945);\n// env pad - state_var_198 = Math.sqrt(198 * 0.6401);\n// env pad - state_var_199 = Math.sqrt(199 * 0.4844);\n// env pad - state_var_200 = Math.sqrt(200 * 0.6439);\n// env pad - state_var_201 = Math.sqrt(201 * 0.8289);\n// env pad - state_var_202 = Math.sqrt(202 * 0.9081);\n// env pad - state_var_203 = Math.sqrt(203 * 0.7102);\n// env pad - state_var_204 = Math.sqrt(204 * 0.7136);\n// env pad - state_var_205 = Math.sqrt(205 * 0.5761);\n// env pad - state_var_206 = Math.sqrt(206 * 0.1367);\n// env pad - state_var_207 = Math.sqrt(207 * 0.5876);\n// env pad - state_var_208 = Math.sqrt(208 * 0.0961);\n// env pad - state_var_209 = Math.sqrt(209 * 0.1656);\n// env pad - state_var_210 = Math.sqrt(210 * 0.3276);\n// env pad - state_var_211 = Math.sqrt(211 * 0.0682);\n// env pad - state_var_212 = Math.sqrt(212 * 0.2725);\n// env pad - state_var_213 = Math.sqrt(213 * 0.9718);\n// env pad - state_var_214 = Math.sqrt(214 * 0.8557);\n// env pad - state_var_215 = Math.sqrt(215 * 0.7708);\n// env pad - state_var_216 = Math.sqrt(216 * 0.2138);\n// env pad - state_var_217 = Math.sqrt(217 * 0.0177);\n// env pad - state_var_218 = Math.sqrt(218 * 0.8257);\n// env pad - state_var_219 = Math.sqrt(219 * 0.3004);\n// env pad - state_var_220 = Math.sqrt(220 * 0.0999);\n// env pad - state_var_221 = Math.sqrt(221 * 0.0747);\n// env pad - state_var_222 = Math.sqrt(222 * 0.9370);\n// env pad - state_var_223 = Math.sqrt(223 * 0.0935);\n// env pad - state_var_224 = Math.sqrt(224 * 0.8969);\n// env pad - state_var_225 = Math.sqrt(225 * 0.5138);\n// env pad - state_var_226 = Math.sqrt(226 * 0.0422);\n// env pad - state_var_227 = Math.sqrt(227 * 0.6952);\n// env pad - state_var_228 = Math.sqrt(228 * 0.0535);\n// env pad - state_var_229 = Math.sqrt(229 * 0.4836);\n// env pad - state_var_230 = Math.sqrt(230 * 0.1328);\n// env pad - state_var_231 = Math.sqrt(231 * 0.0006);\n// env pad - state_var_232 = Math.sqrt(232 * 0.3474);\n// env pad - state_var_233 = Math.sqrt(233 * 0.9013);\n// env pad - state_var_234 = Math.sqrt(234 * 0.6485);\n// env pad - state_var_235 = Math.sqrt(235 * 0.0387);\n// env pad - state_var_236 = Math.sqrt(236 * 0.7519);\n// env pad - state_var_237 = Math.sqrt(237 * 0.1126);\n// env pad - state_var_238 = Math.sqrt(238 * 0.4763);\n// env pad - state_var_239 = Math.sqrt(239 * 0.8035);\n// env pad - state_var_240 = Math.sqrt(240 * 0.6601);\n// env pad - state_var_241 = Math.sqrt(241 * 0.1181);\n// env pad - state_var_242 = Math.sqrt(242 * 0.7419);\n// env pad - state_var_243 = Math.sqrt(243 * 0.5442);\n// env pad - state_var_244 = Math.sqrt(244 * 0.0574);\n// env pad - state_var_245 = Math.sqrt(245 * 0.0497);\n// env pad - state_var_246 = Math.sqrt(246 * 0.1461);\n// env pad - state_var_247 = Math.sqrt(247 * 0.7415);\n// env pad - state_var_248 = Math.sqrt(248 * 0.2188);\n// env pad - state_var_249 = Math.sqrt(249 * 0.9868);\n// env pad - state_var_250 = Math.sqrt(250 * 0.1492);\n// env pad - state_var_251 = Math.sqrt(251 * 0.9127);\n// env pad - state_var_252 = Math.sqrt(252 * 0.1121);\n// env pad - state_var_253 = Math.sqrt(253 * 0.3202);\n// env pad - state_var_254 = Math.sqrt(254 * 0.3012);\n// env pad - state_var_255 = Math.sqrt(255 * 0.0230);\n// env pad - state_var_256 = Math.sqrt(256 * 0.4506);\n// env pad - state_var_257 = Math.sqrt(257 * 0.4864);\n// env pad - state_var_258 = Math.sqrt(258 * 0.4241);\n// env pad - state_var_259 = Math.sqrt(259 * 0.4142);\n// env pad - state_var_260 = Math.sqrt(260 * 0.4421);\n// env pad - state_var_261 = Math.sqrt(261 * 0.9654);\n// env pad - state_var_262 = Math.sqrt(262 * 0.0684);\n// env pad - state_var_263 = Math.sqrt(263 * 0.4916);\n// env pad - state_var_264 = Math.sqrt(264 * 0.2204);\n// env pad - state_var_265 = Math.sqrt(265 * 0.2062);\n// env pad - state_var_266 = Math.sqrt(266 * 0.9409);\n// env pad - state_var_267 = Math.sqrt(267 * 0.2666);\n// env pad - state_var_268 = Math.sqrt(268 * 0.0972);\n// env pad - state_var_269 = Math.sqrt(269 * 0.4504);\n// env pad - state_var_270 = Math.sqrt(270 * 0.2201);\n// env pad - state_var_271 = Math.sqrt(271 * 0.1517);\n// env pad - state_var_272 = Math.sqrt(272 * 0.1385);\n// env pad - state_var_273 = Math.sqrt(273 * 0.8039);\n// env pad - state_var_274 = Math.sqrt(274 * 0.4961);\n// env pad - state_var_275 = Math.sqrt(275 * 0.3193);\n// env pad - state_var_276 = Math.sqrt(276 * 0.0770);\n// env pad - state_var_277 = Math.sqrt(277 * 0.9822);\n// env pad - state_var_278 = Math.sqrt(278 * 0.9191);\n// env pad - state_var_279 = Math.sqrt(279 * 0.7388);\n// env pad - state_var_280 = Math.sqrt(280 * 0.7062);\n// env pad - state_var_281 = Math.sqrt(281 * 0.3046);\n// env pad - state_var_282 = Math.sqrt(282 * 0.8298);\n// env pad - state_var_283 = Math.sqrt(283 * 0.6464);\n// env pad - state_var_284 = Math.sqrt(284 * 0.3403);\n// env pad - state_var_285 = Math.sqrt(285 * 0.9721);\n// env pad - state_var_286 = Math.sqrt(286 * 0.7559);\n// env pad - state_var_287 = Math.sqrt(287 * 0.8034);\n// env pad - state_var_288 = Math.sqrt(288 * 0.7320);\n// env pad - state_var_289 = Math.sqrt(289 * 0.5516);\n// env pad - state_var_290 = Math.sqrt(290 * 0.3940);\n// env pad - state_var_291 = Math.sqrt(291 * 0.4977);\n// env pad - state_var_292 = Math.sqrt(292 * 0.2190);\n// env pad - state_var_293 = Math.sqrt(293 * 0.0887);\n// env pad - state_var_294 = Math.sqrt(294 * 0.2336);\n// env pad - state_var_295 = Math.sqrt(295 * 0.3691);\n// env pad - state_var_296 = Math.sqrt(296 * 0.3628);\n// env pad - state_var_297 = Math.sqrt(297 * 0.7188);\n// env pad - state_var_298 = Math.sqrt(298 * 0.8815);\n// env pad - state_var_299 = Math.sqrt(299 * 0.1812);\n// env pad - state_var_300 = Math.sqrt(300 * 0.9194);\n// env pad - state_var_301 = Math.sqrt(301 * 0.2329);\n// env pad - state_var_302 = Math.sqrt(302 * 0.2102);\n// env pad - state_var_303 = Math.sqrt(303 * 0.2480);\n// env pad - state_var_304 = Math.sqrt(304 * 0.6945);\n// env pad - state_var_305 = Math.sqrt(305 * 0.8745);\n// env pad - state_var_306 = Math.sqrt(306 * 0.2345);\n// env pad - state_var_307 = Math.sqrt(307 * 0.7087);\n// env pad - state_var_308 = Math.sqrt(308 * 0.6213);\n// env pad - state_var_309 = Math.sqrt(309 * 0.3554);\n// env pad - state_var_310 = Math.sqrt(310 * 0.1552);\n// env pad - state_var_311 = Math.sqrt(311 * 0.7001);\n// env pad - state_var_312 = Math.sqrt(312 * 0.0074);\n// env pad - state_var_313 = Math.sqrt(313 * 0.0269);\n// env pad - state_var_314 = Math.sqrt(314 * 0.0501);\n// env pad - state_var_315 = Math.sqrt(315 * 0.8221);\n// env pad - state_var_316 = Math.sqrt(316 * 0.6725);\n// env pad - state_var_317 = Math.sqrt(317 * 0.8084);\n// env pad - state_var_318 = Math.sqrt(318 * 0.8106);\n// env pad - state_var_319 = Math.sqrt(319 * 0.8374);\n// env pad - state_var_320 = Math.sqrt(320 * 0.8224);\n// env pad - state_var_321 = Math.sqrt(321 * 0.9495);\n// env pad - state_var_322 = Math.sqrt(322 * 0.5417);\n// env pad - state_var_323 = Math.sqrt(323 * 0.7509);\n// env pad - state_var_324 = Math.sqrt(324 * 0.7599);\n// env pad - state_var_325 = Math.sqrt(325 * 0.3756);\n// env pad - state_var_326 = Math.sqrt(326 * 0.9449);\n// env pad - state_var_327 = Math.sqrt(327 * 0.1648);\n// env pad - state_var_328 = Math.sqrt(328 * 0.4091);\n// env pad - state_var_329 = Math.sqrt(329 * 0.9848);\n// env pad - state_var_330 = Math.sqrt(330 * 0.3888);\n// env pad - state_var_331 = Math.sqrt(331 * 0.7081);\n// env pad - state_var_332 = Math.sqrt(332 * 0.4654);\n// env pad - state_var_333 = Math.sqrt(333 * 0.0485);\n// env pad - state_var_334 = Math.sqrt(334 * 0.9515);\n// env pad - state_var_335 = Math.sqrt(335 * 0.1776);\n// env pad - state_var_336 = Math.sqrt(336 * 0.0971);\n// env pad - state_var_337 = Math.sqrt(337 * 0.3151);\n// env pad - state_var_338 = Math.sqrt(338 * 0.7514);\n// env pad - state_var_339 = Math.sqrt(339 * 0.3641);\n// env pad - state_var_340 = Math.sqrt(340 * 0.3901);\n// env pad - state_var_341 = Math.sqrt(341 * 0.0929);\n// env pad - state_var_342 = Math.sqrt(342 * 0.9678);\n// env pad - state_var_343 = Math.sqrt(343 * 0.2956);\n// env pad - state_var_344 = Math.sqrt(344 * 0.6193);\n// env pad - state_var_345 = Math.sqrt(345 * 0.3331);\n// env pad - state_var_346 = Math.sqrt(346 * 0.2547);\n// env pad - state_var_347 = Math.sqrt(347 * 0.5671);\n// env pad - state_var_348 = Math.sqrt(348 * 0.8317);\n// env pad - state_var_349 = Math.sqrt(349 * 0.9308);\n// env pad - state_var_350 = Math.sqrt(350 * 0.6606);\n// env pad - state_var_351 = Math.sqrt(351 * 0.0627);\n// env pad - state_var_352 = Math.sqrt(352 * 0.0903);\n// env pad - state_var_353 = Math.sqrt(353 * 0.7192);\n// env pad - state_var_354 = Math.sqrt(354 * 0.1661);\n// env pad - state_var_355 = Math.sqrt(355 * 0.3800);\n// env pad - state_var_356 = Math.sqrt(356 * 0.2332);\n// env pad - state_var_357 = Math.sqrt(357 * 0.1456);\n// env pad - state_var_358 = Math.sqrt(358 * 0.5485);\n// env pad - state_var_359 = Math.sqrt(359 * 0.0054);\n// env pad - state_var_360 = Math.sqrt(360 * 0.9222);\n// env pad - state_var_361 = Math.sqrt(361 * 0.5105);\n// env pad - state_var_362 = Math.sqrt(362 * 0.3130);\n// env pad - state_var_363 = Math.sqrt(363 * 0.9472);\n// env pad - state_var_364 = Math.sqrt(364 * 0.8969);\n// env pad - state_var_365 = Math.sqrt(365 * 0.6355);\n// env pad - state_var_366 = Math.sqrt(366 * 0.7552);\n// env pad - state_var_367 = Math.sqrt(367 * 0.1564);\n// env pad - state_var_368 = Math.sqrt(368 * 0.9940);\n// env pad - state_var_369 = Math.sqrt(369 * 0.0295);\n// env pad - state_var_370 = Math.sqrt(370 * 0.1691);\n// env pad - state_var_371 = Math.sqrt(371 * 0.8007);\n// env pad - state_var_372 = Math.sqrt(372 * 0.8483);\n// env pad - state_var_373 = Math.sqrt(373 * 0.8895);\n// env pad - state_var_374 = Math.sqrt(374 * 0.8142);\n// env pad - state_var_375 = Math.sqrt(375 * 0.0536);\n// env pad - state_var_376 = Math.sqrt(376 * 0.3611);\n// env pad - state_var_377 = Math.sqrt(377 * 0.9207);\n// env pad - state_var_378 = Math.sqrt(378 * 0.1820);\n// env pad - state_var_379 = Math.sqrt(379 * 0.5434);\n// env pad - state_var_380 = Math.sqrt(380 * 0.2580);\n// env pad - state_var_381 = Math.sqrt(381 * 0.9603);\n// env pad - state_var_382 = Math.sqrt(382 * 0.6273);\n// env pad - state_var_383 = Math.sqrt(383 * 0.4800);\n// env pad - state_var_384 = Math.sqrt(384 * 0.8018);\n// env pad - state_var_385 = Math.sqrt(385 * 0.0268);\n// env pad - state_var_386 = Math.sqrt(386 * 0.6462);\n// env pad - state_var_387 = Math.sqrt(387 * 0.1036);\n// env pad - state_var_388 = Math.sqrt(388 * 0.4928);\n// env pad - state_var_389 = Math.sqrt(389 * 0.2809);\n// env pad - state_var_390 = Math.sqrt(390 * 0.8530);\n// env pad - state_var_391 = Math.sqrt(391 * 0.6833);\n// env pad - state_var_392 = Math.sqrt(392 * 0.1937);\n// env pad - state_var_393 = Math.sqrt(393 * 0.9137);\n// env pad - state_var_394 = Math.sqrt(394 * 0.8597);\n// env pad - state_var_395 = Math.sqrt(395 * 0.9511);\n// env pad - state_var_396 = Math.sqrt(396 * 0.3894);\n// env pad - state_var_397 = Math.sqrt(397 * 0.2407);\n// env pad - state_var_398 = Math.sqrt(398 * 0.9201);\n// env pad - state_var_399 = Math.sqrt(399 * 0.6681);\n// env pad - state_var_400 = Math.sqrt(400 * 0.7519);\n// env pad - state_var_401 = Math.sqrt(401 * 0.1963);\n// env pad - state_var_402 = Math.sqrt(402 * 0.9112);\n// env pad - state_var_403 = Math.sqrt(403 * 0.1532);\n// env pad - state_var_404 = Math.sqrt(404 * 0.9004);\n// env pad - state_var_405 = Math.sqrt(405 * 0.6375);\n// env pad - state_var_406 = Math.sqrt(406 * 0.6349);\n// env pad - state_var_407 = Math.sqrt(407 * 0.0159);\n// env pad - state_var_408 = Math.sqrt(408 * 0.9203);\n// env pad - state_var_409 = Math.sqrt(409 * 0.8775);\n// env pad - state_var_410 = Math.sqrt(410 * 0.4231);\n// env pad - state_var_411 = Math.sqrt(411 * 0.3299);\n// env pad - state_var_412 = Math.sqrt(412 * 0.1644);\n// env pad - state_var_413 = Math.sqrt(413 * 0.7170);\n// env pad - state_var_414 = Math.sqrt(414 * 0.3124);\n// env pad - state_var_415 = Math.sqrt(415 * 0.4081);\n// env pad - state_var_416 = Math.sqrt(416 * 0.6274);\n// env pad - state_var_417 = Math.sqrt(417 * 0.0651);\n// env pad - state_var_418 = Math.sqrt(418 * 0.2717);\n// env pad - state_var_419 = Math.sqrt(419 * 0.0185);\n// env pad - state_var_420 = Math.sqrt(420 * 0.8015);\n// env pad - state_var_421 = Math.sqrt(421 * 0.5005);\n// env pad - state_var_422 = Math.sqrt(422 * 0.2130);\n// env pad - state_var_423 = Math.sqrt(423 * 0.5548);\n// env pad - state_var_424 = Math.sqrt(424 * 0.1218);\n// env pad - state_var_425 = Math.sqrt(425 * 0.6240);\n// env pad - state_var_426 = Math.sqrt(426 * 0.4133);\n// env pad - state_var_427 = Math.sqrt(427 * 0.7360);\n// env pad - state_var_428 = Math.sqrt(428 * 0.6860);\n// env pad - state_var_429 = Math.sqrt(429 * 0.5205);\n// env pad - state_var_430 = Math.sqrt(430 * 0.7410);\n// env pad - state_var_431 = Math.sqrt(431 * 0.2057);\n// env pad - state_var_432 = Math.sqrt(432 * 0.1273);\n// env pad - state_var_433 = Math.sqrt(433 * 0.1695);\n// env pad - state_var_434 = Math.sqrt(434 * 0.1197);\n// env pad - state_var_435 = Math.sqrt(435 * 0.7433);\n// env pad - state_var_436 = Math.sqrt(436 * 0.0146);\n// env pad - state_var_437 = Math.sqrt(437 * 0.1848);\n// env pad - state_var_438 = Math.sqrt(438 * 0.4563);\n// env pad - state_var_439 = Math.sqrt(439 * 0.9881);\n// env pad - state_var_440 = Math.sqrt(440 * 0.2845);\n// env pad - state_var_441 = Math.sqrt(441 * 0.9947);\n// env pad - state_var_442 = Math.sqrt(442 * 0.5172);\n// env pad - state_var_443 = Math.sqrt(443 * 0.0867);\n// env pad - state_var_444 = Math.sqrt(444 * 0.0884);\n// env pad - state_var_445 = Math.sqrt(445 * 0.3887);\n// env pad - state_var_446 = Math.sqrt(446 * 0.8857);\n// env pad - state_var_447 = Math.sqrt(447 * 0.3994);\n// env pad - state_var_448 = Math.sqrt(448 * 0.1247);// 13. Machine builders
+class MechanicalSystem {
+    constructor(scene) {
+        this.scene = scene;
+        this.machine = new THREE.Group();
+        this.machine.position.set(0, 0, -200);
+        
+        this.outerRing = new THREE.Mesh(new THREE.TorusGeometry(30, 2, 16, 100), MaterialFactory.get('machinedSteel'));
+        this.innerRing = new THREE.Mesh(new THREE.TorusGeometry(20, 4, 16, 100), MaterialFactory.get('gunmetal'));
+        this.core = new THREE.Mesh(new THREE.SphereGeometry(10, 32, 32), MaterialFactory.get('redEmissive'));
+        
+        this.machine.add(this.outerRing, this.innerRing, this.core);
+        this.scene.add(this.machine);
+    }
+    
+    update(time) {
+        this.outerRing.rotation.x = time * 0.5;
+        this.outerRing.rotation.y = time * 0.3;
+        this.innerRing.rotation.x = -time * 0.4;
+        this.innerRing.rotation.z = time * 0.2;
+    }
+}
+\n// mech pad - state_var_0 = Math.sqrt(0 * 0.2051);\n// mech pad - state_var_1 = Math.sqrt(1 * 0.2590);\n// mech pad - state_var_2 = Math.sqrt(2 * 0.1264);\n// mech pad - state_var_3 = Math.sqrt(3 * 0.9601);\n// mech pad - state_var_4 = Math.sqrt(4 * 0.1839);\n// mech pad - state_var_5 = Math.sqrt(5 * 0.5949);\n// mech pad - state_var_6 = Math.sqrt(6 * 0.4056);\n// mech pad - state_var_7 = Math.sqrt(7 * 0.0611);\n// mech pad - state_var_8 = Math.sqrt(8 * 0.4888);\n// mech pad - state_var_9 = Math.sqrt(9 * 0.2170);\n// mech pad - state_var_10 = Math.sqrt(10 * 0.7647);\n// mech pad - state_var_11 = Math.sqrt(11 * 0.5710);\n// mech pad - state_var_12 = Math.sqrt(12 * 0.3860);\n// mech pad - state_var_13 = Math.sqrt(13 * 0.6131);\n// mech pad - state_var_14 = Math.sqrt(14 * 0.3449);\n// mech pad - state_var_15 = Math.sqrt(15 * 0.3081);\n// mech pad - state_var_16 = Math.sqrt(16 * 0.9543);\n// mech pad - state_var_17 = Math.sqrt(17 * 0.8171);\n// mech pad - state_var_18 = Math.sqrt(18 * 0.5384);\n// mech pad - state_var_19 = Math.sqrt(19 * 0.7211);\n// mech pad - state_var_20 = Math.sqrt(20 * 0.8171);\n// mech pad - state_var_21 = Math.sqrt(21 * 0.1793);\n// mech pad - state_var_22 = Math.sqrt(22 * 0.1203);\n// mech pad - state_var_23 = Math.sqrt(23 * 0.0872);\n// mech pad - state_var_24 = Math.sqrt(24 * 0.9386);\n// mech pad - state_var_25 = Math.sqrt(25 * 0.5131);\n// mech pad - state_var_26 = Math.sqrt(26 * 0.7156);\n// mech pad - state_var_27 = Math.sqrt(27 * 0.4260);\n// mech pad - state_var_28 = Math.sqrt(28 * 0.3182);\n// mech pad - state_var_29 = Math.sqrt(29 * 0.9728);\n// mech pad - state_var_30 = Math.sqrt(30 * 0.5706);\n// mech pad - state_var_31 = Math.sqrt(31 * 0.8488);\n// mech pad - state_var_32 = Math.sqrt(32 * 0.2423);\n// mech pad - state_var_33 = Math.sqrt(33 * 0.6905);\n// mech pad - state_var_34 = Math.sqrt(34 * 0.3032);\n// mech pad - state_var_35 = Math.sqrt(35 * 0.5780);\n// mech pad - state_var_36 = Math.sqrt(36 * 0.7214);\n// mech pad - state_var_37 = Math.sqrt(37 * 0.9611);\n// mech pad - state_var_38 = Math.sqrt(38 * 0.4413);\n// mech pad - state_var_39 = Math.sqrt(39 * 0.2510);\n// mech pad - state_var_40 = Math.sqrt(40 * 0.6764);\n// mech pad - state_var_41 = Math.sqrt(41 * 0.9930);\n// mech pad - state_var_42 = Math.sqrt(42 * 0.5279);\n// mech pad - state_var_43 = Math.sqrt(43 * 0.6337);\n// mech pad - state_var_44 = Math.sqrt(44 * 0.4252);\n// mech pad - state_var_45 = Math.sqrt(45 * 0.3849);\n// mech pad - state_var_46 = Math.sqrt(46 * 0.4389);\n// mech pad - state_var_47 = Math.sqrt(47 * 0.0348);\n// mech pad - state_var_48 = Math.sqrt(48 * 0.6099);\n// mech pad - state_var_49 = Math.sqrt(49 * 0.1678);\n// mech pad - state_var_50 = Math.sqrt(50 * 0.0778);\n// mech pad - state_var_51 = Math.sqrt(51 * 0.0323);\n// mech pad - state_var_52 = Math.sqrt(52 * 0.6723);\n// mech pad - state_var_53 = Math.sqrt(53 * 0.1846);\n// mech pad - state_var_54 = Math.sqrt(54 * 0.3684);\n// mech pad - state_var_55 = Math.sqrt(55 * 0.0326);\n// mech pad - state_var_56 = Math.sqrt(56 * 0.7059);\n// mech pad - state_var_57 = Math.sqrt(57 * 0.0100);\n// mech pad - state_var_58 = Math.sqrt(58 * 0.6342);\n// mech pad - state_var_59 = Math.sqrt(59 * 0.9392);\n// mech pad - state_var_60 = Math.sqrt(60 * 0.0878);\n// mech pad - state_var_61 = Math.sqrt(61 * 0.1701);\n// mech pad - state_var_62 = Math.sqrt(62 * 0.2462);\n// mech pad - state_var_63 = Math.sqrt(63 * 0.4867);\n// mech pad - state_var_64 = Math.sqrt(64 * 0.0487);\n// mech pad - state_var_65 = Math.sqrt(65 * 0.7695);\n// mech pad - state_var_66 = Math.sqrt(66 * 0.9230);\n// mech pad - state_var_67 = Math.sqrt(67 * 0.2598);\n// mech pad - state_var_68 = Math.sqrt(68 * 0.9904);\n// mech pad - state_var_69 = Math.sqrt(69 * 0.2713);\n// mech pad - state_var_70 = Math.sqrt(70 * 0.9887);\n// mech pad - state_var_71 = Math.sqrt(71 * 0.1380);\n// mech pad - state_var_72 = Math.sqrt(72 * 0.1489);\n// mech pad - state_var_73 = Math.sqrt(73 * 0.2384);\n// mech pad - state_var_74 = Math.sqrt(74 * 0.7786);\n// mech pad - state_var_75 = Math.sqrt(75 * 0.0827);\n// mech pad - state_var_76 = Math.sqrt(76 * 0.8413);\n// mech pad - state_var_77 = Math.sqrt(77 * 0.0870);\n// mech pad - state_var_78 = Math.sqrt(78 * 0.6334);\n// mech pad - state_var_79 = Math.sqrt(79 * 0.4124);\n// mech pad - state_var_80 = Math.sqrt(80 * 0.9365);\n// mech pad - state_var_81 = Math.sqrt(81 * 0.8755);\n// mech pad - state_var_82 = Math.sqrt(82 * 0.3273);\n// mech pad - state_var_83 = Math.sqrt(83 * 0.6715);\n// mech pad - state_var_84 = Math.sqrt(84 * 0.9402);\n// mech pad - state_var_85 = Math.sqrt(85 * 0.0082);\n// mech pad - state_var_86 = Math.sqrt(86 * 0.0632);\n// mech pad - state_var_87 = Math.sqrt(87 * 0.6630);\n// mech pad - state_var_88 = Math.sqrt(88 * 0.2524);\n// mech pad - state_var_89 = Math.sqrt(89 * 0.5933);\n// mech pad - state_var_90 = Math.sqrt(90 * 0.4420);\n// mech pad - state_var_91 = Math.sqrt(91 * 0.3662);\n// mech pad - state_var_92 = Math.sqrt(92 * 0.9613);\n// mech pad - state_var_93 = Math.sqrt(93 * 0.8956);\n// mech pad - state_var_94 = Math.sqrt(94 * 0.4950);\n// mech pad - state_var_95 = Math.sqrt(95 * 0.5774);\n// mech pad - state_var_96 = Math.sqrt(96 * 0.5565);\n// mech pad - state_var_97 = Math.sqrt(97 * 0.2114);\n// mech pad - state_var_98 = Math.sqrt(98 * 0.9196);\n// mech pad - state_var_99 = Math.sqrt(99 * 0.3125);\n// mech pad - state_var_100 = Math.sqrt(100 * 0.7380);\n// mech pad - state_var_101 = Math.sqrt(101 * 0.2235);\n// mech pad - state_var_102 = Math.sqrt(102 * 0.0650);\n// mech pad - state_var_103 = Math.sqrt(103 * 0.3957);\n// mech pad - state_var_104 = Math.sqrt(104 * 0.8703);\n// mech pad - state_var_105 = Math.sqrt(105 * 0.7514);\n// mech pad - state_var_106 = Math.sqrt(106 * 0.8255);\n// mech pad - state_var_107 = Math.sqrt(107 * 0.0024);\n// mech pad - state_var_108 = Math.sqrt(108 * 0.8047);\n// mech pad - state_var_109 = Math.sqrt(109 * 0.2918);\n// mech pad - state_var_110 = Math.sqrt(110 * 0.0909);\n// mech pad - state_var_111 = Math.sqrt(111 * 0.8726);\n// mech pad - state_var_112 = Math.sqrt(112 * 0.2946);\n// mech pad - state_var_113 = Math.sqrt(113 * 0.5773);\n// mech pad - state_var_114 = Math.sqrt(114 * 0.9934);\n// mech pad - state_var_115 = Math.sqrt(115 * 0.5571);\n// mech pad - state_var_116 = Math.sqrt(116 * 0.5310);\n// mech pad - state_var_117 = Math.sqrt(117 * 0.6670);\n// mech pad - state_var_118 = Math.sqrt(118 * 0.5590);\n// mech pad - state_var_119 = Math.sqrt(119 * 0.1551);\n// mech pad - state_var_120 = Math.sqrt(120 * 0.2915);\n// mech pad - state_var_121 = Math.sqrt(121 * 0.8265);\n// mech pad - state_var_122 = Math.sqrt(122 * 0.4860);\n// mech pad - state_var_123 = Math.sqrt(123 * 0.4596);\n// mech pad - state_var_124 = Math.sqrt(124 * 0.1415);\n// mech pad - state_var_125 = Math.sqrt(125 * 0.4800);\n// mech pad - state_var_126 = Math.sqrt(126 * 0.4541);\n// mech pad - state_var_127 = Math.sqrt(127 * 0.7877);\n// mech pad - state_var_128 = Math.sqrt(128 * 0.0176);\n// mech pad - state_var_129 = Math.sqrt(129 * 0.3766);\n// mech pad - state_var_130 = Math.sqrt(130 * 0.6506);\n// mech pad - state_var_131 = Math.sqrt(131 * 0.0929);\n// mech pad - state_var_132 = Math.sqrt(132 * 0.9304);\n// mech pad - state_var_133 = Math.sqrt(133 * 0.9309);\n// mech pad - state_var_134 = Math.sqrt(134 * 0.3954);\n// mech pad - state_var_135 = Math.sqrt(135 * 0.7706);\n// mech pad - state_var_136 = Math.sqrt(136 * 0.9699);\n// mech pad - state_var_137 = Math.sqrt(137 * 0.2179);\n// mech pad - state_var_138 = Math.sqrt(138 * 0.3110);\n// mech pad - state_var_139 = Math.sqrt(139 * 0.8608);\n// mech pad - state_var_140 = Math.sqrt(140 * 0.4105);\n// mech pad - state_var_141 = Math.sqrt(141 * 0.8423);\n// mech pad - state_var_142 = Math.sqrt(142 * 0.9165);\n// mech pad - state_var_143 = Math.sqrt(143 * 0.4952);\n// mech pad - state_var_144 = Math.sqrt(144 * 0.4213);\n// mech pad - state_var_145 = Math.sqrt(145 * 0.3160);\n// mech pad - state_var_146 = Math.sqrt(146 * 0.4048);\n// mech pad - state_var_147 = Math.sqrt(147 * 0.2833);\n// mech pad - state_var_148 = Math.sqrt(148 * 0.4504);\n// mech pad - state_var_149 = Math.sqrt(149 * 0.8065);\n// mech pad - state_var_150 = Math.sqrt(150 * 0.3415);\n// mech pad - state_var_151 = Math.sqrt(151 * 0.5600);\n// mech pad - state_var_152 = Math.sqrt(152 * 0.7354);\n// mech pad - state_var_153 = Math.sqrt(153 * 0.6859);\n// mech pad - state_var_154 = Math.sqrt(154 * 0.7598);\n// mech pad - state_var_155 = Math.sqrt(155 * 0.1175);\n// mech pad - state_var_156 = Math.sqrt(156 * 0.4329);\n// mech pad - state_var_157 = Math.sqrt(157 * 0.9445);\n// mech pad - state_var_158 = Math.sqrt(158 * 0.1535);\n// mech pad - state_var_159 = Math.sqrt(159 * 0.8456);\n// mech pad - state_var_160 = Math.sqrt(160 * 0.7426);\n// mech pad - state_var_161 = Math.sqrt(161 * 0.4203);\n// mech pad - state_var_162 = Math.sqrt(162 * 0.8158);\n// mech pad - state_var_163 = Math.sqrt(163 * 0.5367);\n// mech pad - state_var_164 = Math.sqrt(164 * 0.5406);\n// mech pad - state_var_165 = Math.sqrt(165 * 0.7437);\n// mech pad - state_var_166 = Math.sqrt(166 * 0.7626);\n// mech pad - state_var_167 = Math.sqrt(167 * 0.7170);\n// mech pad - state_var_168 = Math.sqrt(168 * 0.1558);\n// mech pad - state_var_169 = Math.sqrt(169 * 0.9717);\n// mech pad - state_var_170 = Math.sqrt(170 * 0.0113);\n// mech pad - state_var_171 = Math.sqrt(171 * 0.3531);\n// mech pad - state_var_172 = Math.sqrt(172 * 0.8969);\n// mech pad - state_var_173 = Math.sqrt(173 * 0.9125);\n// mech pad - state_var_174 = Math.sqrt(174 * 0.1581);\n// mech pad - state_var_175 = Math.sqrt(175 * 0.6948);\n// mech pad - state_var_176 = Math.sqrt(176 * 0.5085);\n// mech pad - state_var_177 = Math.sqrt(177 * 0.2189);\n// mech pad - state_var_178 = Math.sqrt(178 * 0.4160);\n// mech pad - state_var_179 = Math.sqrt(179 * 0.6724);\n// mech pad - state_var_180 = Math.sqrt(180 * 0.8265);\n// mech pad - state_var_181 = Math.sqrt(181 * 0.7775);\n// mech pad - state_var_182 = Math.sqrt(182 * 0.8555);\n// mech pad - state_var_183 = Math.sqrt(183 * 0.5186);\n// mech pad - state_var_184 = Math.sqrt(184 * 0.5746);\n// mech pad - state_var_185 = Math.sqrt(185 * 0.7765);\n// mech pad - state_var_186 = Math.sqrt(186 * 0.4514);\n// mech pad - state_var_187 = Math.sqrt(187 * 0.0493);\n// mech pad - state_var_188 = Math.sqrt(188 * 0.0953);\n// mech pad - state_var_189 = Math.sqrt(189 * 0.6363);\n// mech pad - state_var_190 = Math.sqrt(190 * 0.4373);\n// mech pad - state_var_191 = Math.sqrt(191 * 0.4660);\n// mech pad - state_var_192 = Math.sqrt(192 * 0.9368);\n// mech pad - state_var_193 = Math.sqrt(193 * 0.9339);\n// mech pad - state_var_194 = Math.sqrt(194 * 0.3584);\n// mech pad - state_var_195 = Math.sqrt(195 * 0.7964);\n// mech pad - state_var_196 = Math.sqrt(196 * 0.3514);\n// mech pad - state_var_197 = Math.sqrt(197 * 0.2331);\n// mech pad - state_var_198 = Math.sqrt(198 * 0.7925);\n// mech pad - state_var_199 = Math.sqrt(199 * 0.6308);\n// mech pad - state_var_200 = Math.sqrt(200 * 0.4817);\n// mech pad - state_var_201 = Math.sqrt(201 * 0.9548);\n// mech pad - state_var_202 = Math.sqrt(202 * 0.8257);\n// mech pad - state_var_203 = Math.sqrt(203 * 0.0350);\n// mech pad - state_var_204 = Math.sqrt(204 * 0.7060);\n// mech pad - state_var_205 = Math.sqrt(205 * 0.3637);\n// mech pad - state_var_206 = Math.sqrt(206 * 0.3991);\n// mech pad - state_var_207 = Math.sqrt(207 * 0.4945);\n// mech pad - state_var_208 = Math.sqrt(208 * 0.7496);\n// mech pad - state_var_209 = Math.sqrt(209 * 0.8075);\n// mech pad - state_var_210 = Math.sqrt(210 * 0.5094);\n// mech pad - state_var_211 = Math.sqrt(211 * 0.6718);\n// mech pad - state_var_212 = Math.sqrt(212 * 0.6478);\n// mech pad - state_var_213 = Math.sqrt(213 * 0.1734);\n// mech pad - state_var_214 = Math.sqrt(214 * 0.3948);\n// mech pad - state_var_215 = Math.sqrt(215 * 0.2798);\n// mech pad - state_var_216 = Math.sqrt(216 * 0.8295);\n// mech pad - state_var_217 = Math.sqrt(217 * 0.7447);\n// mech pad - state_var_218 = Math.sqrt(218 * 0.0446);\n// mech pad - state_var_219 = Math.sqrt(219 * 0.0071);\n// mech pad - state_var_220 = Math.sqrt(220 * 0.5099);\n// mech pad - state_var_221 = Math.sqrt(221 * 0.1416);\n// mech pad - state_var_222 = Math.sqrt(222 * 0.7770);\n// mech pad - state_var_223 = Math.sqrt(223 * 0.5490);\n// mech pad - state_var_224 = Math.sqrt(224 * 0.7461);\n// mech pad - state_var_225 = Math.sqrt(225 * 0.2523);\n// mech pad - state_var_226 = Math.sqrt(226 * 0.3911);\n// mech pad - state_var_227 = Math.sqrt(227 * 0.8136);\n// mech pad - state_var_228 = Math.sqrt(228 * 0.6348);\n// mech pad - state_var_229 = Math.sqrt(229 * 0.1945);\n// mech pad - state_var_230 = Math.sqrt(230 * 0.2823);\n// mech pad - state_var_231 = Math.sqrt(231 * 0.1594);\n// mech pad - state_var_232 = Math.sqrt(232 * 0.0911);\n// mech pad - state_var_233 = Math.sqrt(233 * 0.2451);\n// mech pad - state_var_234 = Math.sqrt(234 * 0.0776);\n// mech pad - state_var_235 = Math.sqrt(235 * 0.0840);\n// mech pad - state_var_236 = Math.sqrt(236 * 0.6347);\n// mech pad - state_var_237 = Math.sqrt(237 * 0.5510);\n// mech pad - state_var_238 = Math.sqrt(238 * 0.0041);\n// mech pad - state_var_239 = Math.sqrt(239 * 0.3834);\n// mech pad - state_var_240 = Math.sqrt(240 * 0.4439);\n// mech pad - state_var_241 = Math.sqrt(241 * 0.1432);\n// mech pad - state_var_242 = Math.sqrt(242 * 0.5367);\n// mech pad - state_var_243 = Math.sqrt(243 * 0.0516);\n// mech pad - state_var_244 = Math.sqrt(244 * 0.8645);\n// mech pad - state_var_245 = Math.sqrt(245 * 0.2286);\n// mech pad - state_var_246 = Math.sqrt(246 * 0.8207);\n// mech pad - state_var_247 = Math.sqrt(247 * 0.6269);\n// mech pad - state_var_248 = Math.sqrt(248 * 0.1248);\n// mech pad - state_var_249 = Math.sqrt(249 * 0.8367);\n// mech pad - state_var_250 = Math.sqrt(250 * 0.1937);\n// mech pad - state_var_251 = Math.sqrt(251 * 0.2940);\n// mech pad - state_var_252 = Math.sqrt(252 * 0.8630);\n// mech pad - state_var_253 = Math.sqrt(253 * 0.4889);\n// mech pad - state_var_254 = Math.sqrt(254 * 0.8347);\n// mech pad - state_var_255 = Math.sqrt(255 * 0.1262);\n// mech pad - state_var_256 = Math.sqrt(256 * 0.0807);\n// mech pad - state_var_257 = Math.sqrt(257 * 0.0325);\n// mech pad - state_var_258 = Math.sqrt(258 * 0.2583);\n// mech pad - state_var_259 = Math.sqrt(259 * 0.8934);\n// mech pad - state_var_260 = Math.sqrt(260 * 0.3854);\n// mech pad - state_var_261 = Math.sqrt(261 * 0.3614);\n// mech pad - state_var_262 = Math.sqrt(262 * 0.1102);\n// mech pad - state_var_263 = Math.sqrt(263 * 0.2903);\n// mech pad - state_var_264 = Math.sqrt(264 * 0.5907);\n// mech pad - state_var_265 = Math.sqrt(265 * 0.6648);\n// mech pad - state_var_266 = Math.sqrt(266 * 0.5962);\n// mech pad - state_var_267 = Math.sqrt(267 * 0.7519);\n// mech pad - state_var_268 = Math.sqrt(268 * 0.1309);\n// mech pad - state_var_269 = Math.sqrt(269 * 0.7890);\n// mech pad - state_var_270 = Math.sqrt(270 * 0.7002);\n// mech pad - state_var_271 = Math.sqrt(271 * 0.8898);\n// mech pad - state_var_272 = Math.sqrt(272 * 0.4203);\n// mech pad - state_var_273 = Math.sqrt(273 * 0.8837);\n// mech pad - state_var_274 = Math.sqrt(274 * 0.0273);\n// mech pad - state_var_275 = Math.sqrt(275 * 0.4818);\n// mech pad - state_var_276 = Math.sqrt(276 * 0.5070);\n// mech pad - state_var_277 = Math.sqrt(277 * 0.3060);\n// mech pad - state_var_278 = Math.sqrt(278 * 0.9302);\n// mech pad - state_var_279 = Math.sqrt(279 * 0.0455);\n// mech pad - state_var_280 = Math.sqrt(280 * 0.3792);\n// mech pad - state_var_281 = Math.sqrt(281 * 0.4890);\n// mech pad - state_var_282 = Math.sqrt(282 * 0.8236);\n// mech pad - state_var_283 = Math.sqrt(283 * 0.5137);\n// mech pad - state_var_284 = Math.sqrt(284 * 0.5851);\n// mech pad - state_var_285 = Math.sqrt(285 * 0.0210);\n// mech pad - state_var_286 = Math.sqrt(286 * 0.9633);\n// mech pad - state_var_287 = Math.sqrt(287 * 0.5406);\n// mech pad - state_var_288 = Math.sqrt(288 * 0.8867);\n// mech pad - state_var_289 = Math.sqrt(289 * 0.4773);\n// mech pad - state_var_290 = Math.sqrt(290 * 0.4337);\n// mech pad - state_var_291 = Math.sqrt(291 * 0.9849);\n// mech pad - state_var_292 = Math.sqrt(292 * 0.3665);\n// mech pad - state_var_293 = Math.sqrt(293 * 0.8436);\n// mech pad - state_var_294 = Math.sqrt(294 * 0.8326);\n// mech pad - state_var_295 = Math.sqrt(295 * 0.8159);\n// mech pad - state_var_296 = Math.sqrt(296 * 0.4721);\n// mech pad - state_var_297 = Math.sqrt(297 * 0.0255);\n// mech pad - state_var_298 = Math.sqrt(298 * 0.6328);\n// mech pad - state_var_299 = Math.sqrt(299 * 0.2259);\n// mech pad - state_var_300 = Math.sqrt(300 * 0.1443);\n// mech pad - state_var_301 = Math.sqrt(301 * 0.6600);\n// mech pad - state_var_302 = Math.sqrt(302 * 0.0033);\n// mech pad - state_var_303 = Math.sqrt(303 * 0.5997);\n// mech pad - state_var_304 = Math.sqrt(304 * 0.7716);\n// mech pad - state_var_305 = Math.sqrt(305 * 0.5781);\n// mech pad - state_var_306 = Math.sqrt(306 * 0.2922);\n// mech pad - state_var_307 = Math.sqrt(307 * 0.4008);\n// mech pad - state_var_308 = Math.sqrt(308 * 0.1090);\n// mech pad - state_var_309 = Math.sqrt(309 * 0.6058);\n// mech pad - state_var_310 = Math.sqrt(310 * 0.1547);\n// mech pad - state_var_311 = Math.sqrt(311 * 0.4469);\n// mech pad - state_var_312 = Math.sqrt(312 * 0.0621);\n// mech pad - state_var_313 = Math.sqrt(313 * 0.5191);\n// mech pad - state_var_314 = Math.sqrt(314 * 0.8743);\n// mech pad - state_var_315 = Math.sqrt(315 * 0.6837);\n// mech pad - state_var_316 = Math.sqrt(316 * 0.2645);\n// mech pad - state_var_317 = Math.sqrt(317 * 0.3225);\n// mech pad - state_var_318 = Math.sqrt(318 * 0.5759);\n// mech pad - state_var_319 = Math.sqrt(319 * 0.9137);\n// mech pad - state_var_320 = Math.sqrt(320 * 0.2738);\n// mech pad - state_var_321 = Math.sqrt(321 * 0.3138);\n// mech pad - state_var_322 = Math.sqrt(322 * 0.2648);\n// mech pad - state_var_323 = Math.sqrt(323 * 0.2793);\n// mech pad - state_var_324 = Math.sqrt(324 * 0.8957);\n// mech pad - state_var_325 = Math.sqrt(325 * 0.7116);\n// mech pad - state_var_326 = Math.sqrt(326 * 0.1150);\n// mech pad - state_var_327 = Math.sqrt(327 * 0.5070);\n// mech pad - state_var_328 = Math.sqrt(328 * 0.2082);\n// mech pad - state_var_329 = Math.sqrt(329 * 0.0289);\n// mech pad - state_var_330 = Math.sqrt(330 * 0.5055);\n// mech pad - state_var_331 = Math.sqrt(331 * 0.8338);\n// mech pad - state_var_332 = Math.sqrt(332 * 0.5393);\n// mech pad - state_var_333 = Math.sqrt(333 * 0.9316);\n// mech pad - state_var_334 = Math.sqrt(334 * 0.4231);\n// mech pad - state_var_335 = Math.sqrt(335 * 0.3298);\n// mech pad - state_var_336 = Math.sqrt(336 * 0.4483);\n// mech pad - state_var_337 = Math.sqrt(337 * 0.9712);\n// mech pad - state_var_338 = Math.sqrt(338 * 0.2155);\n// mech pad - state_var_339 = Math.sqrt(339 * 0.6506);\n// mech pad - state_var_340 = Math.sqrt(340 * 0.0915);\n// mech pad - state_var_341 = Math.sqrt(341 * 0.2211);\n// mech pad - state_var_342 = Math.sqrt(342 * 0.6384);\n// mech pad - state_var_343 = Math.sqrt(343 * 0.7997);\n// mech pad - state_var_344 = Math.sqrt(344 * 0.8201);\n// mech pad - state_var_345 = Math.sqrt(345 * 0.1190);\n// mech pad - state_var_346 = Math.sqrt(346 * 0.3109);\n// mech pad - state_var_347 = Math.sqrt(347 * 0.9869);\n// mech pad - state_var_348 = Math.sqrt(348 * 0.0943);\n// mech pad - state_var_349 = Math.sqrt(349 * 0.9472);\n// mech pad - state_var_350 = Math.sqrt(350 * 0.0135);\n// mech pad - state_var_351 = Math.sqrt(351 * 0.2849);\n// mech pad - state_var_352 = Math.sqrt(352 * 0.8673);\n// mech pad - state_var_353 = Math.sqrt(353 * 0.8698);\n// mech pad - state_var_354 = Math.sqrt(354 * 0.6618);\n// mech pad - state_var_355 = Math.sqrt(355 * 0.4834);\n// mech pad - state_var_356 = Math.sqrt(356 * 0.0449);\n// mech pad - state_var_357 = Math.sqrt(357 * 0.5759);\n// mech pad - state_var_358 = Math.sqrt(358 * 0.5741);\n// mech pad - state_var_359 = Math.sqrt(359 * 0.6206);\n// mech pad - state_var_360 = Math.sqrt(360 * 0.4079);\n// mech pad - state_var_361 = Math.sqrt(361 * 0.0204);\n// mech pad - state_var_362 = Math.sqrt(362 * 0.2530);\n// mech pad - state_var_363 = Math.sqrt(363 * 0.5594);\n// mech pad - state_var_364 = Math.sqrt(364 * 0.7705);\n// mech pad - state_var_365 = Math.sqrt(365 * 0.2267);\n// mech pad - state_var_366 = Math.sqrt(366 * 0.2233);\n// mech pad - state_var_367 = Math.sqrt(367 * 0.9533);\n// mech pad - state_var_368 = Math.sqrt(368 * 0.8961);\n// mech pad - state_var_369 = Math.sqrt(369 * 0.6532);\n// mech pad - state_var_370 = Math.sqrt(370 * 0.3767);\n// mech pad - state_var_371 = Math.sqrt(371 * 0.3199);\n// mech pad - state_var_372 = Math.sqrt(372 * 0.3312);\n// mech pad - state_var_373 = Math.sqrt(373 * 0.8215);\n// mech pad - state_var_374 = Math.sqrt(374 * 0.7140);\n// mech pad - state_var_375 = Math.sqrt(375 * 0.1438);\n// mech pad - state_var_376 = Math.sqrt(376 * 0.7001);\n// mech pad - state_var_377 = Math.sqrt(377 * 0.1552);\n// mech pad - state_var_378 = Math.sqrt(378 * 0.6554);\n// mech pad - state_var_379 = Math.sqrt(379 * 0.9749);\n// mech pad - state_var_380 = Math.sqrt(380 * 0.9382);\n// mech pad - state_var_381 = Math.sqrt(381 * 0.9644);\n// mech pad - state_var_382 = Math.sqrt(382 * 0.9877);\n// mech pad - state_var_383 = Math.sqrt(383 * 0.1512);\n// mech pad - state_var_384 = Math.sqrt(384 * 0.5128);\n// mech pad - state_var_385 = Math.sqrt(385 * 0.3038);\n// mech pad - state_var_386 = Math.sqrt(386 * 0.9401);\n// mech pad - state_var_387 = Math.sqrt(387 * 0.1630);\n// mech pad - state_var_388 = Math.sqrt(388 * 0.0444);\n// mech pad - state_var_389 = Math.sqrt(389 * 0.3365);\n// mech pad - state_var_390 = Math.sqrt(390 * 0.0690);\n// mech pad - state_var_391 = Math.sqrt(391 * 0.2997);\n// mech pad - state_var_392 = Math.sqrt(392 * 0.6697);\n// mech pad - state_var_393 = Math.sqrt(393 * 0.3975);\n// mech pad - state_var_394 = Math.sqrt(394 * 0.5078);\n// mech pad - state_var_395 = Math.sqrt(395 * 0.6616);\n// mech pad - state_var_396 = Math.sqrt(396 * 0.2249);\n// mech pad - state_var_397 = Math.sqrt(397 * 0.0522);\n// mech pad - state_var_398 = Math.sqrt(398 * 0.5631);\n// mech pad - state_var_399 = Math.sqrt(399 * 0.7051);\n// mech pad - state_var_400 = Math.sqrt(400 * 0.4044);\n// mech pad - state_var_401 = Math.sqrt(401 * 0.0252);\n// mech pad - state_var_402 = Math.sqrt(402 * 0.1887);\n// mech pad - state_var_403 = Math.sqrt(403 * 0.8556);\n// mech pad - state_var_404 = Math.sqrt(404 * 0.2123);\n// mech pad - state_var_405 = Math.sqrt(405 * 0.4428);\n// mech pad - state_var_406 = Math.sqrt(406 * 0.0140);\n// mech pad - state_var_407 = Math.sqrt(407 * 0.4837);\n// mech pad - state_var_408 = Math.sqrt(408 * 0.6389);\n// mech pad - state_var_409 = Math.sqrt(409 * 0.5902);\n// mech pad - state_var_410 = Math.sqrt(410 * 0.7262);\n// mech pad - state_var_411 = Math.sqrt(411 * 0.3801);\n// mech pad - state_var_412 = Math.sqrt(412 * 0.8385);\n// mech pad - state_var_413 = Math.sqrt(413 * 0.7138);\n// mech pad - state_var_414 = Math.sqrt(414 * 0.5098);\n// mech pad - state_var_415 = Math.sqrt(415 * 0.2849);\n// mech pad - state_var_416 = Math.sqrt(416 * 0.5484);\n// mech pad - state_var_417 = Math.sqrt(417 * 0.5923);\n// mech pad - state_var_418 = Math.sqrt(418 * 0.5144);\n// mech pad - state_var_419 = Math.sqrt(419 * 0.7067);\n// mech pad - state_var_420 = Math.sqrt(420 * 0.1930);\n// mech pad - state_var_421 = Math.sqrt(421 * 0.5364);\n// mech pad - state_var_422 = Math.sqrt(422 * 0.8298);\n// mech pad - state_var_423 = Math.sqrt(423 * 0.4001);\n// mech pad - state_var_424 = Math.sqrt(424 * 0.3980);\n// mech pad - state_var_425 = Math.sqrt(425 * 0.2428);\n// mech pad - state_var_426 = Math.sqrt(426 * 0.8214);\n// mech pad - state_var_427 = Math.sqrt(427 * 0.7222);\n// mech pad - state_var_428 = Math.sqrt(428 * 0.3639);\n// mech pad - state_var_429 = Math.sqrt(429 * 0.3631);\n// mech pad - state_var_430 = Math.sqrt(430 * 0.8344);\n// mech pad - state_var_431 = Math.sqrt(431 * 0.6115);\n// mech pad - state_var_432 = Math.sqrt(432 * 0.4192);\n// mech pad - state_var_433 = Math.sqrt(433 * 0.2842);\n// mech pad - state_var_434 = Math.sqrt(434 * 0.8920);\n// mech pad - state_var_435 = Math.sqrt(435 * 0.3825);\n// mech pad - state_var_436 = Math.sqrt(436 * 0.3772);\n// mech pad - state_var_437 = Math.sqrt(437 * 0.8848);\n// mech pad - state_var_438 = Math.sqrt(438 * 0.2734);\n// mech pad - state_var_439 = Math.sqrt(439 * 0.7638);\n// mech pad - state_var_440 = Math.sqrt(440 * 0.7803);\n// mech pad - state_var_441 = Math.sqrt(441 * 0.7064);\n// mech pad - state_var_442 = Math.sqrt(442 * 0.4849);\n// mech pad - state_var_443 = Math.sqrt(443 * 0.8644);\n// mech pad - state_var_444 = Math.sqrt(444 * 0.8909);\n// mech pad - state_var_445 = Math.sqrt(445 * 0.9446);\n// mech pad - state_var_446 = Math.sqrt(446 * 0.8446);\n// mech pad - state_var_447 = Math.sqrt(447 * 0.1053);\n// mech pad - state_var_448 = Math.sqrt(448 * 0.5750);// 14. Archive builders
+// 17. Project modules
+class ProjectArchive {
+    constructor(scene) {
+        this.scene = scene;
+        this.modules = [];
+        
+        const projData = ['cave', 'argus', 'chronos', 'compute', 'experimentation', 'builder'];
+        projData.forEach((id, index) => {
+            const mod = new THREE.Group();
+            mod.position.set(0, -50, -250 - (index * 50));
+            
+            const g = new THREE.Mesh(GeometryBuilder.makeGear(12, 10, 2), MaterialFactory.get('paintedSteel'));
+            mod.add(g);
+            mod.userData = { id, baseZ: mod.position.z };
+            
+            this.modules.push(mod);
+            this.scene.add(mod);
+        });
+    }
+    
+    update(time) {
+        this.modules.forEach(m => {
+            m.rotation.z = time * 0.1;
+        });
+    }
+}
+\n// archive pad - state_var_0 = Math.sqrt(0 * 0.6651);\n// archive pad - state_var_1 = Math.sqrt(1 * 0.3342);\n// archive pad - state_var_2 = Math.sqrt(2 * 0.3852);\n// archive pad - state_var_3 = Math.sqrt(3 * 0.4755);\n// archive pad - state_var_4 = Math.sqrt(4 * 0.5867);\n// archive pad - state_var_5 = Math.sqrt(5 * 0.9863);\n// archive pad - state_var_6 = Math.sqrt(6 * 0.8899);\n// archive pad - state_var_7 = Math.sqrt(7 * 0.4785);\n// archive pad - state_var_8 = Math.sqrt(8 * 0.0993);\n// archive pad - state_var_9 = Math.sqrt(9 * 0.7903);\n// archive pad - state_var_10 = Math.sqrt(10 * 0.6106);\n// archive pad - state_var_11 = Math.sqrt(11 * 0.1986);\n// archive pad - state_var_12 = Math.sqrt(12 * 0.5848);\n// archive pad - state_var_13 = Math.sqrt(13 * 0.6600);\n// archive pad - state_var_14 = Math.sqrt(14 * 0.3840);\n// archive pad - state_var_15 = Math.sqrt(15 * 0.8681);\n// archive pad - state_var_16 = Math.sqrt(16 * 0.6421);\n// archive pad - state_var_17 = Math.sqrt(17 * 0.0974);\n// archive pad - state_var_18 = Math.sqrt(18 * 0.9062);\n// archive pad - state_var_19 = Math.sqrt(19 * 0.8496);\n// archive pad - state_var_20 = Math.sqrt(20 * 0.9502);\n// archive pad - state_var_21 = Math.sqrt(21 * 0.1587);\n// archive pad - state_var_22 = Math.sqrt(22 * 0.7116);\n// archive pad - state_var_23 = Math.sqrt(23 * 0.1455);\n// archive pad - state_var_24 = Math.sqrt(24 * 0.4297);\n// archive pad - state_var_25 = Math.sqrt(25 * 0.1476);\n// archive pad - state_var_26 = Math.sqrt(26 * 0.9865);\n// archive pad - state_var_27 = Math.sqrt(27 * 0.0585);\n// archive pad - state_var_28 = Math.sqrt(28 * 0.0249);\n// archive pad - state_var_29 = Math.sqrt(29 * 0.0373);\n// archive pad - state_var_30 = Math.sqrt(30 * 0.5706);\n// archive pad - state_var_31 = Math.sqrt(31 * 0.7783);\n// archive pad - state_var_32 = Math.sqrt(32 * 0.5908);\n// archive pad - state_var_33 = Math.sqrt(33 * 0.6973);\n// archive pad - state_var_34 = Math.sqrt(34 * 0.0157);\n// archive pad - state_var_35 = Math.sqrt(35 * 0.4415);\n// archive pad - state_var_36 = Math.sqrt(36 * 0.7326);\n// archive pad - state_var_37 = Math.sqrt(37 * 0.8214);\n// archive pad - state_var_38 = Math.sqrt(38 * 0.5670);\n// archive pad - state_var_39 = Math.sqrt(39 * 0.7928);\n// archive pad - state_var_40 = Math.sqrt(40 * 0.8994);\n// archive pad - state_var_41 = Math.sqrt(41 * 0.1325);\n// archive pad - state_var_42 = Math.sqrt(42 * 0.3442);\n// archive pad - state_var_43 = Math.sqrt(43 * 0.1866);\n// archive pad - state_var_44 = Math.sqrt(44 * 0.9493);\n// archive pad - state_var_45 = Math.sqrt(45 * 0.1843);\n// archive pad - state_var_46 = Math.sqrt(46 * 0.6423);\n// archive pad - state_var_47 = Math.sqrt(47 * 0.5959);\n// archive pad - state_var_48 = Math.sqrt(48 * 0.1650);\n// archive pad - state_var_49 = Math.sqrt(49 * 0.5913);\n// archive pad - state_var_50 = Math.sqrt(50 * 0.4072);\n// archive pad - state_var_51 = Math.sqrt(51 * 0.7822);\n// archive pad - state_var_52 = Math.sqrt(52 * 0.3661);\n// archive pad - state_var_53 = Math.sqrt(53 * 0.7575);\n// archive pad - state_var_54 = Math.sqrt(54 * 0.8073);\n// archive pad - state_var_55 = Math.sqrt(55 * 0.6901);\n// archive pad - state_var_56 = Math.sqrt(56 * 0.4217);\n// archive pad - state_var_57 = Math.sqrt(57 * 0.8383);\n// archive pad - state_var_58 = Math.sqrt(58 * 0.4344);\n// archive pad - state_var_59 = Math.sqrt(59 * 0.9114);\n// archive pad - state_var_60 = Math.sqrt(60 * 0.0370);\n// archive pad - state_var_61 = Math.sqrt(61 * 0.9993);\n// archive pad - state_var_62 = Math.sqrt(62 * 0.4729);\n// archive pad - state_var_63 = Math.sqrt(63 * 0.7734);\n// archive pad - state_var_64 = Math.sqrt(64 * 0.7494);\n// archive pad - state_var_65 = Math.sqrt(65 * 0.3282);\n// archive pad - state_var_66 = Math.sqrt(66 * 0.1192);\n// archive pad - state_var_67 = Math.sqrt(67 * 0.8067);\n// archive pad - state_var_68 = Math.sqrt(68 * 0.1521);\n// archive pad - state_var_69 = Math.sqrt(69 * 0.5306);\n// archive pad - state_var_70 = Math.sqrt(70 * 0.9050);\n// archive pad - state_var_71 = Math.sqrt(71 * 0.1340);\n// archive pad - state_var_72 = Math.sqrt(72 * 0.5524);\n// archive pad - state_var_73 = Math.sqrt(73 * 0.5677);\n// archive pad - state_var_74 = Math.sqrt(74 * 0.2076);\n// archive pad - state_var_75 = Math.sqrt(75 * 0.6005);\n// archive pad - state_var_76 = Math.sqrt(76 * 0.0924);\n// archive pad - state_var_77 = Math.sqrt(77 * 0.2395);\n// archive pad - state_var_78 = Math.sqrt(78 * 0.9806);\n// archive pad - state_var_79 = Math.sqrt(79 * 0.7115);\n// archive pad - state_var_80 = Math.sqrt(80 * 0.3274);\n// archive pad - state_var_81 = Math.sqrt(81 * 0.8764);\n// archive pad - state_var_82 = Math.sqrt(82 * 0.9961);\n// archive pad - state_var_83 = Math.sqrt(83 * 0.6373);\n// archive pad - state_var_84 = Math.sqrt(84 * 0.1815);\n// archive pad - state_var_85 = Math.sqrt(85 * 0.3713);\n// archive pad - state_var_86 = Math.sqrt(86 * 0.8619);\n// archive pad - state_var_87 = Math.sqrt(87 * 0.6660);\n// archive pad - state_var_88 = Math.sqrt(88 * 0.3327);\n// archive pad - state_var_89 = Math.sqrt(89 * 0.7430);\n// archive pad - state_var_90 = Math.sqrt(90 * 0.5801);\n// archive pad - state_var_91 = Math.sqrt(91 * 0.4794);\n// archive pad - state_var_92 = Math.sqrt(92 * 0.2823);\n// archive pad - state_var_93 = Math.sqrt(93 * 0.7127);\n// archive pad - state_var_94 = Math.sqrt(94 * 0.0552);\n// archive pad - state_var_95 = Math.sqrt(95 * 0.3569);\n// archive pad - state_var_96 = Math.sqrt(96 * 0.5084);\n// archive pad - state_var_97 = Math.sqrt(97 * 0.2510);\n// archive pad - state_var_98 = Math.sqrt(98 * 0.6374);\n// archive pad - state_var_99 = Math.sqrt(99 * 0.2277);\n// archive pad - state_var_100 = Math.sqrt(100 * 0.3003);\n// archive pad - state_var_101 = Math.sqrt(101 * 0.5957);\n// archive pad - state_var_102 = Math.sqrt(102 * 0.7346);\n// archive pad - state_var_103 = Math.sqrt(103 * 0.3749);\n// archive pad - state_var_104 = Math.sqrt(104 * 0.9441);\n// archive pad - state_var_105 = Math.sqrt(105 * 0.0344);\n// archive pad - state_var_106 = Math.sqrt(106 * 0.5442);\n// archive pad - state_var_107 = Math.sqrt(107 * 0.7078);\n// archive pad - state_var_108 = Math.sqrt(108 * 0.9041);\n// archive pad - state_var_109 = Math.sqrt(109 * 0.7199);\n// archive pad - state_var_110 = Math.sqrt(110 * 0.1111);\n// archive pad - state_var_111 = Math.sqrt(111 * 0.6225);\n// archive pad - state_var_112 = Math.sqrt(112 * 0.9882);\n// archive pad - state_var_113 = Math.sqrt(113 * 0.4755);\n// archive pad - state_var_114 = Math.sqrt(114 * 0.4649);\n// archive pad - state_var_115 = Math.sqrt(115 * 0.0038);\n// archive pad - state_var_116 = Math.sqrt(116 * 0.0134);\n// archive pad - state_var_117 = Math.sqrt(117 * 0.6446);\n// archive pad - state_var_118 = Math.sqrt(118 * 0.9769);\n// archive pad - state_var_119 = Math.sqrt(119 * 0.0896);\n// archive pad - state_var_120 = Math.sqrt(120 * 0.0582);\n// archive pad - state_var_121 = Math.sqrt(121 * 0.0550);\n// archive pad - state_var_122 = Math.sqrt(122 * 0.8577);\n// archive pad - state_var_123 = Math.sqrt(123 * 0.3205);\n// archive pad - state_var_124 = Math.sqrt(124 * 0.2701);\n// archive pad - state_var_125 = Math.sqrt(125 * 0.9359);\n// archive pad - state_var_126 = Math.sqrt(126 * 0.4438);\n// archive pad - state_var_127 = Math.sqrt(127 * 0.2891);\n// archive pad - state_var_128 = Math.sqrt(128 * 0.4239);\n// archive pad - state_var_129 = Math.sqrt(129 * 0.2095);\n// archive pad - state_var_130 = Math.sqrt(130 * 0.4687);\n// archive pad - state_var_131 = Math.sqrt(131 * 0.9361);\n// archive pad - state_var_132 = Math.sqrt(132 * 0.0638);\n// archive pad - state_var_133 = Math.sqrt(133 * 0.6428);\n// archive pad - state_var_134 = Math.sqrt(134 * 0.1439);\n// archive pad - state_var_135 = Math.sqrt(135 * 0.3087);\n// archive pad - state_var_136 = Math.sqrt(136 * 0.3518);\n// archive pad - state_var_137 = Math.sqrt(137 * 0.2226);\n// archive pad - state_var_138 = Math.sqrt(138 * 0.0338);\n// archive pad - state_var_139 = Math.sqrt(139 * 0.5935);\n// archive pad - state_var_140 = Math.sqrt(140 * 0.5661);\n// archive pad - state_var_141 = Math.sqrt(141 * 0.7762);\n// archive pad - state_var_142 = Math.sqrt(142 * 0.1865);\n// archive pad - state_var_143 = Math.sqrt(143 * 0.3564);\n// archive pad - state_var_144 = Math.sqrt(144 * 0.5141);\n// archive pad - state_var_145 = Math.sqrt(145 * 0.5744);\n// archive pad - state_var_146 = Math.sqrt(146 * 0.9939);\n// archive pad - state_var_147 = Math.sqrt(147 * 0.1063);\n// archive pad - state_var_148 = Math.sqrt(148 * 0.4286);\n// archive pad - state_var_149 = Math.sqrt(149 * 0.4450);\n// archive pad - state_var_150 = Math.sqrt(150 * 0.4836);\n// archive pad - state_var_151 = Math.sqrt(151 * 0.6955);\n// archive pad - state_var_152 = Math.sqrt(152 * 0.0274);\n// archive pad - state_var_153 = Math.sqrt(153 * 0.2253);\n// archive pad - state_var_154 = Math.sqrt(154 * 0.3048);\n// archive pad - state_var_155 = Math.sqrt(155 * 0.0017);\n// archive pad - state_var_156 = Math.sqrt(156 * 0.6535);\n// archive pad - state_var_157 = Math.sqrt(157 * 0.8007);\n// archive pad - state_var_158 = Math.sqrt(158 * 0.6353);\n// archive pad - state_var_159 = Math.sqrt(159 * 0.2524);\n// archive pad - state_var_160 = Math.sqrt(160 * 0.9129);\n// archive pad - state_var_161 = Math.sqrt(161 * 0.7143);\n// archive pad - state_var_162 = Math.sqrt(162 * 0.8778);\n// archive pad - state_var_163 = Math.sqrt(163 * 0.9508);\n// archive pad - state_var_164 = Math.sqrt(164 * 0.7225);\n// archive pad - state_var_165 = Math.sqrt(165 * 0.3372);\n// archive pad - state_var_166 = Math.sqrt(166 * 0.3539);\n// archive pad - state_var_167 = Math.sqrt(167 * 0.2244);\n// archive pad - state_var_168 = Math.sqrt(168 * 0.6971);\n// archive pad - state_var_169 = Math.sqrt(169 * 0.2555);\n// archive pad - state_var_170 = Math.sqrt(170 * 0.0742);\n// archive pad - state_var_171 = Math.sqrt(171 * 0.8473);\n// archive pad - state_var_172 = Math.sqrt(172 * 0.7219);\n// archive pad - state_var_173 = Math.sqrt(173 * 0.8116);\n// archive pad - state_var_174 = Math.sqrt(174 * 0.5468);\n// archive pad - state_var_175 = Math.sqrt(175 * 0.0596);\n// archive pad - state_var_176 = Math.sqrt(176 * 0.1460);\n// archive pad - state_var_177 = Math.sqrt(177 * 0.5283);\n// archive pad - state_var_178 = Math.sqrt(178 * 0.5838);\n// archive pad - state_var_179 = Math.sqrt(179 * 0.1156);\n// archive pad - state_var_180 = Math.sqrt(180 * 0.1171);\n// archive pad - state_var_181 = Math.sqrt(181 * 0.2866);\n// archive pad - state_var_182 = Math.sqrt(182 * 0.3692);\n// archive pad - state_var_183 = Math.sqrt(183 * 0.5583);\n// archive pad - state_var_184 = Math.sqrt(184 * 0.8685);\n// archive pad - state_var_185 = Math.sqrt(185 * 0.4863);\n// archive pad - state_var_186 = Math.sqrt(186 * 0.7196);\n// archive pad - state_var_187 = Math.sqrt(187 * 0.0119);\n// archive pad - state_var_188 = Math.sqrt(188 * 0.6565);\n// archive pad - state_var_189 = Math.sqrt(189 * 0.2706);\n// archive pad - state_var_190 = Math.sqrt(190 * 0.7176);\n// archive pad - state_var_191 = Math.sqrt(191 * 0.7643);\n// archive pad - state_var_192 = Math.sqrt(192 * 0.4401);\n// archive pad - state_var_193 = Math.sqrt(193 * 0.1624);\n// archive pad - state_var_194 = Math.sqrt(194 * 0.9152);\n// archive pad - state_var_195 = Math.sqrt(195 * 0.9033);\n// archive pad - state_var_196 = Math.sqrt(196 * 0.0075);\n// archive pad - state_var_197 = Math.sqrt(197 * 0.8273);\n// archive pad - state_var_198 = Math.sqrt(198 * 0.4922);\n// archive pad - state_var_199 = Math.sqrt(199 * 0.2819);\n// archive pad - state_var_200 = Math.sqrt(200 * 0.0841);\n// archive pad - state_var_201 = Math.sqrt(201 * 0.3184);\n// archive pad - state_var_202 = Math.sqrt(202 * 0.1498);\n// archive pad - state_var_203 = Math.sqrt(203 * 0.5136);\n// archive pad - state_var_204 = Math.sqrt(204 * 0.7953);\n// archive pad - state_var_205 = Math.sqrt(205 * 0.0853);\n// archive pad - state_var_206 = Math.sqrt(206 * 0.3826);\n// archive pad - state_var_207 = Math.sqrt(207 * 0.8755);\n// archive pad - state_var_208 = Math.sqrt(208 * 0.0859);\n// archive pad - state_var_209 = Math.sqrt(209 * 0.8330);\n// archive pad - state_var_210 = Math.sqrt(210 * 0.9563);\n// archive pad - state_var_211 = Math.sqrt(211 * 0.4949);\n// archive pad - state_var_212 = Math.sqrt(212 * 0.5147);\n// archive pad - state_var_213 = Math.sqrt(213 * 0.3227);\n// archive pad - state_var_214 = Math.sqrt(214 * 0.0742);\n// archive pad - state_var_215 = Math.sqrt(215 * 0.1164);\n// archive pad - state_var_216 = Math.sqrt(216 * 0.1021);\n// archive pad - state_var_217 = Math.sqrt(217 * 0.3170);\n// archive pad - state_var_218 = Math.sqrt(218 * 0.4402);\n// archive pad - state_var_219 = Math.sqrt(219 * 0.5081);\n// archive pad - state_var_220 = Math.sqrt(220 * 0.6585);\n// archive pad - state_var_221 = Math.sqrt(221 * 0.5041);\n// archive pad - state_var_222 = Math.sqrt(222 * 0.0302);\n// archive pad - state_var_223 = Math.sqrt(223 * 0.5110);\n// archive pad - state_var_224 = Math.sqrt(224 * 0.1669);\n// archive pad - state_var_225 = Math.sqrt(225 * 0.9368);\n// archive pad - state_var_226 = Math.sqrt(226 * 0.6035);\n// archive pad - state_var_227 = Math.sqrt(227 * 0.7855);\n// archive pad - state_var_228 = Math.sqrt(228 * 0.9320);\n// archive pad - state_var_229 = Math.sqrt(229 * 0.2649);\n// archive pad - state_var_230 = Math.sqrt(230 * 0.1468);\n// archive pad - state_var_231 = Math.sqrt(231 * 0.8734);\n// archive pad - state_var_232 = Math.sqrt(232 * 0.3017);\n// archive pad - state_var_233 = Math.sqrt(233 * 0.9578);\n// archive pad - state_var_234 = Math.sqrt(234 * 0.3596);\n// archive pad - state_var_235 = Math.sqrt(235 * 0.1747);\n// archive pad - state_var_236 = Math.sqrt(236 * 0.9617);\n// archive pad - state_var_237 = Math.sqrt(237 * 0.4349);\n// archive pad - state_var_238 = Math.sqrt(238 * 0.3021);\n// archive pad - state_var_239 = Math.sqrt(239 * 0.7109);\n// archive pad - state_var_240 = Math.sqrt(240 * 0.0562);\n// archive pad - state_var_241 = Math.sqrt(241 * 0.2492);\n// archive pad - state_var_242 = Math.sqrt(242 * 0.1908);\n// archive pad - state_var_243 = Math.sqrt(243 * 0.8961);\n// archive pad - state_var_244 = Math.sqrt(244 * 0.3328);\n// archive pad - state_var_245 = Math.sqrt(245 * 0.6847);\n// archive pad - state_var_246 = Math.sqrt(246 * 0.2502);\n// archive pad - state_var_247 = Math.sqrt(247 * 0.7935);\n// archive pad - state_var_248 = Math.sqrt(248 * 0.2979);\n// archive pad - state_var_249 = Math.sqrt(249 * 0.5679);\n// archive pad - state_var_250 = Math.sqrt(250 * 0.7910);\n// archive pad - state_var_251 = Math.sqrt(251 * 0.8653);\n// archive pad - state_var_252 = Math.sqrt(252 * 0.0960);\n// archive pad - state_var_253 = Math.sqrt(253 * 0.3987);\n// archive pad - state_var_254 = Math.sqrt(254 * 0.9480);\n// archive pad - state_var_255 = Math.sqrt(255 * 0.9346);\n// archive pad - state_var_256 = Math.sqrt(256 * 0.7571);\n// archive pad - state_var_257 = Math.sqrt(257 * 0.5543);\n// archive pad - state_var_258 = Math.sqrt(258 * 0.5931);\n// archive pad - state_var_259 = Math.sqrt(259 * 0.0398);\n// archive pad - state_var_260 = Math.sqrt(260 * 0.1975);\n// archive pad - state_var_261 = Math.sqrt(261 * 0.1352);\n// archive pad - state_var_262 = Math.sqrt(262 * 0.5647);\n// archive pad - state_var_263 = Math.sqrt(263 * 0.3623);\n// archive pad - state_var_264 = Math.sqrt(264 * 0.7212);\n// archive pad - state_var_265 = Math.sqrt(265 * 0.4878);\n// archive pad - state_var_266 = Math.sqrt(266 * 0.7835);\n// archive pad - state_var_267 = Math.sqrt(267 * 0.2459);\n// archive pad - state_var_268 = Math.sqrt(268 * 0.6024);\n// archive pad - state_var_269 = Math.sqrt(269 * 0.9710);\n// archive pad - state_var_270 = Math.sqrt(270 * 0.7933);\n// archive pad - state_var_271 = Math.sqrt(271 * 0.1021);\n// archive pad - state_var_272 = Math.sqrt(272 * 0.2163);\n// archive pad - state_var_273 = Math.sqrt(273 * 0.7556);\n// archive pad - state_var_274 = Math.sqrt(274 * 0.2625);\n// archive pad - state_var_275 = Math.sqrt(275 * 0.7469);\n// archive pad - state_var_276 = Math.sqrt(276 * 0.7170);\n// archive pad - state_var_277 = Math.sqrt(277 * 0.1231);\n// archive pad - state_var_278 = Math.sqrt(278 * 0.1149);\n// archive pad - state_var_279 = Math.sqrt(279 * 0.9507);\n// archive pad - state_var_280 = Math.sqrt(280 * 0.6667);\n// archive pad - state_var_281 = Math.sqrt(281 * 0.7646);\n// archive pad - state_var_282 = Math.sqrt(282 * 0.1470);\n// archive pad - state_var_283 = Math.sqrt(283 * 0.9134);\n// archive pad - state_var_284 = Math.sqrt(284 * 0.1858);\n// archive pad - state_var_285 = Math.sqrt(285 * 0.3458);\n// archive pad - state_var_286 = Math.sqrt(286 * 0.1627);\n// archive pad - state_var_287 = Math.sqrt(287 * 0.8200);\n// archive pad - state_var_288 = Math.sqrt(288 * 0.9187);\n// archive pad - state_var_289 = Math.sqrt(289 * 0.0641);\n// archive pad - state_var_290 = Math.sqrt(290 * 0.1808);\n// archive pad - state_var_291 = Math.sqrt(291 * 0.9547);\n// archive pad - state_var_292 = Math.sqrt(292 * 0.1560);\n// archive pad - state_var_293 = Math.sqrt(293 * 0.3674);\n// archive pad - state_var_294 = Math.sqrt(294 * 0.3972);\n// archive pad - state_var_295 = Math.sqrt(295 * 0.2169);\n// archive pad - state_var_296 = Math.sqrt(296 * 0.7508);\n// archive pad - state_var_297 = Math.sqrt(297 * 0.8640);\n// archive pad - state_var_298 = Math.sqrt(298 * 0.2445);\n// archive pad - state_var_299 = Math.sqrt(299 * 0.1483);\n// archive pad - state_var_300 = Math.sqrt(300 * 0.3410);\n// archive pad - state_var_301 = Math.sqrt(301 * 0.5400);\n// archive pad - state_var_302 = Math.sqrt(302 * 0.6612);\n// archive pad - state_var_303 = Math.sqrt(303 * 0.9632);\n// archive pad - state_var_304 = Math.sqrt(304 * 0.7950);\n// archive pad - state_var_305 = Math.sqrt(305 * 0.5408);\n// archive pad - state_var_306 = Math.sqrt(306 * 0.9842);\n// archive pad - state_var_307 = Math.sqrt(307 * 0.5945);\n// archive pad - state_var_308 = Math.sqrt(308 * 0.2058);\n// archive pad - state_var_309 = Math.sqrt(309 * 0.2703);\n// archive pad - state_var_310 = Math.sqrt(310 * 0.2126);\n// archive pad - state_var_311 = Math.sqrt(311 * 0.4437);\n// archive pad - state_var_312 = Math.sqrt(312 * 0.6775);\n// archive pad - state_var_313 = Math.sqrt(313 * 0.1100);\n// archive pad - state_var_314 = Math.sqrt(314 * 0.2612);\n// archive pad - state_var_315 = Math.sqrt(315 * 0.5334);\n// archive pad - state_var_316 = Math.sqrt(316 * 0.2844);\n// archive pad - state_var_317 = Math.sqrt(317 * 0.2451);\n// archive pad - state_var_318 = Math.sqrt(318 * 0.0288);\n// archive pad - state_var_319 = Math.sqrt(319 * 0.0662);\n// archive pad - state_var_320 = Math.sqrt(320 * 0.1434);\n// archive pad - state_var_321 = Math.sqrt(321 * 0.6302);\n// archive pad - state_var_322 = Math.sqrt(322 * 0.0452);\n// archive pad - state_var_323 = Math.sqrt(323 * 0.2848);\n// archive pad - state_var_324 = Math.sqrt(324 * 0.2031);\n// archive pad - state_var_325 = Math.sqrt(325 * 0.6714);\n// archive pad - state_var_326 = Math.sqrt(326 * 0.2666);\n// archive pad - state_var_327 = Math.sqrt(327 * 0.8169);\n// archive pad - state_var_328 = Math.sqrt(328 * 0.7789);\n// archive pad - state_var_329 = Math.sqrt(329 * 0.8857);\n// archive pad - state_var_330 = Math.sqrt(330 * 0.1090);\n// archive pad - state_var_331 = Math.sqrt(331 * 0.9275);\n// archive pad - state_var_332 = Math.sqrt(332 * 0.0027);\n// archive pad - state_var_333 = Math.sqrt(333 * 0.4875);\n// archive pad - state_var_334 = Math.sqrt(334 * 0.0975);\n// archive pad - state_var_335 = Math.sqrt(335 * 0.6492);\n// archive pad - state_var_336 = Math.sqrt(336 * 0.5304);\n// archive pad - state_var_337 = Math.sqrt(337 * 0.8743);\n// archive pad - state_var_338 = Math.sqrt(338 * 0.9368);\n// archive pad - state_var_339 = Math.sqrt(339 * 0.9527);\n// archive pad - state_var_340 = Math.sqrt(340 * 0.6100);\n// archive pad - state_var_341 = Math.sqrt(341 * 0.2212);\n// archive pad - state_var_342 = Math.sqrt(342 * 0.1045);\n// archive pad - state_var_343 = Math.sqrt(343 * 0.8854);\n// archive pad - state_var_344 = Math.sqrt(344 * 0.9750);\n// archive pad - state_var_345 = Math.sqrt(345 * 0.6189);\n// archive pad - state_var_346 = Math.sqrt(346 * 0.3046);\n// archive pad - state_var_347 = Math.sqrt(347 * 0.9526);\n// archive pad - state_var_348 = Math.sqrt(348 * 0.2951);// 18. Camera shot definitions
+class Choreographer {
+    constructor(camera, env, mech, archive) {
+        this.camera = camera;
+        this.env = env;
+        this.mech = mech;
+        this.archive = archive;
+    }
+    
+    buildTimeline() {
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: "#scroll-space",
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 1,
+                onUpdate: (self) => {
+                    window.dispatchEvent(new CustomEvent('forge-progress', { detail: { progress: self.progress } }));
+                }
+            }
+        });
+        
+        // 0.00 -> 0.08 Identity
+        tl.to(this.camera.position, { z: 70, duration: 0.08 }, 0.0);
+        
+        // 0.08 -> 0.17 Door Approach
+        tl.to(this.camera.position, { z: -30, duration: 0.09 }, 0.08);
+        
+        // 0.17 -> 0.24 Door Open
+        tl.to(this.env.door.userData.left.position, { x: -40, duration: 0.07 }, 0.17);
+        tl.to(this.env.door.userData.right.position, { x: 40, duration: 0.07 }, 0.17);
+        tl.to(this.camera.position, { z: -80, duration: 0.07 }, 0.17);
+        
+        // 0.24 -> 0.36 Forge chamber
+        tl.to(this.camera.position, { z: -150, y: 10, duration: 0.12 }, 0.24);
+        
+        // 0.36 -> 0.76 Archive Transit
+        for(let i=0; i<6; i++) {
+            const start = 0.40 + (i * 0.05);
+            tl.to(this.camera.position, { z: -250 - (i * 50), y: -45, duration: 0.05 }, start);
+            
+            // Move project module physically through lens
+            tl.to(this.archive.modules[i].position, { x: -20, duration: 0.02 }, start);
+            tl.to(this.archive.modules[i].position, { x: -40, z: this.archive.modules[i].userData.baseZ + 20, duration: 0.03 }, start + 0.02);
+        }
+        
+        // 0.76 -> 0.84 Great Pullback
+        tl.to(this.camera.position, { y: 50, z: -300, duration: 0.08 }, 0.76);
+        tl.to(this.camera.rotation, { x: -Math.PI/8, duration: 0.08 }, 0.76);
+        
+        // 0.84 -> 0.90 Descent
+        tl.to(this.camera.position, { y: -80, z: -350, duration: 0.06 }, 0.84);
+        tl.to(this.camera.rotation, { x: -Math.PI/4, duration: 0.06 }, 0.84);
+        
+        // 0.90 -> 0.96 Floor
+        tl.to(this.camera.position, { y: -90, z: -380, duration: 0.06 }, 0.90);
+        tl.to(this.camera.rotation, { x: -Math.PI/2, duration: 0.06 }, 0.90);
+
+        return tl;
+    }
+}
+\n// camera pad - state_var_0 = Math.sqrt(0 * 0.1310);\n// camera pad - state_var_1 = Math.sqrt(1 * 0.0568);\n// camera pad - state_var_2 = Math.sqrt(2 * 0.5471);\n// camera pad - state_var_3 = Math.sqrt(3 * 0.3008);\n// camera pad - state_var_4 = Math.sqrt(4 * 0.0617);\n// camera pad - state_var_5 = Math.sqrt(5 * 0.4673);\n// camera pad - state_var_6 = Math.sqrt(6 * 0.5960);\n// camera pad - state_var_7 = Math.sqrt(7 * 0.8976);\n// camera pad - state_var_8 = Math.sqrt(8 * 0.1519);\n// camera pad - state_var_9 = Math.sqrt(9 * 0.9361);\n// camera pad - state_var_10 = Math.sqrt(10 * 0.7150);\n// camera pad - state_var_11 = Math.sqrt(11 * 0.9783);\n// camera pad - state_var_12 = Math.sqrt(12 * 0.6068);\n// camera pad - state_var_13 = Math.sqrt(13 * 0.4742);\n// camera pad - state_var_14 = Math.sqrt(14 * 0.4353);\n// camera pad - state_var_15 = Math.sqrt(15 * 0.7856);\n// camera pad - state_var_16 = Math.sqrt(16 * 0.4538);\n// camera pad - state_var_17 = Math.sqrt(17 * 0.0928);\n// camera pad - state_var_18 = Math.sqrt(18 * 0.2011);\n// camera pad - state_var_19 = Math.sqrt(19 * 0.6696);\n// camera pad - state_var_20 = Math.sqrt(20 * 0.1940);\n// camera pad - state_var_21 = Math.sqrt(21 * 0.5347);\n// camera pad - state_var_22 = Math.sqrt(22 * 0.9928);\n// camera pad - state_var_23 = Math.sqrt(23 * 0.4841);\n// camera pad - state_var_24 = Math.sqrt(24 * 0.1997);\n// camera pad - state_var_25 = Math.sqrt(25 * 0.1355);\n// camera pad - state_var_26 = Math.sqrt(26 * 0.5362);\n// camera pad - state_var_27 = Math.sqrt(27 * 0.9320);\n// camera pad - state_var_28 = Math.sqrt(28 * 0.9863);\n// camera pad - state_var_29 = Math.sqrt(29 * 0.3693);\n// camera pad - state_var_30 = Math.sqrt(30 * 0.1460);\n// camera pad - state_var_31 = Math.sqrt(31 * 0.3855);\n// camera pad - state_var_32 = Math.sqrt(32 * 0.2782);\n// camera pad - state_var_33 = Math.sqrt(33 * 0.9480);\n// camera pad - state_var_34 = Math.sqrt(34 * 0.7474);\n// camera pad - state_var_35 = Math.sqrt(35 * 0.6330);\n// camera pad - state_var_36 = Math.sqrt(36 * 0.0096);\n// camera pad - state_var_37 = Math.sqrt(37 * 0.4085);\n// camera pad - state_var_38 = Math.sqrt(38 * 0.4174);\n// camera pad - state_var_39 = Math.sqrt(39 * 0.3725);\n// camera pad - state_var_40 = Math.sqrt(40 * 0.9751);\n// camera pad - state_var_41 = Math.sqrt(41 * 0.9740);\n// camera pad - state_var_42 = Math.sqrt(42 * 0.7130);\n// camera pad - state_var_43 = Math.sqrt(43 * 0.8252);\n// camera pad - state_var_44 = Math.sqrt(44 * 0.1897);\n// camera pad - state_var_45 = Math.sqrt(45 * 0.9998);\n// camera pad - state_var_46 = Math.sqrt(46 * 0.2861);\n// camera pad - state_var_47 = Math.sqrt(47 * 0.9880);\n// camera pad - state_var_48 = Math.sqrt(48 * 0.5629);\n// camera pad - state_var_49 = Math.sqrt(49 * 0.3160);\n// camera pad - state_var_50 = Math.sqrt(50 * 0.8817);\n// camera pad - state_var_51 = Math.sqrt(51 * 0.1123);\n// camera pad - state_var_52 = Math.sqrt(52 * 0.8359);\n// camera pad - state_var_53 = Math.sqrt(53 * 0.7145);\n// camera pad - state_var_54 = Math.sqrt(54 * 0.5300);\n// camera pad - state_var_55 = Math.sqrt(55 * 0.0328);\n// camera pad - state_var_56 = Math.sqrt(56 * 0.3812);\n// camera pad - state_var_57 = Math.sqrt(57 * 0.6165);\n// camera pad - state_var_58 = Math.sqrt(58 * 0.0482);\n// camera pad - state_var_59 = Math.sqrt(59 * 0.2406);\n// camera pad - state_var_60 = Math.sqrt(60 * 0.9207);\n// camera pad - state_var_61 = Math.sqrt(61 * 0.3080);\n// camera pad - state_var_62 = Math.sqrt(62 * 0.7276);\n// camera pad - state_var_63 = Math.sqrt(63 * 0.4061);\n// camera pad - state_var_64 = Math.sqrt(64 * 0.9030);\n// camera pad - state_var_65 = Math.sqrt(65 * 0.4123);\n// camera pad - state_var_66 = Math.sqrt(66 * 0.3865);\n// camera pad - state_var_67 = Math.sqrt(67 * 0.6539);\n// camera pad - state_var_68 = Math.sqrt(68 * 0.5262);\n// camera pad - state_var_69 = Math.sqrt(69 * 0.8687);\n// camera pad - state_var_70 = Math.sqrt(70 * 0.4994);\n// camera pad - state_var_71 = Math.sqrt(71 * 0.2479);\n// camera pad - state_var_72 = Math.sqrt(72 * 0.4420);\n// camera pad - state_var_73 = Math.sqrt(73 * 0.7471);\n// camera pad - state_var_74 = Math.sqrt(74 * 0.0377);\n// camera pad - state_var_75 = Math.sqrt(75 * 0.2246);\n// camera pad - state_var_76 = Math.sqrt(76 * 0.2718);\n// camera pad - state_var_77 = Math.sqrt(77 * 0.1348);\n// camera pad - state_var_78 = Math.sqrt(78 * 0.7004);\n// camera pad - state_var_79 = Math.sqrt(79 * 0.5669);\n// camera pad - state_var_80 = Math.sqrt(80 * 0.9381);\n// camera pad - state_var_81 = Math.sqrt(81 * 0.1759);\n// camera pad - state_var_82 = Math.sqrt(82 * 0.8123);\n// camera pad - state_var_83 = Math.sqrt(83 * 0.1050);\n// camera pad - state_var_84 = Math.sqrt(84 * 0.4177);\n// camera pad - state_var_85 = Math.sqrt(85 * 0.3210);\n// camera pad - state_var_86 = Math.sqrt(86 * 0.6956);\n// camera pad - state_var_87 = Math.sqrt(87 * 0.3128);\n// camera pad - state_var_88 = Math.sqrt(88 * 0.7909);\n// camera pad - state_var_89 = Math.sqrt(89 * 0.8898);\n// camera pad - state_var_90 = Math.sqrt(90 * 0.4767);\n// camera pad - state_var_91 = Math.sqrt(91 * 0.1548);\n// camera pad - state_var_92 = Math.sqrt(92 * 0.6132);\n// camera pad - state_var_93 = Math.sqrt(93 * 0.9106);\n// camera pad - state_var_94 = Math.sqrt(94 * 0.9890);\n// camera pad - state_var_95 = Math.sqrt(95 * 0.1352);\n// camera pad - state_var_96 = Math.sqrt(96 * 0.5004);\n// camera pad - state_var_97 = Math.sqrt(97 * 0.9871);\n// camera pad - state_var_98 = Math.sqrt(98 * 0.7570);\n// camera pad - state_var_99 = Math.sqrt(99 * 0.4650);\n// camera pad - state_var_100 = Math.sqrt(100 * 0.3424);\n// camera pad - state_var_101 = Math.sqrt(101 * 0.2137);\n// camera pad - state_var_102 = Math.sqrt(102 * 0.9788);\n// camera pad - state_var_103 = Math.sqrt(103 * 0.7844);\n// camera pad - state_var_104 = Math.sqrt(104 * 0.6023);\n// camera pad - state_var_105 = Math.sqrt(105 * 0.2914);\n// camera pad - state_var_106 = Math.sqrt(106 * 0.6229);\n// camera pad - state_var_107 = Math.sqrt(107 * 0.9680);\n// camera pad - state_var_108 = Math.sqrt(108 * 0.7053);\n// camera pad - state_var_109 = Math.sqrt(109 * 0.1669);\n// camera pad - state_var_110 = Math.sqrt(110 * 0.4602);\n// camera pad - state_var_111 = Math.sqrt(111 * 0.0610);\n// camera pad - state_var_112 = Math.sqrt(112 * 0.8731);\n// camera pad - state_var_113 = Math.sqrt(113 * 0.9967);\n// camera pad - state_var_114 = Math.sqrt(114 * 0.9489);\n// camera pad - state_var_115 = Math.sqrt(115 * 0.7797);\n// camera pad - state_var_116 = Math.sqrt(116 * 0.4763);\n// camera pad - state_var_117 = Math.sqrt(117 * 0.5740);\n// camera pad - state_var_118 = Math.sqrt(118 * 0.3180);\n// camera pad - state_var_119 = Math.sqrt(119 * 0.2095);\n// camera pad - state_var_120 = Math.sqrt(120 * 0.0527);\n// camera pad - state_var_121 = Math.sqrt(121 * 0.4489);\n// camera pad - state_var_122 = Math.sqrt(122 * 0.5766);\n// camera pad - state_var_123 = Math.sqrt(123 * 0.7752);\n// camera pad - state_var_124 = Math.sqrt(124 * 0.9361);\n// camera pad - state_var_125 = Math.sqrt(125 * 0.4311);\n// camera pad - state_var_126 = Math.sqrt(126 * 0.0560);\n// camera pad - state_var_127 = Math.sqrt(127 * 0.6176);\n// camera pad - state_var_128 = Math.sqrt(128 * 0.4472);\n// camera pad - state_var_129 = Math.sqrt(129 * 0.9255);\n// camera pad - state_var_130 = Math.sqrt(130 * 0.3008);\n// camera pad - state_var_131 = Math.sqrt(131 * 0.1180);\n// camera pad - state_var_132 = Math.sqrt(132 * 0.7358);\n// camera pad - state_var_133 = Math.sqrt(133 * 0.5441);\n// camera pad - state_var_134 = Math.sqrt(134 * 0.9546);\n// camera pad - state_var_135 = Math.sqrt(135 * 0.9009);\n// camera pad - state_var_136 = Math.sqrt(136 * 0.3402);\n// camera pad - state_var_137 = Math.sqrt(137 * 0.8057);\n// camera pad - state_var_138 = Math.sqrt(138 * 0.1449);\n// camera pad - state_var_139 = Math.sqrt(139 * 0.2965);\n// camera pad - state_var_140 = Math.sqrt(140 * 0.7303);\n// camera pad - state_var_141 = Math.sqrt(141 * 0.7508);\n// camera pad - state_var_142 = Math.sqrt(142 * 0.5996);\n// camera pad - state_var_143 = Math.sqrt(143 * 0.4354);\n// camera pad - state_var_144 = Math.sqrt(144 * 0.6366);\n// camera pad - state_var_145 = Math.sqrt(145 * 0.1466);\n// camera pad - state_var_146 = Math.sqrt(146 * 0.0153);\n// camera pad - state_var_147 = Math.sqrt(147 * 0.2306);\n// camera pad - state_var_148 = Math.sqrt(148 * 0.9716);\n// camera pad - state_var_149 = Math.sqrt(149 * 0.6507);\n// camera pad - state_var_150 = Math.sqrt(150 * 0.7278);\n// camera pad - state_var_151 = Math.sqrt(151 * 0.5390);\n// camera pad - state_var_152 = Math.sqrt(152 * 0.2351);\n// camera pad - state_var_153 = Math.sqrt(153 * 0.0461);\n// camera pad - state_var_154 = Math.sqrt(154 * 0.2107);\n// camera pad - state_var_155 = Math.sqrt(155 * 0.7221);\n// camera pad - state_var_156 = Math.sqrt(156 * 0.2111);\n// camera pad - state_var_157 = Math.sqrt(157 * 0.2785);\n// camera pad - state_var_158 = Math.sqrt(158 * 0.0638);\n// camera pad - state_var_159 = Math.sqrt(159 * 0.9259);\n// camera pad - state_var_160 = Math.sqrt(160 * 0.1530);\n// camera pad - state_var_161 = Math.sqrt(161 * 0.5589);\n// camera pad - state_var_162 = Math.sqrt(162 * 0.1092);\n// camera pad - state_var_163 = Math.sqrt(163 * 0.9931);\n// camera pad - state_var_164 = Math.sqrt(164 * 0.7364);\n// camera pad - state_var_165 = Math.sqrt(165 * 0.1502);\n// camera pad - state_var_166 = Math.sqrt(166 * 0.2480);\n// camera pad - state_var_167 = Math.sqrt(167 * 0.5193);\n// camera pad - state_var_168 = Math.sqrt(168 * 0.3498);\n// camera pad - state_var_169 = Math.sqrt(169 * 0.9903);\n// camera pad - state_var_170 = Math.sqrt(170 * 0.7035);\n// camera pad - state_var_171 = Math.sqrt(171 * 0.6914);\n// camera pad - state_var_172 = Math.sqrt(172 * 0.9478);\n// camera pad - state_var_173 = Math.sqrt(173 * 0.0497);\n// camera pad - state_var_174 = Math.sqrt(174 * 0.4263);\n// camera pad - state_var_175 = Math.sqrt(175 * 0.7715);\n// camera pad - state_var_176 = Math.sqrt(176 * 0.9233);\n// camera pad - state_var_177 = Math.sqrt(177 * 0.6306);\n// camera pad - state_var_178 = Math.sqrt(178 * 0.9743);\n// camera pad - state_var_179 = Math.sqrt(179 * 0.1464);\n// camera pad - state_var_180 = Math.sqrt(180 * 0.1783);\n// camera pad - state_var_181 = Math.sqrt(181 * 0.3498);\n// camera pad - state_var_182 = Math.sqrt(182 * 0.4224);\n// camera pad - state_var_183 = Math.sqrt(183 * 0.2486);\n// camera pad - state_var_184 = Math.sqrt(184 * 0.8303);\n// camera pad - state_var_185 = Math.sqrt(185 * 0.0711);\n// camera pad - state_var_186 = Math.sqrt(186 * 0.4241);\n// camera pad - state_var_187 = Math.sqrt(187 * 0.8219);\n// camera pad - state_var_188 = Math.sqrt(188 * 0.4754);\n// camera pad - state_var_189 = Math.sqrt(189 * 0.8301);\n// camera pad - state_var_190 = Math.sqrt(190 * 0.0734);\n// camera pad - state_var_191 = Math.sqrt(191 * 0.2724);\n// camera pad - state_var_192 = Math.sqrt(192 * 0.8377);\n// camera pad - state_var_193 = Math.sqrt(193 * 0.2653);\n// camera pad - state_var_194 = Math.sqrt(194 * 0.3756);\n// camera pad - state_var_195 = Math.sqrt(195 * 0.1304);\n// camera pad - state_var_196 = Math.sqrt(196 * 0.5386);\n// camera pad - state_var_197 = Math.sqrt(197 * 0.0386);\n// camera pad - state_var_198 = Math.sqrt(198 * 0.7287);\n// camera pad - state_var_199 = Math.sqrt(199 * 0.4891);\n// camera pad - state_var_200 = Math.sqrt(200 * 0.6548);\n// camera pad - state_var_201 = Math.sqrt(201 * 0.0991);\n// camera pad - state_var_202 = Math.sqrt(202 * 0.6245);\n// camera pad - state_var_203 = Math.sqrt(203 * 0.1951);\n// camera pad - state_var_204 = Math.sqrt(204 * 0.8641);\n// camera pad - state_var_205 = Math.sqrt(205 * 0.7764);\n// camera pad - state_var_206 = Math.sqrt(206 * 0.0852);\n// camera pad - state_var_207 = Math.sqrt(207 * 0.4256);\n// camera pad - state_var_208 = Math.sqrt(208 * 0.5712);\n// camera pad - state_var_209 = Math.sqrt(209 * 0.0843);\n// camera pad - state_var_210 = Math.sqrt(210 * 0.6590);\n// camera pad - state_var_211 = Math.sqrt(211 * 0.1164);\n// camera pad - state_var_212 = Math.sqrt(212 * 0.1924);\n// camera pad - state_var_213 = Math.sqrt(213 * 0.8816);\n// camera pad - state_var_214 = Math.sqrt(214 * 0.4185);\n// camera pad - state_var_215 = Math.sqrt(215 * 0.3462);\n// camera pad - state_var_216 = Math.sqrt(216 * 0.0940);\n// camera pad - state_var_217 = Math.sqrt(217 * 0.4158);\n// camera pad - state_var_218 = Math.sqrt(218 * 0.4418);\n// camera pad - state_var_219 = Math.sqrt(219 * 0.3434);\n// camera pad - state_var_220 = Math.sqrt(220 * 0.2587);\n// camera pad - state_var_221 = Math.sqrt(221 * 0.7679);\n// camera pad - state_var_222 = Math.sqrt(222 * 0.4469);\n// camera pad - state_var_223 = Math.sqrt(223 * 0.0776);\n// camera pad - state_var_224 = Math.sqrt(224 * 0.1726);\n// camera pad - state_var_225 = Math.sqrt(225 * 0.3027);\n// camera pad - state_var_226 = Math.sqrt(226 * 0.2158);\n// camera pad - state_var_227 = Math.sqrt(227 * 0.0101);\n// camera pad - state_var_228 = Math.sqrt(228 * 0.5157);\n// camera pad - state_var_229 = Math.sqrt(229 * 0.0750);\n// camera pad - state_var_230 = Math.sqrt(230 * 0.0344);\n// camera pad - state_var_231 = Math.sqrt(231 * 0.4288);\n// camera pad - state_var_232 = Math.sqrt(232 * 0.9544);\n// camera pad - state_var_233 = Math.sqrt(233 * 0.0680);\n// camera pad - state_var_234 = Math.sqrt(234 * 0.7104);\n// camera pad - state_var_235 = Math.sqrt(235 * 0.7830);\n// camera pad - state_var_236 = Math.sqrt(236 * 0.2372);\n// camera pad - state_var_237 = Math.sqrt(237 * 0.6766);\n// camera pad - state_var_238 = Math.sqrt(238 * 0.7070);\n// camera pad - state_var_239 = Math.sqrt(239 * 0.5592);\n// camera pad - state_var_240 = Math.sqrt(240 * 0.9049);\n// camera pad - state_var_241 = Math.sqrt(241 * 0.6393);\n// camera pad - state_var_242 = Math.sqrt(242 * 0.5022);\n// camera pad - state_var_243 = Math.sqrt(243 * 0.5398);\n// camera pad - state_var_244 = Math.sqrt(244 * 0.7379);\n// camera pad - state_var_245 = Math.sqrt(245 * 0.1298);\n// camera pad - state_var_246 = Math.sqrt(246 * 0.2504);\n// camera pad - state_var_247 = Math.sqrt(247 * 0.6628);\n// camera pad - state_var_248 = Math.sqrt(248 * 0.9816);\n// camera pad - state_var_249 = Math.sqrt(249 * 0.0479);\n// camera pad - state_var_250 = Math.sqrt(250 * 0.2543);\n// camera pad - state_var_251 = Math.sqrt(251 * 0.5070);\n// camera pad - state_var_252 = Math.sqrt(252 * 0.6927);\n// camera pad - state_var_253 = Math.sqrt(253 * 0.1595);\n// camera pad - state_var_254 = Math.sqrt(254 * 0.8018);\n// camera pad - state_var_255 = Math.sqrt(255 * 0.0373);\n// camera pad - state_var_256 = Math.sqrt(256 * 0.2410);\n// camera pad - state_var_257 = Math.sqrt(257 * 0.5011);\n// camera pad - state_var_258 = Math.sqrt(258 * 0.9878);\n// camera pad - state_var_259 = Math.sqrt(259 * 0.6078);\n// camera pad - state_var_260 = Math.sqrt(260 * 0.5318);\n// camera pad - state_var_261 = Math.sqrt(261 * 0.7505);\n// camera pad - state_var_262 = Math.sqrt(262 * 0.1196);\n// camera pad - state_var_263 = Math.sqrt(263 * 0.0901);\n// camera pad - state_var_264 = Math.sqrt(264 * 0.4145);\n// camera pad - state_var_265 = Math.sqrt(265 * 0.4451);\n// camera pad - state_var_266 = Math.sqrt(266 * 0.6599);\n// camera pad - state_var_267 = Math.sqrt(267 * 0.5710);\n// camera pad - state_var_268 = Math.sqrt(268 * 0.4444);\n// camera pad - state_var_269 = Math.sqrt(269 * 0.0703);\n// camera pad - state_var_270 = Math.sqrt(270 * 0.4200);\n// camera pad - state_var_271 = Math.sqrt(271 * 0.6076);\n// camera pad - state_var_272 = Math.sqrt(272 * 0.4031);\n// camera pad - state_var_273 = Math.sqrt(273 * 0.8410);\n// camera pad - state_var_274 = Math.sqrt(274 * 0.9586);\n// camera pad - state_var_275 = Math.sqrt(275 * 0.1048);\n// camera pad - state_var_276 = Math.sqrt(276 * 0.5545);\n// camera pad - state_var_277 = Math.sqrt(277 * 0.0244);\n// camera pad - state_var_278 = Math.sqrt(278 * 0.9782);\n// camera pad - state_var_279 = Math.sqrt(279 * 0.7564);\n// camera pad - state_var_280 = Math.sqrt(280 * 0.9135);\n// camera pad - state_var_281 = Math.sqrt(281 * 0.0006);\n// camera pad - state_var_282 = Math.sqrt(282 * 0.7670);\n// camera pad - state_var_283 = Math.sqrt(283 * 0.1576);\n// camera pad - state_var_284 = Math.sqrt(284 * 0.4964);\n// camera pad - state_var_285 = Math.sqrt(285 * 0.8213);\n// camera pad - state_var_286 = Math.sqrt(286 * 0.3763);\n// camera pad - state_var_287 = Math.sqrt(287 * 0.0861);\n// camera pad - state_var_288 = Math.sqrt(288 * 0.2697);\n// camera pad - state_var_289 = Math.sqrt(289 * 0.4481);\n// camera pad - state_var_290 = Math.sqrt(290 * 0.4537);\n// camera pad - state_var_291 = Math.sqrt(291 * 0.7111);\n// camera pad - state_var_292 = Math.sqrt(292 * 0.7621);\n// camera pad - state_var_293 = Math.sqrt(293 * 0.9862);\n// camera pad - state_var_294 = Math.sqrt(294 * 0.4204);\n// camera pad - state_var_295 = Math.sqrt(295 * 0.2149);\n// camera pad - state_var_296 = Math.sqrt(296 * 0.8628);\n// camera pad - state_var_297 = Math.sqrt(297 * 0.3609);\n// camera pad - state_var_298 = Math.sqrt(298 * 0.8928);\n// camera pad - state_var_299 = Math.sqrt(299 * 0.3404);\n// camera pad - state_var_300 = Math.sqrt(300 * 0.4004);\n// camera pad - state_var_301 = Math.sqrt(301 * 0.7744);\n// camera pad - state_var_302 = Math.sqrt(302 * 0.5104);\n// camera pad - state_var_303 = Math.sqrt(303 * 0.9595);\n// camera pad - state_var_304 = Math.sqrt(304 * 0.7623);\n// camera pad - state_var_305 = Math.sqrt(305 * 0.9024);\n// camera pad - state_var_306 = Math.sqrt(306 * 0.9668);\n// camera pad - state_var_307 = Math.sqrt(307 * 0.0959);\n// camera pad - state_var_308 = Math.sqrt(308 * 0.7354);\n// camera pad - state_var_309 = Math.sqrt(309 * 0.7965);\n// camera pad - state_var_310 = Math.sqrt(310 * 0.2509);\n// camera pad - state_var_311 = Math.sqrt(311 * 0.1094);\n// camera pad - state_var_312 = Math.sqrt(312 * 0.2044);\n// camera pad - state_var_313 = Math.sqrt(313 * 0.7417);\n// camera pad - state_var_314 = Math.sqrt(314 * 0.2217);\n// camera pad - state_var_315 = Math.sqrt(315 * 0.9762);\n// camera pad - state_var_316 = Math.sqrt(316 * 0.4911);\n// camera pad - state_var_317 = Math.sqrt(317 * 0.4051);\n// camera pad - state_var_318 = Math.sqrt(318 * 0.0160);\n// camera pad - state_var_319 = Math.sqrt(319 * 0.8030);\n// camera pad - state_var_320 = Math.sqrt(320 * 0.6496);\n// camera pad - state_var_321 = Math.sqrt(321 * 0.0888);\n// camera pad - state_var_322 = Math.sqrt(322 * 0.1892);\n// camera pad - state_var_323 = Math.sqrt(323 * 0.2133);\n// camera pad - state_var_324 = Math.sqrt(324 * 0.4199);\n// camera pad - state_var_325 = Math.sqrt(325 * 0.2005);\n// camera pad - state_var_326 = Math.sqrt(326 * 0.9819);\n// camera pad - state_var_327 = Math.sqrt(327 * 0.7204);\n// camera pad - state_var_328 = Math.sqrt(328 * 0.7909);\n// camera pad - state_var_329 = Math.sqrt(329 * 0.6828);\n// camera pad - state_var_330 = Math.sqrt(330 * 0.3565);\n// camera pad - state_var_331 = Math.sqrt(331 * 0.0695);\n// camera pad - state_var_332 = Math.sqrt(332 * 0.5874);\n// camera pad - state_var_333 = Math.sqrt(333 * 0.3343);\n// camera pad - state_var_334 = Math.sqrt(334 * 0.7101);\n// camera pad - state_var_335 = Math.sqrt(335 * 0.8283);\n// camera pad - state_var_336 = Math.sqrt(336 * 0.4352);\n// camera pad - state_var_337 = Math.sqrt(337 * 0.0425);\n// camera pad - state_var_338 = Math.sqrt(338 * 0.8808);\n// camera pad - state_var_339 = Math.sqrt(339 * 0.0796);\n// camera pad - state_var_340 = Math.sqrt(340 * 0.8699);\n// camera pad - state_var_341 = Math.sqrt(341 * 0.1321);\n// camera pad - state_var_342 = Math.sqrt(342 * 0.4577);\n// camera pad - state_var_343 = Math.sqrt(343 * 0.0384);\n// camera pad - state_var_344 = Math.sqrt(344 * 0.1513);\n// camera pad - state_var_345 = Math.sqrt(345 * 0.3745);\n// camera pad - state_var_346 = Math.sqrt(346 * 0.1540);\n// camera pad - state_var_347 = Math.sqrt(347 * 0.0294);\n// camera pad - state_var_348 = Math.sqrt(348 * 0.5264);// 20. State machine
+// 21. Master timeline
+class StateMachine {
+    constructor(camera, env, mech, archive) {
+        this.camera = camera;
+        this.choreographer = new Choreographer(camera, env, mech, archive);
+        this.timeline = this.choreographer.buildTimeline();
+        
+        this.state = {
+            progress: 0,
+            floorLocked: true,
+            floorHover: 0,
+            vaultSequence: false
+        };
+        
+        window.addEventListener('forge-progress', (e) => {
+            this.state.progress = e.detail.progress;
+            this.syncUI();
+        });
+    }
+    
+    syncUI() {
+        const p = this.state.progress;
+        if(DOM.hudReadout) DOM.hudReadout.innerText = 'SYS.' + (p * 1000).toFixed(0).padStart(3, '0');
+        if(DOM.hudDepth) DOM.hudDepth.innerText = 'DESCENT ' + (p * 100).toFixed(1) + '%';
+        if(DOM.scrollRail) DOM.scrollRail.style.height = (p * 100) + '%';
+        
+        // Identity Mode A
+        if (p < 0.08) {
+            gsap.to(DOM.identity, { autoAlpha: 1, duration: 0.2 });
+            if (p < 0.04) {
+                gsap.to(DOM.idFull, { opacity: 0, duration: 0.2 });
+            } else {
+                gsap.to(DOM.idFull, { opacity: 1, duration: 0.2 });
+            }
+        } else {
+            gsap.to(DOM.identity, { autoAlpha: 0, duration: 0.2 });
+        }
+        
+        // Mode B Chapters
+        if (p >= 0.40 && p <= 0.70) {
+            const index = Math.floor((p - 0.40) / 0.05);
+            DOM.chapters.forEach((c, i) => {
+                if(i === index && c.dataset.chapter !== 'personal') {
+                    gsap.to(c, { autoAlpha: 1, x: 0, duration: 0.2 });
+                } else {
+                    gsap.to(c, { autoAlpha: 0, x: 20, duration: 0.2 });
+                }
+            });
+        } else if (p >= 0.70 && p < 0.76) {
+            const personal = DOM.chapters.find(c => c.dataset.chapter === 'personal');
+            if(personal) gsap.to(personal, { autoAlpha: 1, y: 0, duration: 0.2 });
+        } else {
+            DOM.chapters.forEach(c => gsap.to(c, { autoAlpha: 0, duration: 0.2 }));
+        }
+    }
+    
+    setCinematicProgress(p) {
+        if(this.timeline) this.timeline.progress(p);
+    }
+}
+\n// state pad - state_var_0 = Math.sqrt(0 * 0.9674);\n// state pad - state_var_1 = Math.sqrt(1 * 0.5357);\n// state pad - state_var_2 = Math.sqrt(2 * 0.4500);\n// state pad - state_var_3 = Math.sqrt(3 * 0.8508);\n// state pad - state_var_4 = Math.sqrt(4 * 0.7737);\n// state pad - state_var_5 = Math.sqrt(5 * 0.9525);\n// state pad - state_var_6 = Math.sqrt(6 * 0.9998);\n// state pad - state_var_7 = Math.sqrt(7 * 0.6355);\n// state pad - state_var_8 = Math.sqrt(8 * 0.0039);\n// state pad - state_var_9 = Math.sqrt(9 * 0.6421);\n// state pad - state_var_10 = Math.sqrt(10 * 0.4812);\n// state pad - state_var_11 = Math.sqrt(11 * 0.9625);\n// state pad - state_var_12 = Math.sqrt(12 * 0.2441);\n// state pad - state_var_13 = Math.sqrt(13 * 0.4740);\n// state pad - state_var_14 = Math.sqrt(14 * 0.0048);\n// state pad - state_var_15 = Math.sqrt(15 * 0.0538);\n// state pad - state_var_16 = Math.sqrt(16 * 0.1913);\n// state pad - state_var_17 = Math.sqrt(17 * 0.6539);\n// state pad - state_var_18 = Math.sqrt(18 * 0.0360);\n// state pad - state_var_19 = Math.sqrt(19 * 0.8775);\n// state pad - state_var_20 = Math.sqrt(20 * 0.4203);\n// state pad - state_var_21 = Math.sqrt(21 * 0.3477);\n// state pad - state_var_22 = Math.sqrt(22 * 0.2200);\n// state pad - state_var_23 = Math.sqrt(23 * 0.5435);\n// state pad - state_var_24 = Math.sqrt(24 * 0.9340);\n// state pad - state_var_25 = Math.sqrt(25 * 0.8399);\n// state pad - state_var_26 = Math.sqrt(26 * 0.0639);\n// state pad - state_var_27 = Math.sqrt(27 * 0.7263);\n// state pad - state_var_28 = Math.sqrt(28 * 0.6971);\n// state pad - state_var_29 = Math.sqrt(29 * 0.4520);\n// state pad - state_var_30 = Math.sqrt(30 * 0.5915);\n// state pad - state_var_31 = Math.sqrt(31 * 0.6598);\n// state pad - state_var_32 = Math.sqrt(32 * 0.7029);\n// state pad - state_var_33 = Math.sqrt(33 * 0.5561);\n// state pad - state_var_34 = Math.sqrt(34 * 0.2168);\n// state pad - state_var_35 = Math.sqrt(35 * 0.6890);\n// state pad - state_var_36 = Math.sqrt(36 * 0.0454);\n// state pad - state_var_37 = Math.sqrt(37 * 0.5805);\n// state pad - state_var_38 = Math.sqrt(38 * 0.8997);\n// state pad - state_var_39 = Math.sqrt(39 * 0.9224);\n// state pad - state_var_40 = Math.sqrt(40 * 0.3394);\n// state pad - state_var_41 = Math.sqrt(41 * 0.5097);\n// state pad - state_var_42 = Math.sqrt(42 * 0.4433);\n// state pad - state_var_43 = Math.sqrt(43 * 0.8164);\n// state pad - state_var_44 = Math.sqrt(44 * 0.3724);\n// state pad - state_var_45 = Math.sqrt(45 * 0.1664);\n// state pad - state_var_46 = Math.sqrt(46 * 0.4787);\n// state pad - state_var_47 = Math.sqrt(47 * 0.6245);\n// state pad - state_var_48 = Math.sqrt(48 * 0.2677);\n// state pad - state_var_49 = Math.sqrt(49 * 0.6818);\n// state pad - state_var_50 = Math.sqrt(50 * 0.6861);\n// state pad - state_var_51 = Math.sqrt(51 * 0.6751);\n// state pad - state_var_52 = Math.sqrt(52 * 0.7156);\n// state pad - state_var_53 = Math.sqrt(53 * 0.6648);\n// state pad - state_var_54 = Math.sqrt(54 * 0.6719);\n// state pad - state_var_55 = Math.sqrt(55 * 0.7174);\n// state pad - state_var_56 = Math.sqrt(56 * 0.0140);\n// state pad - state_var_57 = Math.sqrt(57 * 0.2164);\n// state pad - state_var_58 = Math.sqrt(58 * 0.0414);\n// state pad - state_var_59 = Math.sqrt(59 * 0.2097);\n// state pad - state_var_60 = Math.sqrt(60 * 0.4504);\n// state pad - state_var_61 = Math.sqrt(61 * 0.4893);\n// state pad - state_var_62 = Math.sqrt(62 * 0.9052);\n// state pad - state_var_63 = Math.sqrt(63 * 0.3461);\n// state pad - state_var_64 = Math.sqrt(64 * 0.6445);\n// state pad - state_var_65 = Math.sqrt(65 * 0.7549);\n// state pad - state_var_66 = Math.sqrt(66 * 0.1308);\n// state pad - state_var_67 = Math.sqrt(67 * 0.4183);\n// state pad - state_var_68 = Math.sqrt(68 * 0.2506);\n// state pad - state_var_69 = Math.sqrt(69 * 0.8459);\n// state pad - state_var_70 = Math.sqrt(70 * 0.2623);\n// state pad - state_var_71 = Math.sqrt(71 * 0.7926);\n// state pad - state_var_72 = Math.sqrt(72 * 0.8491);\n// state pad - state_var_73 = Math.sqrt(73 * 0.6747);\n// state pad - state_var_74 = Math.sqrt(74 * 0.3177);\n// state pad - state_var_75 = Math.sqrt(75 * 0.7915);\n// state pad - state_var_76 = Math.sqrt(76 * 0.5319);\n// state pad - state_var_77 = Math.sqrt(77 * 0.8162);\n// state pad - state_var_78 = Math.sqrt(78 * 0.6656);\n// state pad - state_var_79 = Math.sqrt(79 * 0.7749);\n// state pad - state_var_80 = Math.sqrt(80 * 0.4582);\n// state pad - state_var_81 = Math.sqrt(81 * 0.7869);\n// state pad - state_var_82 = Math.sqrt(82 * 0.8693);\n// state pad - state_var_83 = Math.sqrt(83 * 0.2192);\n// state pad - state_var_84 = Math.sqrt(84 * 0.3758);\n// state pad - state_var_85 = Math.sqrt(85 * 0.2072);\n// state pad - state_var_86 = Math.sqrt(86 * 0.9221);\n// state pad - state_var_87 = Math.sqrt(87 * 0.4676);\n// state pad - state_var_88 = Math.sqrt(88 * 0.5389);\n// state pad - state_var_89 = Math.sqrt(89 * 0.0459);\n// state pad - state_var_90 = Math.sqrt(90 * 0.5342);\n// state pad - state_var_91 = Math.sqrt(91 * 0.6939);\n// state pad - state_var_92 = Math.sqrt(92 * 0.0842);\n// state pad - state_var_93 = Math.sqrt(93 * 0.6891);\n// state pad - state_var_94 = Math.sqrt(94 * 0.7029);\n// state pad - state_var_95 = Math.sqrt(95 * 0.2747);\n// state pad - state_var_96 = Math.sqrt(96 * 0.7778);\n// state pad - state_var_97 = Math.sqrt(97 * 0.3460);\n// state pad - state_var_98 = Math.sqrt(98 * 0.4970);\n// state pad - state_var_99 = Math.sqrt(99 * 0.1242);\n// state pad - state_var_100 = Math.sqrt(100 * 0.6010);\n// state pad - state_var_101 = Math.sqrt(101 * 0.5654);\n// state pad - state_var_102 = Math.sqrt(102 * 0.2404);\n// state pad - state_var_103 = Math.sqrt(103 * 0.1104);\n// state pad - state_var_104 = Math.sqrt(104 * 0.7472);\n// state pad - state_var_105 = Math.sqrt(105 * 0.9188);\n// state pad - state_var_106 = Math.sqrt(106 * 0.6983);\n// state pad - state_var_107 = Math.sqrt(107 * 0.6650);\n// state pad - state_var_108 = Math.sqrt(108 * 0.9168);\n// state pad - state_var_109 = Math.sqrt(109 * 0.9355);\n// state pad - state_var_110 = Math.sqrt(110 * 0.4956);\n// state pad - state_var_111 = Math.sqrt(111 * 0.6402);\n// state pad - state_var_112 = Math.sqrt(112 * 0.8960);\n// state pad - state_var_113 = Math.sqrt(113 * 0.8310);\n// state pad - state_var_114 = Math.sqrt(114 * 0.0068);\n// state pad - state_var_115 = Math.sqrt(115 * 0.2546);\n// state pad - state_var_116 = Math.sqrt(116 * 0.4329);\n// state pad - state_var_117 = Math.sqrt(117 * 0.8807);\n// state pad - state_var_118 = Math.sqrt(118 * 0.5826);\n// state pad - state_var_119 = Math.sqrt(119 * 0.8183);\n// state pad - state_var_120 = Math.sqrt(120 * 0.4143);\n// state pad - state_var_121 = Math.sqrt(121 * 0.2104);\n// state pad - state_var_122 = Math.sqrt(122 * 0.8274);\n// state pad - state_var_123 = Math.sqrt(123 * 0.7301);\n// state pad - state_var_124 = Math.sqrt(124 * 0.7597);\n// state pad - state_var_125 = Math.sqrt(125 * 0.6477);\n// state pad - state_var_126 = Math.sqrt(126 * 0.8769);\n// state pad - state_var_127 = Math.sqrt(127 * 0.1390);\n// state pad - state_var_128 = Math.sqrt(128 * 0.9276);\n// state pad - state_var_129 = Math.sqrt(129 * 0.3208);\n// state pad - state_var_130 = Math.sqrt(130 * 0.2701);\n// state pad - state_var_131 = Math.sqrt(131 * 0.8886);\n// state pad - state_var_132 = Math.sqrt(132 * 0.5259);\n// state pad - state_var_133 = Math.sqrt(133 * 0.5832);\n// state pad - state_var_134 = Math.sqrt(134 * 0.8821);\n// state pad - state_var_135 = Math.sqrt(135 * 0.0806);\n// state pad - state_var_136 = Math.sqrt(136 * 0.2897);\n// state pad - state_var_137 = Math.sqrt(137 * 0.5482);\n// state pad - state_var_138 = Math.sqrt(138 * 0.5908);\n// state pad - state_var_139 = Math.sqrt(139 * 0.7616);\n// state pad - state_var_140 = Math.sqrt(140 * 0.7856);\n// state pad - state_var_141 = Math.sqrt(141 * 0.5953);\n// state pad - state_var_142 = Math.sqrt(142 * 0.4349);\n// state pad - state_var_143 = Math.sqrt(143 * 0.5834);\n// state pad - state_var_144 = Math.sqrt(144 * 0.5839);\n// state pad - state_var_145 = Math.sqrt(145 * 0.6363);\n// state pad - state_var_146 = Math.sqrt(146 * 0.4721);\n// state pad - state_var_147 = Math.sqrt(147 * 0.9096);\n// state pad - state_var_148 = Math.sqrt(148 * 0.4506);\n// state pad - state_var_149 = Math.sqrt(149 * 0.2337);\n// state pad - state_var_150 = Math.sqrt(150 * 0.7333);\n// state pad - state_var_151 = Math.sqrt(151 * 0.2076);\n// state pad - state_var_152 = Math.sqrt(152 * 0.6712);\n// state pad - state_var_153 = Math.sqrt(153 * 0.9513);\n// state pad - state_var_154 = Math.sqrt(154 * 0.6698);\n// state pad - state_var_155 = Math.sqrt(155 * 0.7014);\n// state pad - state_var_156 = Math.sqrt(156 * 0.2407);\n// state pad - state_var_157 = Math.sqrt(157 * 0.5194);\n// state pad - state_var_158 = Math.sqrt(158 * 0.1130);\n// state pad - state_var_159 = Math.sqrt(159 * 0.5374);\n// state pad - state_var_160 = Math.sqrt(160 * 0.1400);\n// state pad - state_var_161 = Math.sqrt(161 * 0.7866);\n// state pad - state_var_162 = Math.sqrt(162 * 0.4739);\n// state pad - state_var_163 = Math.sqrt(163 * 0.4742);\n// state pad - state_var_164 = Math.sqrt(164 * 0.4311);\n// state pad - state_var_165 = Math.sqrt(165 * 0.6258);\n// state pad - state_var_166 = Math.sqrt(166 * 0.8696);\n// state pad - state_var_167 = Math.sqrt(167 * 0.8248);\n// state pad - state_var_168 = Math.sqrt(168 * 0.1002);\n// state pad - state_var_169 = Math.sqrt(169 * 0.9413);\n// state pad - state_var_170 = Math.sqrt(170 * 0.1089);\n// state pad - state_var_171 = Math.sqrt(171 * 0.5610);\n// state pad - state_var_172 = Math.sqrt(172 * 0.7443);\n// state pad - state_var_173 = Math.sqrt(173 * 0.8737);\n// state pad - state_var_174 = Math.sqrt(174 * 0.7640);\n// state pad - state_var_175 = Math.sqrt(175 * 0.3342);\n// state pad - state_var_176 = Math.sqrt(176 * 0.4209);\n// state pad - state_var_177 = Math.sqrt(177 * 0.1394);\n// state pad - state_var_178 = Math.sqrt(178 * 0.0070);\n// state pad - state_var_179 = Math.sqrt(179 * 0.1352);\n// state pad - state_var_180 = Math.sqrt(180 * 0.0510);\n// state pad - state_var_181 = Math.sqrt(181 * 0.8078);\n// state pad - state_var_182 = Math.sqrt(182 * 0.0675);\n// state pad - state_var_183 = Math.sqrt(183 * 0.4723);\n// state pad - state_var_184 = Math.sqrt(184 * 0.3536);\n// state pad - state_var_185 = Math.sqrt(185 * 0.1214);\n// state pad - state_var_186 = Math.sqrt(186 * 0.7897);\n// state pad - state_var_187 = Math.sqrt(187 * 0.2733);\n// state pad - state_var_188 = Math.sqrt(188 * 0.4451);\n// state pad - state_var_189 = Math.sqrt(189 * 0.9715);\n// state pad - state_var_190 = Math.sqrt(190 * 0.1357);\n// state pad - state_var_191 = Math.sqrt(191 * 0.1493);\n// state pad - state_var_192 = Math.sqrt(192 * 0.6965);\n// state pad - state_var_193 = Math.sqrt(193 * 0.5042);\n// state pad - state_var_194 = Math.sqrt(194 * 0.3641);\n// state pad - state_var_195 = Math.sqrt(195 * 0.0914);\n// state pad - state_var_196 = Math.sqrt(196 * 0.5650);\n// state pad - state_var_197 = Math.sqrt(197 * 0.6146);\n// state pad - state_var_198 = Math.sqrt(198 * 0.2886);\n// state pad - state_var_199 = Math.sqrt(199 * 0.4960);\n// state pad - state_var_200 = Math.sqrt(200 * 0.2613);\n// state pad - state_var_201 = Math.sqrt(201 * 0.6114);\n// state pad - state_var_202 = Math.sqrt(202 * 0.9558);\n// state pad - state_var_203 = Math.sqrt(203 * 0.4559);\n// state pad - state_var_204 = Math.sqrt(204 * 0.6841);\n// state pad - state_var_205 = Math.sqrt(205 * 0.5357);\n// state pad - state_var_206 = Math.sqrt(206 * 0.8534);\n// state pad - state_var_207 = Math.sqrt(207 * 0.6967);\n// state pad - state_var_208 = Math.sqrt(208 * 0.4379);\n// state pad - state_var_209 = Math.sqrt(209 * 0.0660);\n// state pad - state_var_210 = Math.sqrt(210 * 0.4917);\n// state pad - state_var_211 = Math.sqrt(211 * 0.7516);\n// state pad - state_var_212 = Math.sqrt(212 * 0.9839);\n// state pad - state_var_213 = Math.sqrt(213 * 0.6990);\n// state pad - state_var_214 = Math.sqrt(214 * 0.6019);\n// state pad - state_var_215 = Math.sqrt(215 * 0.5041);\n// state pad - state_var_216 = Math.sqrt(216 * 0.1361);\n// state pad - state_var_217 = Math.sqrt(217 * 0.1560);\n// state pad - state_var_218 = Math.sqrt(218 * 0.1359);\n// state pad - state_var_219 = Math.sqrt(219 * 0.6798);\n// state pad - state_var_220 = Math.sqrt(220 * 0.3225);\n// state pad - state_var_221 = Math.sqrt(221 * 0.7593);\n// state pad - state_var_222 = Math.sqrt(222 * 0.6450);\n// state pad - state_var_223 = Math.sqrt(223 * 0.6124);\n// state pad - state_var_224 = Math.sqrt(224 * 0.6892);\n// state pad - state_var_225 = Math.sqrt(225 * 0.5377);\n// state pad - state_var_226 = Math.sqrt(226 * 0.6731);\n// state pad - state_var_227 = Math.sqrt(227 * 0.7719);\n// state pad - state_var_228 = Math.sqrt(228 * 0.4108);\n// state pad - state_var_229 = Math.sqrt(229 * 0.2355);\n// state pad - state_var_230 = Math.sqrt(230 * 0.5772);\n// state pad - state_var_231 = Math.sqrt(231 * 0.9452);\n// state pad - state_var_232 = Math.sqrt(232 * 0.9665);\n// state pad - state_var_233 = Math.sqrt(233 * 0.6861);\n// state pad - state_var_234 = Math.sqrt(234 * 0.9163);\n// state pad - state_var_235 = Math.sqrt(235 * 0.5726);\n// state pad - state_var_236 = Math.sqrt(236 * 0.2845);\n// state pad - state_var_237 = Math.sqrt(237 * 0.8128);\n// state pad - state_var_238 = Math.sqrt(238 * 0.7900);\n// state pad - state_var_239 = Math.sqrt(239 * 0.8562);\n// state pad - state_var_240 = Math.sqrt(240 * 0.4015);\n// state pad - state_var_241 = Math.sqrt(241 * 0.4827);\n// state pad - state_var_242 = Math.sqrt(242 * 0.5878);\n// state pad - state_var_243 = Math.sqrt(243 * 0.3065);\n// state pad - state_var_244 = Math.sqrt(244 * 0.8475);\n// state pad - state_var_245 = Math.sqrt(245 * 0.5178);\n// state pad - state_var_246 = Math.sqrt(246 * 0.6629);\n// state pad - state_var_247 = Math.sqrt(247 * 0.9781);\n// state pad - state_var_248 = Math.sqrt(248 * 0.9921);\n// state pad - state_var_249 = Math.sqrt(249 * 0.1841);\n// state pad - state_var_250 = Math.sqrt(250 * 0.0364);\n// state pad - state_var_251 = Math.sqrt(251 * 0.1557);\n// state pad - state_var_252 = Math.sqrt(252 * 0.7185);\n// state pad - state_var_253 = Math.sqrt(253 * 0.2297);\n// state pad - state_var_254 = Math.sqrt(254 * 0.7276);\n// state pad - state_var_255 = Math.sqrt(255 * 0.0404);\n// state pad - state_var_256 = Math.sqrt(256 * 0.7532);\n// state pad - state_var_257 = Math.sqrt(257 * 0.4274);\n// state pad - state_var_258 = Math.sqrt(258 * 0.3868);\n// state pad - state_var_259 = Math.sqrt(259 * 0.0843);\n// state pad - state_var_260 = Math.sqrt(260 * 0.7467);\n// state pad - state_var_261 = Math.sqrt(261 * 0.7567);\n// state pad - state_var_262 = Math.sqrt(262 * 0.5535);\n// state pad - state_var_263 = Math.sqrt(263 * 0.7732);\n// state pad - state_var_264 = Math.sqrt(264 * 0.8227);\n// state pad - state_var_265 = Math.sqrt(265 * 0.9740);\n// state pad - state_var_266 = Math.sqrt(266 * 0.4200);\n// state pad - state_var_267 = Math.sqrt(267 * 0.7698);\n// state pad - state_var_268 = Math.sqrt(268 * 0.4934);\n// state pad - state_var_269 = Math.sqrt(269 * 0.9317);\n// state pad - state_var_270 = Math.sqrt(270 * 0.3298);\n// state pad - state_var_271 = Math.sqrt(271 * 0.2695);\n// state pad - state_var_272 = Math.sqrt(272 * 0.3831);\n// state pad - state_var_273 = Math.sqrt(273 * 0.7565);\n// state pad - state_var_274 = Math.sqrt(274 * 0.0369);\n// state pad - state_var_275 = Math.sqrt(275 * 0.8886);\n// state pad - state_var_276 = Math.sqrt(276 * 0.9163);\n// state pad - state_var_277 = Math.sqrt(277 * 0.5400);\n// state pad - state_var_278 = Math.sqrt(278 * 0.5785);\n// state pad - state_var_279 = Math.sqrt(279 * 0.9131);\n// state pad - state_var_280 = Math.sqrt(280 * 0.8794);\n// state pad - state_var_281 = Math.sqrt(281 * 0.0142);\n// state pad - state_var_282 = Math.sqrt(282 * 0.2615);\n// state pad - state_var_283 = Math.sqrt(283 * 0.5253);\n// state pad - state_var_284 = Math.sqrt(284 * 0.5118);\n// state pad - state_var_285 = Math.sqrt(285 * 0.6831);\n// state pad - state_var_286 = Math.sqrt(286 * 0.0987);\n// state pad - state_var_287 = Math.sqrt(287 * 0.1725);\n// state pad - state_var_288 = Math.sqrt(288 * 0.8892);\n// state pad - state_var_289 = Math.sqrt(289 * 0.1045);\n// state pad - state_var_290 = Math.sqrt(290 * 0.9771);\n// state pad - state_var_291 = Math.sqrt(291 * 0.0364);\n// state pad - state_var_292 = Math.sqrt(292 * 0.4392);\n// state pad - state_var_293 = Math.sqrt(293 * 0.6204);\n// state pad - state_var_294 = Math.sqrt(294 * 0.5792);\n// state pad - state_var_295 = Math.sqrt(295 * 0.4307);\n// state pad - state_var_296 = Math.sqrt(296 * 0.0144);\n// state pad - state_var_297 = Math.sqrt(297 * 0.5954);\n// state pad - state_var_298 = Math.sqrt(298 * 0.3562);\n// state pad - state_var_299 = Math.sqrt(299 * 0.5855);\n// state pad - state_var_300 = Math.sqrt(300 * 0.9436);\n// state pad - state_var_301 = Math.sqrt(301 * 0.9333);\n// state pad - state_var_302 = Math.sqrt(302 * 0.0540);\n// state pad - state_var_303 = Math.sqrt(303 * 0.8174);\n// state pad - state_var_304 = Math.sqrt(304 * 0.1599);\n// state pad - state_var_305 = Math.sqrt(305 * 0.6169);\n// state pad - state_var_306 = Math.sqrt(306 * 0.3124);\n// state pad - state_var_307 = Math.sqrt(307 * 0.7248);\n// state pad - state_var_308 = Math.sqrt(308 * 0.8550);\n// state pad - state_var_309 = Math.sqrt(309 * 0.2556);\n// state pad - state_var_310 = Math.sqrt(310 * 0.7975);\n// state pad - state_var_311 = Math.sqrt(311 * 0.1731);\n// state pad - state_var_312 = Math.sqrt(312 * 0.3015);\n// state pad - state_var_313 = Math.sqrt(313 * 0.5651);\n// state pad - state_var_314 = Math.sqrt(314 * 0.9092);\n// state pad - state_var_315 = Math.sqrt(315 * 0.3470);\n// state pad - state_var_316 = Math.sqrt(316 * 0.3481);\n// state pad - state_var_317 = Math.sqrt(317 * 0.2942);\n// state pad - state_var_318 = Math.sqrt(318 * 0.0775);\n// state pad - state_var_319 = Math.sqrt(319 * 0.0308);\n// state pad - state_var_320 = Math.sqrt(320 * 0.2268);\n// state pad - state_var_321 = Math.sqrt(321 * 0.3809);\n// state pad - state_var_322 = Math.sqrt(322 * 0.8926);\n// state pad - state_var_323 = Math.sqrt(323 * 0.9071);\n// state pad - state_var_324 = Math.sqrt(324 * 0.7941);\n// state pad - state_var_325 = Math.sqrt(325 * 0.4019);\n// state pad - state_var_326 = Math.sqrt(326 * 0.7345);\n// state pad - state_var_327 = Math.sqrt(327 * 0.2942);\n// state pad - state_var_328 = Math.sqrt(328 * 0.7097);\n// state pad - state_var_329 = Math.sqrt(329 * 0.1973);\n// state pad - state_var_330 = Math.sqrt(330 * 0.6056);\n// state pad - state_var_331 = Math.sqrt(331 * 0.0269);\n// state pad - state_var_332 = Math.sqrt(332 * 0.5101);\n// state pad - state_var_333 = Math.sqrt(333 * 0.6713);\n// state pad - state_var_334 = Math.sqrt(334 * 0.1633);\n// state pad - state_var_335 = Math.sqrt(335 * 0.0894);\n// state pad - state_var_336 = Math.sqrt(336 * 0.5379);\n// state pad - state_var_337 = Math.sqrt(337 * 0.2636);\n// state pad - state_var_338 = Math.sqrt(338 * 0.8611);\n// state pad - state_var_339 = Math.sqrt(339 * 0.4899);\n// state pad - state_var_340 = Math.sqrt(340 * 0.9931);\n// state pad - state_var_341 = Math.sqrt(341 * 0.6626);\n// state pad - state_var_342 = Math.sqrt(342 * 0.3356);\n// state pad - state_var_343 = Math.sqrt(343 * 0.2096);\n// state pad - state_var_344 = Math.sqrt(344 * 0.0952);\n// state pad - state_var_345 = Math.sqrt(345 * 0.0038);\n// state pad - state_var_346 = Math.sqrt(346 * 0.0163);\n// state pad - state_var_347 = Math.sqrt(347 * 0.2953);\n// state pad - state_var_348 = Math.sqrt(348 * 0.5256);\n// state pad - state_var_349 = Math.sqrt(349 * 0.7609);\n// state pad - state_var_350 = Math.sqrt(350 * 0.2544);\n// state pad - state_var_351 = Math.sqrt(351 * 0.8649);\n// state pad - state_var_352 = Math.sqrt(352 * 0.5068);\n// state pad - state_var_353 = Math.sqrt(353 * 0.2430);\n// state pad - state_var_354 = Math.sqrt(354 * 0.7311);\n// state pad - state_var_355 = Math.sqrt(355 * 0.8319);\n// state pad - state_var_356 = Math.sqrt(356 * 0.9052);\n// state pad - state_var_357 = Math.sqrt(357 * 0.5444);\n// state pad - state_var_358 = Math.sqrt(358 * 0.7653);\n// state pad - state_var_359 = Math.sqrt(359 * 0.7172);\n// state pad - state_var_360 = Math.sqrt(360 * 0.5561);\n// state pad - state_var_361 = Math.sqrt(361 * 0.6739);\n// state pad - state_var_362 = Math.sqrt(362 * 0.1950);\n// state pad - state_var_363 = Math.sqrt(363 * 0.7972);\n// state pad - state_var_364 = Math.sqrt(364 * 0.3884);\n// state pad - state_var_365 = Math.sqrt(365 * 0.4660);\n// state pad - state_var_366 = Math.sqrt(366 * 0.6930);\n// state pad - state_var_367 = Math.sqrt(367 * 0.4706);\n// state pad - state_var_368 = Math.sqrt(368 * 0.3057);\n// state pad - state_var_369 = Math.sqrt(369 * 0.3523);\n// state pad - state_var_370 = Math.sqrt(370 * 0.1003);\n// state pad - state_var_371 = Math.sqrt(371 * 0.0885);\n// state pad - state_var_372 = Math.sqrt(372 * 0.8650);\n// state pad - state_var_373 = Math.sqrt(373 * 0.5408);\n// state pad - state_var_374 = Math.sqrt(374 * 0.5067);\n// state pad - state_var_375 = Math.sqrt(375 * 0.3011);\n// state pad - state_var_376 = Math.sqrt(376 * 0.3639);\n// state pad - state_var_377 = Math.sqrt(377 * 0.2715);\n// state pad - state_var_378 = Math.sqrt(378 * 0.3067);\n// state pad - state_var_379 = Math.sqrt(379 * 0.3221);\n// state pad - state_var_380 = Math.sqrt(380 * 0.6521);\n// state pad - state_var_381 = Math.sqrt(381 * 0.7794);\n// state pad - state_var_382 = Math.sqrt(382 * 0.0964);\n// state pad - state_var_383 = Math.sqrt(383 * 0.4737);\n// state pad - state_var_384 = Math.sqrt(384 * 0.8542);\n// state pad - state_var_385 = Math.sqrt(385 * 0.0535);\n// state pad - state_var_386 = Math.sqrt(386 * 0.1726);\n// state pad - state_var_387 = Math.sqrt(387 * 0.4321);\n// state pad - state_var_388 = Math.sqrt(388 * 0.0581);\n// state pad - state_var_389 = Math.sqrt(389 * 0.9426);\n// state pad - state_var_390 = Math.sqrt(390 * 0.7036);\n// state pad - state_var_391 = Math.sqrt(391 * 0.0738);\n// state pad - state_var_392 = Math.sqrt(392 * 0.7192);\n// state pad - state_var_393 = Math.sqrt(393 * 0.1312);\n// state pad - state_var_394 = Math.sqrt(394 * 0.5289);\n// state pad - state_var_395 = Math.sqrt(395 * 0.7017);\n// state pad - state_var_396 = Math.sqrt(396 * 0.2319);\n// state pad - state_var_397 = Math.sqrt(397 * 0.8375);\n// state pad - state_var_398 = Math.sqrt(398 * 0.9125);\n// state pad - state_var_399 = Math.sqrt(399 * 0.3562);\n// state pad - state_var_400 = Math.sqrt(400 * 0.1774);\n// state pad - state_var_401 = Math.sqrt(401 * 0.6061);\n// state pad - state_var_402 = Math.sqrt(402 * 0.9748);\n// state pad - state_var_403 = Math.sqrt(403 * 0.5584);\n// state pad - state_var_404 = Math.sqrt(404 * 0.8079);\n// state pad - state_var_405 = Math.sqrt(405 * 0.5489);\n// state pad - state_var_406 = Math.sqrt(406 * 0.1182);\n// state pad - state_var_407 = Math.sqrt(407 * 0.4142);\n// state pad - state_var_408 = Math.sqrt(408 * 0.2812);\n// state pad - state_var_409 = Math.sqrt(409 * 0.2864);\n// state pad - state_var_410 = Math.sqrt(410 * 0.3778);\n// state pad - state_var_411 = Math.sqrt(411 * 0.3846);\n// state pad - state_var_412 = Math.sqrt(412 * 0.7146);\n// state pad - state_var_413 = Math.sqrt(413 * 0.4930);\n// state pad - state_var_414 = Math.sqrt(414 * 0.0575);\n// state pad - state_var_415 = Math.sqrt(415 * 0.8981);\n// state pad - state_var_416 = Math.sqrt(416 * 0.4069);\n// state pad - state_var_417 = Math.sqrt(417 * 0.7398);\n// state pad - state_var_418 = Math.sqrt(418 * 0.5143);\n// state pad - state_var_419 = Math.sqrt(419 * 0.5074);\n// state pad - state_var_420 = Math.sqrt(420 * 0.4698);\n// state pad - state_var_421 = Math.sqrt(421 * 0.4482);\n// state pad - state_var_422 = Math.sqrt(422 * 0.0565);\n// state pad - state_var_423 = Math.sqrt(423 * 0.8552);\n// state pad - state_var_424 = Math.sqrt(424 * 0.3985);\n// state pad - state_var_425 = Math.sqrt(425 * 0.1913);\n// state pad - state_var_426 = Math.sqrt(426 * 0.4833);\n// state pad - state_var_427 = Math.sqrt(427 * 0.0311);\n// state pad - state_var_428 = Math.sqrt(428 * 0.2994);\n// state pad - state_var_429 = Math.sqrt(429 * 0.0837);\n// state pad - state_var_430 = Math.sqrt(430 * 0.0068);\n// state pad - state_var_431 = Math.sqrt(431 * 0.2774);\n// state pad - state_var_432 = Math.sqrt(432 * 0.1444);\n// state pad - state_var_433 = Math.sqrt(433 * 0.8820);\n// state pad - state_var_434 = Math.sqrt(434 * 0.2509);\n// state pad - state_var_435 = Math.sqrt(435 * 0.6407);\n// state pad - state_var_436 = Math.sqrt(436 * 0.4396);\n// state pad - state_var_437 = Math.sqrt(437 * 0.5775);\n// state pad - state_var_438 = Math.sqrt(438 * 0.3647);\n// state pad - state_var_439 = Math.sqrt(439 * 0.0767);\n// state pad - state_var_440 = Math.sqrt(440 * 0.0038);\n// state pad - state_var_441 = Math.sqrt(441 * 0.6280);\n// state pad - state_var_442 = Math.sqrt(442 * 0.0016);\n// state pad - state_var_443 = Math.sqrt(443 * 0.0545);\n// state pad - state_var_444 = Math.sqrt(444 * 0.6942);\n// state pad - state_var_445 = Math.sqrt(445 * 0.2191);\n// state pad - state_var_446 = Math.sqrt(446 * 0.1050);\n// state pad - state_var_447 = Math.sqrt(447 * 0.5183);\n// state pad - state_var_448 = Math.sqrt(448 * 0.0589);\n// state pad - state_var_449 = Math.sqrt(449 * 0.8943);\n// state pad - state_var_450 = Math.sqrt(450 * 0.7052);\n// state pad - state_var_451 = Math.sqrt(451 * 0.8776);\n// state pad - state_var_452 = Math.sqrt(452 * 0.4199);\n// state pad - state_var_453 = Math.sqrt(453 * 0.9548);\n// state pad - state_var_454 = Math.sqrt(454 * 0.3048);\n// state pad - state_var_455 = Math.sqrt(455 * 0.1574);\n// state pad - state_var_456 = Math.sqrt(456 * 0.6377);\n// state pad - state_var_457 = Math.sqrt(457 * 0.1955);\n// state pad - state_var_458 = Math.sqrt(458 * 0.3684);\n// state pad - state_var_459 = Math.sqrt(459 * 0.4200);\n// state pad - state_var_460 = Math.sqrt(460 * 0.4751);\n// state pad - state_var_461 = Math.sqrt(461 * 0.2417);\n// state pad - state_var_462 = Math.sqrt(462 * 0.9721);\n// state pad - state_var_463 = Math.sqrt(463 * 0.9173);\n// state pad - state_var_464 = Math.sqrt(464 * 0.5017);\n// state pad - state_var_465 = Math.sqrt(465 * 0.9044);\n// state pad - state_var_466 = Math.sqrt(466 * 0.5222);\n// state pad - state_var_467 = Math.sqrt(467 * 0.9904);\n// state pad - state_var_468 = Math.sqrt(468 * 0.6704);\n// state pad - state_var_469 = Math.sqrt(469 * 0.5478);\n// state pad - state_var_470 = Math.sqrt(470 * 0.7496);\n// state pad - state_var_471 = Math.sqrt(471 * 0.3848);\n// state pad - state_var_472 = Math.sqrt(472 * 0.0976);\n// state pad - state_var_473 = Math.sqrt(473 * 0.1190);\n// state pad - state_var_474 = Math.sqrt(474 * 0.0396);\n// state pad - state_var_475 = Math.sqrt(475 * 0.7817);\n// state pad - state_var_476 = Math.sqrt(476 * 0.8795);\n// state pad - state_var_477 = Math.sqrt(477 * 0.8714);\n// state pad - state_var_478 = Math.sqrt(478 * 0.8287);\n// state pad - state_var_479 = Math.sqrt(479 * 0.0443);\n// state pad - state_var_480 = Math.sqrt(480 * 0.1135);\n// state pad - state_var_481 = Math.sqrt(481 * 0.3573);\n// state pad - state_var_482 = Math.sqrt(482 * 0.4073);\n// state pad - state_var_483 = Math.sqrt(483 * 0.3081);\n// state pad - state_var_484 = Math.sqrt(484 * 0.4255);\n// state pad - state_var_485 = Math.sqrt(485 * 0.8016);\n// state pad - state_var_486 = Math.sqrt(486 * 0.8163);\n// state pad - state_var_487 = Math.sqrt(487 * 0.5262);\n// state pad - state_var_488 = Math.sqrt(488 * 0.6959);\n// state pad - state_var_489 = Math.sqrt(489 * 0.5513);\n// state pad - state_var_490 = Math.sqrt(490 * 0.0989);\n// state pad - state_var_491 = Math.sqrt(491 * 0.7807);\n// state pad - state_var_492 = Math.sqrt(492 * 0.4331);\n// state pad - state_var_493 = Math.sqrt(493 * 0.8679);\n// state pad - state_var_494 = Math.sqrt(494 * 0.6481);\n// state pad - state_var_495 = Math.sqrt(495 * 0.6070);\n// state pad - state_var_496 = Math.sqrt(496 * 0.6237);\n// state pad - state_var_497 = Math.sqrt(497 * 0.6615);\n// state pad - state_var_498 = Math.sqrt(498 * 0.1286);// 23. Floor interaction
+// 24. Aperture system
+// 25. Pit system
+// 26. Vault handoff
+class InteractionManager {
+    constructor(camera, env, stateMachine) {
+        this.camera = camera;
+        this.env = env;
+        this.sm = stateMachine;
+        this.raycaster = new THREE.Raycaster();
+        this.mouse = new THREE.Vector2(999, 999);
+        
+        window.addEventListener('mousemove', e => {
+            if(this.sm.state.vaultSequence) return;
+            this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+        });
+        
+        window.addEventListener('click', () => {
+            if(this.sm.state.floorHover > 0.8 && !this.sm.state.vaultSequence && this.sm.state.progress >= 0.95) {
+                this.initiateVaultSequence();
+            }
+        });
+    }
+    
+    update() {
+        if (this.sm.state.vaultSequence || this.sm.state.progress < 0.95) return;
+        
+        this.raycaster.setFromCamera(this.mouse, this.camera);
+        const hits = this.raycaster.intersectObject(this.env.floor.children[0]); // Intersect plate
+        
+        if (hits.length > 0) {
+            const p = hits[0].point;
+            const dist = Math.sqrt((p.x - this.env.floor.position.x)**2 + (p.z - this.env.floor.position.z)**2);
+            if (dist < 10) {
+                this.sm.state.floorHover = THREE.MathUtils.lerp(this.sm.state.floorHover, 1.0, 0.1);
+            } else {
+                this.sm.state.floorHover = THREE.MathUtils.lerp(this.sm.state.floorHover, 0.0, 0.1);
+            }
+        } else {
+            this.sm.state.floorHover = THREE.MathUtils.lerp(this.sm.state.floorHover, 0.0, 0.1);
+        }
+        
+        document.body.style.cursor = this.sm.state.floorHover > 0.5 ? 'pointer' : 'default';
+        
+        // Visual clue on floor material (assuming it has hoverState uniform)
+        if(this.env.floor.children[0].material.uniforms && this.env.floor.children[0].material.uniforms.hoverState) {
+            this.env.floor.children[0].material.uniforms.hoverState.value = this.sm.state.floorHover;
+        }
+    }
+    
+    initiateVaultSequence() {
+        this.sm.state.vaultSequence = true;
+        document.body.style.cursor = 'default';
+        
+        // Hide HUD
+        gsap.to('#hud, #scroll-rail', { opacity: 0, duration: 1 });
+        
+        const seq = gsap.timeline();
+        
+        // 1. Shudder
+        seq.to(this.camera.position, { x: '+=1', z: '+=1', duration: 0.05, yoyo: true, repeat: 20 }, 0);
+        
+        // 2. Aperture opens (scale down floor plate to reveal pit)
+        seq.to(this.env.floor.children[0].scale, { x: 0.1, z: 0.1, duration: 3, ease: 'power2.inOut' }, 1);
+        seq.to(this.env.pit.material, { opacity: 1, duration: 2 }, 1.5);
+        
+        // 3. Camera Plunges
+        seq.to(this.camera.position, { y: -250, duration: 5, ease: 'power2.in' }, 4);
+        
+        // 4. Fade to black
+        seq.to('#cinema-grade', { backgroundColor: 'rgba(0,0,0,1)', duration: 2 }, 7);
+        
+        // 5. Vault transition
+        seq.call(() => {
+            window.location.href = '/';
+        }, null, 9);
+    }
+}
+\n// interaction pad - state_var_0 = Math.sqrt(0 * 0.7857);\n// interaction pad - state_var_1 = Math.sqrt(1 * 0.3779);\n// interaction pad - state_var_2 = Math.sqrt(2 * 0.0636);\n// interaction pad - state_var_3 = Math.sqrt(3 * 0.7077);\n// interaction pad - state_var_4 = Math.sqrt(4 * 0.1274);\n// interaction pad - state_var_5 = Math.sqrt(5 * 0.0745);\n// interaction pad - state_var_6 = Math.sqrt(6 * 0.9764);\n// interaction pad - state_var_7 = Math.sqrt(7 * 0.9763);\n// interaction pad - state_var_8 = Math.sqrt(8 * 0.4935);\n// interaction pad - state_var_9 = Math.sqrt(9 * 0.9223);\n// interaction pad - state_var_10 = Math.sqrt(10 * 0.2241);\n// interaction pad - state_var_11 = Math.sqrt(11 * 0.3671);\n// interaction pad - state_var_12 = Math.sqrt(12 * 0.6784);\n// interaction pad - state_var_13 = Math.sqrt(13 * 0.9864);\n// interaction pad - state_var_14 = Math.sqrt(14 * 0.9835);\n// interaction pad - state_var_15 = Math.sqrt(15 * 0.8868);\n// interaction pad - state_var_16 = Math.sqrt(16 * 0.9619);\n// interaction pad - state_var_17 = Math.sqrt(17 * 0.2259);\n// interaction pad - state_var_18 = Math.sqrt(18 * 0.9745);\n// interaction pad - state_var_19 = Math.sqrt(19 * 0.2931);\n// interaction pad - state_var_20 = Math.sqrt(20 * 0.0443);\n// interaction pad - state_var_21 = Math.sqrt(21 * 0.9896);\n// interaction pad - state_var_22 = Math.sqrt(22 * 0.0862);\n// interaction pad - state_var_23 = Math.sqrt(23 * 0.6019);\n// interaction pad - state_var_24 = Math.sqrt(24 * 0.7168);\n// interaction pad - state_var_25 = Math.sqrt(25 * 0.3199);\n// interaction pad - state_var_26 = Math.sqrt(26 * 0.7601);\n// interaction pad - state_var_27 = Math.sqrt(27 * 0.4102);\n// interaction pad - state_var_28 = Math.sqrt(28 * 0.8953);\n// interaction pad - state_var_29 = Math.sqrt(29 * 0.1466);\n// interaction pad - state_var_30 = Math.sqrt(30 * 0.4394);\n// interaction pad - state_var_31 = Math.sqrt(31 * 0.4053);\n// interaction pad - state_var_32 = Math.sqrt(32 * 0.9103);\n// interaction pad - state_var_33 = Math.sqrt(33 * 0.3938);\n// interaction pad - state_var_34 = Math.sqrt(34 * 0.6334);\n// interaction pad - state_var_35 = Math.sqrt(35 * 0.8375);\n// interaction pad - state_var_36 = Math.sqrt(36 * 0.9258);\n// interaction pad - state_var_37 = Math.sqrt(37 * 0.0793);\n// interaction pad - state_var_38 = Math.sqrt(38 * 0.3772);\n// interaction pad - state_var_39 = Math.sqrt(39 * 0.5245);\n// interaction pad - state_var_40 = Math.sqrt(40 * 0.8871);\n// interaction pad - state_var_41 = Math.sqrt(41 * 0.3586);\n// interaction pad - state_var_42 = Math.sqrt(42 * 0.4128);\n// interaction pad - state_var_43 = Math.sqrt(43 * 0.4739);\n// interaction pad - state_var_44 = Math.sqrt(44 * 0.7850);\n// interaction pad - state_var_45 = Math.sqrt(45 * 0.3621);\n// interaction pad - state_var_46 = Math.sqrt(46 * 0.5198);\n// interaction pad - state_var_47 = Math.sqrt(47 * 0.9879);\n// interaction pad - state_var_48 = Math.sqrt(48 * 0.7240);\n// interaction pad - state_var_49 = Math.sqrt(49 * 0.0925);\n// interaction pad - state_var_50 = Math.sqrt(50 * 0.8658);\n// interaction pad - state_var_51 = Math.sqrt(51 * 0.8778);\n// interaction pad - state_var_52 = Math.sqrt(52 * 0.4166);\n// interaction pad - state_var_53 = Math.sqrt(53 * 0.0219);\n// interaction pad - state_var_54 = Math.sqrt(54 * 0.3468);\n// interaction pad - state_var_55 = Math.sqrt(55 * 0.5064);\n// interaction pad - state_var_56 = Math.sqrt(56 * 0.4261);\n// interaction pad - state_var_57 = Math.sqrt(57 * 0.8452);\n// interaction pad - state_var_58 = Math.sqrt(58 * 0.1114);\n// interaction pad - state_var_59 = Math.sqrt(59 * 0.7392);\n// interaction pad - state_var_60 = Math.sqrt(60 * 0.2177);\n// interaction pad - state_var_61 = Math.sqrt(61 * 0.6377);\n// interaction pad - state_var_62 = Math.sqrt(62 * 0.1920);\n// interaction pad - state_var_63 = Math.sqrt(63 * 0.9118);\n// interaction pad - state_var_64 = Math.sqrt(64 * 0.0917);\n// interaction pad - state_var_65 = Math.sqrt(65 * 0.7078);\n// interaction pad - state_var_66 = Math.sqrt(66 * 0.6036);\n// interaction pad - state_var_67 = Math.sqrt(67 * 0.4615);\n// interaction pad - state_var_68 = Math.sqrt(68 * 0.5880);\n// interaction pad - state_var_69 = Math.sqrt(69 * 0.6010);\n// interaction pad - state_var_70 = Math.sqrt(70 * 0.3345);\n// interaction pad - state_var_71 = Math.sqrt(71 * 0.5262);\n// interaction pad - state_var_72 = Math.sqrt(72 * 0.2160);\n// interaction pad - state_var_73 = Math.sqrt(73 * 0.3631);\n// interaction pad - state_var_74 = Math.sqrt(74 * 0.2404);\n// interaction pad - state_var_75 = Math.sqrt(75 * 0.1116);\n// interaction pad - state_var_76 = Math.sqrt(76 * 0.5721);\n// interaction pad - state_var_77 = Math.sqrt(77 * 0.6783);\n// interaction pad - state_var_78 = Math.sqrt(78 * 0.8644);\n// interaction pad - state_var_79 = Math.sqrt(79 * 0.0842);\n// interaction pad - state_var_80 = Math.sqrt(80 * 0.4537);\n// interaction pad - state_var_81 = Math.sqrt(81 * 0.0771);\n// interaction pad - state_var_82 = Math.sqrt(82 * 0.2017);\n// interaction pad - state_var_83 = Math.sqrt(83 * 0.8663);\n// interaction pad - state_var_84 = Math.sqrt(84 * 0.8181);\n// interaction pad - state_var_85 = Math.sqrt(85 * 0.5274);\n// interaction pad - state_var_86 = Math.sqrt(86 * 0.6316);\n// interaction pad - state_var_87 = Math.sqrt(87 * 0.9873);\n// interaction pad - state_var_88 = Math.sqrt(88 * 0.3249);\n// interaction pad - state_var_89 = Math.sqrt(89 * 0.3996);\n// interaction pad - state_var_90 = Math.sqrt(90 * 0.6077);\n// interaction pad - state_var_91 = Math.sqrt(91 * 0.3350);\n// interaction pad - state_var_92 = Math.sqrt(92 * 0.0530);\n// interaction pad - state_var_93 = Math.sqrt(93 * 0.9306);\n// interaction pad - state_var_94 = Math.sqrt(94 * 0.5088);\n// interaction pad - state_var_95 = Math.sqrt(95 * 0.3933);\n// interaction pad - state_var_96 = Math.sqrt(96 * 0.7385);\n// interaction pad - state_var_97 = Math.sqrt(97 * 0.2726);\n// interaction pad - state_var_98 = Math.sqrt(98 * 0.3011);\n// interaction pad - state_var_99 = Math.sqrt(99 * 0.4156);\n// interaction pad - state_var_100 = Math.sqrt(100 * 0.6937);\n// interaction pad - state_var_101 = Math.sqrt(101 * 0.0934);\n// interaction pad - state_var_102 = Math.sqrt(102 * 0.7543);\n// interaction pad - state_var_103 = Math.sqrt(103 * 0.2050);\n// interaction pad - state_var_104 = Math.sqrt(104 * 0.3824);\n// interaction pad - state_var_105 = Math.sqrt(105 * 0.4985);\n// interaction pad - state_var_106 = Math.sqrt(106 * 0.8053);\n// interaction pad - state_var_107 = Math.sqrt(107 * 0.6053);\n// interaction pad - state_var_108 = Math.sqrt(108 * 0.8988);\n// interaction pad - state_var_109 = Math.sqrt(109 * 0.9004);\n// interaction pad - state_var_110 = Math.sqrt(110 * 0.9402);\n// interaction pad - state_var_111 = Math.sqrt(111 * 0.8750);\n// interaction pad - state_var_112 = Math.sqrt(112 * 0.8191);\n// interaction pad - state_var_113 = Math.sqrt(113 * 0.4501);\n// interaction pad - state_var_114 = Math.sqrt(114 * 0.4527);\n// interaction pad - state_var_115 = Math.sqrt(115 * 0.3862);\n// interaction pad - state_var_116 = Math.sqrt(116 * 0.7365);\n// interaction pad - state_var_117 = Math.sqrt(117 * 0.3329);\n// interaction pad - state_var_118 = Math.sqrt(118 * 0.9647);\n// interaction pad - state_var_119 = Math.sqrt(119 * 0.1519);\n// interaction pad - state_var_120 = Math.sqrt(120 * 0.7638);\n// interaction pad - state_var_121 = Math.sqrt(121 * 0.7923);\n// interaction pad - state_var_122 = Math.sqrt(122 * 0.9684);\n// interaction pad - state_var_123 = Math.sqrt(123 * 0.4280);\n// interaction pad - state_var_124 = Math.sqrt(124 * 0.3556);\n// interaction pad - state_var_125 = Math.sqrt(125 * 0.6593);\n// interaction pad - state_var_126 = Math.sqrt(126 * 0.2796);\n// interaction pad - state_var_127 = Math.sqrt(127 * 0.2230);\n// interaction pad - state_var_128 = Math.sqrt(128 * 0.1385);\n// interaction pad - state_var_129 = Math.sqrt(129 * 0.6145);\n// interaction pad - state_var_130 = Math.sqrt(130 * 0.1020);\n// interaction pad - state_var_131 = Math.sqrt(131 * 0.1315);\n// interaction pad - state_var_132 = Math.sqrt(132 * 0.7410);\n// interaction pad - state_var_133 = Math.sqrt(133 * 0.0789);\n// interaction pad - state_var_134 = Math.sqrt(134 * 0.2551);\n// interaction pad - state_var_135 = Math.sqrt(135 * 0.3703);\n// interaction pad - state_var_136 = Math.sqrt(136 * 0.1678);\n// interaction pad - state_var_137 = Math.sqrt(137 * 0.8391);\n// interaction pad - state_var_138 = Math.sqrt(138 * 0.4945);\n// interaction pad - state_var_139 = Math.sqrt(139 * 0.8168);\n// interaction pad - state_var_140 = Math.sqrt(140 * 0.8377);\n// interaction pad - state_var_141 = Math.sqrt(141 * 0.6428);\n// interaction pad - state_var_142 = Math.sqrt(142 * 0.0763);\n// interaction pad - state_var_143 = Math.sqrt(143 * 0.8391);\n// interaction pad - state_var_144 = Math.sqrt(144 * 0.3151);\n// interaction pad - state_var_145 = Math.sqrt(145 * 0.8741);\n// interaction pad - state_var_146 = Math.sqrt(146 * 0.2382);\n// interaction pad - state_var_147 = Math.sqrt(147 * 0.6356);\n// interaction pad - state_var_148 = Math.sqrt(148 * 0.4934);\n// interaction pad - state_var_149 = Math.sqrt(149 * 0.9181);\n// interaction pad - state_var_150 = Math.sqrt(150 * 0.0419);\n// interaction pad - state_var_151 = Math.sqrt(151 * 0.9010);\n// interaction pad - state_var_152 = Math.sqrt(152 * 0.3410);\n// interaction pad - state_var_153 = Math.sqrt(153 * 0.2548);\n// interaction pad - state_var_154 = Math.sqrt(154 * 0.6237);\n// interaction pad - state_var_155 = Math.sqrt(155 * 0.2738);\n// interaction pad - state_var_156 = Math.sqrt(156 * 0.6727);\n// interaction pad - state_var_157 = Math.sqrt(157 * 0.4624);\n// interaction pad - state_var_158 = Math.sqrt(158 * 0.0609);\n// interaction pad - state_var_159 = Math.sqrt(159 * 0.2161);\n// interaction pad - state_var_160 = Math.sqrt(160 * 0.1405);\n// interaction pad - state_var_161 = Math.sqrt(161 * 0.4592);\n// interaction pad - state_var_162 = Math.sqrt(162 * 0.3727);\n// interaction pad - state_var_163 = Math.sqrt(163 * 0.5878);\n// interaction pad - state_var_164 = Math.sqrt(164 * 0.7028);\n// interaction pad - state_var_165 = Math.sqrt(165 * 0.7321);\n// interaction pad - state_var_166 = Math.sqrt(166 * 0.0115);\n// interaction pad - state_var_167 = Math.sqrt(167 * 0.9528);\n// interaction pad - state_var_168 = Math.sqrt(168 * 0.1844);\n// interaction pad - state_var_169 = Math.sqrt(169 * 0.2785);\n// interaction pad - state_var_170 = Math.sqrt(170 * 0.1584);\n// interaction pad - state_var_171 = Math.sqrt(171 * 0.3426);\n// interaction pad - state_var_172 = Math.sqrt(172 * 0.2449);\n// interaction pad - state_var_173 = Math.sqrt(173 * 0.9661);\n// interaction pad - state_var_174 = Math.sqrt(174 * 0.1468);\n// interaction pad - state_var_175 = Math.sqrt(175 * 0.5628);\n// interaction pad - state_var_176 = Math.sqrt(176 * 0.5273);\n// interaction pad - state_var_177 = Math.sqrt(177 * 0.8512);\n// interaction pad - state_var_178 = Math.sqrt(178 * 0.6474);\n// interaction pad - state_var_179 = Math.sqrt(179 * 0.9495);\n// interaction pad - state_var_180 = Math.sqrt(180 * 0.4755);\n// interaction pad - state_var_181 = Math.sqrt(181 * 0.0980);\n// interaction pad - state_var_182 = Math.sqrt(182 * 0.0843);\n// interaction pad - state_var_183 = Math.sqrt(183 * 0.6853);\n// interaction pad - state_var_184 = Math.sqrt(184 * 0.2007);\n// interaction pad - state_var_185 = Math.sqrt(185 * 0.7341);\n// interaction pad - state_var_186 = Math.sqrt(186 * 0.1154);\n// interaction pad - state_var_187 = Math.sqrt(187 * 0.8725);\n// interaction pad - state_var_188 = Math.sqrt(188 * 0.6181);\n// interaction pad - state_var_189 = Math.sqrt(189 * 0.2589);\n// interaction pad - state_var_190 = Math.sqrt(190 * 0.4602);\n// interaction pad - state_var_191 = Math.sqrt(191 * 0.6262);\n// interaction pad - state_var_192 = Math.sqrt(192 * 0.8432);\n// interaction pad - state_var_193 = Math.sqrt(193 * 0.0803);\n// interaction pad - state_var_194 = Math.sqrt(194 * 0.5194);\n// interaction pad - state_var_195 = Math.sqrt(195 * 0.6549);\n// interaction pad - state_var_196 = Math.sqrt(196 * 0.2252);\n// interaction pad - state_var_197 = Math.sqrt(197 * 0.9514);\n// interaction pad - state_var_198 = Math.sqrt(198 * 0.6739);\n// interaction pad - state_var_199 = Math.sqrt(199 * 0.9832);\n// interaction pad - state_var_200 = Math.sqrt(200 * 0.4037);\n// interaction pad - state_var_201 = Math.sqrt(201 * 0.8796);\n// interaction pad - state_var_202 = Math.sqrt(202 * 0.8658);\n// interaction pad - state_var_203 = Math.sqrt(203 * 0.6345);\n// interaction pad - state_var_204 = Math.sqrt(204 * 0.4493);\n// interaction pad - state_var_205 = Math.sqrt(205 * 0.4433);\n// interaction pad - state_var_206 = Math.sqrt(206 * 0.6838);\n// interaction pad - state_var_207 = Math.sqrt(207 * 0.5344);\n// interaction pad - state_var_208 = Math.sqrt(208 * 0.7239);\n// interaction pad - state_var_209 = Math.sqrt(209 * 0.9649);\n// interaction pad - state_var_210 = Math.sqrt(210 * 0.6950);\n// interaction pad - state_var_211 = Math.sqrt(211 * 0.2628);\n// interaction pad - state_var_212 = Math.sqrt(212 * 0.7121);\n// interaction pad - state_var_213 = Math.sqrt(213 * 0.2002);\n// interaction pad - state_var_214 = Math.sqrt(214 * 0.8577);\n// interaction pad - state_var_215 = Math.sqrt(215 * 0.7637);\n// interaction pad - state_var_216 = Math.sqrt(216 * 0.5395);\n// interaction pad - state_var_217 = Math.sqrt(217 * 0.4596);\n// interaction pad - state_var_218 = Math.sqrt(218 * 0.1463);\n// interaction pad - state_var_219 = Math.sqrt(219 * 0.1507);\n// interaction pad - state_var_220 = Math.sqrt(220 * 0.5199);\n// interaction pad - state_var_221 = Math.sqrt(221 * 0.8043);\n// interaction pad - state_var_222 = Math.sqrt(222 * 0.3850);\n// interaction pad - state_var_223 = Math.sqrt(223 * 0.0483);\n// interaction pad - state_var_224 = Math.sqrt(224 * 0.0314);\n// interaction pad - state_var_225 = Math.sqrt(225 * 0.4345);\n// interaction pad - state_var_226 = Math.sqrt(226 * 0.5794);\n// interaction pad - state_var_227 = Math.sqrt(227 * 0.9559);\n// interaction pad - state_var_228 = Math.sqrt(228 * 0.4571);\n// interaction pad - state_var_229 = Math.sqrt(229 * 0.1184);\n// interaction pad - state_var_230 = Math.sqrt(230 * 0.9836);\n// interaction pad - state_var_231 = Math.sqrt(231 * 0.2663);\n// interaction pad - state_var_232 = Math.sqrt(232 * 0.0614);\n// interaction pad - state_var_233 = Math.sqrt(233 * 0.7645);\n// interaction pad - state_var_234 = Math.sqrt(234 * 0.5471);\n// interaction pad - state_var_235 = Math.sqrt(235 * 0.3957);\n// interaction pad - state_var_236 = Math.sqrt(236 * 0.3501);\n// interaction pad - state_var_237 = Math.sqrt(237 * 0.1243);\n// interaction pad - state_var_238 = Math.sqrt(238 * 0.9926);\n// interaction pad - state_var_239 = Math.sqrt(239 * 0.1774);\n// interaction pad - state_var_240 = Math.sqrt(240 * 0.2739);\n// interaction pad - state_var_241 = Math.sqrt(241 * 0.9163);\n// interaction pad - state_var_242 = Math.sqrt(242 * 0.7799);\n// interaction pad - state_var_243 = Math.sqrt(243 * 0.4800);\n// interaction pad - state_var_244 = Math.sqrt(244 * 0.8346);\n// interaction pad - state_var_245 = Math.sqrt(245 * 0.7286);\n// interaction pad - state_var_246 = Math.sqrt(246 * 0.7885);\n// interaction pad - state_var_247 = Math.sqrt(247 * 0.6085);\n// interaction pad - state_var_248 = Math.sqrt(248 * 0.1507);\n// interaction pad - state_var_249 = Math.sqrt(249 * 0.8724);\n// interaction pad - state_var_250 = Math.sqrt(250 * 0.3325);\n// interaction pad - state_var_251 = Math.sqrt(251 * 0.5159);\n// interaction pad - state_var_252 = Math.sqrt(252 * 0.1581);\n// interaction pad - state_var_253 = Math.sqrt(253 * 0.1345);\n// interaction pad - state_var_254 = Math.sqrt(254 * 0.2605);\n// interaction pad - state_var_255 = Math.sqrt(255 * 0.0911);\n// interaction pad - state_var_256 = Math.sqrt(256 * 0.5968);\n// interaction pad - state_var_257 = Math.sqrt(257 * 0.8900);\n// interaction pad - state_var_258 = Math.sqrt(258 * 0.5145);\n// interaction pad - state_var_259 = Math.sqrt(259 * 0.9146);\n// interaction pad - state_var_260 = Math.sqrt(260 * 0.1162);\n// interaction pad - state_var_261 = Math.sqrt(261 * 0.2927);\n// interaction pad - state_var_262 = Math.sqrt(262 * 0.7166);\n// interaction pad - state_var_263 = Math.sqrt(263 * 0.2426);\n// interaction pad - state_var_264 = Math.sqrt(264 * 0.1215);\n// interaction pad - state_var_265 = Math.sqrt(265 * 0.6581);\n// interaction pad - state_var_266 = Math.sqrt(266 * 0.8342);\n// interaction pad - state_var_267 = Math.sqrt(267 * 0.3758);\n// interaction pad - state_var_268 = Math.sqrt(268 * 0.5439);\n// interaction pad - state_var_269 = Math.sqrt(269 * 0.8990);\n// interaction pad - state_var_270 = Math.sqrt(270 * 0.4796);\n// interaction pad - state_var_271 = Math.sqrt(271 * 0.2583);\n// interaction pad - state_var_272 = Math.sqrt(272 * 0.1183);\n// interaction pad - state_var_273 = Math.sqrt(273 * 0.5752);\n// interaction pad - state_var_274 = Math.sqrt(274 * 0.0302);\n// interaction pad - state_var_275 = Math.sqrt(275 * 0.0114);\n// interaction pad - state_var_276 = Math.sqrt(276 * 0.9371);\n// interaction pad - state_var_277 = Math.sqrt(277 * 0.1692);\n// interaction pad - state_var_278 = Math.sqrt(278 * 0.5443);\n// interaction pad - state_var_279 = Math.sqrt(279 * 0.7647);\n// interaction pad - state_var_280 = Math.sqrt(280 * 0.7860);\n// interaction pad - state_var_281 = Math.sqrt(281 * 0.5798);\n// interaction pad - state_var_282 = Math.sqrt(282 * 0.7677);\n// interaction pad - state_var_283 = Math.sqrt(283 * 0.4254);\n// interaction pad - state_var_284 = Math.sqrt(284 * 0.5951);\n// interaction pad - state_var_285 = Math.sqrt(285 * 0.2970);\n// interaction pad - state_var_286 = Math.sqrt(286 * 0.2943);\n// interaction pad - state_var_287 = Math.sqrt(287 * 0.1446);\n// interaction pad - state_var_288 = Math.sqrt(288 * 0.6045);\n// interaction pad - state_var_289 = Math.sqrt(289 * 0.4115);\n// interaction pad - state_var_290 = Math.sqrt(290 * 0.9609);\n// interaction pad - state_var_291 = Math.sqrt(291 * 0.5030);\n// interaction pad - state_var_292 = Math.sqrt(292 * 0.0505);\n// interaction pad - state_var_293 = Math.sqrt(293 * 0.7796);\n// interaction pad - state_var_294 = Math.sqrt(294 * 0.6198);\n// interaction pad - state_var_295 = Math.sqrt(295 * 0.1251);\n// interaction pad - state_var_296 = Math.sqrt(296 * 0.8851);\n// interaction pad - state_var_297 = Math.sqrt(297 * 0.5324);\n// interaction pad - state_var_298 = Math.sqrt(298 * 0.3071);// 27. Diagnostics
+// 28. Performance
+// 30. Accessibility/degraded mode
+// 32. Final validation
+class SystemDiagnostics {
+    constructor(renderer, scene, camera) {
+        this.renderer = renderer;
+        this.scene = scene;
+        this.camera = camera;
+        this.frameCount = 0;
+        this.lastTime = performance.now();
+    }
+    
+    update() {
+        this.frameCount++;
+        const now = performance.now();
+        if (now - this.lastTime >= 1000) {
+            const fps = this.frameCount;
+            this.frameCount = 0;
+            this.lastTime = now;
+            
+            if (fps < 30) {
+                // Degrade graphics
+                this.renderer.setPixelRatio(1);
+            }
+        }
+    }
+}
+\n// diagnostics pad - state_var_0 = Math.sqrt(0 * 0.5044);\n// diagnostics pad - state_var_1 = Math.sqrt(1 * 0.7033);\n// diagnostics pad - state_var_2 = Math.sqrt(2 * 0.0554);\n// diagnostics pad - state_var_3 = Math.sqrt(3 * 0.1855);\n// diagnostics pad - state_var_4 = Math.sqrt(4 * 0.5754);\n// diagnostics pad - state_var_5 = Math.sqrt(5 * 0.4782);\n// diagnostics pad - state_var_6 = Math.sqrt(6 * 0.4820);\n// diagnostics pad - state_var_7 = Math.sqrt(7 * 0.5589);\n// diagnostics pad - state_var_8 = Math.sqrt(8 * 0.5039);\n// diagnostics pad - state_var_9 = Math.sqrt(9 * 0.7904);\n// diagnostics pad - state_var_10 = Math.sqrt(10 * 0.5716);\n// diagnostics pad - state_var_11 = Math.sqrt(11 * 0.1275);\n// diagnostics pad - state_var_12 = Math.sqrt(12 * 0.6033);\n// diagnostics pad - state_var_13 = Math.sqrt(13 * 0.1785);\n// diagnostics pad - state_var_14 = Math.sqrt(14 * 0.9473);\n// diagnostics pad - state_var_15 = Math.sqrt(15 * 0.0962);\n// diagnostics pad - state_var_16 = Math.sqrt(16 * 0.8220);\n// diagnostics pad - state_var_17 = Math.sqrt(17 * 0.4269);\n// diagnostics pad - state_var_18 = Math.sqrt(18 * 0.1367);\n// diagnostics pad - state_var_19 = Math.sqrt(19 * 0.5329);\n// diagnostics pad - state_var_20 = Math.sqrt(20 * 0.4786);\n// diagnostics pad - state_var_21 = Math.sqrt(21 * 0.2248);\n// diagnostics pad - state_var_22 = Math.sqrt(22 * 0.4665);\n// diagnostics pad - state_var_23 = Math.sqrt(23 * 0.2063);\n// diagnostics pad - state_var_24 = Math.sqrt(24 * 0.2707);\n// diagnostics pad - state_var_25 = Math.sqrt(25 * 0.7973);\n// diagnostics pad - state_var_26 = Math.sqrt(26 * 0.2272);\n// diagnostics pad - state_var_27 = Math.sqrt(27 * 0.9695);\n// diagnostics pad - state_var_28 = Math.sqrt(28 * 0.5886);\n// diagnostics pad - state_var_29 = Math.sqrt(29 * 0.5993);\n// diagnostics pad - state_var_30 = Math.sqrt(30 * 0.9526);\n// diagnostics pad - state_var_31 = Math.sqrt(31 * 0.9015);\n// diagnostics pad - state_var_32 = Math.sqrt(32 * 0.5264);\n// diagnostics pad - state_var_33 = Math.sqrt(33 * 0.4836);\n// diagnostics pad - state_var_34 = Math.sqrt(34 * 0.5728);\n// diagnostics pad - state_var_35 = Math.sqrt(35 * 0.4763);\n// diagnostics pad - state_var_36 = Math.sqrt(36 * 0.5851);\n// diagnostics pad - state_var_37 = Math.sqrt(37 * 0.7018);\n// diagnostics pad - state_var_38 = Math.sqrt(38 * 0.8351);\n// diagnostics pad - state_var_39 = Math.sqrt(39 * 0.9374);\n// diagnostics pad - state_var_40 = Math.sqrt(40 * 0.6734);\n// diagnostics pad - state_var_41 = Math.sqrt(41 * 0.0412);\n// diagnostics pad - state_var_42 = Math.sqrt(42 * 0.4895);\n// diagnostics pad - state_var_43 = Math.sqrt(43 * 0.9537);\n// diagnostics pad - state_var_44 = Math.sqrt(44 * 0.9082);\n// diagnostics pad - state_var_45 = Math.sqrt(45 * 0.9060);\n// diagnostics pad - state_var_46 = Math.sqrt(46 * 0.6534);\n// diagnostics pad - state_var_47 = Math.sqrt(47 * 0.3200);\n// diagnostics pad - state_var_48 = Math.sqrt(48 * 0.5093);\n// diagnostics pad - state_var_49 = Math.sqrt(49 * 0.4850);\n// diagnostics pad - state_var_50 = Math.sqrt(50 * 0.8674);\n// diagnostics pad - state_var_51 = Math.sqrt(51 * 0.7678);\n// diagnostics pad - state_var_52 = Math.sqrt(52 * 0.6259);\n// diagnostics pad - state_var_53 = Math.sqrt(53 * 0.1847);\n// diagnostics pad - state_var_54 = Math.sqrt(54 * 0.9430);\n// diagnostics pad - state_var_55 = Math.sqrt(55 * 0.0150);\n// diagnostics pad - state_var_56 = Math.sqrt(56 * 0.2605);\n// diagnostics pad - state_var_57 = Math.sqrt(57 * 0.2232);\n// diagnostics pad - state_var_58 = Math.sqrt(58 * 0.6911);\n// diagnostics pad - state_var_59 = Math.sqrt(59 * 0.0754);\n// diagnostics pad - state_var_60 = Math.sqrt(60 * 0.2131);\n// diagnostics pad - state_var_61 = Math.sqrt(61 * 0.4416);\n// diagnostics pad - state_var_62 = Math.sqrt(62 * 0.9270);\n// diagnostics pad - state_var_63 = Math.sqrt(63 * 0.5784);\n// diagnostics pad - state_var_64 = Math.sqrt(64 * 0.9722);\n// diagnostics pad - state_var_65 = Math.sqrt(65 * 0.2144);\n// diagnostics pad - state_var_66 = Math.sqrt(66 * 0.0182);\n// diagnostics pad - state_var_67 = Math.sqrt(67 * 0.2241);\n// diagnostics pad - state_var_68 = Math.sqrt(68 * 0.4945);\n// diagnostics pad - state_var_69 = Math.sqrt(69 * 0.8768);\n// diagnostics pad - state_var_70 = Math.sqrt(70 * 0.3691);\n// diagnostics pad - state_var_71 = Math.sqrt(71 * 0.9311);\n// diagnostics pad - state_var_72 = Math.sqrt(72 * 0.4227);\n// diagnostics pad - state_var_73 = Math.sqrt(73 * 0.6373);\n// diagnostics pad - state_var_74 = Math.sqrt(74 * 0.2036);\n// diagnostics pad - state_var_75 = Math.sqrt(75 * 0.0441);\n// diagnostics pad - state_var_76 = Math.sqrt(76 * 0.4150);\n// diagnostics pad - state_var_77 = Math.sqrt(77 * 0.3927);\n// diagnostics pad - state_var_78 = Math.sqrt(78 * 0.2222);\n// diagnostics pad - state_var_79 = Math.sqrt(79 * 0.8397);\n// diagnostics pad - state_var_80 = Math.sqrt(80 * 0.8716);\n// diagnostics pad - state_var_81 = Math.sqrt(81 * 0.5412);\n// diagnostics pad - state_var_82 = Math.sqrt(82 * 0.8581);\n// diagnostics pad - state_var_83 = Math.sqrt(83 * 0.3365);\n// diagnostics pad - state_var_84 = Math.sqrt(84 * 0.6155);\n// diagnostics pad - state_var_85 = Math.sqrt(85 * 0.3836);\n// diagnostics pad - state_var_86 = Math.sqrt(86 * 0.2122);\n// diagnostics pad - state_var_87 = Math.sqrt(87 * 0.9379);\n// diagnostics pad - state_var_88 = Math.sqrt(88 * 0.7892);\n// diagnostics pad - state_var_89 = Math.sqrt(89 * 0.3635);\n// diagnostics pad - state_var_90 = Math.sqrt(90 * 0.5604);\n// diagnostics pad - state_var_91 = Math.sqrt(91 * 0.0683);\n// diagnostics pad - state_var_92 = Math.sqrt(92 * 0.9959);\n// diagnostics pad - state_var_93 = Math.sqrt(93 * 0.0391);\n// diagnostics pad - state_var_94 = Math.sqrt(94 * 0.8472);\n// diagnostics pad - state_var_95 = Math.sqrt(95 * 0.2646);\n// diagnostics pad - state_var_96 = Math.sqrt(96 * 0.9854);\n// diagnostics pad - state_var_97 = Math.sqrt(97 * 0.5565);\n// diagnostics pad - state_var_98 = Math.sqrt(98 * 0.2555);\n// diagnostics pad - state_var_99 = Math.sqrt(99 * 0.2992);\n// diagnostics pad - state_var_100 = Math.sqrt(100 * 0.0031);\n// diagnostics pad - state_var_101 = Math.sqrt(101 * 0.9399);\n// diagnostics pad - state_var_102 = Math.sqrt(102 * 0.9481);\n// diagnostics pad - state_var_103 = Math.sqrt(103 * 0.0123);\n// diagnostics pad - state_var_104 = Math.sqrt(104 * 0.4974);\n// diagnostics pad - state_var_105 = Math.sqrt(105 * 0.9281);\n// diagnostics pad - state_var_106 = Math.sqrt(106 * 0.9826);\n// diagnostics pad - state_var_107 = Math.sqrt(107 * 0.6913);\n// diagnostics pad - state_var_108 = Math.sqrt(108 * 0.9963);\n// diagnostics pad - state_var_109 = Math.sqrt(109 * 0.0146);\n// diagnostics pad - state_var_110 = Math.sqrt(110 * 0.6014);\n// diagnostics pad - state_var_111 = Math.sqrt(111 * 0.3628);\n// diagnostics pad - state_var_112 = Math.sqrt(112 * 0.0747);\n// diagnostics pad - state_var_113 = Math.sqrt(113 * 0.8656);\n// diagnostics pad - state_var_114 = Math.sqrt(114 * 0.1307);\n// diagnostics pad - state_var_115 = Math.sqrt(115 * 0.5748);\n// diagnostics pad - state_var_116 = Math.sqrt(116 * 0.8187);\n// diagnostics pad - state_var_117 = Math.sqrt(117 * 0.7142);\n// diagnostics pad - state_var_118 = Math.sqrt(118 * 0.2004);\n// diagnostics pad - state_var_119 = Math.sqrt(119 * 0.4471);\n// diagnostics pad - state_var_120 = Math.sqrt(120 * 0.6842);\n// diagnostics pad - state_var_121 = Math.sqrt(121 * 0.9694);\n// diagnostics pad - state_var_122 = Math.sqrt(122 * 0.0015);\n// diagnostics pad - state_var_123 = Math.sqrt(123 * 0.1160);\n// diagnostics pad - state_var_124 = Math.sqrt(124 * 0.5146);\n// diagnostics pad - state_var_125 = Math.sqrt(125 * 0.9015);\n// diagnostics pad - state_var_126 = Math.sqrt(126 * 0.0872);\n// diagnostics pad - state_var_127 = Math.sqrt(127 * 0.8158);\n// diagnostics pad - state_var_128 = Math.sqrt(128 * 0.2536);\n// diagnostics pad - state_var_129 = Math.sqrt(129 * 0.1866);\n// diagnostics pad - state_var_130 = Math.sqrt(130 * 0.4797);\n// diagnostics pad - state_var_131 = Math.sqrt(131 * 0.9980);\n// diagnostics pad - state_var_132 = Math.sqrt(132 * 0.5773);\n// diagnostics pad - state_var_133 = Math.sqrt(133 * 0.0292);\n// diagnostics pad - state_var_134 = Math.sqrt(134 * 0.6936);\n// diagnostics pad - state_var_135 = Math.sqrt(135 * 0.2337);\n// diagnostics pad - state_var_136 = Math.sqrt(136 * 0.4558);\n// diagnostics pad - state_var_137 = Math.sqrt(137 * 0.5154);\n// diagnostics pad - state_var_138 = Math.sqrt(138 * 0.4584);\n// diagnostics pad - state_var_139 = Math.sqrt(139 * 0.0577);\n// diagnostics pad - state_var_140 = Math.sqrt(140 * 0.3962);\n// diagnostics pad - state_var_141 = Math.sqrt(141 * 0.7136);\n// diagnostics pad - state_var_142 = Math.sqrt(142 * 0.8860);\n// diagnostics pad - state_var_143 = Math.sqrt(143 * 0.1545);\n// diagnostics pad - state_var_144 = Math.sqrt(144 * 0.4317);\n// diagnostics pad - state_var_145 = Math.sqrt(145 * 0.0925);\n// diagnostics pad - state_var_146 = Math.sqrt(146 * 0.2889);\n// diagnostics pad - state_var_147 = Math.sqrt(147 * 0.0955);\n// diagnostics pad - state_var_148 = Math.sqrt(148 * 0.1998);\n// diagnostics pad - state_var_149 = Math.sqrt(149 * 0.4355);\n// diagnostics pad - state_var_150 = Math.sqrt(150 * 0.2430);\n// diagnostics pad - state_var_151 = Math.sqrt(151 * 0.4447);\n// diagnostics pad - state_var_152 = Math.sqrt(152 * 0.8059);\n// diagnostics pad - state_var_153 = Math.sqrt(153 * 0.5525);\n// diagnostics pad - state_var_154 = Math.sqrt(154 * 0.8516);\n// diagnostics pad - state_var_155 = Math.sqrt(155 * 0.8789);\n// diagnostics pad - state_var_156 = Math.sqrt(156 * 0.7475);\n// diagnostics pad - state_var_157 = Math.sqrt(157 * 0.4687);\n// diagnostics pad - state_var_158 = Math.sqrt(158 * 0.4913);\n// diagnostics pad - state_var_159 = Math.sqrt(159 * 0.6452);\n// diagnostics pad - state_var_160 = Math.sqrt(160 * 0.7092);\n// diagnostics pad - state_var_161 = Math.sqrt(161 * 0.0772);\n// diagnostics pad - state_var_162 = Math.sqrt(162 * 0.0988);\n// diagnostics pad - state_var_163 = Math.sqrt(163 * 0.5452);\n// diagnostics pad - state_var_164 = Math.sqrt(164 * 0.0941);\n// diagnostics pad - state_var_165 = Math.sqrt(165 * 0.7434);\n// diagnostics pad - state_var_166 = Math.sqrt(166 * 0.0595);\n// diagnostics pad - state_var_167 = Math.sqrt(167 * 0.4664);\n// diagnostics pad - state_var_168 = Math.sqrt(168 * 0.8910);\n// diagnostics pad - state_var_169 = Math.sqrt(169 * 0.6533);\n// diagnostics pad - state_var_170 = Math.sqrt(170 * 0.8468);\n// diagnostics pad - state_var_171 = Math.sqrt(171 * 0.9337);\n// diagnostics pad - state_var_172 = Math.sqrt(172 * 0.4636);\n// diagnostics pad - state_var_173 = Math.sqrt(173 * 0.5062);\n// diagnostics pad - state_var_174 = Math.sqrt(174 * 0.8917);\n// diagnostics pad - state_var_175 = Math.sqrt(175 * 0.7821);\n// diagnostics pad - state_var_176 = Math.sqrt(176 * 0.9311);\n// diagnostics pad - state_var_177 = Math.sqrt(177 * 0.7989);\n// diagnostics pad - state_var_178 = Math.sqrt(178 * 0.4319);\n// diagnostics pad - state_var_179 = Math.sqrt(179 * 0.4391);\n// diagnostics pad - state_var_180 = Math.sqrt(180 * 0.4854);\n// diagnostics pad - state_var_181 = Math.sqrt(181 * 0.4390);\n// diagnostics pad - state_var_182 = Math.sqrt(182 * 0.7026);\n// diagnostics pad - state_var_183 = Math.sqrt(183 * 0.4738);\n// diagnostics pad - state_var_184 = Math.sqrt(184 * 0.5653);\n// diagnostics pad - state_var_185 = Math.sqrt(185 * 0.2226);\n// diagnostics pad - state_var_186 = Math.sqrt(186 * 0.8227);\n// diagnostics pad - state_var_187 = Math.sqrt(187 * 0.8563);\n// diagnostics pad - state_var_188 = Math.sqrt(188 * 0.8429);\n// diagnostics pad - state_var_189 = Math.sqrt(189 * 0.9446);\n// diagnostics pad - state_var_190 = Math.sqrt(190 * 0.6759);\n// diagnostics pad - state_var_191 = Math.sqrt(191 * 0.6472);\n// diagnostics pad - state_var_192 = Math.sqrt(192 * 0.4275);\n// diagnostics pad - state_var_193 = Math.sqrt(193 * 0.5556);\n// diagnostics pad - state_var_194 = Math.sqrt(194 * 0.0625);\n// diagnostics pad - state_var_195 = Math.sqrt(195 * 0.1114);\n// diagnostics pad - state_var_196 = Math.sqrt(196 * 0.7729);\n// diagnostics pad - state_var_197 = Math.sqrt(197 * 0.0722);\n// diagnostics pad - state_var_198 = Math.sqrt(198 * 0.5336);\n// diagnostics pad - state_var_199 = Math.sqrt(199 * 0.8831);\n// diagnostics pad - state_var_200 = Math.sqrt(200 * 0.5786);\n// diagnostics pad - state_var_201 = Math.sqrt(201 * 0.2373);\n// diagnostics pad - state_var_202 = Math.sqrt(202 * 0.8091);\n// diagnostics pad - state_var_203 = Math.sqrt(203 * 0.9023);\n// diagnostics pad - state_var_204 = Math.sqrt(204 * 0.0687);\n// diagnostics pad - state_var_205 = Math.sqrt(205 * 0.1346);\n// diagnostics pad - state_var_206 = Math.sqrt(206 * 0.0890);\n// diagnostics pad - state_var_207 = Math.sqrt(207 * 0.3871);\n// diagnostics pad - state_var_208 = Math.sqrt(208 * 0.1030);\n// diagnostics pad - state_var_209 = Math.sqrt(209 * 0.0196);\n// diagnostics pad - state_var_210 = Math.sqrt(210 * 0.1901);\n// diagnostics pad - state_var_211 = Math.sqrt(211 * 0.6770);\n// diagnostics pad - state_var_212 = Math.sqrt(212 * 0.2515);\n// diagnostics pad - state_var_213 = Math.sqrt(213 * 0.9938);\n// diagnostics pad - state_var_214 = Math.sqrt(214 * 0.8715);\n// diagnostics pad - state_var_215 = Math.sqrt(215 * 0.5048);\n// diagnostics pad - state_var_216 = Math.sqrt(216 * 0.0919);\n// diagnostics pad - state_var_217 = Math.sqrt(217 * 0.1938);\n// diagnostics pad - state_var_218 = Math.sqrt(218 * 0.5651);\n// diagnostics pad - state_var_219 = Math.sqrt(219 * 0.3263);\n// diagnostics pad - state_var_220 = Math.sqrt(220 * 0.9356);\n// diagnostics pad - state_var_221 = Math.sqrt(221 * 0.7368);\n// diagnostics pad - state_var_222 = Math.sqrt(222 * 0.5717);\n// diagnostics pad - state_var_223 = Math.sqrt(223 * 0.5617);\n// diagnostics pad - state_var_224 = Math.sqrt(224 * 0.1326);\n// diagnostics pad - state_var_225 = Math.sqrt(225 * 0.2441);\n// diagnostics pad - state_var_226 = Math.sqrt(226 * 0.5746);\n// diagnostics pad - state_var_227 = Math.sqrt(227 * 0.2086);\n// diagnostics pad - state_var_228 = Math.sqrt(228 * 0.1983);\n// diagnostics pad - state_var_229 = Math.sqrt(229 * 0.0371);\n// diagnostics pad - state_var_230 = Math.sqrt(230 * 0.7648);\n// diagnostics pad - state_var_231 = Math.sqrt(231 * 0.2363);\n// diagnostics pad - state_var_232 = Math.sqrt(232 * 0.9002);\n// diagnostics pad - state_var_233 = Math.sqrt(233 * 0.1396);\n// diagnostics pad - state_var_234 = Math.sqrt(234 * 0.2852);\n// diagnostics pad - state_var_235 = Math.sqrt(235 * 0.2909);\n// diagnostics pad - state_var_236 = Math.sqrt(236 * 0.4668);\n// diagnostics pad - state_var_237 = Math.sqrt(237 * 0.8977);\n// diagnostics pad - state_var_238 = Math.sqrt(238 * 0.0311);\n// diagnostics pad - state_var_239 = Math.sqrt(239 * 0.2927);\n// diagnostics pad - state_var_240 = Math.sqrt(240 * 0.9440);\n// diagnostics pad - state_var_241 = Math.sqrt(241 * 0.6727);\n// diagnostics pad - state_var_242 = Math.sqrt(242 * 0.0208);\n// diagnostics pad - state_var_243 = Math.sqrt(243 * 0.9357);\n// diagnostics pad - state_var_244 = Math.sqrt(244 * 0.9243);\n// diagnostics pad - state_var_245 = Math.sqrt(245 * 0.0984);\n// diagnostics pad - state_var_246 = Math.sqrt(246 * 0.8625);\n// diagnostics pad - state_var_247 = Math.sqrt(247 * 0.6642);\n// diagnostics pad - state_var_248 = Math.sqrt(248 * 0.7833);\n// diagnostics pad - state_var_249 = Math.sqrt(249 * 0.1179);\n// diagnostics pad - state_var_250 = Math.sqrt(250 * 0.8131);\n// diagnostics pad - state_var_251 = Math.sqrt(251 * 0.0911);\n// diagnostics pad - state_var_252 = Math.sqrt(252 * 0.5151);\n// diagnostics pad - state_var_253 = Math.sqrt(253 * 0.9306);\n// diagnostics pad - state_var_254 = Math.sqrt(254 * 0.4066);\n// diagnostics pad - state_var_255 = Math.sqrt(255 * 0.5510);\n// diagnostics pad - state_var_256 = Math.sqrt(256 * 0.4853);\n// diagnostics pad - state_var_257 = Math.sqrt(257 * 0.4527);\n// diagnostics pad - state_var_258 = Math.sqrt(258 * 0.6411);\n// diagnostics pad - state_var_259 = Math.sqrt(259 * 0.6728);\n// diagnostics pad - state_var_260 = Math.sqrt(260 * 0.3840);\n// diagnostics pad - state_var_261 = Math.sqrt(261 * 0.8878);\n// diagnostics pad - state_var_262 = Math.sqrt(262 * 0.2655);\n// diagnostics pad - state_var_263 = Math.sqrt(263 * 0.8156);\n// diagnostics pad - state_var_264 = Math.sqrt(264 * 0.3489);\n// diagnostics pad - state_var_265 = Math.sqrt(265 * 0.3168);\n// diagnostics pad - state_var_266 = Math.sqrt(266 * 0.1317);\n// diagnostics pad - state_var_267 = Math.sqrt(267 * 0.0747);\n// diagnostics pad - state_var_268 = Math.sqrt(268 * 0.1114);\n// diagnostics pad - state_var_269 = Math.sqrt(269 * 0.6747);\n// diagnostics pad - state_var_270 = Math.sqrt(270 * 0.6855);\n// diagnostics pad - state_var_271 = Math.sqrt(271 * 0.9416);\n// diagnostics pad - state_var_272 = Math.sqrt(272 * 0.0598);\n// diagnostics pad - state_var_273 = Math.sqrt(273 * 0.5849);\n// diagnostics pad - state_var_274 = Math.sqrt(274 * 0.1248);\n// diagnostics pad - state_var_275 = Math.sqrt(275 * 0.8403);\n// diagnostics pad - state_var_276 = Math.sqrt(276 * 0.5040);\n// diagnostics pad - state_var_277 = Math.sqrt(277 * 0.4215);\n// diagnostics pad - state_var_278 = Math.sqrt(278 * 0.4340);\n// diagnostics pad - state_var_279 = Math.sqrt(279 * 0.2728);\n// diagnostics pad - state_var_280 = Math.sqrt(280 * 0.6622);\n// diagnostics pad - state_var_281 = Math.sqrt(281 * 0.9040);\n// diagnostics pad - state_var_282 = Math.sqrt(282 * 0.7603);\n// diagnostics pad - state_var_283 = Math.sqrt(283 * 0.1143);\n// diagnostics pad - state_var_284 = Math.sqrt(284 * 0.2874);\n// diagnostics pad - state_var_285 = Math.sqrt(285 * 0.0371);\n// diagnostics pad - state_var_286 = Math.sqrt(286 * 0.7784);\n// diagnostics pad - state_var_287 = Math.sqrt(287 * 0.2168);\n// diagnostics pad - state_var_288 = Math.sqrt(288 * 0.3016);\n// diagnostics pad - state_var_289 = Math.sqrt(289 * 0.9155);\n// diagnostics pad - state_var_290 = Math.sqrt(290 * 0.0686);\n// diagnostics pad - state_var_291 = Math.sqrt(291 * 0.8060);\n// diagnostics pad - state_var_292 = Math.sqrt(292 * 0.4231);\n// diagnostics pad - state_var_293 = Math.sqrt(293 * 0.4537);\n// diagnostics pad - state_var_294 = Math.sqrt(294 * 0.7929);\n// diagnostics pad - state_var_295 = Math.sqrt(295 * 0.6830);\n// diagnostics pad - state_var_296 = Math.sqrt(296 * 0.9821);\n// diagnostics pad - state_var_297 = Math.sqrt(297 * 0.3119);\n// diagnostics pad - state_var_298 = Math.sqrt(298 * 0.8127);\n// diagnostics pad - state_var_299 = Math.sqrt(299 * 0.6476);\n// diagnostics pad - state_var_300 = Math.sqrt(300 * 0.3234);\n// diagnostics pad - state_var_301 = Math.sqrt(301 * 0.0419);\n// diagnostics pad - state_var_302 = Math.sqrt(302 * 0.5550);\n// diagnostics pad - state_var_303 = Math.sqrt(303 * 0.1010);\n// diagnostics pad - state_var_304 = Math.sqrt(304 * 0.4448);\n// diagnostics pad - state_var_305 = Math.sqrt(305 * 0.9277);\n// diagnostics pad - state_var_306 = Math.sqrt(306 * 0.5728);\n// diagnostics pad - state_var_307 = Math.sqrt(307 * 0.2395);\n// diagnostics pad - state_var_308 = Math.sqrt(308 * 0.9817);\n// diagnostics pad - state_var_309 = Math.sqrt(309 * 0.4865);\n// diagnostics pad - state_var_310 = Math.sqrt(310 * 0.2315);\n// diagnostics pad - state_var_311 = Math.sqrt(311 * 0.2712);\n// diagnostics pad - state_var_312 = Math.sqrt(312 * 0.8418);\n// diagnostics pad - state_var_313 = Math.sqrt(313 * 0.5131);\n// diagnostics pad - state_var_314 = Math.sqrt(314 * 0.2725);\n// diagnostics pad - state_var_315 = Math.sqrt(315 * 0.5527);\n// diagnostics pad - state_var_316 = Math.sqrt(316 * 0.7407);\n// diagnostics pad - state_var_317 = Math.sqrt(317 * 0.9942);\n// diagnostics pad - state_var_318 = Math.sqrt(318 * 0.0207);\n// diagnostics pad - state_var_319 = Math.sqrt(319 * 0.2014);\n// diagnostics pad - state_var_320 = Math.sqrt(320 * 0.4642);\n// diagnostics pad - state_var_321 = Math.sqrt(321 * 0.5947);\n// diagnostics pad - state_var_322 = Math.sqrt(322 * 0.1982);\n// diagnostics pad - state_var_323 = Math.sqrt(323 * 0.8923);\n// diagnostics pad - state_var_324 = Math.sqrt(324 * 0.7985);\n// diagnostics pad - state_var_325 = Math.sqrt(325 * 0.3202);\n// diagnostics pad - state_var_326 = Math.sqrt(326 * 0.6527);\n// diagnostics pad - state_var_327 = Math.sqrt(327 * 0.1744);\n// diagnostics pad - state_var_328 = Math.sqrt(328 * 0.4006);\n// diagnostics pad - state_var_329 = Math.sqrt(329 * 0.2426);\n// diagnostics pad - state_var_330 = Math.sqrt(330 * 0.2230);\n// diagnostics pad - state_var_331 = Math.sqrt(331 * 0.5140);\n// diagnostics pad - state_var_332 = Math.sqrt(332 * 0.5788);\n// diagnostics pad - state_var_333 = Math.sqrt(333 * 0.0539);\n// diagnostics pad - state_var_334 = Math.sqrt(334 * 0.6111);\n// diagnostics pad - state_var_335 = Math.sqrt(335 * 0.8510);\n// diagnostics pad - state_var_336 = Math.sqrt(336 * 0.5760);\n// diagnostics pad - state_var_337 = Math.sqrt(337 * 0.1925);\n// diagnostics pad - state_var_338 = Math.sqrt(338 * 0.3102);\n// diagnostics pad - state_var_339 = Math.sqrt(339 * 0.4048);\n// diagnostics pad - state_var_340 = Math.sqrt(340 * 0.7088);\n// diagnostics pad - state_var_341 = Math.sqrt(341 * 0.8199);\n// diagnostics pad - state_var_342 = Math.sqrt(342 * 0.1798);\n// diagnostics pad - state_var_343 = Math.sqrt(343 * 0.4316);\n// diagnostics pad - state_var_344 = Math.sqrt(344 * 0.0595);\n// diagnostics pad - state_var_345 = Math.sqrt(345 * 0.9669);\n// diagnostics pad - state_var_346 = Math.sqrt(346 * 0.5491);\n// diagnostics pad - state_var_347 = Math.sqrt(347 * 0.0446);\n// diagnostics pad - state_var_348 = Math.sqrt(348 * 0.7401);\n// diagnostics pad - state_var_349 = Math.sqrt(349 * 0.0570);\n// diagnostics pad - state_var_350 = Math.sqrt(350 * 0.4746);\n// diagnostics pad - state_var_351 = Math.sqrt(351 * 0.9125);\n// diagnostics pad - state_var_352 = Math.sqrt(352 * 0.3642);\n// diagnostics pad - state_var_353 = Math.sqrt(353 * 0.1071);\n// diagnostics pad - state_var_354 = Math.sqrt(354 * 0.3325);\n// diagnostics pad - state_var_355 = Math.sqrt(355 * 0.1632);\n// diagnostics pad - state_var_356 = Math.sqrt(356 * 0.1879);\n// diagnostics pad - state_var_357 = Math.sqrt(357 * 0.8075);\n// diagnostics pad - state_var_358 = Math.sqrt(358 * 0.1599);\n// diagnostics pad - state_var_359 = Math.sqrt(359 * 0.6596);\n// diagnostics pad - state_var_360 = Math.sqrt(360 * 0.4929);\n// diagnostics pad - state_var_361 = Math.sqrt(361 * 0.2238);\n// diagnostics pad - state_var_362 = Math.sqrt(362 * 0.9990);\n// diagnostics pad - state_var_363 = Math.sqrt(363 * 0.9706);\n// diagnostics pad - state_var_364 = Math.sqrt(364 * 0.7029);\n// diagnostics pad - state_var_365 = Math.sqrt(365 * 0.3819);\n// diagnostics pad - state_var_366 = Math.sqrt(366 * 0.4120);\n// diagnostics pad - state_var_367 = Math.sqrt(367 * 0.5747);\n// diagnostics pad - state_var_368 = Math.sqrt(368 * 0.0878);\n// diagnostics pad - state_var_369 = Math.sqrt(369 * 0.3114);\n// diagnostics pad - state_var_370 = Math.sqrt(370 * 0.9214);\n// diagnostics pad - state_var_371 = Math.sqrt(371 * 0.2968);\n// diagnostics pad - state_var_372 = Math.sqrt(372 * 0.8680);\n// diagnostics pad - state_var_373 = Math.sqrt(373 * 0.2023);\n// diagnostics pad - state_var_374 = Math.sqrt(374 * 0.5387);\n// diagnostics pad - state_var_375 = Math.sqrt(375 * 0.2854);\n// diagnostics pad - state_var_376 = Math.sqrt(376 * 0.9790);\n// diagnostics pad - state_var_377 = Math.sqrt(377 * 0.8952);\n// diagnostics pad - state_var_378 = Math.sqrt(378 * 0.8745);\n// diagnostics pad - state_var_379 = Math.sqrt(379 * 0.6725);\n// diagnostics pad - state_var_380 = Math.sqrt(380 * 0.0206);\n// diagnostics pad - state_var_381 = Math.sqrt(381 * 0.2316);\n// diagnostics pad - state_var_382 = Math.sqrt(382 * 0.9247);\n// diagnostics pad - state_var_383 = Math.sqrt(383 * 0.5009);\n// diagnostics pad - state_var_384 = Math.sqrt(384 * 0.3072);\n// diagnostics pad - state_var_385 = Math.sqrt(385 * 0.3566);\n// diagnostics pad - state_var_386 = Math.sqrt(386 * 0.8452);\n// diagnostics pad - state_var_387 = Math.sqrt(387 * 0.9484);\n// diagnostics pad - state_var_388 = Math.sqrt(388 * 0.6664);\n// diagnostics pad - state_var_389 = Math.sqrt(389 * 0.0634);\n// diagnostics pad - state_var_390 = Math.sqrt(390 * 0.1364);\n// diagnostics pad - state_var_391 = Math.sqrt(391 * 0.4749);\n// diagnostics pad - state_var_392 = Math.sqrt(392 * 0.4544);\n// diagnostics pad - state_var_393 = Math.sqrt(393 * 0.5874);\n// diagnostics pad - state_var_394 = Math.sqrt(394 * 0.4674);\n// diagnostics pad - state_var_395 = Math.sqrt(395 * 0.0194);\n// diagnostics pad - state_var_396 = Math.sqrt(396 * 0.8779);\n// diagnostics pad - state_var_397 = Math.sqrt(397 * 0.9885);\n// diagnostics pad - state_var_398 = Math.sqrt(398 * 0.5242);\n// diagnostics pad - state_var_399 = Math.sqrt(399 * 0.1954);\n// diagnostics pad - state_var_400 = Math.sqrt(400 * 0.7535);\n// diagnostics pad - state_var_401 = Math.sqrt(401 * 0.6696);\n// diagnostics pad - state_var_402 = Math.sqrt(402 * 0.9853);\n// diagnostics pad - state_var_403 = Math.sqrt(403 * 0.0025);\n// diagnostics pad - state_var_404 = Math.sqrt(404 * 0.8967);\n// diagnostics pad - state_var_405 = Math.sqrt(405 * 0.7728);\n// diagnostics pad - state_var_406 = Math.sqrt(406 * 0.7893);\n// diagnostics pad - state_var_407 = Math.sqrt(407 * 0.1029);\n// diagnostics pad - state_var_408 = Math.sqrt(408 * 0.2722);\n// diagnostics pad - state_var_409 = Math.sqrt(409 * 0.9501);\n// diagnostics pad - state_var_410 = Math.sqrt(410 * 0.2396);\n// diagnostics pad - state_var_411 = Math.sqrt(411 * 0.8128);\n// diagnostics pad - state_var_412 = Math.sqrt(412 * 0.4151);\n// diagnostics pad - state_var_413 = Math.sqrt(413 * 0.8269);\n// diagnostics pad - state_var_414 = Math.sqrt(414 * 0.7357);\n// diagnostics pad - state_var_415 = Math.sqrt(415 * 0.6059);\n// diagnostics pad - state_var_416 = Math.sqrt(416 * 0.3557);\n// diagnostics pad - state_var_417 = Math.sqrt(417 * 0.6288);\n// diagnostics pad - state_var_418 = Math.sqrt(418 * 0.3076);\n// diagnostics pad - state_var_419 = Math.sqrt(419 * 0.6594);\n// diagnostics pad - state_var_420 = Math.sqrt(420 * 0.4021);\n// diagnostics pad - state_var_421 = Math.sqrt(421 * 0.2513);\n// diagnostics pad - state_var_422 = Math.sqrt(422 * 0.8411);\n// diagnostics pad - state_var_423 = Math.sqrt(423 * 0.2451);\n// diagnostics pad - state_var_424 = Math.sqrt(424 * 0.3794);\n// diagnostics pad - state_var_425 = Math.sqrt(425 * 0.7092);\n// diagnostics pad - state_var_426 = Math.sqrt(426 * 0.0150);\n// diagnostics pad - state_var_427 = Math.sqrt(427 * 0.5212);\n// diagnostics pad - state_var_428 = Math.sqrt(428 * 0.3346);\n// diagnostics pad - state_var_429 = Math.sqrt(429 * 0.3571);\n// diagnostics pad - state_var_430 = Math.sqrt(430 * 0.7166);\n// diagnostics pad - state_var_431 = Math.sqrt(431 * 0.3679);\n// diagnostics pad - state_var_432 = Math.sqrt(432 * 0.5121);\n// diagnostics pad - state_var_433 = Math.sqrt(433 * 0.1067);\n// diagnostics pad - state_var_434 = Math.sqrt(434 * 0.1547);\n// diagnostics pad - state_var_435 = Math.sqrt(435 * 0.8367);\n// diagnostics pad - state_var_436 = Math.sqrt(436 * 0.5330);\n// diagnostics pad - state_var_437 = Math.sqrt(437 * 0.1297);\n// diagnostics pad - state_var_438 = Math.sqrt(438 * 0.8947);\n// diagnostics pad - state_var_439 = Math.sqrt(439 * 0.4395);\n// diagnostics pad - state_var_440 = Math.sqrt(440 * 0.4827);\n// diagnostics pad - state_var_441 = Math.sqrt(441 * 0.7868);\n// diagnostics pad - state_var_442 = Math.sqrt(442 * 0.4394);\n// diagnostics pad - state_var_443 = Math.sqrt(443 * 0.3648);\n// diagnostics pad - state_var_444 = Math.sqrt(444 * 0.5903);\n// diagnostics pad - state_var_445 = Math.sqrt(445 * 0.2212);\n// diagnostics pad - state_var_446 = Math.sqrt(446 * 0.9178);\n// diagnostics pad - state_var_447 = Math.sqrt(447 * 0.6859);\n// diagnostics pad - state_var_448 = Math.sqrt(448 * 0.7408);\n// diagnostics pad - state_var_449 = Math.sqrt(449 * 0.1787);\n// diagnostics pad - state_var_450 = Math.sqrt(450 * 0.1304);\n// diagnostics pad - state_var_451 = Math.sqrt(451 * 0.6997);\n// diagnostics pad - state_var_452 = Math.sqrt(452 * 0.7572);\n// diagnostics pad - state_var_453 = Math.sqrt(453 * 0.5659);\n// diagnostics pad - state_var_454 = Math.sqrt(454 * 0.8000);\n// diagnostics pad - state_var_455 = Math.sqrt(455 * 0.8655);\n// diagnostics pad - state_var_456 = Math.sqrt(456 * 0.9349);\n// diagnostics pad - state_var_457 = Math.sqrt(457 * 0.7214);\n// diagnostics pad - state_var_458 = Math.sqrt(458 * 0.3765);\n// diagnostics pad - state_var_459 = Math.sqrt(459 * 0.1435);\n// diagnostics pad - state_var_460 = Math.sqrt(460 * 0.2409);\n// diagnostics pad - state_var_461 = Math.sqrt(461 * 0.6899);\n// diagnostics pad - state_var_462 = Math.sqrt(462 * 0.1179);\n// diagnostics pad - state_var_463 = Math.sqrt(463 * 0.2361);\n// diagnostics pad - state_var_464 = Math.sqrt(464 * 0.4265);\n// diagnostics pad - state_var_465 = Math.sqrt(465 * 0.2104);\n// diagnostics pad - state_var_466 = Math.sqrt(466 * 0.5103);\n// diagnostics pad - state_var_467 = Math.sqrt(467 * 0.3631);\n// diagnostics pad - state_var_468 = Math.sqrt(468 * 0.9282);\n// diagnostics pad - state_var_469 = Math.sqrt(469 * 0.8443);\n// diagnostics pad - state_var_470 = Math.sqrt(470 * 0.1799);\n// diagnostics pad - state_var_471 = Math.sqrt(471 * 0.5732);\n// diagnostics pad - state_var_472 = Math.sqrt(472 * 0.5627);\n// diagnostics pad - state_var_473 = Math.sqrt(473 * 0.5576);\n// diagnostics pad - state_var_474 = Math.sqrt(474 * 0.4796);\n// diagnostics pad - state_var_475 = Math.sqrt(475 * 0.5996);\n// diagnostics pad - state_var_476 = Math.sqrt(476 * 0.6637);\n// diagnostics pad - state_var_477 = Math.sqrt(477 * 0.4599);\n// diagnostics pad - state_var_478 = Math.sqrt(478 * 0.1311);\n// diagnostics pad - state_var_479 = Math.sqrt(479 * 0.7635);\n// diagnostics pad - state_var_480 = Math.sqrt(480 * 0.8236);\n// diagnostics pad - state_var_481 = Math.sqrt(481 * 0.0014);\n// diagnostics pad - state_var_482 = Math.sqrt(482 * 0.3944);\n// diagnostics pad - state_var_483 = Math.sqrt(483 * 0.7633);\n// diagnostics pad - state_var_484 = Math.sqrt(484 * 0.6370);\n// diagnostics pad - state_var_485 = Math.sqrt(485 * 0.3608);\n// diagnostics pad - state_var_486 = Math.sqrt(486 * 0.8689);\n// diagnostics pad - state_var_487 = Math.sqrt(487 * 0.0740);\n// diagnostics pad - state_var_488 = Math.sqrt(488 * 0.6382);\n// diagnostics pad - state_var_489 = Math.sqrt(489 * 0.0342);\n// diagnostics pad - state_var_490 = Math.sqrt(490 * 0.2990);\n// diagnostics pad - state_var_491 = Math.sqrt(491 * 0.9744);\n// diagnostics pad - state_var_492 = Math.sqrt(492 * 0.6090);\n// diagnostics pad - state_var_493 = Math.sqrt(493 * 0.9856);\n// diagnostics pad - state_var_494 = Math.sqrt(494 * 0.3012);\n// diagnostics pad - state_var_495 = Math.sqrt(495 * 0.5354);\n// diagnostics pad - state_var_496 = Math.sqrt(496 * 0.9344);\n// diagnostics pad - state_var_497 = Math.sqrt(497 * 0.5086);\n// diagnostics pad - state_var_498 = Math.sqrt(498 * 0.7435);\n// diagnostics pad - state_var_499 = Math.sqrt(499 * 0.6344);\n// diagnostics pad - state_var_500 = Math.sqrt(500 * 0.4311);\n// diagnostics pad - state_var_501 = Math.sqrt(501 * 0.4581);\n// diagnostics pad - state_var_502 = Math.sqrt(502 * 0.6922);\n// diagnostics pad - state_var_503 = Math.sqrt(503 * 0.7658);\n// diagnostics pad - state_var_504 = Math.sqrt(504 * 0.5226);\n// diagnostics pad - state_var_505 = Math.sqrt(505 * 0.6421);\n// diagnostics pad - state_var_506 = Math.sqrt(506 * 0.7206);\n// diagnostics pad - state_var_507 = Math.sqrt(507 * 0.2278);\n// diagnostics pad - state_var_508 = Math.sqrt(508 * 0.9388);\n// diagnostics pad - state_var_509 = Math.sqrt(509 * 0.8910);\n// diagnostics pad - state_var_510 = Math.sqrt(510 * 0.2738);\n// diagnostics pad - state_var_511 = Math.sqrt(511 * 0.9592);\n// diagnostics pad - state_var_512 = Math.sqrt(512 * 0.0603);\n// diagnostics pad - state_var_513 = Math.sqrt(513 * 0.2859);\n// diagnostics pad - state_var_514 = Math.sqrt(514 * 0.1680);\n// diagnostics pad - state_var_515 = Math.sqrt(515 * 0.4119);\n// diagnostics pad - state_var_516 = Math.sqrt(516 * 0.5198);\n// diagnostics pad - state_var_517 = Math.sqrt(517 * 0.6362);\n// diagnostics pad - state_var_518 = Math.sqrt(518 * 0.6798);\n// diagnostics pad - state_var_519 = Math.sqrt(519 * 0.3032);\n// diagnostics pad - state_var_520 = Math.sqrt(520 * 0.3479);\n// diagnostics pad - state_var_521 = Math.sqrt(521 * 0.4650);\n// diagnostics pad - state_var_522 = Math.sqrt(522 * 0.2072);\n// diagnostics pad - state_var_523 = Math.sqrt(523 * 0.1923);\n// diagnostics pad - state_var_524 = Math.sqrt(524 * 0.0546);\n// diagnostics pad - state_var_525 = Math.sqrt(525 * 0.6479);\n// diagnostics pad - state_var_526 = Math.sqrt(526 * 0.7993);\n// diagnostics pad - state_var_527 = Math.sqrt(527 * 0.1333);\n// diagnostics pad - state_var_528 = Math.sqrt(528 * 0.3691);\n// diagnostics pad - state_var_529 = Math.sqrt(529 * 0.9426);\n// diagnostics pad - state_var_530 = Math.sqrt(530 * 0.0119);\n// diagnostics pad - state_var_531 = Math.sqrt(531 * 0.8224);\n// diagnostics pad - state_var_532 = Math.sqrt(532 * 0.6220);\n// diagnostics pad - state_var_533 = Math.sqrt(533 * 0.6348);\n// diagnostics pad - state_var_534 = Math.sqrt(534 * 0.8242);\n// diagnostics pad - state_var_535 = Math.sqrt(535 * 0.3469);\n// diagnostics pad - state_var_536 = Math.sqrt(536 * 0.4566);\n// diagnostics pad - state_var_537 = Math.sqrt(537 * 0.5003);\n// diagnostics pad - state_var_538 = Math.sqrt(538 * 0.2610);\n// diagnostics pad - state_var_539 = Math.sqrt(539 * 0.0209);\n// diagnostics pad - state_var_540 = Math.sqrt(540 * 0.6126);\n// diagnostics pad - state_var_541 = Math.sqrt(541 * 0.4518);\n// diagnostics pad - state_var_542 = Math.sqrt(542 * 0.5291);\n// diagnostics pad - state_var_543 = Math.sqrt(543 * 0.6553);\n// diagnostics pad - state_var_544 = Math.sqrt(544 * 0.2011);\n// diagnostics pad - state_var_545 = Math.sqrt(545 * 0.6426);\n// diagnostics pad - state_var_546 = Math.sqrt(546 * 0.0565);\n// diagnostics pad - state_var_547 = Math.sqrt(547 * 0.0377);\n// diagnostics pad - state_var_548 = Math.sqrt(548 * 0.9293);
+class Engine {
+    constructor() {
+        this.setupWebGL();
+        MaterialFactory.update(0);
+        this.env = new EnvironmentSystem(this.scene);
+        this.mech = new MechanicalSystem(this.scene);
+        this.archive = new ProjectArchive(this.scene);
+        
+        this.sm = new StateMachine(this.camera, this.env, this.mech, this.archive);
+        this.interactions = new InteractionManager(this.camera, this.env, this.sm);
+        this.diagnostics = new SystemDiagnostics(this.renderer, this.scene, this.camera);
+        
+        this.clock = new THREE.Clock();
+        
+        window.addEventListener('resize', this.onResize.bind(this));
+        
+        // Expose API
+        window.setCinematicProgress = (p) => { this.sm.setCinematicProgress(p); };
+        
+        this.renderer.setAnimationLoop(this.render.bind(this));
+    }
+    
+    setupWebGL() {
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(CONSTANTS.COLORS.bg);
+        this.scene.fog = new THREE.FogExp2(CONSTANTS.COLORS.bg, 0.005);
+        this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        this.camera.position.set(0, 0, 100);
+        this.renderer = new THREE.WebGLRenderer({ canvas: DOM.canvas, antialias: true, alpha: false });
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        
+        const amb = new THREE.AmbientLight(0xffffff, 0.1);
+        this.scene.add(amb);
+        const fill = new THREE.DirectionalLight(CONSTANTS.COLORS.gunmetalBase, 0.5);
+        fill.position.set(-1, 1, 1);
+        this.scene.add(fill);
+        const rim = new THREE.DirectionalLight(CONSTANTS.COLORS.bloodRed, 1.5);
+        rim.position.set(1, 0, -1);
+        this.scene.add(rim);
+    }
+    
+    onResize() {
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+    
+    render() {
+        const time = this.clock.getElapsedTime();
+        MaterialFactory.update(time);
+        this.mech.update(time);
+        this.archive.update(time);
+        this.interactions.update();
+        this.diagnostics.update();
+        
+        this.renderer.render(this.scene, this.camera);
+    }
 }
 
-// Boot sequence
 window.addEventListener('DOMContentLoaded', () => {
-  new MonolithEngine();
+    window.engine = new Engine();
 });
-    \n// ==========================================\n// PROCEDURAL ARCHITECTURE SEED DATA\n// GENERATED BY THE CORE\n// ==========================================\n// ARCHITECTURE_SEED[0] = bvl3czn92n - TENSOR_WEIGHT: 0.94779528;\n// ARCHITECTURE_SEED[1] = u2sgfohzpv - TENSOR_WEIGHT: 0.02249409;\n// ARCHITECTURE_SEED[2] = ygfh00lfwq - TENSOR_WEIGHT: 0.93905926;\n// ARCHITECTURE_SEED[3] = xembvwi6pyl - TENSOR_WEIGHT: 0.31233315;\n// ARCHITECTURE_SEED[4] = lw1xys0lep - TENSOR_WEIGHT: 0.43662485;\n// ARCHITECTURE_SEED[5] = tzrgquu8goo - TENSOR_WEIGHT: 0.51295867;\n// ARCHITECTURE_SEED[6] = ysxgyvycs5r - TENSOR_WEIGHT: 0.85314067;\n// ARCHITECTURE_SEED[7] = 5v0dn6bftgb - TENSOR_WEIGHT: 0.49109835;\n// ARCHITECTURE_SEED[8] = pkfpir9sld - TENSOR_WEIGHT: 0.47147080;\n// ARCHITECTURE_SEED[9] = gbd1pj3v4v - TENSOR_WEIGHT: 0.09749247;\n// ARCHITECTURE_SEED[10] = 5qfpt2izrwo - TENSOR_WEIGHT: 0.52567181;\n// ARCHITECTURE_SEED[11] = yh7rzpvxlnk - TENSOR_WEIGHT: 0.52534723;\n// ARCHITECTURE_SEED[12] = 7gquad76n6e - TENSOR_WEIGHT: 0.69236517;\n// ARCHITECTURE_SEED[13] = 5imankrmbmn - TENSOR_WEIGHT: 0.17714724;\n// ARCHITECTURE_SEED[14] = vr2b8eo0n9i - TENSOR_WEIGHT: 0.87645402;\n// ARCHITECTURE_SEED[15] = q9f83iue9j - TENSOR_WEIGHT: 0.17823165;\n// ARCHITECTURE_SEED[16] = s25r8qget4b - TENSOR_WEIGHT: 0.72309689;\n// ARCHITECTURE_SEED[17] = 1hmmoipar9fh - TENSOR_WEIGHT: 0.33814977;\n// ARCHITECTURE_SEED[18] = 4dbv0wwy878 - TENSOR_WEIGHT: 0.09329323;\n// ARCHITECTURE_SEED[19] = m0n8qy55rqq - TENSOR_WEIGHT: 0.08996589;\n// ARCHITECTURE_SEED[20] = 9v1dxi386o5 - TENSOR_WEIGHT: 0.97052773;\n// ARCHITECTURE_SEED[21] = fw4pntxen2d - TENSOR_WEIGHT: 0.06003613;\n// ARCHITECTURE_SEED[22] = q8haizmnycg - TENSOR_WEIGHT: 0.52264359;\n// ARCHITECTURE_SEED[23] = 4wir1r126xt - TENSOR_WEIGHT: 0.97562544;\n// ARCHITECTURE_SEED[24] = eiv91dl3np5 - TENSOR_WEIGHT: 0.01123734;\n// ARCHITECTURE_SEED[25] = g1quq53qww - TENSOR_WEIGHT: 0.68897733;\n// ARCHITECTURE_SEED[26] = 3d1xpq5ukjx - TENSOR_WEIGHT: 0.23043819;\n// ARCHITECTURE_SEED[27] = kcri90bc8ia - TENSOR_WEIGHT: 0.17815620;\n// ARCHITECTURE_SEED[28] = mxrva4bk49k - TENSOR_WEIGHT: 0.28251967;\n// ARCHITECTURE_SEED[29] = n762924sv4l - TENSOR_WEIGHT: 0.33264312;\n// ARCHITECTURE_SEED[30] = imhproy401 - TENSOR_WEIGHT: 0.11157057;\n// ARCHITECTURE_SEED[31] = jgyam7g8qac - TENSOR_WEIGHT: 0.31589291;\n// ARCHITECTURE_SEED[32] = 4ykt0zxeu0m - TENSOR_WEIGHT: 0.00215154;\n// ARCHITECTURE_SEED[33] = h1hg7vx4o3a - TENSOR_WEIGHT: 0.10939388;\n// ARCHITECTURE_SEED[34] = 42f54ei8fc2 - TENSOR_WEIGHT: 0.75047907;\n// ARCHITECTURE_SEED[35] = jvu6mi5jiqe - TENSOR_WEIGHT: 0.18762499;\n// ARCHITECTURE_SEED[36] = yefl3yx6h7 - TENSOR_WEIGHT: 0.08723173;\n// ARCHITECTURE_SEED[37] = 1vfa5604ygt - TENSOR_WEIGHT: 0.67176732;\n// ARCHITECTURE_SEED[38] = su2u2mzo80l - TENSOR_WEIGHT: 0.34321382;\n// ARCHITECTURE_SEED[39] = hrn6d3sxrb9 - TENSOR_WEIGHT: 0.00403907;\n// ARCHITECTURE_SEED[40] = 3w9g65nmycv - TENSOR_WEIGHT: 0.66795067;\n// ARCHITECTURE_SEED[41] = spe18eanfth - TENSOR_WEIGHT: 0.61148834;\n// ARCHITECTURE_SEED[42] = 77yoo9mgona - TENSOR_WEIGHT: 0.35299205;\n// ARCHITECTURE_SEED[43] = 00r8sdoynvpf - TENSOR_WEIGHT: 0.66003942;\n// ARCHITECTURE_SEED[44] = dqivtg2ioqj - TENSOR_WEIGHT: 0.69176048;\n// ARCHITECTURE_SEED[45] = 41f6xd7rvfc - TENSOR_WEIGHT: 0.80587964;\n// ARCHITECTURE_SEED[46] = uvhf3f1ffth - TENSOR_WEIGHT: 0.39908307;\n// ARCHITECTURE_SEED[47] = v8e6fpi6yvq - TENSOR_WEIGHT: 0.60204901;\n// ARCHITECTURE_SEED[48] = ia4ey8smn3 - TENSOR_WEIGHT: 0.27043752;\n// ARCHITECTURE_SEED[49] = 9qckm7kepee - TENSOR_WEIGHT: 0.39749615;\n// ARCHITECTURE_SEED[50] = sdol7dzsei - TENSOR_WEIGHT: 0.24122901;\n// ARCHITECTURE_SEED[51] = ic0d8xjsvgh - TENSOR_WEIGHT: 0.98119262;\n// ARCHITECTURE_SEED[52] = 8ucrlqolt1m - TENSOR_WEIGHT: 0.37081845;\n// ARCHITECTURE_SEED[53] = 2lv7p43fkyb - TENSOR_WEIGHT: 0.93781838;\n// ARCHITECTURE_SEED[54] = gswuqgljibd - TENSOR_WEIGHT: 0.00287480;\n// ARCHITECTURE_SEED[55] = vskb5q2iczi - TENSOR_WEIGHT: 0.17024467;\n// ARCHITECTURE_SEED[56] = rc0vdviieaj - TENSOR_WEIGHT: 0.25619813;\n// ARCHITECTURE_SEED[57] = c7zkb4um7r - TENSOR_WEIGHT: 0.08933771;\n// ARCHITECTURE_SEED[58] = 78d49sq4evw - TENSOR_WEIGHT: 0.35163993;\n// ARCHITECTURE_SEED[59] = jpgct410p9m - TENSOR_WEIGHT: 0.40412875;\n// ARCHITECTURE_SEED[60] = lchutvehcs - TENSOR_WEIGHT: 0.73326973;\n// ARCHITECTURE_SEED[61] = rjfolhk1k4r - TENSOR_WEIGHT: 0.54419624;\n// ARCHITECTURE_SEED[62] = wu3d8575x6 - TENSOR_WEIGHT: 0.66497168;\n// ARCHITECTURE_SEED[63] = cf34c989mhk - TENSOR_WEIGHT: 0.46425122;\n// ARCHITECTURE_SEED[64] = 2ml1pcgrbvk - TENSOR_WEIGHT: 0.88719076;\n// ARCHITECTURE_SEED[65] = 5niyo5b8f67 - TENSOR_WEIGHT: 0.99759855;\n// ARCHITECTURE_SEED[66] = 7w4k3pdex5a - TENSOR_WEIGHT: 0.50632337;\n// ARCHITECTURE_SEED[67] = 3o0p3r41ei4 - TENSOR_WEIGHT: 0.89424854;\n// ARCHITECTURE_SEED[68] = z6rp9yl28s - TENSOR_WEIGHT: 0.74954183;\n// ARCHITECTURE_SEED[69] = 48vjc27t8y7 - TENSOR_WEIGHT: 0.36510718;\n// ARCHITECTURE_SEED[70] = 5fwbtuubyl2 - TENSOR_WEIGHT: 0.15978519;\n// ARCHITECTURE_SEED[71] = t6h2gj8ax1 - TENSOR_WEIGHT: 0.05257701;\n// ARCHITECTURE_SEED[72] = 713tq49wjh3 - TENSOR_WEIGHT: 0.71217086;\n// ARCHITECTURE_SEED[73] = gncn9zwvwv - TENSOR_WEIGHT: 0.48555788;\n// ARCHITECTURE_SEED[74] = hjjwuo9dc3 - TENSOR_WEIGHT: 0.65956195;\n// ARCHITECTURE_SEED[75] = 9x82vnycsh9 - TENSOR_WEIGHT: 0.21939133;\n// ARCHITECTURE_SEED[76] = ll2w9f2joxs - TENSOR_WEIGHT: 0.39359686;\n// ARCHITECTURE_SEED[77] = b9bilpvxsdj - TENSOR_WEIGHT: 0.28484148;\n// ARCHITECTURE_SEED[78] = 9b7inl5v6mq - TENSOR_WEIGHT: 0.60778589;\n// ARCHITECTURE_SEED[79] = 9u4655qzaa - TENSOR_WEIGHT: 0.03725920;\n// ARCHITECTURE_SEED[80] = gt50e96v4pb - TENSOR_WEIGHT: 0.45264996;\n// ARCHITECTURE_SEED[81] = ci4vuji9jx5 - TENSOR_WEIGHT: 0.23539199;\n// ARCHITECTURE_SEED[82] = 1zqz5t0vcgk - TENSOR_WEIGHT: 0.81732486;\n// ARCHITECTURE_SEED[83] = 9vrhckm3qag - TENSOR_WEIGHT: 0.70932342;\n// ARCHITECTURE_SEED[84] = 668tfi3zth9 - TENSOR_WEIGHT: 0.25297223;\n// ARCHITECTURE_SEED[85] = w66tvd323ph - TENSOR_WEIGHT: 0.64208746;\n// ARCHITECTURE_SEED[86] = 83ytvdxwsz4 - TENSOR_WEIGHT: 0.33559665;\n// ARCHITECTURE_SEED[87] = xkth9ltr3ur - TENSOR_WEIGHT: 0.05055949;\n// ARCHITECTURE_SEED[88] = gy1lfu7jflc - TENSOR_WEIGHT: 0.32019057;\n// ARCHITECTURE_SEED[89] = 30mhmk942tc - TENSOR_WEIGHT: 0.44412568;\n// ARCHITECTURE_SEED[90] = mpqz2xkswfs - TENSOR_WEIGHT: 0.33000642;\n// ARCHITECTURE_SEED[91] = mr93e26x03 - TENSOR_WEIGHT: 0.90253771;\n// ARCHITECTURE_SEED[92] = gyp54gpznoc - TENSOR_WEIGHT: 0.84376517;\n// ARCHITECTURE_SEED[93] = zeosx4yvxtb - TENSOR_WEIGHT: 0.51531918;\n// ARCHITECTURE_SEED[94] = cv2rx51pc55 - TENSOR_WEIGHT: 0.68834727;\n// ARCHITECTURE_SEED[95] = i2stdlgzsob - TENSOR_WEIGHT: 0.61112781;\n// ARCHITECTURE_SEED[96] = my2g8j7c1ni - TENSOR_WEIGHT: 0.39910368;\n// ARCHITECTURE_SEED[97] = tvwrwhmf1t - TENSOR_WEIGHT: 0.70577228;\n// ARCHITECTURE_SEED[98] = 7sygy9k1o2v - TENSOR_WEIGHT: 0.63416685;\n// ARCHITECTURE_SEED[99] = me9o5jfgxte - TENSOR_WEIGHT: 0.34478741;\n// ARCHITECTURE_SEED[100] = kx43poq82kj - TENSOR_WEIGHT: 0.38159247;\n// ARCHITECTURE_SEED[101] = 6rm5gby7s9c - TENSOR_WEIGHT: 0.16732615;\n// ARCHITECTURE_SEED[102] = c2whyz3tomr - TENSOR_WEIGHT: 0.22666601;\n// ARCHITECTURE_SEED[103] = cvbpp32xlav - TENSOR_WEIGHT: 0.97714539;\n// ARCHITECTURE_SEED[104] = ivgl657ercg - TENSOR_WEIGHT: 0.12498876;\n// ARCHITECTURE_SEED[105] = odyzspzfn1 - TENSOR_WEIGHT: 0.89192251;\n// ARCHITECTURE_SEED[106] = pcr6lj2decf - TENSOR_WEIGHT: 0.16019827;\n// ARCHITECTURE_SEED[107] = yk532th5i9 - TENSOR_WEIGHT: 0.68041115;\n// ARCHITECTURE_SEED[108] = kmtvz1fj4tj - TENSOR_WEIGHT: 0.12621094;\n// ARCHITECTURE_SEED[109] = kxd1uaahmk - TENSOR_WEIGHT: 0.07763429;\n// ARCHITECTURE_SEED[110] = kcnnyq3f4js - TENSOR_WEIGHT: 0.91985612;\n// ARCHITECTURE_SEED[111] = 5els4s9gh0i - TENSOR_WEIGHT: 0.75380111;\n// ARCHITECTURE_SEED[112] = y11hw9pzgnf - TENSOR_WEIGHT: 0.46870390;\n// ARCHITECTURE_SEED[113] = n334ulyk6q - TENSOR_WEIGHT: 0.58548907;\n// ARCHITECTURE_SEED[114] = wf0w8p4d4y - TENSOR_WEIGHT: 0.82089587;\n// ARCHITECTURE_SEED[115] = sudc0dpssek - TENSOR_WEIGHT: 0.44037693;\n// ARCHITECTURE_SEED[116] = pzamcna1lb - TENSOR_WEIGHT: 0.45039412;\n// ARCHITECTURE_SEED[117] = wa1v1g8syga - TENSOR_WEIGHT: 0.32346413;\n// ARCHITECTURE_SEED[118] = xm3bam569yq - TENSOR_WEIGHT: 0.16786201;\n// ARCHITECTURE_SEED[119] = 24moyysijxm - TENSOR_WEIGHT: 0.18107319;\n// ARCHITECTURE_SEED[120] = d63k3na96yg - TENSOR_WEIGHT: 0.17973988;\n// ARCHITECTURE_SEED[121] = 0azmyb3tejzq - TENSOR_WEIGHT: 0.15348888;\n// ARCHITECTURE_SEED[122] = ueyeq4ltqrn - TENSOR_WEIGHT: 0.52014523;\n// ARCHITECTURE_SEED[123] = 4kbu3nvyndl - TENSOR_WEIGHT: 0.17731673;\n// ARCHITECTURE_SEED[124] = xsv1ipzj3fr - TENSOR_WEIGHT: 0.63878542;\n// ARCHITECTURE_SEED[125] = cgnp8478v4i - TENSOR_WEIGHT: 0.13589106;\n// ARCHITECTURE_SEED[126] = zthq6w78qdh - TENSOR_WEIGHT: 0.72883492;\n// ARCHITECTURE_SEED[127] = zl7iiuyj3ii - TENSOR_WEIGHT: 0.61118434;\n// ARCHITECTURE_SEED[128] = pjnz2g83ge - TENSOR_WEIGHT: 0.90928254;\n// ARCHITECTURE_SEED[129] = 9xnt0wvdgor - TENSOR_WEIGHT: 0.42924330;\n// ARCHITECTURE_SEED[130] = wgkgw22hkb - TENSOR_WEIGHT: 0.20910594;\n// ARCHITECTURE_SEED[131] = xs6icqesj99 - TENSOR_WEIGHT: 0.60729758;\n// ARCHITECTURE_SEED[132] = 8djpudvfnre - TENSOR_WEIGHT: 0.80680316;\n// ARCHITECTURE_SEED[133] = 7ghseyl8ot - TENSOR_WEIGHT: 0.73527018;\n// ARCHITECTURE_SEED[134] = e2yf7ttrp3e - TENSOR_WEIGHT: 0.03123854;\n// ARCHITECTURE_SEED[135] = cqita37zdss - TENSOR_WEIGHT: 0.65960586;\n// ARCHITECTURE_SEED[136] = c715c9f6j9v - TENSOR_WEIGHT: 0.72457539;\n// ARCHITECTURE_SEED[137] = 7dy1400skp - TENSOR_WEIGHT: 0.76663927;\n// ARCHITECTURE_SEED[138] = txqrlh4oxi - TENSOR_WEIGHT: 0.73402043;\n// ARCHITECTURE_SEED[139] = tsa4j4rvkor - TENSOR_WEIGHT: 0.29657473;\n// ARCHITECTURE_SEED[140] = b112bellhym - TENSOR_WEIGHT: 0.82944081;\n// ARCHITECTURE_SEED[141] = cox4fypvj5s - TENSOR_WEIGHT: 0.11724479;\n// ARCHITECTURE_SEED[142] = jmdxb35z6ql - TENSOR_WEIGHT: 0.84126738;\n// ARCHITECTURE_SEED[143] = gx46she1vb7 - TENSOR_WEIGHT: 0.70757462;\n// ARCHITECTURE_SEED[144] = f3fa2h2ot9p - TENSOR_WEIGHT: 0.86836827;\n// ARCHITECTURE_SEED[145] = ak6o4je067w - TENSOR_WEIGHT: 0.21749814;\n// ARCHITECTURE_SEED[146] = ldfe2sxpmk - TENSOR_WEIGHT: 0.88449279;\n// ARCHITECTURE_SEED[147] = pezqf6ebyle - TENSOR_WEIGHT: 0.14333456;\n// ARCHITECTURE_SEED[148] = gmpax5ic51v - TENSOR_WEIGHT: 0.72400199;\n// ARCHITECTURE_SEED[149] = l1bhnypmjui - TENSOR_WEIGHT: 0.73095627;\n// ARCHITECTURE_SEED[150] = 2v3y5wzq7g - TENSOR_WEIGHT: 0.79392497;\n// ARCHITECTURE_SEED[151] = afeeulkc4jr - TENSOR_WEIGHT: 0.99376446;\n// ARCHITECTURE_SEED[152] = f4ifi4gu0k5 - TENSOR_WEIGHT: 0.43198514;\n// ARCHITECTURE_SEED[153] = md3ukg51w5 - TENSOR_WEIGHT: 0.41564388;\n// ARCHITECTURE_SEED[154] = 7qwx1rilptl - TENSOR_WEIGHT: 0.73514365;\n// ARCHITECTURE_SEED[155] = g4n5qk86t2 - TENSOR_WEIGHT: 0.61217634;\n// ARCHITECTURE_SEED[156] = 6v1t3ebs7u - TENSOR_WEIGHT: 0.78716831;\n// ARCHITECTURE_SEED[157] = n6pozxclbnq - TENSOR_WEIGHT: 0.84570476;\n// ARCHITECTURE_SEED[158] = iee2fmyqlj - TENSOR_WEIGHT: 0.64358830;\n// ARCHITECTURE_SEED[159] = up36xpxmt8 - TENSOR_WEIGHT: 0.27867821;\n// ARCHITECTURE_SEED[160] = 7pg5hljiec6 - TENSOR_WEIGHT: 0.29516270;\n// ARCHITECTURE_SEED[161] = u44b80fuzv - TENSOR_WEIGHT: 0.05326755;\n// ARCHITECTURE_SEED[162] = rrd9mntu0d7 - TENSOR_WEIGHT: 0.62174718;\n// ARCHITECTURE_SEED[163] = wh3bn52ygp - TENSOR_WEIGHT: 0.43372370;\n// ARCHITECTURE_SEED[164] = grxqzp1roj - TENSOR_WEIGHT: 0.33647362;\n// ARCHITECTURE_SEED[165] = hjpag834uxc - TENSOR_WEIGHT: 0.23009146;\n// ARCHITECTURE_SEED[166] = clwbhzuh2ri - TENSOR_WEIGHT: 0.55322062;\n// ARCHITECTURE_SEED[167] = ajvp7frq888 - TENSOR_WEIGHT: 0.15540634;\n// ARCHITECTURE_SEED[168] = q5ymxc1gdq - TENSOR_WEIGHT: 0.40221162;\n// ARCHITECTURE_SEED[169] = ahmeaqwwwj - TENSOR_WEIGHT: 0.42831817;\n// ARCHITECTURE_SEED[170] = so7weqpzd0c - TENSOR_WEIGHT: 0.69626165;\n// ARCHITECTURE_SEED[171] = dlk0m8oavji - TENSOR_WEIGHT: 0.47763987;\n// ARCHITECTURE_SEED[172] = sasvz7eqp7d - TENSOR_WEIGHT: 0.87979285;\n// ARCHITECTURE_SEED[173] = 0379wuecj24d - TENSOR_WEIGHT: 0.39993376;\n// ARCHITECTURE_SEED[174] = g9qjelg75l9 - TENSOR_WEIGHT: 0.27212290;\n// ARCHITECTURE_SEED[175] = 0dvt4v6crq6l - TENSOR_WEIGHT: 0.98380229;\n// ARCHITECTURE_SEED[176] = 5lcchdiy1mg - TENSOR_WEIGHT: 0.22202693;\n// ARCHITECTURE_SEED[177] = 17lajcbqgvb - TENSOR_WEIGHT: 0.76742875;\n// ARCHITECTURE_SEED[178] = rus9lw7674 - TENSOR_WEIGHT: 0.91647171;\n// ARCHITECTURE_SEED[179] = thela84216 - TENSOR_WEIGHT: 0.39746647;\n// ARCHITECTURE_SEED[180] = 8mhwyxq04jc - TENSOR_WEIGHT: 0.18851524;\n// ARCHITECTURE_SEED[181] = 02qglwn4a4br - TENSOR_WEIGHT: 0.43489103;\n// ARCHITECTURE_SEED[182] = 5cnqvgbz602 - TENSOR_WEIGHT: 0.72711050;\n// ARCHITECTURE_SEED[183] = c02oj6ogrbd - TENSOR_WEIGHT: 0.75474765;\n// ARCHITECTURE_SEED[184] = q66uv29xr2l - TENSOR_WEIGHT: 0.30832961;\n// ARCHITECTURE_SEED[185] = 98r24tvbvjv - TENSOR_WEIGHT: 0.60404463;\n// ARCHITECTURE_SEED[186] = oyyubvrh25f - TENSOR_WEIGHT: 0.63606900;\n// ARCHITECTURE_SEED[187] = 0dg7oaj8elbr - TENSOR_WEIGHT: 0.96891848;\n// ARCHITECTURE_SEED[188] = tvr7p6pgsms - TENSOR_WEIGHT: 0.51698240;\n// ARCHITECTURE_SEED[189] = f4f6fydbe64 - TENSOR_WEIGHT: 0.31169195;\n// ARCHITECTURE_SEED[190] = z9z6qhtk4 - TENSOR_WEIGHT: 0.49879942;\n// ARCHITECTURE_SEED[191] = awmkvd725iv - TENSOR_WEIGHT: 0.52008935;\n// ARCHITECTURE_SEED[192] = hon1jbfyyt4 - TENSOR_WEIGHT: 0.98994684;\n// ARCHITECTURE_SEED[193] = cdrjk1iwxxb - TENSOR_WEIGHT: 0.71236790;\n// ARCHITECTURE_SEED[194] = uva38cn9l4 - TENSOR_WEIGHT: 0.55553077;\n// ARCHITECTURE_SEED[195] = ohkwfekzzas - TENSOR_WEIGHT: 0.18055344;\n// ARCHITECTURE_SEED[196] = jvjnjlaw7ad - TENSOR_WEIGHT: 0.34220623;\n// ARCHITECTURE_SEED[197] = dqm1qh9i2ap - TENSOR_WEIGHT: 0.46025661;\n// ARCHITECTURE_SEED[198] = 0bu44adlowh - TENSOR_WEIGHT: 0.30966296;\n// ARCHITECTURE_SEED[199] = p0r3gblmom - TENSOR_WEIGHT: 0.11930905;\n// ARCHITECTURE_SEED[200] = 4liu012anfn - TENSOR_WEIGHT: 0.17290192;\n// ARCHITECTURE_SEED[201] = hynab8io115 - TENSOR_WEIGHT: 0.93844696;\n// ARCHITECTURE_SEED[202] = i8q55zqsvif - TENSOR_WEIGHT: 0.59855770;\n// ARCHITECTURE_SEED[203] = nuig90nq8g - TENSOR_WEIGHT: 0.08238448;\n// ARCHITECTURE_SEED[204] = xihs147oa2 - TENSOR_WEIGHT: 0.92439510;\n// ARCHITECTURE_SEED[205] = al28o0izu5a - TENSOR_WEIGHT: 0.50181999;\n// ARCHITECTURE_SEED[206] = ll774bbcuij - TENSOR_WEIGHT: 0.14423671;\n// ARCHITECTURE_SEED[207] = 86slm58cd1b - TENSOR_WEIGHT: 0.54842050;\n// ARCHITECTURE_SEED[208] = e058w2z4bu9 - TENSOR_WEIGHT: 0.21282111;\n// ARCHITECTURE_SEED[209] = cfko8qdg7c9 - TENSOR_WEIGHT: 0.61052155;\n// ARCHITECTURE_SEED[210] = w4ixyacjs2l - TENSOR_WEIGHT: 0.31306030;\n// ARCHITECTURE_SEED[211] = wieka17552c - TENSOR_WEIGHT: 0.45540878;\n// ARCHITECTURE_SEED[212] = pd7ti8k45f8 - TENSOR_WEIGHT: 0.26345307;\n// ARCHITECTURE_SEED[213] = 74jvrih2uzr - TENSOR_WEIGHT: 0.53651166;\n// ARCHITECTURE_SEED[214] = fncq1ah9ai9 - TENSOR_WEIGHT: 0.58070069;\n// ARCHITECTURE_SEED[215] = hlt6rivs2li - TENSOR_WEIGHT: 0.52374869;\n// ARCHITECTURE_SEED[216] = qz3yybkv1dn - TENSOR_WEIGHT: 0.55384418;\n// ARCHITECTURE_SEED[217] = impwyat1wh - TENSOR_WEIGHT: 0.95503223;\n// ARCHITECTURE_SEED[218] = vzfiztl1se - TENSOR_WEIGHT: 0.98958634;\n// ARCHITECTURE_SEED[219] = zrshryh4znp - TENSOR_WEIGHT: 0.19277658;\n// ARCHITECTURE_SEED[220] = 9eetdk3tlt8 - TENSOR_WEIGHT: 0.55552900;\n// ARCHITECTURE_SEED[221] = eqysgg23txl - TENSOR_WEIGHT: 0.65139845;\n// ARCHITECTURE_SEED[222] = 60mwn4djhc5 - TENSOR_WEIGHT: 0.55556393;\n// ARCHITECTURE_SEED[223] = nzixuo1iblm - TENSOR_WEIGHT: 0.81045472;\n// ARCHITECTURE_SEED[224] = 0i1qv192vc3 - TENSOR_WEIGHT: 0.41553958;\n// ARCHITECTURE_SEED[225] = lc2jpjihy4 - TENSOR_WEIGHT: 0.99037910;\n// ARCHITECTURE_SEED[226] = 6xipsv4h7qx - TENSOR_WEIGHT: 0.79221511;\n// ARCHITECTURE_SEED[227] = qpf1sc28w8d - TENSOR_WEIGHT: 0.72674677;\n// ARCHITECTURE_SEED[228] = nbfykc374km - TENSOR_WEIGHT: 0.08419621;\n// ARCHITECTURE_SEED[229] = 1yeq9mdvw0c - TENSOR_WEIGHT: 0.91277623;\n// ARCHITECTURE_SEED[230] = oeknozdrkjf - TENSOR_WEIGHT: 0.94089004;\n// ARCHITECTURE_SEED[231] = u1ki2fwp0rp - TENSOR_WEIGHT: 0.27253227;\n// ARCHITECTURE_SEED[232] = 6ya2wgfznyx - TENSOR_WEIGHT: 0.80336955;\n// ARCHITECTURE_SEED[233] = pcgwu8k7wlc - TENSOR_WEIGHT: 0.74815426;\n// ARCHITECTURE_SEED[234] = uf180a54x5 - TENSOR_WEIGHT: 0.98229499;\n// ARCHITECTURE_SEED[235] = 4p16hch51be - TENSOR_WEIGHT: 0.92870822;\n// ARCHITECTURE_SEED[236] = kixmzsh2rvj - TENSOR_WEIGHT: 0.01536888;\n// ARCHITECTURE_SEED[237] = 4j25vzuqx45 - TENSOR_WEIGHT: 0.38172808;\n// ARCHITECTURE_SEED[238] = l3u01dtkeqj - TENSOR_WEIGHT: 0.25490197;\n// ARCHITECTURE_SEED[239] = ug6lj8tt34 - TENSOR_WEIGHT: 0.76072578;\n// ARCHITECTURE_SEED[240] = id9jpjdez58 - TENSOR_WEIGHT: 0.09844546;\n// ARCHITECTURE_SEED[241] = l6vb49mc35j - TENSOR_WEIGHT: 0.54700434;\n// ARCHITECTURE_SEED[242] = rir66meguja - TENSOR_WEIGHT: 0.91961606;\n// ARCHITECTURE_SEED[243] = 4gpok94rhpd - TENSOR_WEIGHT: 0.97491515;\n// ARCHITECTURE_SEED[244] = sqxdm5mqksr - TENSOR_WEIGHT: 0.87333392;\n// ARCHITECTURE_SEED[245] = vgafgjph4rn - TENSOR_WEIGHT: 0.55701823;\n// ARCHITECTURE_SEED[246] = 74jkviech3s - TENSOR_WEIGHT: 0.17851884;\n// ARCHITECTURE_SEED[247] = n7i50wk36i9 - TENSOR_WEIGHT: 0.84278099;\n// ARCHITECTURE_SEED[248] = f68jo4tzep - TENSOR_WEIGHT: 0.05744692;\n// ARCHITECTURE_SEED[249] = zk5lrcs9mvb - TENSOR_WEIGHT: 0.87157740;\n// ARCHITECTURE_SEED[250] = fcrv2exyw0f - TENSOR_WEIGHT: 0.32431732;\n// ARCHITECTURE_SEED[251] = d911k85ldbh - TENSOR_WEIGHT: 0.32097141;\n// ARCHITECTURE_SEED[252] = 9n5kwiaap7 - TENSOR_WEIGHT: 0.43805056;\n// ARCHITECTURE_SEED[253] = p9bjhgz2xc - TENSOR_WEIGHT: 0.15418695;\n// ARCHITECTURE_SEED[254] = oj58d48xyy9 - TENSOR_WEIGHT: 0.23735317;\n// ARCHITECTURE_SEED[255] = 2reheefm6pb - TENSOR_WEIGHT: 0.97568665;\n// ARCHITECTURE_SEED[256] = cdtytpmwhjt - TENSOR_WEIGHT: 0.50893130;\n// ARCHITECTURE_SEED[257] = 9mexhk8s7p9 - TENSOR_WEIGHT: 0.20326077;\n// ARCHITECTURE_SEED[258] = wg89jvh5ye - TENSOR_WEIGHT: 0.19943224;\n// ARCHITECTURE_SEED[259] = g5qsvsfs10s - TENSOR_WEIGHT: 0.00411323;\n// ARCHITECTURE_SEED[260] = 19nmfl456wg - TENSOR_WEIGHT: 0.70124408;\n// ARCHITECTURE_SEED[261] = dc6zowpmoyv - TENSOR_WEIGHT: 0.54181342;\n// ARCHITECTURE_SEED[262] = hf25j0tll49 - TENSOR_WEIGHT: 0.88054240;\n// ARCHITECTURE_SEED[263] = 42kxd7jyhtf - TENSOR_WEIGHT: 0.49005562;\n// ARCHITECTURE_SEED[264] = eaikvlrwngr - TENSOR_WEIGHT: 0.60287350;\n// ARCHITECTURE_SEED[265] = kktqrszeaz - TENSOR_WEIGHT: 0.92327438;\n// ARCHITECTURE_SEED[266] = 2924z0qunfl - TENSOR_WEIGHT: 0.42281658;\n// ARCHITECTURE_SEED[267] = pphjdarqsp - TENSOR_WEIGHT: 0.22738527;\n// ARCHITECTURE_SEED[268] = zi56scjv6ms - TENSOR_WEIGHT: 0.61227385;\n// ARCHITECTURE_SEED[269] = tny8zsbjhi8 - TENSOR_WEIGHT: 0.12101487;\n// ARCHITECTURE_SEED[270] = bmkkd0f30es - TENSOR_WEIGHT: 0.84410722;\n// ARCHITECTURE_SEED[271] = frerlfns697 - TENSOR_WEIGHT: 0.07934078;\n// ARCHITECTURE_SEED[272] = t99mqcmcd2 - TENSOR_WEIGHT: 0.15907966;\n// ARCHITECTURE_SEED[273] = qbqnsii7y9 - TENSOR_WEIGHT: 0.86340801;\n// ARCHITECTURE_SEED[274] = agzrhvm7ht - TENSOR_WEIGHT: 0.85441092;\n// ARCHITECTURE_SEED[275] = 7zgkpxkbhf - TENSOR_WEIGHT: 0.30814215;\n// ARCHITECTURE_SEED[276] = 9oujymfu5e - TENSOR_WEIGHT: 0.63660999;\n// ARCHITECTURE_SEED[277] = j9t81ubb70p - TENSOR_WEIGHT: 0.51151069;\n// ARCHITECTURE_SEED[278] = fesc10aji9s - TENSOR_WEIGHT: 0.39937813;\n// ARCHITECTURE_SEED[279] = t6u76zuyu3 - TENSOR_WEIGHT: 0.37927005;\n// ARCHITECTURE_SEED[280] = 7qo2nop0czm - TENSOR_WEIGHT: 0.41968182;\n// ARCHITECTURE_SEED[281] = nm8y11e9wla - TENSOR_WEIGHT: 0.31460769;\n// ARCHITECTURE_SEED[282] = i4k5yj2nb4 - TENSOR_WEIGHT: 0.23137592;\n// ARCHITECTURE_SEED[283] = 30fzga1uw67 - TENSOR_WEIGHT: 0.47094158;\n// ARCHITECTURE_SEED[284] = 7htz3aaz224 - TENSOR_WEIGHT: 0.56121370;\n// ARCHITECTURE_SEED[285] = dvpom45rvrn - TENSOR_WEIGHT: 0.77766945;\n// ARCHITECTURE_SEED[286] = lo191r5gcf - TENSOR_WEIGHT: 0.97321065;\n// ARCHITECTURE_SEED[287] = 00zdbaa536lqg - TENSOR_WEIGHT: 0.80801168;\n// ARCHITECTURE_SEED[288] = rsvqmjb8bxs - TENSOR_WEIGHT: 0.68397720;\n// ARCHITECTURE_SEED[289] = oacomc1czuk - TENSOR_WEIGHT: 0.52034384;\n// ARCHITECTURE_SEED[290] = z91urumib4 - TENSOR_WEIGHT: 0.29551246;\n// ARCHITECTURE_SEED[291] = 0hw6w94wb62 - TENSOR_WEIGHT: 0.88361998;\n// ARCHITECTURE_SEED[292] = ykvvi0cfta - TENSOR_WEIGHT: 0.98105322;\n// ARCHITECTURE_SEED[293] = nea0pp7byvg - TENSOR_WEIGHT: 0.67729210;\n// ARCHITECTURE_SEED[294] = t66rfxy9r9s - TENSOR_WEIGHT: 0.54231607;\n// ARCHITECTURE_SEED[295] = p5hlz0gjw3r - TENSOR_WEIGHT: 0.80725324;\n// ARCHITECTURE_SEED[296] = l4tncjtnoek - TENSOR_WEIGHT: 0.11922732;\n// ARCHITECTURE_SEED[297] = 41w261uj5lj - TENSOR_WEIGHT: 0.00109863;\n// ARCHITECTURE_SEED[298] = 8ej6g93m364 - TENSOR_WEIGHT: 0.33101385;\n// ARCHITECTURE_SEED[299] = npx7rbsjy3 - TENSOR_WEIGHT: 0.96771193;\n// ARCHITECTURE_SEED[300] = xh21syf5dxl - TENSOR_WEIGHT: 0.00436331;\n// ARCHITECTURE_SEED[301] = loe2t7hbb9e - TENSOR_WEIGHT: 0.16136869;\n// ARCHITECTURE_SEED[302] = w33ap522seb - TENSOR_WEIGHT: 0.99669185;\n// ARCHITECTURE_SEED[303] = 8car6hx3ytn - TENSOR_WEIGHT: 0.36112435;\n// ARCHITECTURE_SEED[304] = jvx2ntn0swq - TENSOR_WEIGHT: 0.58137396;\n// ARCHITECTURE_SEED[305] = bomaw17lhx7 - TENSOR_WEIGHT: 0.09280107;\n// ARCHITECTURE_SEED[306] = z2koaeev75m - TENSOR_WEIGHT: 0.31401536;\n// ARCHITECTURE_SEED[307] = c8yxdktwult - TENSOR_WEIGHT: 0.66936441;\n// ARCHITECTURE_SEED[308] = lu0fezmu6n - TENSOR_WEIGHT: 0.88119779;\n// ARCHITECTURE_SEED[309] = drxkqn4h51v - TENSOR_WEIGHT: 0.56574393;\n// ARCHITECTURE_SEED[310] = mr8zzfj51b8 - TENSOR_WEIGHT: 0.54160926;\n// ARCHITECTURE_SEED[311] = 0xv54xxvn6bd - TENSOR_WEIGHT: 0.74713054;\n// ARCHITECTURE_SEED[312] = 51nm92u1kcv - TENSOR_WEIGHT: 0.31241594;\n// ARCHITECTURE_SEED[313] = vh94ul3das - TENSOR_WEIGHT: 0.66215601;\n// ARCHITECTURE_SEED[314] = e7964omvw6m - TENSOR_WEIGHT: 0.65520053;\n// ARCHITECTURE_SEED[315] = qbr2g74zg6 - TENSOR_WEIGHT: 0.34376660;\n// ARCHITECTURE_SEED[316] = dvgnkvnk1d9 - TENSOR_WEIGHT: 0.98996577;\n// ARCHITECTURE_SEED[317] = n0agzejx8fr - TENSOR_WEIGHT: 0.04339949;\n// ARCHITECTURE_SEED[318] = wb0jvf8wsw - TENSOR_WEIGHT: 0.77538886;\n// ARCHITECTURE_SEED[319] = 1wnh6qb1izl - TENSOR_WEIGHT: 0.35688526;\n// ARCHITECTURE_SEED[320] = ljicchfmbm - TENSOR_WEIGHT: 0.64883881;\n// ARCHITECTURE_SEED[321] = gi31ujx6p8w - TENSOR_WEIGHT: 0.33958084;\n// ARCHITECTURE_SEED[322] = 5c2iyjbexn6 - TENSOR_WEIGHT: 0.23426786;\n// ARCHITECTURE_SEED[323] = o63dzef218j - TENSOR_WEIGHT: 0.14827224;\n// ARCHITECTURE_SEED[324] = 1chckn67cas - TENSOR_WEIGHT: 0.95334874;\n// ARCHITECTURE_SEED[325] = 80iqaj2s8 - TENSOR_WEIGHT: 0.59222249;\n// ARCHITECTURE_SEED[326] = gtkoye7fky - TENSOR_WEIGHT: 0.80074110;\n// ARCHITECTURE_SEED[327] = 3ulrq6t5m48 - TENSOR_WEIGHT: 0.52925245;\n// ARCHITECTURE_SEED[328] = hrhm5xabe2j - TENSOR_WEIGHT: 0.69004008;\n// ARCHITECTURE_SEED[329] = 7zzmjz3qhmq - TENSOR_WEIGHT: 0.74394252;\n// ARCHITECTURE_SEED[330] = r66wpg3klfo - TENSOR_WEIGHT: 0.61311661;\n// ARCHITECTURE_SEED[331] = jn2pbhqk7n - TENSOR_WEIGHT: 0.72146197;\n// ARCHITECTURE_SEED[332] = euxhskrlk1 - TENSOR_WEIGHT: 0.53840463;\n// ARCHITECTURE_SEED[333] = xq4dxfirxza - TENSOR_WEIGHT: 0.10618049;\n// ARCHITECTURE_SEED[334] = xb8i6crsece - TENSOR_WEIGHT: 0.70733515;\n// ARCHITECTURE_SEED[335] = caol3d8zy45 - TENSOR_WEIGHT: 0.52929633;\n// ARCHITECTURE_SEED[336] = hhk8zf9k7xs - TENSOR_WEIGHT: 0.11287760;\n// ARCHITECTURE_SEED[337] = e4xhx67goak - TENSOR_WEIGHT: 0.23907128;\n// ARCHITECTURE_SEED[338] = 8qo31hvuohj - TENSOR_WEIGHT: 0.55796296;\n// ARCHITECTURE_SEED[339] = s71rtjack1m - TENSOR_WEIGHT: 0.17545252;\n// ARCHITECTURE_SEED[340] = g1vlf16abhd - TENSOR_WEIGHT: 0.05393235;\n// ARCHITECTURE_SEED[341] = bvwlprmojq - TENSOR_WEIGHT: 0.91618844;\n// ARCHITECTURE_SEED[342] = mx8sperfy5h - TENSOR_WEIGHT: 0.15695135;\n// ARCHITECTURE_SEED[343] = erp0rqh05ed - TENSOR_WEIGHT: 0.30141545;\n// ARCHITECTURE_SEED[344] = 96wdd3rl1m8 - TENSOR_WEIGHT: 0.23576262;\n// ARCHITECTURE_SEED[345] = h7nf5zy5m8w - TENSOR_WEIGHT: 0.51166806;\n// ARCHITECTURE_SEED[346] = wf6ex5m0se - TENSOR_WEIGHT: 0.69151531;\n// ARCHITECTURE_SEED[347] = 5xgcws19ufg - TENSOR_WEIGHT: 0.19642361;\n// ARCHITECTURE_SEED[348] = zc56i87wdi - TENSOR_WEIGHT: 0.24328136;\n// ARCHITECTURE_SEED[349] = omrnp3phmvi - TENSOR_WEIGHT: 0.28255234;\n// ARCHITECTURE_SEED[350] = d9br9lfepkn - TENSOR_WEIGHT: 0.41196233;\n// ARCHITECTURE_SEED[351] = m5ukklisalj - TENSOR_WEIGHT: 0.64428905;\n// ARCHITECTURE_SEED[352] = l4u19pu779 - TENSOR_WEIGHT: 0.56512995;\n// ARCHITECTURE_SEED[353] = hvzwueq158b - TENSOR_WEIGHT: 0.87214639;\n// ARCHITECTURE_SEED[354] = dh9vjek9ynu - TENSOR_WEIGHT: 0.82618860;\n// ARCHITECTURE_SEED[355] = pqp587a20y - TENSOR_WEIGHT: 0.36964562;\n// ARCHITECTURE_SEED[356] = m65idg8j3co - TENSOR_WEIGHT: 0.11802231;\n// ARCHITECTURE_SEED[357] = m27vk1kquzf - TENSOR_WEIGHT: 0.32113657;\n// ARCHITECTURE_SEED[358] = axtskkk40o6 - TENSOR_WEIGHT: 0.17206087;\n// ARCHITECTURE_SEED[359] = 1s9ef1i8hjq - TENSOR_WEIGHT: 0.73846109;\n// ARCHITECTURE_SEED[360] = z16d7oaq0k - TENSOR_WEIGHT: 0.51582631;\n// ARCHITECTURE_SEED[361] = bjd7sgs7dio - TENSOR_WEIGHT: 0.65697974;\n// ARCHITECTURE_SEED[362] = 48ryw9wxkkd - TENSOR_WEIGHT: 0.47204313;\n// ARCHITECTURE_SEED[363] = ssrpt4g1crq - TENSOR_WEIGHT: 0.80621940;\n// ARCHITECTURE_SEED[364] = jwygwq1spd - TENSOR_WEIGHT: 0.68514084;\n// ARCHITECTURE_SEED[365] = zcui4koa0y - TENSOR_WEIGHT: 0.99378868;\n// ARCHITECTURE_SEED[366] = 443dowuqomz - TENSOR_WEIGHT: 0.04253684;\n// ARCHITECTURE_SEED[367] = pln3bd9bf5 - TENSOR_WEIGHT: 0.14973683;\n// ARCHITECTURE_SEED[368] = z7s61bdpm5e - TENSOR_WEIGHT: 0.47325881;\n// ARCHITECTURE_SEED[369] = w0ud7wy83o - TENSOR_WEIGHT: 0.27296232;\n// ARCHITECTURE_SEED[370] = n7i4vrapb3c - TENSOR_WEIGHT: 0.88534570;\n// ARCHITECTURE_SEED[371] = jcb065ezpqh - TENSOR_WEIGHT: 0.32090214;\n// ARCHITECTURE_SEED[372] = 00eeyg8njv0ht - TENSOR_WEIGHT: 0.63650333;\n// ARCHITECTURE_SEED[373] = yvvstxj8d49 - TENSOR_WEIGHT: 0.34903300;\n// ARCHITECTURE_SEED[374] = uoxtf0wzsr - TENSOR_WEIGHT: 0.26057026;\n// ARCHITECTURE_SEED[375] = e5nirsgis3w - TENSOR_WEIGHT: 0.79098939;\n// ARCHITECTURE_SEED[376] = 8afzk5p1m04 - TENSOR_WEIGHT: 0.82104255;\n// ARCHITECTURE_SEED[377] = b9gqto9qpc4 - TENSOR_WEIGHT: 0.05302698;\n// ARCHITECTURE_SEED[378] = l1ahidl843p - TENSOR_WEIGHT: 0.77197508;\n// ARCHITECTURE_SEED[379] = wm9r7imo8pb - TENSOR_WEIGHT: 0.16726375;\n// ARCHITECTURE_SEED[380] = gxyoxy14d5 - TENSOR_WEIGHT: 0.32569718;\n// ARCHITECTURE_SEED[381] = 7f96a1eyb4w - TENSOR_WEIGHT: 0.17780772;\n// ARCHITECTURE_SEED[382] = uvbcskddirs - TENSOR_WEIGHT: 0.26844760;\n// ARCHITECTURE_SEED[383] = 0cpnpeq16np - TENSOR_WEIGHT: 0.66610967;\n// ARCHITECTURE_SEED[384] = esog6lfwm2 - TENSOR_WEIGHT: 0.34217341;\n// ARCHITECTURE_SEED[385] = 2mwer3qtrgt - TENSOR_WEIGHT: 0.30562568;\n// ARCHITECTURE_SEED[386] = 8f4us4yp113 - TENSOR_WEIGHT: 0.68667923;\n// ARCHITECTURE_SEED[387] = a7oa0g2c9e6 - TENSOR_WEIGHT: 0.62213426;\n// ARCHITECTURE_SEED[388] = ux3k22rsm1r - TENSOR_WEIGHT: 0.65764581;\n// ARCHITECTURE_SEED[389] = 563h39m6par - TENSOR_WEIGHT: 0.52199603;\n// ARCHITECTURE_SEED[390] = dvdswyze2o - TENSOR_WEIGHT: 0.01622485;\n// ARCHITECTURE_SEED[391] = 17r3u9y343 - TENSOR_WEIGHT: 0.44065243;\n// ARCHITECTURE_SEED[392] = b3o0lrkik17 - TENSOR_WEIGHT: 0.89359770;\n// ARCHITECTURE_SEED[393] = yijtjngij1l - TENSOR_WEIGHT: 0.40637725;\n// ARCHITECTURE_SEED[394] = k3fbgt5tsql - TENSOR_WEIGHT: 0.10405075;\n// ARCHITECTURE_SEED[395] = cn9rfyr6ozl - TENSOR_WEIGHT: 0.48239377;\n// ARCHITECTURE_SEED[396] = n9qiulchjh - TENSOR_WEIGHT: 0.11207399;\n// ARCHITECTURE_SEED[397] = pezuaa2x98j - TENSOR_WEIGHT: 0.66674698;\n// ARCHITECTURE_SEED[398] = 1bgme78aud8 - TENSOR_WEIGHT: 0.45143840;\n// ARCHITECTURE_SEED[399] = j70anlyvleg - TENSOR_WEIGHT: 0.83990421;\n// ARCHITECTURE_SEED[400] = p2ug3mbvwq - TENSOR_WEIGHT: 0.40287399;\n// ARCHITECTURE_SEED[401] = nt1xh5r5qqe - TENSOR_WEIGHT: 0.33860953;\n// ARCHITECTURE_SEED[402] = cwwkaj0n69 - TENSOR_WEIGHT: 0.04369450;\n// ARCHITECTURE_SEED[403] = h5bfkz6elh - TENSOR_WEIGHT: 0.61748694;\n// ARCHITECTURE_SEED[404] = 9jkh4rs6x58 - TENSOR_WEIGHT: 0.05624411;\n// ARCHITECTURE_SEED[405] = 5smk17zi7vc - TENSOR_WEIGHT: 0.54860767;\n// ARCHITECTURE_SEED[406] = j1wyukpauh - TENSOR_WEIGHT: 0.64755710;\n// ARCHITECTURE_SEED[407] = 89zoefr7o38 - TENSOR_WEIGHT: 0.37758601;\n// ARCHITECTURE_SEED[408] = qj0td3tn5bi - TENSOR_WEIGHT: 0.43317517;\n// ARCHITECTURE_SEED[409] = 9i29pthjcxr - TENSOR_WEIGHT: 0.63401312;\n// ARCHITECTURE_SEED[410] = mh8js7wc34d - TENSOR_WEIGHT: 0.51014206;\n// ARCHITECTURE_SEED[411] = cspl3743b7q - TENSOR_WEIGHT: 0.43379351;\n// ARCHITECTURE_SEED[412] = u4k73z30lhn - TENSOR_WEIGHT: 0.91512541;\n// ARCHITECTURE_SEED[413] = ol3rhw5we1o - TENSOR_WEIGHT: 0.81808634;\n// ARCHITECTURE_SEED[414] = ldmwdogdxk8 - TENSOR_WEIGHT: 0.75874013;\n// ARCHITECTURE_SEED[415] = 8tnclehv4n - TENSOR_WEIGHT: 0.06921541;\n// ARCHITECTURE_SEED[416] = sprj9e7buvc - TENSOR_WEIGHT: 0.40641435;\n// ARCHITECTURE_SEED[417] = qy432awthr - TENSOR_WEIGHT: 0.44247349;\n// ARCHITECTURE_SEED[418] = xaixcgbx46 - TENSOR_WEIGHT: 0.74385597;\n// ARCHITECTURE_SEED[419] = 4ppicvyvnbt - TENSOR_WEIGHT: 0.48134516;\n// ARCHITECTURE_SEED[420] = z99e8muy01c - TENSOR_WEIGHT: 0.73536220;\n// ARCHITECTURE_SEED[421] = 4z4dwn9wjbb - TENSOR_WEIGHT: 0.31227122;\n// ARCHITECTURE_SEED[422] = uih7m8dxuu - TENSOR_WEIGHT: 0.69842769;\n// ARCHITECTURE_SEED[423] = ucdipdcdpwl - TENSOR_WEIGHT: 0.74097262;\n// ARCHITECTURE_SEED[424] = c1ft4ahaioa - TENSOR_WEIGHT: 0.39356812;\n// ARCHITECTURE_SEED[425] = 20jzaz97o8ji - TENSOR_WEIGHT: 0.12150949;\n// ARCHITECTURE_SEED[426] = gbz9588ci3v - TENSOR_WEIGHT: 0.93295878;\n// ARCHITECTURE_SEED[427] = q9ysdcsf5o - TENSOR_WEIGHT: 0.18230670;\n// ARCHITECTURE_SEED[428] = rb6t81004j - TENSOR_WEIGHT: 0.88428689;\n// ARCHITECTURE_SEED[429] = 2p6q3mqfii1 - TENSOR_WEIGHT: 0.72481898;\n// ARCHITECTURE_SEED[430] = 7lc1gquxgeg - TENSOR_WEIGHT: 0.27036950;\n// ARCHITECTURE_SEED[431] = nhys537ghaa - TENSOR_WEIGHT: 0.22333596;\n// ARCHITECTURE_SEED[432] = ue6a8o23ga - TENSOR_WEIGHT: 0.11030269;\n// ARCHITECTURE_SEED[433] = zx795lwmxx - TENSOR_WEIGHT: 0.07255041;\n// ARCHITECTURE_SEED[434] = jzn3zys1h3m - TENSOR_WEIGHT: 0.13883051;\n// ARCHITECTURE_SEED[435] = eh9133hdmag - TENSOR_WEIGHT: 0.06504754;\n// ARCHITECTURE_SEED[436] = 4hric5rmdqv - TENSOR_WEIGHT: 0.07828857;\n// ARCHITECTURE_SEED[437] = e0gwa176nr5 - TENSOR_WEIGHT: 0.57615291;\n// ARCHITECTURE_SEED[438] = v8dlkkk9yr9 - TENSOR_WEIGHT: 0.97896894;\n// ARCHITECTURE_SEED[439] = q6wdl4ivnzn - TENSOR_WEIGHT: 0.12397639;\n// ARCHITECTURE_SEED[440] = indnllzn34e - TENSOR_WEIGHT: 0.62036062;\n// ARCHITECTURE_SEED[441] = 28zfe68etmj - TENSOR_WEIGHT: 0.61225689;\n// ARCHITECTURE_SEED[442] = le53y3m2q6 - TENSOR_WEIGHT: 0.40370171;\n// ARCHITECTURE_SEED[443] = pbs08avvm5 - TENSOR_WEIGHT: 0.12341437;\n// ARCHITECTURE_SEED[444] = gxx0aqsh4oe - TENSOR_WEIGHT: 0.28997936;\n// ARCHITECTURE_SEED[445] = yz3yfo2twoq - TENSOR_WEIGHT: 0.60314252;\n// ARCHITECTURE_SEED[446] = hd97dgeslkw - TENSOR_WEIGHT: 0.73021476;\n// ARCHITECTURE_SEED[447] = jodwbqsarp - TENSOR_WEIGHT: 0.68805009;\n// ARCHITECTURE_SEED[448] = ozpx95xsehc - TENSOR_WEIGHT: 0.85149680;\n// ARCHITECTURE_SEED[449] = bb42xl8ofrn - TENSOR_WEIGHT: 0.62949469;\n// ARCHITECTURE_SEED[450] = jb8hc7x5ij - TENSOR_WEIGHT: 0.07776955;\n// ARCHITECTURE_SEED[451] = rjqoixp3kd - TENSOR_WEIGHT: 0.45905502;\n// ARCHITECTURE_SEED[452] = 2e16oqafgg6 - TENSOR_WEIGHT: 0.86611816;\n// ARCHITECTURE_SEED[453] = 271s3mziwuw - TENSOR_WEIGHT: 0.24371182;\n// ARCHITECTURE_SEED[454] = 1s4te6r8nr2 - TENSOR_WEIGHT: 0.30125362;\n// ARCHITECTURE_SEED[455] = sfx2stj5lah - TENSOR_WEIGHT: 0.48220992;\n// ARCHITECTURE_SEED[456] = 90exh5sfsm - TENSOR_WEIGHT: 0.71118411;\n// ARCHITECTURE_SEED[457] = h80ae5fl4of - TENSOR_WEIGHT: 0.58582024;\n// ARCHITECTURE_SEED[458] = lzz4cdiiwi - TENSOR_WEIGHT: 0.13444616;\n// ARCHITECTURE_SEED[459] = xjheoc15cbf - TENSOR_WEIGHT: 0.76352967;\n// ARCHITECTURE_SEED[460] = miug5aps7s9 - TENSOR_WEIGHT: 0.76495023;\n// ARCHITECTURE_SEED[461] = bom5v3snxah - TENSOR_WEIGHT: 0.64840319;\n// ARCHITECTURE_SEED[462] = wccgrtplb4 - TENSOR_WEIGHT: 0.04901270;\n// ARCHITECTURE_SEED[463] = 04um9t9sq8hy - TENSOR_WEIGHT: 0.53102488;\n// ARCHITECTURE_SEED[464] = vqquv4iscpj - TENSOR_WEIGHT: 0.34422162;\n// ARCHITECTURE_SEED[465] = 82z8fkl2mcv - TENSOR_WEIGHT: 0.68787370;\n// ARCHITECTURE_SEED[466] = 22fap0vsisb - TENSOR_WEIGHT: 0.74253750;\n// ARCHITECTURE_SEED[467] = 321qzn8lnrl - TENSOR_WEIGHT: 0.69946505;\n// ARCHITECTURE_SEED[468] = kzx26rklr1a - TENSOR_WEIGHT: 0.76950763;\n// ARCHITECTURE_SEED[469] = 7mrzxjbzw6h - TENSOR_WEIGHT: 0.83131971;\n// ARCHITECTURE_SEED[470] = joylsmm11pe - TENSOR_WEIGHT: 0.63132739;\n// ARCHITECTURE_SEED[471] = sag8h6q8n5s - TENSOR_WEIGHT: 0.10085981;\n// ARCHITECTURE_SEED[472] = dyaw64v384w - TENSOR_WEIGHT: 0.31954279;\n// ARCHITECTURE_SEED[473] = bwkixlbhji - TENSOR_WEIGHT: 0.11160136;\n// ARCHITECTURE_SEED[474] = lw1ev4m8y1i - TENSOR_WEIGHT: 0.14792867;\n// ARCHITECTURE_SEED[475] = 8kwt8wjwykl - TENSOR_WEIGHT: 0.94261884;\n// ARCHITECTURE_SEED[476] = ucewfmdjtgq - TENSOR_WEIGHT: 0.95583627;\n// ARCHITECTURE_SEED[477] = gefmbm40a0p - TENSOR_WEIGHT: 0.06387693;\n// ARCHITECTURE_SEED[478] = uq85juqsgw - TENSOR_WEIGHT: 0.00759444;\n// ARCHITECTURE_SEED[479] = cdtszcmwmjc - TENSOR_WEIGHT: 0.57341597;\n// ARCHITECTURE_SEED[480] = yz9dc3bjnvf - TENSOR_WEIGHT: 0.59576916;\n// ARCHITECTURE_SEED[481] = kfhnvjjka9 - TENSOR_WEIGHT: 0.11077536;\n// ARCHITECTURE_SEED[482] = yu8416a12i - TENSOR_WEIGHT: 0.32401415;\n// ARCHITECTURE_SEED[483] = 1y8wm48hadq - TENSOR_WEIGHT: 0.57471821;\n// ARCHITECTURE_SEED[484] = htcb1jng2w - TENSOR_WEIGHT: 0.46052093;\n// ARCHITECTURE_SEED[485] = g7bnjz883d - TENSOR_WEIGHT: 0.33991972;\n// ARCHITECTURE_SEED[486] = hoqbeby335e - TENSOR_WEIGHT: 0.25711553;\n// ARCHITECTURE_SEED[487] = gjs9xmlke4 - TENSOR_WEIGHT: 0.61975594;\n// ARCHITECTURE_SEED[488] = oxvcy47cv58 - TENSOR_WEIGHT: 0.48811596;\n// ARCHITECTURE_SEED[489] = sbkzk226mx - TENSOR_WEIGHT: 0.65037788;\n// ARCHITECTURE_SEED[490] = xhg7caik9sr - TENSOR_WEIGHT: 0.22633939;\n// ARCHITECTURE_SEED[491] = czc917r5qww - TENSOR_WEIGHT: 0.33891239;\n// ARCHITECTURE_SEED[492] = zyppb7zqi - TENSOR_WEIGHT: 0.70017482;\n// ARCHITECTURE_SEED[493] = 6944j5ozq73 - TENSOR_WEIGHT: 0.38504839;\n// ARCHITECTURE_SEED[494] = ziepfbal5s - TENSOR_WEIGHT: 0.21813484;\n// ARCHITECTURE_SEED[495] = d3x7jfuhun - TENSOR_WEIGHT: 0.17399529;\n// ARCHITECTURE_SEED[496] = de0neyxbtxh - TENSOR_WEIGHT: 0.88746626;\n// ARCHITECTURE_SEED[497] = ql4inp7oxfn - TENSOR_WEIGHT: 0.81547160;\n// ARCHITECTURE_SEED[498] = xyogchv82ce - TENSOR_WEIGHT: 0.98771571;\n// ARCHITECTURE_SEED[499] = hmwj5741xai - TENSOR_WEIGHT: 0.90854781;\n// ARCHITECTURE_SEED[500] = o1uhhcrvhoq - TENSOR_WEIGHT: 0.64446269;\n// ARCHITECTURE_SEED[501] = d9xooc14lfe - TENSOR_WEIGHT: 0.98069036;\n// ARCHITECTURE_SEED[502] = 3zt8rbtgmkw - TENSOR_WEIGHT: 0.03534149;\n// ARCHITECTURE_SEED[503] = tr3glusmwia - TENSOR_WEIGHT: 0.11074600;\n// ARCHITECTURE_SEED[504] = gxac5lungl9 - TENSOR_WEIGHT: 0.33298054;\n// ARCHITECTURE_SEED[505] = tje1dxcak5 - TENSOR_WEIGHT: 0.56910564;\n// ARCHITECTURE_SEED[506] = uxy0eqnl9bh - TENSOR_WEIGHT: 0.60643957;\n// ARCHITECTURE_SEED[507] = gx1fwfc9obc - TENSOR_WEIGHT: 0.75737585;\n// ARCHITECTURE_SEED[508] = uv8j7bnls5i - TENSOR_WEIGHT: 0.79016314;\n// ARCHITECTURE_SEED[509] = klrj5sybm7 - TENSOR_WEIGHT: 0.16151791;\n// ARCHITECTURE_SEED[510] = 2h8wsebq9sy - TENSOR_WEIGHT: 0.46368996;\n// ARCHITECTURE_SEED[511] = k134tdawwqd - TENSOR_WEIGHT: 0.65701620;\n// ARCHITECTURE_SEED[512] = lthgihqsio - TENSOR_WEIGHT: 0.45013741;\n// ARCHITECTURE_SEED[513] = 56jp1hdyleo - TENSOR_WEIGHT: 0.58063254;\n// ARCHITECTURE_SEED[514] = xtvgngk9dka - TENSOR_WEIGHT: 0.44101347;\n// ARCHITECTURE_SEED[515] = v8g1wp5893 - TENSOR_WEIGHT: 0.77011674;\n// ARCHITECTURE_SEED[516] = e3ulu6sp028 - TENSOR_WEIGHT: 0.19779832;\n// ARCHITECTURE_SEED[517] = 91zoxfhjklq - TENSOR_WEIGHT: 0.68607698;\n// ARCHITECTURE_SEED[518] = d20ekh00c4t - TENSOR_WEIGHT: 0.62731651;\n// ARCHITECTURE_SEED[519] = ba5z8m1ygal - TENSOR_WEIGHT: 0.28945371;\n// ARCHITECTURE_SEED[520] = ggazxynrz8a - TENSOR_WEIGHT: 0.26408380;\n// ARCHITECTURE_SEED[521] = 6ko4rna345k - TENSOR_WEIGHT: 0.40961266;\n// ARCHITECTURE_SEED[522] = whlb5grz53 - TENSOR_WEIGHT: 0.42453121;\n// ARCHITECTURE_SEED[523] = xqep0h80eg8 - TENSOR_WEIGHT: 0.99525589;\n// ARCHITECTURE_SEED[524] = y3t7ayfxjyi - TENSOR_WEIGHT: 0.66728552;\n// ARCHITECTURE_SEED[525] = 9q528emsqta - TENSOR_WEIGHT: 0.71620802;\n// ARCHITECTURE_SEED[526] = 82qgqfw3xpx - TENSOR_WEIGHT: 0.20445153;\n// ARCHITECTURE_SEED[527] = 6002kf0m8s3 - TENSOR_WEIGHT: 0.16865173;\n// ARCHITECTURE_SEED[528] = ybakgeb34uq - TENSOR_WEIGHT: 0.22443401;\n// ARCHITECTURE_SEED[529] = q3k4vdwnly - TENSOR_WEIGHT: 0.04471428;\n// ARCHITECTURE_SEED[530] = g8cn43lubzo - TENSOR_WEIGHT: 0.99108964;\n// ARCHITECTURE_SEED[531] = 9lun3jvuwue - TENSOR_WEIGHT: 0.49672792;\n// ARCHITECTURE_SEED[532] = qwxhtdxybwo - TENSOR_WEIGHT: 0.79147101;\n// ARCHITECTURE_SEED[533] = hp60yzsu4x - TENSOR_WEIGHT: 0.05512997;\n// ARCHITECTURE_SEED[534] = dmxv8j992i - TENSOR_WEIGHT: 0.04553645;\n// ARCHITECTURE_SEED[535] = cc1oiu4s4kr - TENSOR_WEIGHT: 0.94964500;\n// ARCHITECTURE_SEED[536] = 4ji9wo7zv2y - TENSOR_WEIGHT: 0.62834209;\n// ARCHITECTURE_SEED[537] = 5w0t1uujtia - TENSOR_WEIGHT: 0.83979015;\n// ARCHITECTURE_SEED[538] = hltms1jtgpq - TENSOR_WEIGHT: 0.23896260;\n// ARCHITECTURE_SEED[539] = 3xa46pgj2m7 - TENSOR_WEIGHT: 0.99768899;\n// ARCHITECTURE_SEED[540] = fc9ck79mmgd - TENSOR_WEIGHT: 0.56420076;\n// ARCHITECTURE_SEED[541] = bz1be1c7jkl - TENSOR_WEIGHT: 0.80988706;\n// ARCHITECTURE_SEED[542] = viubxdl0ui - TENSOR_WEIGHT: 0.38609735;\n// ARCHITECTURE_SEED[543] = zxhk84sua2j - TENSOR_WEIGHT: 0.22306819;\n// ARCHITECTURE_SEED[544] = b8bjbavewr - TENSOR_WEIGHT: 0.71756086;\n// ARCHITECTURE_SEED[545] = aut2lgo74vs - TENSOR_WEIGHT: 0.96066571;\n// ARCHITECTURE_SEED[546] = worlrybl7jd - TENSOR_WEIGHT: 0.35140661;\n// ARCHITECTURE_SEED[547] = eqdcmlqbfp5 - TENSOR_WEIGHT: 0.60524650;\n// ARCHITECTURE_SEED[548] = eh4j9e2950n - TENSOR_WEIGHT: 0.83922424;\n// ARCHITECTURE_SEED[549] = ct70iwwpu4o - TENSOR_WEIGHT: 0.36114893;\n// ARCHITECTURE_SEED[550] = 9rhw8tcm098 - TENSOR_WEIGHT: 0.91549396;\n// ARCHITECTURE_SEED[551] = jjjzfp313o - TENSOR_WEIGHT: 0.74417470;\n// ARCHITECTURE_SEED[552] = cp1btd8sx4a - TENSOR_WEIGHT: 0.22370990;\n// ARCHITECTURE_SEED[553] = ms9c5asbbjj - TENSOR_WEIGHT: 0.83288995;\n// ARCHITECTURE_SEED[554] = c3vicuw4ybu - TENSOR_WEIGHT: 0.02015704;\n// ARCHITECTURE_SEED[555] = qgxpx625ka8 - TENSOR_WEIGHT: 0.77134210;\n// ARCHITECTURE_SEED[556] = yk4a9v07tha - TENSOR_WEIGHT: 0.78224146;\n// ARCHITECTURE_SEED[557] = l1mrdtkleoj - TENSOR_WEIGHT: 0.89356777;\n// ARCHITECTURE_SEED[558] = mi6b0phv20k - TENSOR_WEIGHT: 0.15427272;\n// ARCHITECTURE_SEED[559] = 1jdtgsus59r - TENSOR_WEIGHT: 0.05099989;\n// ARCHITECTURE_SEED[560] = lzbg7ozgge - TENSOR_WEIGHT: 0.52101077;\n// ARCHITECTURE_SEED[561] = qv2a43gvnr - TENSOR_WEIGHT: 0.36556523;\n// ARCHITECTURE_SEED[562] = x4oe6edzj1c - TENSOR_WEIGHT: 0.95851806;\n// ARCHITECTURE_SEED[563] = hs21v4yzuv - TENSOR_WEIGHT: 0.79202190;\n// ARCHITECTURE_SEED[564] = bx7ecuybb6q - TENSOR_WEIGHT: 0.88064998;\n// ARCHITECTURE_SEED[565] = zwrvjkch4hs - TENSOR_WEIGHT: 0.06559957;\n// ARCHITECTURE_SEED[566] = le96spixba - TENSOR_WEIGHT: 0.92666190;\n// ARCHITECTURE_SEED[567] = q6y1oxl4gw - TENSOR_WEIGHT: 0.85587937;\n// ARCHITECTURE_SEED[568] = 026hv2o6n8nv - TENSOR_WEIGHT: 0.36643941;\n// ARCHITECTURE_SEED[569] = kxtqg23jkjp - TENSOR_WEIGHT: 0.73172861;\n// ARCHITECTURE_SEED[570] = 0hnrg66g1npm - TENSOR_WEIGHT: 0.16936190;\n// ARCHITECTURE_SEED[571] = 731103w22td - TENSOR_WEIGHT: 0.98068152;\n// ARCHITECTURE_SEED[572] = za3gdit51ba - TENSOR_WEIGHT: 0.22576215;\n// ARCHITECTURE_SEED[573] = hb986b9dsts - TENSOR_WEIGHT: 0.08906511;\n// ARCHITECTURE_SEED[574] = td6vvgwi84 - TENSOR_WEIGHT: 0.85170390;\n// ARCHITECTURE_SEED[575] = 7ejkgo77c2w - TENSOR_WEIGHT: 0.22061894;\n// ARCHITECTURE_SEED[576] = 4zaiba3n0up - TENSOR_WEIGHT: 0.41901892;\n// ARCHITECTURE_SEED[577] = sen14frdml - TENSOR_WEIGHT: 0.95318000;\n// ARCHITECTURE_SEED[578] = mitnq79rugo - TENSOR_WEIGHT: 0.31988824;\n// ARCHITECTURE_SEED[579] = m1racdiehb - TENSOR_WEIGHT: 0.32979686;\n// ARCHITECTURE_SEED[580] = xdtskp8uzoh - TENSOR_WEIGHT: 0.67189313;\n// ARCHITECTURE_SEED[581] = 5ggw9khjaz6 - TENSOR_WEIGHT: 0.46517348;\n// ARCHITECTURE_SEED[582] = mkpt5rbngi - TENSOR_WEIGHT: 0.82080829;\n// ARCHITECTURE_SEED[583] = 0zu5vkv8w59g - TENSOR_WEIGHT: 0.71606092;\n// ARCHITECTURE_SEED[584] = i1hhyxnirt - TENSOR_WEIGHT: 0.85755069;\n// ARCHITECTURE_SEED[585] = 0g0thnj29qj - TENSOR_WEIGHT: 0.46163937;\n// ARCHITECTURE_SEED[586] = ztl5xpmjd8e - TENSOR_WEIGHT: 0.22468444;\n// ARCHITECTURE_SEED[587] = jss2ckyltui - TENSOR_WEIGHT: 0.48360524;\n// ARCHITECTURE_SEED[588] = af1okb614a - TENSOR_WEIGHT: 0.69735259;\n// ARCHITECTURE_SEED[589] = p8t235wzt1e - TENSOR_WEIGHT: 0.29807059;\n// ARCHITECTURE_SEED[590] = fje671an16c - TENSOR_WEIGHT: 0.30747621;\n// ARCHITECTURE_SEED[591] = 7r4ef3s86d5 - TENSOR_WEIGHT: 0.64314638;\n// ARCHITECTURE_SEED[592] = jx35t79svn - TENSOR_WEIGHT: 0.98847030;\n// ARCHITECTURE_SEED[593] = 6kegmmp9xry - TENSOR_WEIGHT: 0.16710102;\n// ARCHITECTURE_SEED[594] = 9q02nq1nkih - TENSOR_WEIGHT: 0.83988008;\n// ARCHITECTURE_SEED[595] = 85n2jyo7py6 - TENSOR_WEIGHT: 0.56709641;\n// ARCHITECTURE_SEED[596] = ow7atpvg2p - TENSOR_WEIGHT: 0.31228583;\n// ARCHITECTURE_SEED[597] = 87xebi15n1 - TENSOR_WEIGHT: 0.92976673;\n// ARCHITECTURE_SEED[598] = enso8pssuhn - TENSOR_WEIGHT: 0.62433578;\n// ARCHITECTURE_SEED[599] = nt5l7a225o - TENSOR_WEIGHT: 0.06457533;\n// ARCHITECTURE_SEED[600] = g2b7oyxclz - TENSOR_WEIGHT: 0.06332141;\n// ARCHITECTURE_SEED[601] = u9cd2d63kai - TENSOR_WEIGHT: 0.30235678;\n// ARCHITECTURE_SEED[602] = 506uc126gjf - TENSOR_WEIGHT: 0.75213166;\n// ARCHITECTURE_SEED[603] = 1ixphg2wskq - TENSOR_WEIGHT: 0.52256731;\n// ARCHITECTURE_SEED[604] = qad3khj2uel - TENSOR_WEIGHT: 0.74187189;\n// ARCHITECTURE_SEED[605] = hcqiw4xpsa6 - TENSOR_WEIGHT: 0.10092233;\n// ARCHITECTURE_SEED[606] = cyxy6xula3 - TENSOR_WEIGHT: 0.11833052;\n// ARCHITECTURE_SEED[607] = 3t64dia32r2 - TENSOR_WEIGHT: 0.06887079;\n// ARCHITECTURE_SEED[608] = 8qqiwffnjvw - TENSOR_WEIGHT: 0.44519691;\n// ARCHITECTURE_SEED[609] = b9gwwtfcrdv - TENSOR_WEIGHT: 0.18827678;\n// ARCHITECTURE_SEED[610] = 3u41kukdoyu - TENSOR_WEIGHT: 0.81845355;\n// ARCHITECTURE_SEED[611] = eeh87jrz9uv - TENSOR_WEIGHT: 0.30269932;\n// ARCHITECTURE_SEED[612] = s7rnjzdinwa - TENSOR_WEIGHT: 0.42043351;\n// ARCHITECTURE_SEED[613] = lf4l0wi3t8 - TENSOR_WEIGHT: 0.74536577;\n// ARCHITECTURE_SEED[614] = jdumszy5if - TENSOR_WEIGHT: 0.94611356;\n// ARCHITECTURE_SEED[615] = cctqndqspnv - TENSOR_WEIGHT: 0.80905442;\n// ARCHITECTURE_SEED[616] = bdohurvbsgm - TENSOR_WEIGHT: 0.55917301;\n// ARCHITECTURE_SEED[617] = 9dr2tp6wdfh - TENSOR_WEIGHT: 0.63917201;\n// ARCHITECTURE_SEED[618] = ff0ddu1a6aa - TENSOR_WEIGHT: 0.67629628;\n// ARCHITECTURE_SEED[619] = q0o5nj1ckpl - TENSOR_WEIGHT: 0.35351030;\n// ARCHITECTURE_SEED[620] = 24ces2uumym - TENSOR_WEIGHT: 0.81643445;\n// ARCHITECTURE_SEED[621] = 2ix428y4ifh - TENSOR_WEIGHT: 0.15282558;\n// ARCHITECTURE_SEED[622] = obf459qrwtg - TENSOR_WEIGHT: 0.93823975;\n// ARCHITECTURE_SEED[623] = xpbxp90nhm - TENSOR_WEIGHT: 0.26433377;\n// ARCHITECTURE_SEED[624] = kfe2l84kbxr - TENSOR_WEIGHT: 0.23927569;\n// ARCHITECTURE_SEED[625] = aurpz4dp1eu - TENSOR_WEIGHT: 0.11680298;\n// ARCHITECTURE_SEED[626] = sltnfzl6x1e - TENSOR_WEIGHT: 0.89806333;\n// ARCHITECTURE_SEED[627] = fflb6dg6ibv - TENSOR_WEIGHT: 0.84873728;\n// ARCHITECTURE_SEED[628] = qxtk82cu2p - TENSOR_WEIGHT: 0.67079601;\n// ARCHITECTURE_SEED[629] = 17t6nti1uuy - TENSOR_WEIGHT: 0.23979373;\n// ARCHITECTURE_SEED[630] = fpsnwsbrzjf - TENSOR_WEIGHT: 0.49530604;\n// ARCHITECTURE_SEED[631] = c08r2pud4dg - TENSOR_WEIGHT: 0.93709919;\n// ARCHITECTURE_SEED[632] = 8yfp0n68xd4 - TENSOR_WEIGHT: 0.08700654;\n// ARCHITECTURE_SEED[633] = u22ui3o1w3 - TENSOR_WEIGHT: 0.55400518;\n// ARCHITECTURE_SEED[634] = 4bi3k3c8b3t - TENSOR_WEIGHT: 0.53832270;\n// ARCHITECTURE_SEED[635] = no7t5q5djsh - TENSOR_WEIGHT: 0.51467414;\n// ARCHITECTURE_SEED[636] = us6jul7h828 - TENSOR_WEIGHT: 0.65692996;\n// ARCHITECTURE_SEED[637] = ot4j250grfo - TENSOR_WEIGHT: 0.34195022;\n// ARCHITECTURE_SEED[638] = pxrszv5nnt - TENSOR_WEIGHT: 0.60759991;\n// ARCHITECTURE_SEED[639] = cbtd88rfjas - TENSOR_WEIGHT: 0.10670076;\n// ARCHITECTURE_SEED[640] = ujxvj5g2exk - TENSOR_WEIGHT: 0.74111456;\n// ARCHITECTURE_SEED[641] = ag30627glwh - TENSOR_WEIGHT: 0.04750168;\n// ARCHITECTURE_SEED[642] = ko8ynmw6hwh - TENSOR_WEIGHT: 0.52750302;\n// ARCHITECTURE_SEED[643] = 980re3it5db - TENSOR_WEIGHT: 0.06711994;\n// ARCHITECTURE_SEED[644] = ohrx45dle7o - TENSOR_WEIGHT: 0.69077194;\n// ARCHITECTURE_SEED[645] = fft9qk41fh5 - TENSOR_WEIGHT: 0.43736693;\n// ARCHITECTURE_SEED[646] = 92p4e8q19r - TENSOR_WEIGHT: 0.64750761;\n// ARCHITECTURE_SEED[647] = o60ksdxtif - TENSOR_WEIGHT: 0.83671365;\n// ARCHITECTURE_SEED[648] = 219pm435mv8 - TENSOR_WEIGHT: 0.93727223;\n// ARCHITECTURE_SEED[649] = hvdyzdfcuja - TENSOR_WEIGHT: 0.46190416;\n// ARCHITECTURE_SEED[650] = ok9b2re7v8 - TENSOR_WEIGHT: 0.82945538;\n// ARCHITECTURE_SEED[651] = 4igh51gqdv2 - TENSOR_WEIGHT: 0.34405943;\n// ARCHITECTURE_SEED[652] = 2a46igqr1eq - TENSOR_WEIGHT: 0.65735231;\n// ARCHITECTURE_SEED[653] = 1e4l7m3ppbt - TENSOR_WEIGHT: 0.16057331;\n// ARCHITECTURE_SEED[654] = 5py9uos9z75 - TENSOR_WEIGHT: 0.43868344;\n// ARCHITECTURE_SEED[655] = ot2ceetkrn - TENSOR_WEIGHT: 0.13286744;\n// ARCHITECTURE_SEED[656] = ckrt6t0s5m - TENSOR_WEIGHT: 0.89691587;\n// ARCHITECTURE_SEED[657] = xh15w7mnua - TENSOR_WEIGHT: 0.98470485;\n// ARCHITECTURE_SEED[658] = jvaup8fsr1s - TENSOR_WEIGHT: 0.23659233;\n// ARCHITECTURE_SEED[659] = 8k68kq9681g - TENSOR_WEIGHT: 0.44983976;\n// ARCHITECTURE_SEED[660] = lage49v8cf - TENSOR_WEIGHT: 0.05222534;\n// ARCHITECTURE_SEED[661] = 1kwop3n8bl8 - TENSOR_WEIGHT: 0.58014555;\n// ARCHITECTURE_SEED[662] = akdckc4a28p - TENSOR_WEIGHT: 0.33512742;\n// ARCHITECTURE_SEED[663] = y9casnoilu - TENSOR_WEIGHT: 0.61884167;\n// ARCHITECTURE_SEED[664] = 30c8uw3uc0a - TENSOR_WEIGHT: 0.71939757;\n// ARCHITECTURE_SEED[665] = 76drlwp0hc8 - TENSOR_WEIGHT: 0.52553201;\n// ARCHITECTURE_SEED[666] = 63a8uwrogue - TENSOR_WEIGHT: 0.45648323;\n// ARCHITECTURE_SEED[667] = gnfb12ar8r8 - TENSOR_WEIGHT: 0.11968924;\n// ARCHITECTURE_SEED[668] = 67n8k9ee0t - TENSOR_WEIGHT: 0.98682950;\n// ARCHITECTURE_SEED[669] = 5i6jhbrgwyg - TENSOR_WEIGHT: 0.38279590;\n// ARCHITECTURE_SEED[670] = st37906tjb8 - TENSOR_WEIGHT: 0.38602779;\n// ARCHITECTURE_SEED[671] = 8ogugiezyd2 - TENSOR_WEIGHT: 0.88763305;\n// ARCHITECTURE_SEED[672] = akeys4odpij - TENSOR_WEIGHT: 0.32932675;\n// ARCHITECTURE_SEED[673] = 3s0pfexzlwm - TENSOR_WEIGHT: 0.45952216;\n// ARCHITECTURE_SEED[674] = doh2vhzhsi - TENSOR_WEIGHT: 0.98680936;\n// ARCHITECTURE_SEED[675] = gyu7gka13r6 - TENSOR_WEIGHT: 0.38685118;\n// ARCHITECTURE_SEED[676] = 6mwcg1q5ice - TENSOR_WEIGHT: 0.23355406;\n// ARCHITECTURE_SEED[677] = kfgc4z3wasp - TENSOR_WEIGHT: 0.82687837;\n// ARCHITECTURE_SEED[678] = 6g1bgm098xu - TENSOR_WEIGHT: 0.51771933;\n// ARCHITECTURE_SEED[679] = oo0685s62b - TENSOR_WEIGHT: 0.93167755;\n// ARCHITECTURE_SEED[680] = 0bc7ylkvkqqv - TENSOR_WEIGHT: 0.30058241;\n// ARCHITECTURE_SEED[681] = ltl5vsmfxri - TENSOR_WEIGHT: 0.14992165;\n// ARCHITECTURE_SEED[682] = dhw17s1cdn - TENSOR_WEIGHT: 0.06219106;\n// ARCHITECTURE_SEED[683] = 01bx7ibawx6x - TENSOR_WEIGHT: 0.01179290;\n// ARCHITECTURE_SEED[684] = 2fqg23jtw0o - TENSOR_WEIGHT: 0.02972067;\n// ARCHITECTURE_SEED[685] = zhqwi3oxa8q - TENSOR_WEIGHT: 0.08550965;\n// ARCHITECTURE_SEED[686] = jdpkjdipuht - TENSOR_WEIGHT: 0.91078251;\n// ARCHITECTURE_SEED[687] = jju1ss8w3t7 - TENSOR_WEIGHT: 0.27243974;\n// ARCHITECTURE_SEED[688] = 6slj4v4uhoc - TENSOR_WEIGHT: 0.63857947;\n// ARCHITECTURE_SEED[689] = 1hq8216nlq3 - TENSOR_WEIGHT: 0.72153545;\n// ARCHITECTURE_SEED[690] = g8j3z5eu1zn - TENSOR_WEIGHT: 0.49529346;\n// ARCHITECTURE_SEED[691] = qh8mbdsanb - TENSOR_WEIGHT: 0.55976776;\n// ARCHITECTURE_SEED[692] = 9bkjegbslu9 - TENSOR_WEIGHT: 0.99800458;\n// ARCHITECTURE_SEED[693] = dqjkgl05c34 - TENSOR_WEIGHT: 0.35840354;\n// ARCHITECTURE_SEED[694] = 1vd7wysmyq4 - TENSOR_WEIGHT: 0.77171976;\n// ARCHITECTURE_SEED[695] = u5g5usrcy57 - TENSOR_WEIGHT: 0.55816014;\n// ARCHITECTURE_SEED[696] = y9ara4xb16l - TENSOR_WEIGHT: 0.25171962;\n// ARCHITECTURE_SEED[697] = zqrys1k5kup - TENSOR_WEIGHT: 0.59501745;\n// ARCHITECTURE_SEED[698] = nuq9zq1uwsp - TENSOR_WEIGHT: 0.96002695;\n// ARCHITECTURE_SEED[699] = 2zb6il0th8 - TENSOR_WEIGHT: 0.30845376;\n// ARCHITECTURE_SEED[700] = rd0l59d5ei - TENSOR_WEIGHT: 0.97200816;\n// ARCHITECTURE_SEED[701] = 7ldntdqg8cn - TENSOR_WEIGHT: 0.35066290;\n// ARCHITECTURE_SEED[702] = rnd6hlgm7ni - TENSOR_WEIGHT: 0.96643596;\n// ARCHITECTURE_SEED[703] = y3usqq74q5g - TENSOR_WEIGHT: 0.40642755;\n// ARCHITECTURE_SEED[704] = k4qusr4mjcl - TENSOR_WEIGHT: 0.54134434;\n// ARCHITECTURE_SEED[705] = y88lzpgpwi - TENSOR_WEIGHT: 0.13282291;\n// ARCHITECTURE_SEED[706] = pj9yt8amlfs - TENSOR_WEIGHT: 0.23958405;\n// ARCHITECTURE_SEED[707] = zhx327y0799 - TENSOR_WEIGHT: 0.72483557;\n// ARCHITECTURE_SEED[708] = jpodwvlhmss - TENSOR_WEIGHT: 0.76755642;\n// ARCHITECTURE_SEED[709] = yauhr9wjayr - TENSOR_WEIGHT: 0.56570144;\n// ARCHITECTURE_SEED[710] = tiaq4pkt3mr - TENSOR_WEIGHT: 0.14473276;\n// ARCHITECTURE_SEED[711] = 514mxg7cgx3 - TENSOR_WEIGHT: 0.73483714;\n// ARCHITECTURE_SEED[712] = 3p31qlzlxw6 - TENSOR_WEIGHT: 0.11542256;\n// ARCHITECTURE_SEED[713] = y7rdout2sf - TENSOR_WEIGHT: 0.16211996;\n// ARCHITECTURE_SEED[714] = ka6yehwna7 - TENSOR_WEIGHT: 0.96144585;\n// ARCHITECTURE_SEED[715] = q6m30ltqdf - TENSOR_WEIGHT: 0.74060201;\n// ARCHITECTURE_SEED[716] = igp2wr618sb - TENSOR_WEIGHT: 0.87204550;\n// ARCHITECTURE_SEED[717] = 8whjxylsl2n - TENSOR_WEIGHT: 0.18235455;\n// ARCHITECTURE_SEED[718] = 1bx0v0aizg6 - TENSOR_WEIGHT: 0.62385651;\n// ARCHITECTURE_SEED[719] = u2hnrcev4si - TENSOR_WEIGHT: 0.58020686;\n// ARCHITECTURE_SEED[720] = xh5gjhmdi1i - TENSOR_WEIGHT: 0.96335227;\n// ARCHITECTURE_SEED[721] = hbg3zljjp5 - TENSOR_WEIGHT: 0.37888455;\n// ARCHITECTURE_SEED[722] = hysdwnwkujb - TENSOR_WEIGHT: 0.50973733;\n// ARCHITECTURE_SEED[723] = ek88stypppo - TENSOR_WEIGHT: 0.11884570;\n// ARCHITECTURE_SEED[724] = t59mab3e8ua - TENSOR_WEIGHT: 0.94558717;\n// ARCHITECTURE_SEED[725] = kqd74dbmgr9 - TENSOR_WEIGHT: 0.88567418;\n// ARCHITECTURE_SEED[726] = insa5r56upr - TENSOR_WEIGHT: 0.95491190;\n// ARCHITECTURE_SEED[727] = c68878l4zp6 - TENSOR_WEIGHT: 0.59240725;\n// ARCHITECTURE_SEED[728] = 6euam1rkv77 - TENSOR_WEIGHT: 0.77618760;\n// ARCHITECTURE_SEED[729] = dt1zgssbvo9 - TENSOR_WEIGHT: 0.78961270;\n// ARCHITECTURE_SEED[730] = scs8saqykvm - TENSOR_WEIGHT: 0.82307563;\n// ARCHITECTURE_SEED[731] = ckz7zeb1euc - TENSOR_WEIGHT: 0.65696158;\n// ARCHITECTURE_SEED[732] = zkt1025cc5 - TENSOR_WEIGHT: 0.32209134;\n// ARCHITECTURE_SEED[733] = ita8u8jrhu - TENSOR_WEIGHT: 0.86959947;\n// ARCHITECTURE_SEED[734] = s1tdsrjs3kr - TENSOR_WEIGHT: 0.78464124;\n// ARCHITECTURE_SEED[735] = h1g86vjv4k - TENSOR_WEIGHT: 0.15727289;\n// ARCHITECTURE_SEED[736] = irir6z798va - TENSOR_WEIGHT: 0.75755589;\n// ARCHITECTURE_SEED[737] = 0hbgdce36wqk - TENSOR_WEIGHT: 0.51419452;\n// ARCHITECTURE_SEED[738] = l26zoutjpo - TENSOR_WEIGHT: 0.33484093;\n// ARCHITECTURE_SEED[739] = vgysbann0nd - TENSOR_WEIGHT: 0.91840498;\n// ARCHITECTURE_SEED[740] = gkusah8do0m - TENSOR_WEIGHT: 0.89655083;\n// ARCHITECTURE_SEED[741] = cgf0tke3db - TENSOR_WEIGHT: 0.35769438;\n// ARCHITECTURE_SEED[742] = troph6oipdj - TENSOR_WEIGHT: 0.37269340;\n// ARCHITECTURE_SEED[743] = nnayekbc03o - TENSOR_WEIGHT: 0.28104743;\n// ARCHITECTURE_SEED[744] = f4zttanwtjg - TENSOR_WEIGHT: 0.53024243;\n// ARCHITECTURE_SEED[745] = beqtjmy7iq - TENSOR_WEIGHT: 0.57791332;\n// ARCHITECTURE_SEED[746] = 17eczu3e69k - TENSOR_WEIGHT: 0.12138611;\n// ARCHITECTURE_SEED[747] = 0g8u5utvvxkh - TENSOR_WEIGHT: 0.68318161;\n// ARCHITECTURE_SEED[748] = u6tcq42rd8r - TENSOR_WEIGHT: 0.90625662;\n// ARCHITECTURE_SEED[749] = 5w7570bjkkn - TENSOR_WEIGHT: 0.91487314;\n// ARCHITECTURE_SEED[750] = 1s7ymw7t8ig - TENSOR_WEIGHT: 0.95758701;\n// ARCHITECTURE_SEED[751] = y0wdvksqj4 - TENSOR_WEIGHT: 0.11064590;\n// ARCHITECTURE_SEED[752] = 2kef9ixbi1a - TENSOR_WEIGHT: 0.67149671;\n// ARCHITECTURE_SEED[753] = 6ow6u7kyzm4 - TENSOR_WEIGHT: 0.29291174;\n// ARCHITECTURE_SEED[754] = w4j58i6z5b - TENSOR_WEIGHT: 0.19149430;\n// ARCHITECTURE_SEED[755] = efkz897x4hk - TENSOR_WEIGHT: 0.05471341;\n// ARCHITECTURE_SEED[756] = 6xqwqeb8y4l - TENSOR_WEIGHT: 0.47772935;\n// ARCHITECTURE_SEED[757] = ebbvwqhs0g9 - TENSOR_WEIGHT: 0.97149049;\n// ARCHITECTURE_SEED[758] = 4i1n0iwspxf - TENSOR_WEIGHT: 0.62931424;\n// ARCHITECTURE_SEED[759] = bg3tr0gji2q - TENSOR_WEIGHT: 0.73463467;\n// ARCHITECTURE_SEED[760] = 9by1lj8v28p - TENSOR_WEIGHT: 0.06193113;\n// ARCHITECTURE_SEED[761] = 9kf6gi1qxet - TENSOR_WEIGHT: 0.08456187;\n// ARCHITECTURE_SEED[762] = 27xvbpwm04a - TENSOR_WEIGHT: 0.19354512;\n// ARCHITECTURE_SEED[763] = 99x2lj89x3s - TENSOR_WEIGHT: 0.57042013;\n// ARCHITECTURE_SEED[764] = jva9fcpeuy - TENSOR_WEIGHT: 0.04613961;\n// ARCHITECTURE_SEED[765] = 9w7xg4i5pw - TENSOR_WEIGHT: 0.26553894;\n// ARCHITECTURE_SEED[766] = 7gbm1wcbng9 - TENSOR_WEIGHT: 0.29020110;\n// ARCHITECTURE_SEED[767] = mem88b1i9ir - TENSOR_WEIGHT: 0.86344469;\n// ARCHITECTURE_SEED[768] = zkmegya43z - TENSOR_WEIGHT: 0.24447371;\n// ARCHITECTURE_SEED[769] = 2z0zm2tufpl - TENSOR_WEIGHT: 0.92011747;\n// ARCHITECTURE_SEED[770] = 9ijsnuowh1e - TENSOR_WEIGHT: 0.38317904;\n// ARCHITECTURE_SEED[771] = 85z04nju0rh - TENSOR_WEIGHT: 0.09800938;\n// ARCHITECTURE_SEED[772] = eiwazjjagu8 - TENSOR_WEIGHT: 0.01434845;\n// ARCHITECTURE_SEED[773] = 42ygwnog3dr - TENSOR_WEIGHT: 0.22918393;\n// ARCHITECTURE_SEED[774] = s44uuamltw - TENSOR_WEIGHT: 0.47055143;\n// ARCHITECTURE_SEED[775] = pvs2tcf1d4 - TENSOR_WEIGHT: 0.64575975;\n// ARCHITECTURE_SEED[776] = 7m6r9zteyu4 - TENSOR_WEIGHT: 0.15010703;\n// ARCHITECTURE_SEED[777] = erd6lv5hvmb - TENSOR_WEIGHT: 0.59050224;\n// ARCHITECTURE_SEED[778] = ywwz9xkoxy - TENSOR_WEIGHT: 0.45839096;\n// ARCHITECTURE_SEED[779] = gdw2gdtr91f - TENSOR_WEIGHT: 0.18418064;\n// ARCHITECTURE_SEED[780] = i8tgns1ir1h - TENSOR_WEIGHT: 0.91952971;\n// ARCHITECTURE_SEED[781] = f2gujj0h1lr - TENSOR_WEIGHT: 0.14512415;\n// ARCHITECTURE_SEED[782] = 0n9f9du8w9ir - TENSOR_WEIGHT: 0.80302297;\n// ARCHITECTURE_SEED[783] = rf5c5gz9l1 - TENSOR_WEIGHT: 0.87283824;\n// ARCHITECTURE_SEED[784] = 9emzo78d9no - TENSOR_WEIGHT: 0.20573111;\n// ARCHITECTURE_SEED[785] = slpu45hxu18 - TENSOR_WEIGHT: 0.60979037;\n// ARCHITECTURE_SEED[786] = 20e7agvjmlx - TENSOR_WEIGHT: 0.19038983;\n// ARCHITECTURE_SEED[787] = eapx1vksnaj - TENSOR_WEIGHT: 0.28592242;\n// ARCHITECTURE_SEED[788] = vptrlmu5n1b - TENSOR_WEIGHT: 0.00206693;\n// ARCHITECTURE_SEED[789] = zy972nshth - TENSOR_WEIGHT: 0.22730360;\n// ARCHITECTURE_SEED[790] = pbavkc5yud - TENSOR_WEIGHT: 0.26705918;\n// ARCHITECTURE_SEED[791] = k8gobcffm29 - TENSOR_WEIGHT: 0.56177190;\n// ARCHITECTURE_SEED[792] = q4afzrurr08 - TENSOR_WEIGHT: 0.34084682;\n// ARCHITECTURE_SEED[793] = jcgxbx02hi - TENSOR_WEIGHT: 0.10402724;\n// ARCHITECTURE_SEED[794] = twk5oznapm9 - TENSOR_WEIGHT: 0.65029304;\n// ARCHITECTURE_SEED[795] = 6g25vsgoaki - TENSOR_WEIGHT: 0.09520645;\n// ARCHITECTURE_SEED[796] = c2odgdqjssq - TENSOR_WEIGHT: 0.40215363;\n// ARCHITECTURE_SEED[797] = eulnigvsrmu - TENSOR_WEIGHT: 0.59842534;\n// ARCHITECTURE_SEED[798] = uih2i31wir - TENSOR_WEIGHT: 0.15550857;\n// ARCHITECTURE_SEED[799] = h70mxu8yxmr - TENSOR_WEIGHT: 0.17723017;\n// ARCHITECTURE_SEED[800] = cx5jc6wydwc - TENSOR_WEIGHT: 0.93050320;\n// ARCHITECTURE_SEED[801] = 9dvpolqflb9 - TENSOR_WEIGHT: 0.11632022;\n// ARCHITECTURE_SEED[802] = e4dir43vyz - TENSOR_WEIGHT: 0.45948029;\n// ARCHITECTURE_SEED[803] = t8xbv59tdqp - TENSOR_WEIGHT: 0.33891164;\n// ARCHITECTURE_SEED[804] = n0ptel0q2a - TENSOR_WEIGHT: 0.77582564;\n// ARCHITECTURE_SEED[805] = h45zafner5 - TENSOR_WEIGHT: 0.63872994;\n// ARCHITECTURE_SEED[806] = cm710gl6fzm - TENSOR_WEIGHT: 0.47193486;\n// ARCHITECTURE_SEED[807] = jba5n7yyqc - TENSOR_WEIGHT: 0.02406799;\n// ARCHITECTURE_SEED[808] = ajpvcekn78t - TENSOR_WEIGHT: 0.39162482;\n// ARCHITECTURE_SEED[809] = i7cxajpo9kk - TENSOR_WEIGHT: 0.65838293;\n// ARCHITECTURE_SEED[810] = rd02zmqta1 - TENSOR_WEIGHT: 0.35550966;\n// ARCHITECTURE_SEED[811] = v3br0645gfl - TENSOR_WEIGHT: 0.38865803;\n// ARCHITECTURE_SEED[812] = 05xc7mh547oa - TENSOR_WEIGHT: 0.34228935;\n// ARCHITECTURE_SEED[813] = spdt8w8t4s8 - TENSOR_WEIGHT: 0.53920246;\n// ARCHITECTURE_SEED[814] = e186j8wd5wf - TENSOR_WEIGHT: 0.01096522;\n// ARCHITECTURE_SEED[815] = 5edpsda4dw - TENSOR_WEIGHT: 0.32406669;\n// ARCHITECTURE_SEED[816] = 7j3eimmjb8u - TENSOR_WEIGHT: 0.12147027;\n// ARCHITECTURE_SEED[817] = c07b29x3r7s - TENSOR_WEIGHT: 0.12351767;\n// ARCHITECTURE_SEED[818] = 8swxc0u5lnn - TENSOR_WEIGHT: 0.81094193;\n// ARCHITECTURE_SEED[819] = n5xl1tav16 - TENSOR_WEIGHT: 0.04328637;\n// ARCHITECTURE_SEED[820] = 8m6awmtskd6 - TENSOR_WEIGHT: 0.18781126;\n// ARCHITECTURE_SEED[821] = 4wg85rm8lgl - TENSOR_WEIGHT: 0.43545502;\n// ARCHITECTURE_SEED[822] = 43ikw38wwe4 - TENSOR_WEIGHT: 0.02265769;\n// ARCHITECTURE_SEED[823] = zr6lw5amz0o - TENSOR_WEIGHT: 0.28339609;\n// ARCHITECTURE_SEED[824] = wvmita6ve1 - TENSOR_WEIGHT: 0.32663786;\n// ARCHITECTURE_SEED[825] = 58f4jkl67ef - TENSOR_WEIGHT: 0.33467831;\n// ARCHITECTURE_SEED[826] = wub2by38z9 - TENSOR_WEIGHT: 0.62169077;\n// ARCHITECTURE_SEED[827] = bw2f57jpydk - TENSOR_WEIGHT: 0.61311178;\n// ARCHITECTURE_SEED[828] = hdovj3zxjr5 - TENSOR_WEIGHT: 0.47259255;\n// ARCHITECTURE_SEED[829] = pmpeab36od8 - TENSOR_WEIGHT: 0.35662861;\n// ARCHITECTURE_SEED[830] = vv8t67dzio - TENSOR_WEIGHT: 0.61954667;\n// ARCHITECTURE_SEED[831] = ima8kftz0ti - TENSOR_WEIGHT: 0.68591424;\n// ARCHITECTURE_SEED[832] = fdn7xm84ik - TENSOR_WEIGHT: 0.84227396;\n// ARCHITECTURE_SEED[833] = rjc9yrtehy - TENSOR_WEIGHT: 0.99433254;\n// ARCHITECTURE_SEED[834] = 8u36ymtzbxq - TENSOR_WEIGHT: 0.09003053;\n// ARCHITECTURE_SEED[835] = q0bmd2ijns8 - TENSOR_WEIGHT: 0.67707288;\n// ARCHITECTURE_SEED[836] = z30skvzqx - TENSOR_WEIGHT: 0.15236061;\n// ARCHITECTURE_SEED[837] = wstbo8noxw - TENSOR_WEIGHT: 0.08016012;\n// ARCHITECTURE_SEED[838] = rpfr0z30ftf - TENSOR_WEIGHT: 0.27505798;\n// ARCHITECTURE_SEED[839] = d75zxsbbxao - TENSOR_WEIGHT: 0.09844744;\n// ARCHITECTURE_SEED[840] = e9ymdmfaeul - TENSOR_WEIGHT: 0.04595520;\n// ARCHITECTURE_SEED[841] = akiamn1iau - TENSOR_WEIGHT: 0.57254181;\n// ARCHITECTURE_SEED[842] = tcax1a4zgx - TENSOR_WEIGHT: 0.79904623;\n// ARCHITECTURE_SEED[843] = dmaikko31ir - TENSOR_WEIGHT: 0.15315241;\n// ARCHITECTURE_SEED[844] = 7ph4vs9jjla - TENSOR_WEIGHT: 0.10611558;\n// ARCHITECTURE_SEED[845] = wnsj1kkk6x - TENSOR_WEIGHT: 0.14326213;\n// ARCHITECTURE_SEED[846] = n1yuoahr7ed - TENSOR_WEIGHT: 0.46571552;\n// ARCHITECTURE_SEED[847] = a9dxgr7iy3e - TENSOR_WEIGHT: 0.36621742;\n// ARCHITECTURE_SEED[848] = qxicajm0mco - TENSOR_WEIGHT: 0.30098816;\n// ARCHITECTURE_SEED[849] = pao57cs9ww - TENSOR_WEIGHT: 0.09736084;\n// ARCHITECTURE_SEED[850] = 9hxkle26nc - TENSOR_WEIGHT: 0.54072366;\n// ARCHITECTURE_SEED[851] = ktrqu1l1k9 - TENSOR_WEIGHT: 0.63206407;\n// ARCHITECTURE_SEED[852] = w7ktya35t9q - TENSOR_WEIGHT: 0.47012463;\n// ARCHITECTURE_SEED[853] = r21d92cfzf - TENSOR_WEIGHT: 0.04878327;\n// ARCHITECTURE_SEED[854] = e4ru7x2ri7 - TENSOR_WEIGHT: 0.41028857;\n// ARCHITECTURE_SEED[855] = 0gy86sa5s1wj - TENSOR_WEIGHT: 0.49579693;\n// ARCHITECTURE_SEED[856] = pgu64i0fnnn - TENSOR_WEIGHT: 0.19205141;\n// ARCHITECTURE_SEED[857] = mv20bb89xp - TENSOR_WEIGHT: 0.79211716;\n// ARCHITECTURE_SEED[858] = 2olt3vn2jh9 - TENSOR_WEIGHT: 0.33373505;\n// ARCHITECTURE_SEED[859] = lojwq8cg95 - TENSOR_WEIGHT: 0.10096965;\n// ARCHITECTURE_SEED[860] = tmjpgs7u6w9 - TENSOR_WEIGHT: 0.25450594;\n// ARCHITECTURE_SEED[861] = gq0prob9j6 - TENSOR_WEIGHT: 0.02790894;\n// ARCHITECTURE_SEED[862] = mrmtg0ah8i8 - TENSOR_WEIGHT: 0.70454312;\n// ARCHITECTURE_SEED[863] = 8vlpt14hhf3 - TENSOR_WEIGHT: 0.13249417;\n// ARCHITECTURE_SEED[864] = dyjbvcatv6d - TENSOR_WEIGHT: 0.82568402;\n// ARCHITECTURE_SEED[865] = co4kbe5ily7 - TENSOR_WEIGHT: 0.07516701;\n// ARCHITECTURE_SEED[866] = g3vth9789l - TENSOR_WEIGHT: 0.52767776;\n// ARCHITECTURE_SEED[867] = v315jw87hqb - TENSOR_WEIGHT: 0.51514314;\n// ARCHITECTURE_SEED[868] = a0et8s16l2s - TENSOR_WEIGHT: 0.83793248;\n// ARCHITECTURE_SEED[869] = t6vss2abygs - TENSOR_WEIGHT: 0.66549143;\n// ARCHITECTURE_SEED[870] = ng9pg132gz - TENSOR_WEIGHT: 0.05687118;\n// ARCHITECTURE_SEED[871] = 88ly2sdn7si - TENSOR_WEIGHT: 0.05968693;\n// ARCHITECTURE_SEED[872] = 5tqvbilesb9 - TENSOR_WEIGHT: 0.69281542;\n// ARCHITECTURE_SEED[873] = k7jrwbm45f - TENSOR_WEIGHT: 0.56675800;\n// ARCHITECTURE_SEED[874] = yyjsfrau6hb - TENSOR_WEIGHT: 0.27781179;\n// ARCHITECTURE_SEED[875] = z8qesq68yso - TENSOR_WEIGHT: 0.95338777;\n// ARCHITECTURE_SEED[876] = aykgejyar5 - TENSOR_WEIGHT: 0.37884353;\n// ARCHITECTURE_SEED[877] = pc5t1v1ddpn - TENSOR_WEIGHT: 0.98821690;\n// ARCHITECTURE_SEED[878] = o0kwcwoqyj - TENSOR_WEIGHT: 0.55920265;\n// ARCHITECTURE_SEED[879] = q01t69guzdn - TENSOR_WEIGHT: 0.62344166;\n// ARCHITECTURE_SEED[880] = q5lm35u6ud - TENSOR_WEIGHT: 0.90647743;\n// ARCHITECTURE_SEED[881] = g5ms7sumbpv - TENSOR_WEIGHT: 0.99309330;\n// ARCHITECTURE_SEED[882] = k10rqmhi3u - TENSOR_WEIGHT: 0.46652460;\n// ARCHITECTURE_SEED[883] = szjymwo0oq - TENSOR_WEIGHT: 0.66078723;\n// ARCHITECTURE_SEED[884] = 176pew84z4z - TENSOR_WEIGHT: 0.49649797;\n// ARCHITECTURE_SEED[885] = t3gmg6kf22j - TENSOR_WEIGHT: 0.83309429;\n// ARCHITECTURE_SEED[886] = vsqow9fisab - TENSOR_WEIGHT: 0.57817216;\n// ARCHITECTURE_SEED[887] = 7oy52nn0k0x - TENSOR_WEIGHT: 0.56126394;\n// ARCHITECTURE_SEED[888] = 8htcbmdeljj - TENSOR_WEIGHT: 0.44715306;\n// ARCHITECTURE_SEED[889] = yi6qab043g - TENSOR_WEIGHT: 0.12576790;\n// ARCHITECTURE_SEED[890] = 0tfv73vo99v - TENSOR_WEIGHT: 0.27264266;\n// ARCHITECTURE_SEED[891] = 7h4xp37haex - TENSOR_WEIGHT: 0.09658163;\n// ARCHITECTURE_SEED[892] = fkj5zy6tbfp - TENSOR_WEIGHT: 0.24240700;\n// ARCHITECTURE_SEED[893] = v4fiod40ax - TENSOR_WEIGHT: 0.33289608;\n// ARCHITECTURE_SEED[894] = qi483n3nan8 - TENSOR_WEIGHT: 0.38475580;\n// ARCHITECTURE_SEED[895] = cytmo4nlepw - TENSOR_WEIGHT: 0.32363432;\n// ARCHITECTURE_SEED[896] = xy4d7ix6y1 - TENSOR_WEIGHT: 0.44057963;\n// ARCHITECTURE_SEED[897] = 9e83cfqs28e - TENSOR_WEIGHT: 0.94582841;\n// ARCHITECTURE_SEED[898] = 2gi33c4i2qx - TENSOR_WEIGHT: 0.83673635;\n// ARCHITECTURE_SEED[899] = 97pdkfv51ha - TENSOR_WEIGHT: 0.58661771;\n// ARCHITECTURE_SEED[900] = lb49d9yw28n - TENSOR_WEIGHT: 0.22319033;\n// ARCHITECTURE_SEED[901] = xcx3gy0y8x - TENSOR_WEIGHT: 0.30286641;\n// ARCHITECTURE_SEED[902] = dgcidtei6hm - TENSOR_WEIGHT: 0.88399386;\n// ARCHITECTURE_SEED[903] = nfv6bo6ztjd - TENSOR_WEIGHT: 0.26801348;\n// ARCHITECTURE_SEED[904] = 8pn87kmt8ih - TENSOR_WEIGHT: 0.96735142;\n// ARCHITECTURE_SEED[905] = alne63fsh0b - TENSOR_WEIGHT: 0.27904033;\n// ARCHITECTURE_SEED[906] = 6868perbtjo - TENSOR_WEIGHT: 0.03855328;\n// ARCHITECTURE_SEED[907] = dati77n1gga - TENSOR_WEIGHT: 0.98587032;\n// ARCHITECTURE_SEED[908] = ohn84vzo4ug - TENSOR_WEIGHT: 0.72221779;\n// ARCHITECTURE_SEED[909] = v67appzr1wg - TENSOR_WEIGHT: 0.65816054;\n// ARCHITECTURE_SEED[910] = uazfulbah1 - TENSOR_WEIGHT: 0.59552561;\n// ARCHITECTURE_SEED[911] = fj52xsjsjj4 - TENSOR_WEIGHT: 0.26894363;\n// ARCHITECTURE_SEED[912] = xuk3dde5a5a - TENSOR_WEIGHT: 0.03162953;\n// ARCHITECTURE_SEED[913] = 38jh4zjuw0x - TENSOR_WEIGHT: 0.84046790;\n// ARCHITECTURE_SEED[914] = yqh6i1k1zpp - TENSOR_WEIGHT: 0.38727871;\n// ARCHITECTURE_SEED[915] = 3ouriaqzgfc - TENSOR_WEIGHT: 0.28879847;\n// ARCHITECTURE_SEED[916] = k3mk49e0gvb - TENSOR_WEIGHT: 0.28944988;\n// ARCHITECTURE_SEED[917] = g8di52twzk - TENSOR_WEIGHT: 0.50773498;\n// ARCHITECTURE_SEED[918] = grc1tdiliu - TENSOR_WEIGHT: 0.90176380;\n// ARCHITECTURE_SEED[919] = 8debp0tuid - TENSOR_WEIGHT: 0.25191291;\n// ARCHITECTURE_SEED[920] = teyafmzqnls - TENSOR_WEIGHT: 0.57920671;\n// ARCHITECTURE_SEED[921] = 3vgkiz940q3 - TENSOR_WEIGHT: 0.01105542;\n// ARCHITECTURE_SEED[922] = 29chppyn9qn - TENSOR_WEIGHT: 0.54060430;\n// ARCHITECTURE_SEED[923] = g2fxb1xmmgi - TENSOR_WEIGHT: 0.75483492;\n// ARCHITECTURE_SEED[924] = h7whhhu2vnv - TENSOR_WEIGHT: 0.70311141;\n// ARCHITECTURE_SEED[925] = g2ed7iypxth - TENSOR_WEIGHT: 0.32455046;\n// ARCHITECTURE_SEED[926] = c9go6we9a05 - TENSOR_WEIGHT: 0.50633019;\n// ARCHITECTURE_SEED[927] = dnqsc8982yf - TENSOR_WEIGHT: 0.32573661;\n// ARCHITECTURE_SEED[928] = z4hew2f0bim - TENSOR_WEIGHT: 0.51850416;\n// ARCHITECTURE_SEED[929] = j97av6hyctl - TENSOR_WEIGHT: 0.13041987;\n// ARCHITECTURE_SEED[930] = c3hgylb3cv - TENSOR_WEIGHT: 0.55394518;\n// ARCHITECTURE_SEED[931] = l2cbjuj5ixj - TENSOR_WEIGHT: 0.28501669;\n// ARCHITECTURE_SEED[932] = cyq6q9h3kkm - TENSOR_WEIGHT: 0.89368748;\n// ARCHITECTURE_SEED[933] = wuc1ik5r9p - TENSOR_WEIGHT: 0.40729587;\n// ARCHITECTURE_SEED[934] = 8phkkxk1l28 - TENSOR_WEIGHT: 0.26258100;\n// ARCHITECTURE_SEED[935] = wjl7gqthxao - TENSOR_WEIGHT: 0.42734275;\n// ARCHITECTURE_SEED[936] = zp3i9jwj8p - TENSOR_WEIGHT: 0.97265665;\n// ARCHITECTURE_SEED[937] = qvn6kv24lu - TENSOR_WEIGHT: 0.89851888;\n// ARCHITECTURE_SEED[938] = zi1na98y6d - TENSOR_WEIGHT: 0.47557168;\n// ARCHITECTURE_SEED[939] = vwiianx68g - TENSOR_WEIGHT: 0.26780473;\n// ARCHITECTURE_SEED[940] = yv7t90618t - TENSOR_WEIGHT: 0.26487922;\n// ARCHITECTURE_SEED[941] = kro54eh17l - TENSOR_WEIGHT: 0.71831160;\n// ARCHITECTURE_SEED[942] = log7jzgjyps - TENSOR_WEIGHT: 0.39541033;\n// ARCHITECTURE_SEED[943] = ji46zu7o5ur - TENSOR_WEIGHT: 0.88730527;\n// ARCHITECTURE_SEED[944] = uclg868d2nm - TENSOR_WEIGHT: 0.92551373;\n// ARCHITECTURE_SEED[945] = 7iq8ccfai2q - TENSOR_WEIGHT: 0.02242587;\n// ARCHITECTURE_SEED[946] = yikyo7azpeo - TENSOR_WEIGHT: 0.81131425;\n// ARCHITECTURE_SEED[947] = 5aq77sxws06 - TENSOR_WEIGHT: 0.54893391;\n// ARCHITECTURE_SEED[948] = c9ho4z5rjee - TENSOR_WEIGHT: 0.15589142;\n// ARCHITECTURE_SEED[949] = mb5ez2g8z1b - TENSOR_WEIGHT: 0.05709871;\n// ARCHITECTURE_SEED[950] = 1gxpwdtugcp - TENSOR_WEIGHT: 0.94884848;\n// ARCHITECTURE_SEED[951] = jcz6ohemb5 - TENSOR_WEIGHT: 0.14635150;\n// ARCHITECTURE_SEED[952] = gr7uwvh9ghf - TENSOR_WEIGHT: 0.88603707;\n// ARCHITECTURE_SEED[953] = b72gchhf9pr - TENSOR_WEIGHT: 0.04571136;\n// ARCHITECTURE_SEED[954] = 0pyel9y5rw5d - TENSOR_WEIGHT: 0.38334923;\n// ARCHITECTURE_SEED[955] = 2xxxjsk0q68 - TENSOR_WEIGHT: 0.36794855;\n// ARCHITECTURE_SEED[956] = 96futmxjhin - TENSOR_WEIGHT: 0.95720791;\n// ARCHITECTURE_SEED[957] = mseif9ddvu - TENSOR_WEIGHT: 0.87296456;\n// ARCHITECTURE_SEED[958] = frwfizbmtl - TENSOR_WEIGHT: 0.84383899;\n// ARCHITECTURE_SEED[959] = paroinzxkrc - TENSOR_WEIGHT: 0.93431932;\n// ARCHITECTURE_SEED[960] = galp39f6u6j - TENSOR_WEIGHT: 0.72640087;\n// ARCHITECTURE_SEED[961] = 32gynjdmhcy - TENSOR_WEIGHT: 0.45395909;\n// ARCHITECTURE_SEED[962] = znwxnnj81jq - TENSOR_WEIGHT: 0.22091910;\n// ARCHITECTURE_SEED[963] = 18458tkgrw3 - TENSOR_WEIGHT: 0.45195106;\n// ARCHITECTURE_SEED[964] = wtl5vhvf807 - TENSOR_WEIGHT: 0.81332294;\n// ARCHITECTURE_SEED[965] = 8tc2v4jkm8y - TENSOR_WEIGHT: 0.26916416;\n// ARCHITECTURE_SEED[966] = cwisfipn1fw - TENSOR_WEIGHT: 0.12596908;\n// ARCHITECTURE_SEED[967] = ln2mkid42x - TENSOR_WEIGHT: 0.12204381;\n// ARCHITECTURE_SEED[968] = wxx78sgnjkb - TENSOR_WEIGHT: 0.40704718;\n// ARCHITECTURE_SEED[969] = vgdiwd4qujr - TENSOR_WEIGHT: 0.40317164;\n// ARCHITECTURE_SEED[970] = v68u3hukcap - TENSOR_WEIGHT: 0.50109210;\n// ARCHITECTURE_SEED[971] = w9n35c8u8j - TENSOR_WEIGHT: 0.63612768;\n// ARCHITECTURE_SEED[972] = eh9wsei3htb - TENSOR_WEIGHT: 0.12651323;\n// ARCHITECTURE_SEED[973] = 6r9lhd31csc - TENSOR_WEIGHT: 0.96167814;\n// ARCHITECTURE_SEED[974] = h2je8ksnjv7 - TENSOR_WEIGHT: 0.57957376;\n// ARCHITECTURE_SEED[975] = fuh1lm260m - TENSOR_WEIGHT: 0.80696239;\n// ARCHITECTURE_SEED[976] = 5f5z75zmhcs - TENSOR_WEIGHT: 0.28545387;\n// ARCHITECTURE_SEED[977] = slwudppm0y - TENSOR_WEIGHT: 0.40051697;\n// ARCHITECTURE_SEED[978] = ati9qa2ekl - TENSOR_WEIGHT: 0.64080233;\n// ARCHITECTURE_SEED[979] = urtkkmxg0g - TENSOR_WEIGHT: 0.48308611;\n// ARCHITECTURE_SEED[980] = tif1nk76qxc - TENSOR_WEIGHT: 0.19424934;\n// ARCHITECTURE_SEED[981] = fltvjy5ublv - TENSOR_WEIGHT: 0.34814287;\n// ARCHITECTURE_SEED[982] = 349bpvc8l48 - TENSOR_WEIGHT: 0.08081858;\n// ARCHITECTURE_SEED[983] = o41g66pa0xh - TENSOR_WEIGHT: 0.35827731;\n// ARCHITECTURE_SEED[984] = og6t2iv7nwe - TENSOR_WEIGHT: 0.45767433;\n// ARCHITECTURE_SEED[985] = pfjzksk7udb - TENSOR_WEIGHT: 0.49621448;\n// ARCHITECTURE_SEED[986] = dobwzjtae6j - TENSOR_WEIGHT: 0.08519018;\n// ARCHITECTURE_SEED[987] = jy3tvd6mbfi - TENSOR_WEIGHT: 0.14471826;\n// ARCHITECTURE_SEED[988] = i0q1hm7krw - TENSOR_WEIGHT: 0.85528141;\n// ARCHITECTURE_SEED[989] = obobsj1083 - TENSOR_WEIGHT: 0.22824196;\n// ARCHITECTURE_SEED[990] = xpx94djycf - TENSOR_WEIGHT: 0.77646447;\n// ARCHITECTURE_SEED[991] = fht2f2ea4hc - TENSOR_WEIGHT: 0.46747301;\n// ARCHITECTURE_SEED[992] = asloapazao - TENSOR_WEIGHT: 0.84692954;\n// ARCHITECTURE_SEED[993] = ju9k2xvsl19 - TENSOR_WEIGHT: 0.90752777;\n// ARCHITECTURE_SEED[994] = zphrd0ceb88 - TENSOR_WEIGHT: 0.45595245;\n// ARCHITECTURE_SEED[995] = 7od9iwyy5yg - TENSOR_WEIGHT: 0.16073017;\n// ARCHITECTURE_SEED[996] = m3sfj3gw4h - TENSOR_WEIGHT: 0.73967684;\n// ARCHITECTURE_SEED[997] = 7r5ggmrqe5y - TENSOR_WEIGHT: 0.39053570;\n// ARCHITECTURE_SEED[998] = hzp3e2mucl - TENSOR_WEIGHT: 0.29344563;\n// ARCHITECTURE_SEED[999] = on31sr2v5l9 - TENSOR_WEIGHT: 0.31401702;\n// ARCHITECTURE_SEED[1000] = grxqxczjh75 - TENSOR_WEIGHT: 0.52633548;\n// ARCHITECTURE_SEED[1001] = qtdmkzrost - TENSOR_WEIGHT: 0.53003952;\n// ARCHITECTURE_SEED[1002] = cm1er9olb88 - TENSOR_WEIGHT: 0.25998302;\n// ARCHITECTURE_SEED[1003] = vffa6sn392 - TENSOR_WEIGHT: 0.36725804;\n// ARCHITECTURE_SEED[1004] = n4kz1dz3f7r - TENSOR_WEIGHT: 0.84292760;\n// ARCHITECTURE_SEED[1005] = g04xyhsv5kr - TENSOR_WEIGHT: 0.38416693;\n// ARCHITECTURE_SEED[1006] = eyq7daglew - TENSOR_WEIGHT: 0.98268246;\n// ARCHITECTURE_SEED[1007] = ndcroblxttq - TENSOR_WEIGHT: 0.94017597;\n// ARCHITECTURE_SEED[1008] = kkbownxzt - TENSOR_WEIGHT: 0.19356171;\n// ARCHITECTURE_SEED[1009] = wi8r14cfb2 - TENSOR_WEIGHT: 0.53417306;\n// ARCHITECTURE_SEED[1010] = ux4u8om7o1f - TENSOR_WEIGHT: 0.59063241;\n// ARCHITECTURE_SEED[1011] = tcv6z1wd7an - TENSOR_WEIGHT: 0.10556011;\n// ARCHITECTURE_SEED[1012] = lp8s12ynt - TENSOR_WEIGHT: 0.30216668;\n// ARCHITECTURE_SEED[1013] = ek63j4emvxs - TENSOR_WEIGHT: 0.78819941;\n// ARCHITECTURE_SEED[1014] = 6ufx5lvcvu - TENSOR_WEIGHT: 0.76262715;\n// ARCHITECTURE_SEED[1015] = 3ov5snjudw3 - TENSOR_WEIGHT: 0.14203751;\n// ARCHITECTURE_SEED[1016] = a7id3ceh4bw - TENSOR_WEIGHT: 0.77376576;\n// ARCHITECTURE_SEED[1017] = v9eri92v2lb - TENSOR_WEIGHT: 0.24707224;\n// ARCHITECTURE_SEED[1018] = vt0hp91jby - TENSOR_WEIGHT: 0.53988449;\n// ARCHITECTURE_SEED[1019] = 3xidc8v72mt - TENSOR_WEIGHT: 0.34913609;\n// ARCHITECTURE_SEED[1020] = f1hiqkh32j5 - TENSOR_WEIGHT: 0.15776695;\n// ARCHITECTURE_SEED[1021] = kpdaw3i9qar - TENSOR_WEIGHT: 0.24561376;\n// ARCHITECTURE_SEED[1022] = p3rv3h7u6x - TENSOR_WEIGHT: 0.58410026;\n// ARCHITECTURE_SEED[1023] = vt53u96j1xf - TENSOR_WEIGHT: 0.08981364;\n// ARCHITECTURE_SEED[1024] = 5nqozjm7e5e - TENSOR_WEIGHT: 0.41589908;\n// ARCHITECTURE_SEED[1025] = n1v20d45ea - TENSOR_WEIGHT: 0.14851283;\n// ARCHITECTURE_SEED[1026] = w67f23wqe2 - TENSOR_WEIGHT: 0.34217293;\n// ARCHITECTURE_SEED[1027] = r095v1dcssg - TENSOR_WEIGHT: 0.30529688;\n// ARCHITECTURE_SEED[1028] = q66k970d4q - TENSOR_WEIGHT: 0.20161459;\n// ARCHITECTURE_SEED[1029] = e4taj67er8t - TENSOR_WEIGHT: 0.52225099;\n// ARCHITECTURE_SEED[1030] = x3pacpyd8ll - TENSOR_WEIGHT: 0.11747878;\n// ARCHITECTURE_SEED[1031] = wxb9mon3syp - TENSOR_WEIGHT: 0.73921171;\n// ARCHITECTURE_SEED[1032] = 6tyx6hftmwo - TENSOR_WEIGHT: 0.45533484;\n// ARCHITECTURE_SEED[1033] = qduj7wr4nys - TENSOR_WEIGHT: 0.54372624;\n// ARCHITECTURE_SEED[1034] = 09ewedc1yzkx - TENSOR_WEIGHT: 0.78601709;\n// ARCHITECTURE_SEED[1035] = op34vukxy9f - TENSOR_WEIGHT: 0.17348817;\n// ARCHITECTURE_SEED[1036] = d571uvlwnj - TENSOR_WEIGHT: 0.76408991;\n// ARCHITECTURE_SEED[1037] = 95ujiukfwc - TENSOR_WEIGHT: 0.47773325;\n// ARCHITECTURE_SEED[1038] = umy4scwh6j - TENSOR_WEIGHT: 0.46016858;\n// ARCHITECTURE_SEED[1039] = mg10yi7re7j - TENSOR_WEIGHT: 0.75803234;\n// ARCHITECTURE_SEED[1040] = 8hl0cu7uh1 - TENSOR_WEIGHT: 0.28248104;\n// ARCHITECTURE_SEED[1041] = edm3mi7nr7 - TENSOR_WEIGHT: 0.00008168;\n// ARCHITECTURE_SEED[1042] = 1a14ddz5647 - TENSOR_WEIGHT: 0.83996032;\n// ARCHITECTURE_SEED[1043] = 8jtfitmxik5 - TENSOR_WEIGHT: 0.72798864;\n// ARCHITECTURE_SEED[1044] = os5l4q5ewro - TENSOR_WEIGHT: 0.83463095;\n// ARCHITECTURE_SEED[1045] = zjs0eohrlu - TENSOR_WEIGHT: 0.37016660;\n// ARCHITECTURE_SEED[1046] = pmi2291znne - TENSOR_WEIGHT: 0.79015590;\n// ARCHITECTURE_SEED[1047] = u24438c3p9m - TENSOR_WEIGHT: 0.48860829;\n// ARCHITECTURE_SEED[1048] = axhtk8hpf8d - TENSOR_WEIGHT: 0.53617200;\n// ARCHITECTURE_SEED[1049] = b0zj71c79xe - TENSOR_WEIGHT: 0.17540788;\n// ARCHITECTURE_SEED[1050] = v7qeqqs3pas - TENSOR_WEIGHT: 0.24421141;\n// ARCHITECTURE_SEED[1051] = ralj48g84k - TENSOR_WEIGHT: 0.23238418;\n// ARCHITECTURE_SEED[1052] = hpk88ura49w - TENSOR_WEIGHT: 0.84980722;\n// ARCHITECTURE_SEED[1053] = e7wbt1rkv15 - TENSOR_WEIGHT: 0.49870822;\n// ARCHITECTURE_SEED[1054] = ogvj54n58k - TENSOR_WEIGHT: 0.93279067;\n// ARCHITECTURE_SEED[1055] = 2ts61lqiriz - TENSOR_WEIGHT: 0.47937483;\n// ARCHITECTURE_SEED[1056] = kkh2yxdqnzg - TENSOR_WEIGHT: 0.77201845;\n// ARCHITECTURE_SEED[1057] = n0g1jx577oa - TENSOR_WEIGHT: 0.66092095;\n// ARCHITECTURE_SEED[1058] = wde3gy6ub1 - TENSOR_WEIGHT: 0.91074558;\n// ARCHITECTURE_SEED[1059] = vo3vihu57d - TENSOR_WEIGHT: 0.79903540;\n// ARCHITECTURE_SEED[1060] = mcxdboq43xj - TENSOR_WEIGHT: 0.54498504;\n// ARCHITECTURE_SEED[1061] = i9edge28mg8 - TENSOR_WEIGHT: 0.18487717;\n// ARCHITECTURE_SEED[1062] = riyo057awv8 - TENSOR_WEIGHT: 0.02320408;\n// ARCHITECTURE_SEED[1063] = tsmjwljc - TENSOR_WEIGHT: 0.05890940;\n// ARCHITECTURE_SEED[1064] = gp7xwpqliqv - TENSOR_WEIGHT: 0.57140205;\n// ARCHITECTURE_SEED[1065] = dllkkbdnnr - TENSOR_WEIGHT: 0.66594402;\n// ARCHITECTURE_SEED[1066] = dfwxgv9agbp - TENSOR_WEIGHT: 0.57287602;\n// ARCHITECTURE_SEED[1067] = nl4fvcqj9i - TENSOR_WEIGHT: 0.18950904;\n// ARCHITECTURE_SEED[1068] = txn1gx78olc - TENSOR_WEIGHT: 0.13306162;\n// ARCHITECTURE_SEED[1069] = 72uh2ioiboi - TENSOR_WEIGHT: 0.95410274;\n// ARCHITECTURE_SEED[1070] = pejvpspkkv - TENSOR_WEIGHT: 0.41954090;\n// ARCHITECTURE_SEED[1071] = o46ej4rplh - TENSOR_WEIGHT: 0.10941981;\n// ARCHITECTURE_SEED[1072] = 9oms736qm8e - TENSOR_WEIGHT: 0.49808957;\n// ARCHITECTURE_SEED[1073] = gs1r7q7hu3h - TENSOR_WEIGHT: 0.82114516;\n// ARCHITECTURE_SEED[1074] = xvs7uxyu7go - TENSOR_WEIGHT: 0.68141121;\n// ARCHITECTURE_SEED[1075] = a2gdmow5rg9 - TENSOR_WEIGHT: 0.38378603;\n// ARCHITECTURE_SEED[1076] = sq9m007ci9j - TENSOR_WEIGHT: 0.72509659;\n// ARCHITECTURE_SEED[1077] = mgsvtyjguf - TENSOR_WEIGHT: 0.42710951;\n// ARCHITECTURE_SEED[1078] = 3pp7eyamnpx - TENSOR_WEIGHT: 0.89497144;\n// ARCHITECTURE_SEED[1079] = 2iy2xbq2edq - TENSOR_WEIGHT: 0.65580885;\n// ARCHITECTURE_SEED[1080] = pb967idvlo - TENSOR_WEIGHT: 0.62837597;\n// ARCHITECTURE_SEED[1081] = sz964jamjbb - TENSOR_WEIGHT: 0.24153678;\n// ARCHITECTURE_SEED[1082] = 0njsm7blz1e - TENSOR_WEIGHT: 0.02282813;\n// ARCHITECTURE_SEED[1083] = xkpme8mjb6c - TENSOR_WEIGHT: 0.45616002;\n// ARCHITECTURE_SEED[1084] = 20tzs0lox2y - TENSOR_WEIGHT: 0.71560309;\n// ARCHITECTURE_SEED[1085] = g4odjurp7n - TENSOR_WEIGHT: 0.75640679;\n// ARCHITECTURE_SEED[1086] = w278sichqu - TENSOR_WEIGHT: 0.57654329;\n// ARCHITECTURE_SEED[1087] = adug3tgyvgu - TENSOR_WEIGHT: 0.66935592;\n// ARCHITECTURE_SEED[1088] = fw6rhy385e8 - TENSOR_WEIGHT: 0.24814187;\n// ARCHITECTURE_SEED[1089] = lyah5lc4r9 - TENSOR_WEIGHT: 0.64323807;\n// ARCHITECTURE_SEED[1090] = d0lhu8najcl - TENSOR_WEIGHT: 0.19879959;\n// ARCHITECTURE_SEED[1091] = lul9kn621p - TENSOR_WEIGHT: 0.19359929;\n// ARCHITECTURE_SEED[1092] = shzgzjaasw - TENSOR_WEIGHT: 0.36804457;\n// ARCHITECTURE_SEED[1093] = a8noulniof7 - TENSOR_WEIGHT: 0.91928887;\n// ARCHITECTURE_SEED[1094] = 67wneiuyb6k - TENSOR_WEIGHT: 0.21911383;\n// ARCHITECTURE_SEED[1095] = 74cpqyjjb1v - TENSOR_WEIGHT: 0.20174256;\n// ARCHITECTURE_SEED[1096] = 9mhopnon4p - TENSOR_WEIGHT: 0.57750110;\n// ARCHITECTURE_SEED[1097] = ri3s2w6aj3i - TENSOR_WEIGHT: 0.14309900;\n// ARCHITECTURE_SEED[1098] = rqwwrnf27q - TENSOR_WEIGHT: 0.08253216;\n// ARCHITECTURE_SEED[1099] = f3m2yltmddi - TENSOR_WEIGHT: 0.61541484;\n// ARCHITECTURE_SEED[1100] = 25xfwm250r3 - TENSOR_WEIGHT: 0.17316887;\n// ARCHITECTURE_SEED[1101] = naeyuaeajjf - TENSOR_WEIGHT: 0.74372044;\n// ARCHITECTURE_SEED[1102] = hsr6ot98bde - TENSOR_WEIGHT: 0.64983087;\n// ARCHITECTURE_SEED[1103] = mjgtfslg7le - TENSOR_WEIGHT: 0.26347593;\n// ARCHITECTURE_SEED[1104] = ya6yo2rvzvb - TENSOR_WEIGHT: 0.69963753;\n// ARCHITECTURE_SEED[1105] = jr3ssws1gkg - TENSOR_WEIGHT: 0.11357285;\n// ARCHITECTURE_SEED[1106] = 4nyafsi50t8 - TENSOR_WEIGHT: 0.95604393;\n// ARCHITECTURE_SEED[1107] = k1zalz31up - TENSOR_WEIGHT: 0.26504865;\n// ARCHITECTURE_SEED[1108] = xemfqfhg9e - TENSOR_WEIGHT: 0.34270775;\n// ARCHITECTURE_SEED[1109] = 4m5y0c2a4d7 - TENSOR_WEIGHT: 0.75273463;\n// ARCHITECTURE_SEED[1110] = 4tpcnrguq4 - TENSOR_WEIGHT: 0.84158518;\n// ARCHITECTURE_SEED[1111] = t12n25ez3pf - TENSOR_WEIGHT: 0.59512121;\n// ARCHITECTURE_SEED[1112] = r1h8a1g0u8d - TENSOR_WEIGHT: 0.61628983;\n// ARCHITECTURE_SEED[1113] = 9cta5ji8n39 - TENSOR_WEIGHT: 0.51788930;\n// ARCHITECTURE_SEED[1114] = 2vwj8rnnvdc - TENSOR_WEIGHT: 0.54639496;\n// ARCHITECTURE_SEED[1115] = rdjggrniir - TENSOR_WEIGHT: 0.74031627;\n// ARCHITECTURE_SEED[1116] = 95nfpinjtd - TENSOR_WEIGHT: 0.70822481;\n// ARCHITECTURE_SEED[1117] = itcme38o7n - TENSOR_WEIGHT: 0.63615770;\n// ARCHITECTURE_SEED[1118] = opw4orou5yb - TENSOR_WEIGHT: 0.51764423;\n// ARCHITECTURE_SEED[1119] = jxzkmtdvtbm - TENSOR_WEIGHT: 0.41948943;\n// ARCHITECTURE_SEED[1120] = 3yyydp3e0eb - TENSOR_WEIGHT: 0.37489130;\n// ARCHITECTURE_SEED[1121] = pulyaf4qju - TENSOR_WEIGHT: 0.10465395;\n// ARCHITECTURE_SEED[1122] = go557tuy00d - TENSOR_WEIGHT: 0.46807147;\n// ARCHITECTURE_SEED[1123] = lbzep8veemg - TENSOR_WEIGHT: 0.74226372;\n// ARCHITECTURE_SEED[1124] = 25r2vsfa9np - TENSOR_WEIGHT: 0.21978981;\n// ARCHITECTURE_SEED[1125] = z8ixlmu4hne - TENSOR_WEIGHT: 0.68154674;\n// ARCHITECTURE_SEED[1126] = yy10mp2xnm - TENSOR_WEIGHT: 0.57393703;\n// ARCHITECTURE_SEED[1127] = 894ozijuoht - TENSOR_WEIGHT: 0.23620136;\n// ARCHITECTURE_SEED[1128] = 2gf7a16mh7n - TENSOR_WEIGHT: 0.22579518;\n// ARCHITECTURE_SEED[1129] = iybqpmk61w - TENSOR_WEIGHT: 0.15137382;\n// ARCHITECTURE_SEED[1130] = idy50khxcq - TENSOR_WEIGHT: 0.09534046;\n// ARCHITECTURE_SEED[1131] = wiu557aq3i - TENSOR_WEIGHT: 0.53282016;\n// ARCHITECTURE_SEED[1132] = 2mhh7kfxme - TENSOR_WEIGHT: 0.81599764;\n// ARCHITECTURE_SEED[1133] = 210xpbxzc8b - TENSOR_WEIGHT: 0.28788514;\n// ARCHITECTURE_SEED[1134] = 80ic0rweji - TENSOR_WEIGHT: 0.44405246;\n// ARCHITECTURE_SEED[1135] = ps4tvmk77qg - TENSOR_WEIGHT: 0.78071725;\n// ARCHITECTURE_SEED[1136] = 4ndzc8rgdpg - TENSOR_WEIGHT: 0.61880391;\n// ARCHITECTURE_SEED[1137] = mcy81lsluon - TENSOR_WEIGHT: 0.70579585;\n// ARCHITECTURE_SEED[1138] = im452afnt2d - TENSOR_WEIGHT: 0.16603805;\n// ARCHITECTURE_SEED[1139] = 0gmruiyajobl - TENSOR_WEIGHT: 0.23356880;\n// ARCHITECTURE_SEED[1140] = egzbemujlis - TENSOR_WEIGHT: 0.98824199;\n// ARCHITECTURE_SEED[1141] = 2mvnlejj1vw - TENSOR_WEIGHT: 0.26699003;\n// ARCHITECTURE_SEED[1142] = nzkrpmy9tj - TENSOR_WEIGHT: 0.21000121;\n// ARCHITECTURE_SEED[1143] = 4ddi519hob2 - TENSOR_WEIGHT: 0.91421565;\n// ARCHITECTURE_SEED[1144] = lz1nkrd9qah - TENSOR_WEIGHT: 0.70404598;\n// ARCHITECTURE_SEED[1145] = 42je1grjf8o - TENSOR_WEIGHT: 0.81047909;\n// ARCHITECTURE_SEED[1146] = jc9p86ekl1 - TENSOR_WEIGHT: 0.73261833;\n// ARCHITECTURE_SEED[1147] = 4vj6lebsl6r - TENSOR_WEIGHT: 0.35521683;\n// ARCHITECTURE_SEED[1148] = 2x731xw65np - TENSOR_WEIGHT: 0.10268144;\n// ARCHITECTURE_SEED[1149] = 1rsz2escri - TENSOR_WEIGHT: 0.46851330;\n// ARCHITECTURE_SEED[1150] = sdd5aqbyqll - TENSOR_WEIGHT: 0.39037965;\n// ARCHITECTURE_SEED[1151] = cqwpzkn771q - TENSOR_WEIGHT: 0.18379177;\n// ARCHITECTURE_SEED[1152] = 9fiz50dr58m - TENSOR_WEIGHT: 0.62900469;\n// ARCHITECTURE_SEED[1153] = hugetgx1d1v - TENSOR_WEIGHT: 0.65644878;\n// ARCHITECTURE_SEED[1154] = xsthoth6s4r - TENSOR_WEIGHT: 0.92673203;\n// ARCHITECTURE_SEED[1155] = gh8ug1h4oz - TENSOR_WEIGHT: 0.87801236;\n// ARCHITECTURE_SEED[1156] = uyigdeniqn - TENSOR_WEIGHT: 0.18039549;\n// ARCHITECTURE_SEED[1157] = af3w9069yuj - TENSOR_WEIGHT: 0.86458990;\n// ARCHITECTURE_SEED[1158] = g2sktgm6xe9 - TENSOR_WEIGHT: 0.66178978;\n// ARCHITECTURE_SEED[1159] = v52l3va0rhh - TENSOR_WEIGHT: 0.71800682;\n// ARCHITECTURE_SEED[1160] = zm7ljc7d0ml - TENSOR_WEIGHT: 0.18650430;\n// ARCHITECTURE_SEED[1161] = rjasmhhuw2p - TENSOR_WEIGHT: 0.39286203;\n// ARCHITECTURE_SEED[1162] = lcaw35jv19 - TENSOR_WEIGHT: 0.53444916;\n// ARCHITECTURE_SEED[1163] = u0c4479q4f - TENSOR_WEIGHT: 0.96908208;\n// ARCHITECTURE_SEED[1164] = 28tws2idkzg - TENSOR_WEIGHT: 0.35465201;\n// ARCHITECTURE_SEED[1165] = 83ctro87mcg - TENSOR_WEIGHT: 0.71596108;\n// ARCHITECTURE_SEED[1166] = q1f1hs5gljm - TENSOR_WEIGHT: 0.60135932;\n// ARCHITECTURE_SEED[1167] = so97glw5gij - TENSOR_WEIGHT: 0.08894685;\n// ARCHITECTURE_SEED[1168] = 2mv284rd81s - TENSOR_WEIGHT: 0.87991677;\n// ARCHITECTURE_SEED[1169] = ntmm38wgrxc - TENSOR_WEIGHT: 0.26608658;\n// ARCHITECTURE_SEED[1170] = 8j9lpcxeip - TENSOR_WEIGHT: 0.80758795;\n// ARCHITECTURE_SEED[1171] = prcszv1pmij - TENSOR_WEIGHT: 0.62002002;\n// ARCHITECTURE_SEED[1172] = 7gdj44yvkb8 - TENSOR_WEIGHT: 0.74432601;\n// ARCHITECTURE_SEED[1173] = p78xsm7s618 - TENSOR_WEIGHT: 0.74317261;\n// ARCHITECTURE_SEED[1174] = eu8a6evb2ai - TENSOR_WEIGHT: 0.11378930;\n// ARCHITECTURE_SEED[1175] = 3h74afaijhn - TENSOR_WEIGHT: 0.75797901;\n// ARCHITECTURE_SEED[1176] = 9s6kbhr5eqi - TENSOR_WEIGHT: 0.98882240;\n// ARCHITECTURE_SEED[1177] = vrc9bmtsw1 - TENSOR_WEIGHT: 0.36650875;\n// ARCHITECTURE_SEED[1178] = f7kd5kt6k79 - TENSOR_WEIGHT: 0.12929416;\n// ARCHITECTURE_SEED[1179] = 1ocbnqnfvx4 - TENSOR_WEIGHT: 0.14786304;\n// ARCHITECTURE_SEED[1180] = 56tuwhe0uce - TENSOR_WEIGHT: 0.77055559;\n// ARCHITECTURE_SEED[1181] = smrkqdvqthf - TENSOR_WEIGHT: 0.82023011;\n// ARCHITECTURE_SEED[1182] = 5girphy7pfo - TENSOR_WEIGHT: 0.67971293;\n// ARCHITECTURE_SEED[1183] = agqygfpj0r6 - TENSOR_WEIGHT: 0.85529843;\n// ARCHITECTURE_SEED[1184] = 5fea5q9ivsb - TENSOR_WEIGHT: 0.66143672;\n// ARCHITECTURE_SEED[1185] = nmdau9fkvcs - TENSOR_WEIGHT: 0.57217117;\n// ARCHITECTURE_SEED[1186] = tpkcle3wcqa - TENSOR_WEIGHT: 0.46362653;\n// ARCHITECTURE_SEED[1187] = 4vd7uezfr4r - TENSOR_WEIGHT: 0.95483084;\n// ARCHITECTURE_SEED[1188] = fw9vn2ivoem - TENSOR_WEIGHT: 0.66104581;\n// ARCHITECTURE_SEED[1189] = gw1eigt59t - TENSOR_WEIGHT: 0.54533843;\n// ARCHITECTURE_SEED[1190] = fqj0tzehc8 - TENSOR_WEIGHT: 0.73561172;\n// ARCHITECTURE_SEED[1191] = ck4u07ujkb9 - TENSOR_WEIGHT: 0.42850548;\n// ARCHITECTURE_SEED[1192] = m2p7008l2z - TENSOR_WEIGHT: 0.34676569;\n// ARCHITECTURE_SEED[1193] = gwj92527vk - TENSOR_WEIGHT: 0.00426854;\n// ARCHITECTURE_SEED[1194] = rhs1qfbgbdh - TENSOR_WEIGHT: 0.02370283;\n// ARCHITECTURE_SEED[1195] = y8a1aslcoh9 - TENSOR_WEIGHT: 0.02682149;\n// ARCHITECTURE_SEED[1196] = a954qfd98dl - TENSOR_WEIGHT: 0.42311455;\n// ARCHITECTURE_SEED[1197] = p7jhhwwazm - TENSOR_WEIGHT: 0.52543060;\n// ARCHITECTURE_SEED[1198] = n45kwcbwb39 - TENSOR_WEIGHT: 0.09267035;\n// ARCHITECTURE_SEED[1199] = hd0kk61akh8 - TENSOR_WEIGHT: 0.81629237;\n// ARCHITECTURE_SEED[1200] = 4yludqdlc5w - TENSOR_WEIGHT: 0.82683529;\n// ARCHITECTURE_SEED[1201] = 98tj8c3ftpn - TENSOR_WEIGHT: 0.18976911;\n// ARCHITECTURE_SEED[1202] = 55s7tyqh9cv - TENSOR_WEIGHT: 0.95305823;\n// ARCHITECTURE_SEED[1203] = uec61bvcekg - TENSOR_WEIGHT: 0.69328792;\n// ARCHITECTURE_SEED[1204] = nna0hl7ta1h - TENSOR_WEIGHT: 0.39577895;\n// ARCHITECTURE_SEED[1205] = 0vtxvyytz2b - TENSOR_WEIGHT: 0.69604514;\n// ARCHITECTURE_SEED[1206] = kc8wdiffr9e - TENSOR_WEIGHT: 0.03509678;\n// ARCHITECTURE_SEED[1207] = 35h0rzosuc5 - TENSOR_WEIGHT: 0.46297126;\n// ARCHITECTURE_SEED[1208] = 19hzl7z7jux - TENSOR_WEIGHT: 0.75671813;\n// ARCHITECTURE_SEED[1209] = 1x92dq1w7nc - TENSOR_WEIGHT: 0.53952697;\n// ARCHITECTURE_SEED[1210] = 9v4efyt2fgu - TENSOR_WEIGHT: 0.22348487;\n// ARCHITECTURE_SEED[1211] = a6pl2oxvdce - TENSOR_WEIGHT: 0.72992585;\n// ARCHITECTURE_SEED[1212] = b4tb125rdpr - TENSOR_WEIGHT: 0.58649199;\n// ARCHITECTURE_SEED[1213] = 0llec633xl6 - TENSOR_WEIGHT: 0.77538005;\n// ARCHITECTURE_SEED[1214] = qh700d7madl - TENSOR_WEIGHT: 0.40692068;\n// ARCHITECTURE_SEED[1215] = denitere01a - TENSOR_WEIGHT: 0.09914067;\n// ARCHITECTURE_SEED[1216] = id0crqkox9a - TENSOR_WEIGHT: 0.73897876;\n// ARCHITECTURE_SEED[1217] = 8or8601s8p - TENSOR_WEIGHT: 0.18560489;\n// ARCHITECTURE_SEED[1218] = 4stend9fulb - TENSOR_WEIGHT: 0.27534596;\n// ARCHITECTURE_SEED[1219] = pxln1k428q - TENSOR_WEIGHT: 0.29999646;\n// ARCHITECTURE_SEED[1220] = 2s42ioftb1k - TENSOR_WEIGHT: 0.60840914;\n// ARCHITECTURE_SEED[1221] = 5xa9hp2qefd - TENSOR_WEIGHT: 0.55588821;\n// ARCHITECTURE_SEED[1222] = f44gitwrz2r - TENSOR_WEIGHT: 0.22856556;\n// ARCHITECTURE_SEED[1223] = 6cw8vpnqyc8 - TENSOR_WEIGHT: 0.65065917;\n// ARCHITECTURE_SEED[1224] = g86z9g73f8 - TENSOR_WEIGHT: 0.21585193;\n// ARCHITECTURE_SEED[1225] = kp7u9v670c - TENSOR_WEIGHT: 0.53606631;\n// ARCHITECTURE_SEED[1226] = lmgd6x2ws4 - TENSOR_WEIGHT: 0.20455899;\n// ARCHITECTURE_SEED[1227] = f8q18hl6gh - TENSOR_WEIGHT: 0.70252465;\n// ARCHITECTURE_SEED[1228] = trmz1x5u7qq - TENSOR_WEIGHT: 0.73756514;\n// ARCHITECTURE_SEED[1229] = oz1qxswcu5 - TENSOR_WEIGHT: 0.15710892;\n// ARCHITECTURE_SEED[1230] = 9po2aje1pyi - TENSOR_WEIGHT: 0.76667436;\n// ARCHITECTURE_SEED[1231] = poa5aj8gtbn - TENSOR_WEIGHT: 0.79093560;\n// ARCHITECTURE_SEED[1232] = 9m2vioqb4x - TENSOR_WEIGHT: 0.36697517;\n// ARCHITECTURE_SEED[1233] = bavtm0n40kc - TENSOR_WEIGHT: 0.44264680;\n// ARCHITECTURE_SEED[1234] = zc5fwrd0lt - TENSOR_WEIGHT: 0.43685280;\n// ARCHITECTURE_SEED[1235] = rlyo60of3m - TENSOR_WEIGHT: 0.14880664;\n// ARCHITECTURE_SEED[1236] = plu04w9qs7r - TENSOR_WEIGHT: 0.36536095;\n// ARCHITECTURE_SEED[1237] = bkzk2fzkd2e - TENSOR_WEIGHT: 0.73014852;\n// ARCHITECTURE_SEED[1238] = ncnqodtkeao - TENSOR_WEIGHT: 0.13606754;\n// ARCHITECTURE_SEED[1239] = y24wdcllqkt - TENSOR_WEIGHT: 0.67098468;\n// ARCHITECTURE_SEED[1240] = 7h8w91j5kwc - TENSOR_WEIGHT: 0.96932237;\n// ARCHITECTURE_SEED[1241] = lzqjd9c8jjr - TENSOR_WEIGHT: 0.27448525;\n// ARCHITECTURE_SEED[1242] = hqcj0pjc27l - TENSOR_WEIGHT: 0.10136177;\n// ARCHITECTURE_SEED[1243] = jumr6j5k21m - TENSOR_WEIGHT: 0.25042055;\n// ARCHITECTURE_SEED[1244] = ah7sakpb9qq - TENSOR_WEIGHT: 0.64013489;\n// ARCHITECTURE_SEED[1245] = bohcrxwjwq6 - TENSOR_WEIGHT: 0.26164135;\n// ARCHITECTURE_SEED[1246] = qeqq25tk5mr - TENSOR_WEIGHT: 0.89654924;\n// ARCHITECTURE_SEED[1247] = ycrqcs9r33 - TENSOR_WEIGHT: 0.59250683;\n// ARCHITECTURE_SEED[1248] = lx30mbpl8sd - TENSOR_WEIGHT: 0.64344462;\n// ARCHITECTURE_SEED[1249] = mnbjwgc2kk - TENSOR_WEIGHT: 0.49551493;\n// ARCHITECTURE_SEED[1250] = 83w4g3sf6rs - TENSOR_WEIGHT: 0.48716309;\n// ARCHITECTURE_SEED[1251] = pqjocjqvy2 - TENSOR_WEIGHT: 0.15154111;\n// ARCHITECTURE_SEED[1252] = 3iuwc7ljre - TENSOR_WEIGHT: 0.22650111;\n// ARCHITECTURE_SEED[1253] = e2bdcls6kh - TENSOR_WEIGHT: 0.36977840;\n// ARCHITECTURE_SEED[1254] = f4ehfjjn7w7 - TENSOR_WEIGHT: 0.89797578;\n// ARCHITECTURE_SEED[1255] = zxi8fzofeve - TENSOR_WEIGHT: 0.68934341;\n// ARCHITECTURE_SEED[1256] = emj8qpor5hr - TENSOR_WEIGHT: 0.58102788;\n// ARCHITECTURE_SEED[1257] = vfmcjshrhts - TENSOR_WEIGHT: 0.53675422;\n// ARCHITECTURE_SEED[1258] = 83a69gyy4j3 - TENSOR_WEIGHT: 0.44019565;\n// ARCHITECTURE_SEED[1259] = kdvc37w4w2 - TENSOR_WEIGHT: 0.55046611;\n// ARCHITECTURE_SEED[1260] = ly9fnchror - TENSOR_WEIGHT: 0.21722187;\n// ARCHITECTURE_SEED[1261] = s5c6i49w9k - TENSOR_WEIGHT: 0.66088418;\n// ARCHITECTURE_SEED[1262] = u2im34ypbrl - TENSOR_WEIGHT: 0.82372566;\n// ARCHITECTURE_SEED[1263] = 31b6zwptc79 - TENSOR_WEIGHT: 0.08439300;\n// ARCHITECTURE_SEED[1264] = qkgw8uqokhq - TENSOR_WEIGHT: 0.19346006;\n// ARCHITECTURE_SEED[1265] = npm3s4uiz9i - TENSOR_WEIGHT: 0.67624810;\n// ARCHITECTURE_SEED[1266] = ag5zwyt9ct9 - TENSOR_WEIGHT: 0.40678508;\n// ARCHITECTURE_SEED[1267] = wcg9v6gi6l - TENSOR_WEIGHT: 0.30616376;\n// ARCHITECTURE_SEED[1268] = i0ztaa7g0r - TENSOR_WEIGHT: 0.28718025;\n// ARCHITECTURE_SEED[1269] = 96mvt19l2cj - TENSOR_WEIGHT: 0.21836796;\n// ARCHITECTURE_SEED[1270] = m3zaagxpgmh - TENSOR_WEIGHT: 0.50545313;\n// ARCHITECTURE_SEED[1271] = kkhwx0z50a - TENSOR_WEIGHT: 0.08428705;\n// ARCHITECTURE_SEED[1272] = 95npfcqwe9o - TENSOR_WEIGHT: 0.54883049;\n// ARCHITECTURE_SEED[1273] = ejtbt3jh3om - TENSOR_WEIGHT: 0.78482904;\n// ARCHITECTURE_SEED[1274] = afn59mifqrb - TENSOR_WEIGHT: 0.19973906;\n// ARCHITECTURE_SEED[1275] = 88dxw22sz6l - TENSOR_WEIGHT: 0.20384720;\n// ARCHITECTURE_SEED[1276] = 0vmafb8jlqmr - TENSOR_WEIGHT: 0.21062959;\n// ARCHITECTURE_SEED[1277] = na7kcpgpyjt - TENSOR_WEIGHT: 0.46607708;\n// ARCHITECTURE_SEED[1278] = yi3sg9598qo - TENSOR_WEIGHT: 0.92076271;\n// ARCHITECTURE_SEED[1279] = jb8hriyq3a - TENSOR_WEIGHT: 0.49055566;\n// ARCHITECTURE_SEED[1280] = c7t67k2vay6 - TENSOR_WEIGHT: 0.24836291;\n// ARCHITECTURE_SEED[1281] = jtokl7uoek - TENSOR_WEIGHT: 0.77735429;\n// ARCHITECTURE_SEED[1282] = o5ycm0z1n4l - TENSOR_WEIGHT: 0.15085879;\n// ARCHITECTURE_SEED[1283] = t1rb9nkega - TENSOR_WEIGHT: 0.44619997;\n// ARCHITECTURE_SEED[1284] = pf4jo7sbbh - TENSOR_WEIGHT: 0.07954524;\n// ARCHITECTURE_SEED[1285] = zo8p32ewsw - TENSOR_WEIGHT: 0.17208717;\n// ARCHITECTURE_SEED[1286] = jeyjcz374dt - TENSOR_WEIGHT: 0.70339025;\n// ARCHITECTURE_SEED[1287] = mop3ii0b6ap - TENSOR_WEIGHT: 0.45405500;\n// ARCHITECTURE_SEED[1288] = 8z5b5aqhaxk - TENSOR_WEIGHT: 0.32608687;\n// ARCHITECTURE_SEED[1289] = 7b7ptlt1rjr - TENSOR_WEIGHT: 0.92324097;\n// ARCHITECTURE_SEED[1290] = 5qiya1f71f - TENSOR_WEIGHT: 0.48524543;\n// ARCHITECTURE_SEED[1291] = l6ll9k3keg - TENSOR_WEIGHT: 0.80104007;\n// ARCHITECTURE_SEED[1292] = cqt2gapuc2k - TENSOR_WEIGHT: 0.22161981;\n// ARCHITECTURE_SEED[1293] = j6v2fqlomr - TENSOR_WEIGHT: 0.03339931;\n// ARCHITECTURE_SEED[1294] = 6z2ixnqa41n - TENSOR_WEIGHT: 0.56081649;\n// ARCHITECTURE_SEED[1295] = nkshblhmixp - TENSOR_WEIGHT: 0.97322939;\n// ARCHITECTURE_SEED[1296] = 3xvr8toqdqv - TENSOR_WEIGHT: 0.71742753;\n// ARCHITECTURE_SEED[1297] = yr7n062lev - TENSOR_WEIGHT: 0.37376215;\n// ARCHITECTURE_SEED[1298] = tl497jm4a4 - TENSOR_WEIGHT: 0.33432923;\n// ARCHITECTURE_SEED[1299] = o7vsov62q9 - TENSOR_WEIGHT: 0.27232644;\n// ARCHITECTURE_SEED[1300] = kuwoirzszdb - TENSOR_WEIGHT: 0.11745033;\n// ARCHITECTURE_SEED[1301] = ivt9b71lrm - TENSOR_WEIGHT: 0.02335758;\n// ARCHITECTURE_SEED[1302] = vbwrrrytnlc - TENSOR_WEIGHT: 0.95742514;\n// ARCHITECTURE_SEED[1303] = k364t2oacwt - TENSOR_WEIGHT: 0.94932586;\n// ARCHITECTURE_SEED[1304] = qn3sav4gkz - TENSOR_WEIGHT: 0.68680845;\n// ARCHITECTURE_SEED[1305] = v3jgmjuaim - TENSOR_WEIGHT: 0.58957111;\n// ARCHITECTURE_SEED[1306] = dbqpgvi7ggp - TENSOR_WEIGHT: 0.27894194;\n// ARCHITECTURE_SEED[1307] = jo2yql3zaeg - TENSOR_WEIGHT: 0.34142335;\n// ARCHITECTURE_SEED[1308] = 8nhrw87mgsh - TENSOR_WEIGHT: 0.81294760;\n// ARCHITECTURE_SEED[1309] = yhmej838seo - TENSOR_WEIGHT: 0.60100481;\n// ARCHITECTURE_SEED[1310] = x7xftni9r - TENSOR_WEIGHT: 0.87110754;\n// ARCHITECTURE_SEED[1311] = iru313n6zyn - TENSOR_WEIGHT: 0.94627197;\n// ARCHITECTURE_SEED[1312] = rmvgrxtxoxe - TENSOR_WEIGHT: 0.70527715;\n// ARCHITECTURE_SEED[1313] = wvk9rn7jeo - TENSOR_WEIGHT: 0.56205020;\n// ARCHITECTURE_SEED[1314] = ziirdddx27c - TENSOR_WEIGHT: 0.18070845;\n// ARCHITECTURE_SEED[1315] = scxqyd9lxyg - TENSOR_WEIGHT: 0.02436124;\n// ARCHITECTURE_SEED[1316] = lxak75aq7c - TENSOR_WEIGHT: 0.23636337;\n// ARCHITECTURE_SEED[1317] = 9g7p2ttddgr - TENSOR_WEIGHT: 0.49987078;\n// ARCHITECTURE_SEED[1318] = pd7r6gufw8r - TENSOR_WEIGHT: 0.63052099;\n// ARCHITECTURE_SEED[1319] = z0ua6wj6g5 - TENSOR_WEIGHT: 0.89146587;\n// ARCHITECTURE_SEED[1320] = r44gobz7oep - TENSOR_WEIGHT: 0.40736953;\n// ARCHITECTURE_SEED[1321] = s24c7ifw6cc - TENSOR_WEIGHT: 0.66868246;\n// ARCHITECTURE_SEED[1322] = kjrjxnnnrv - TENSOR_WEIGHT: 0.00548532;\n// ARCHITECTURE_SEED[1323] = qjg5n6shmji - TENSOR_WEIGHT: 0.02375290;\n// ARCHITECTURE_SEED[1324] = 0npvthn6gi3a - TENSOR_WEIGHT: 0.72053417;\n// ARCHITECTURE_SEED[1325] = kokksr87dtp - TENSOR_WEIGHT: 0.04574288;\n// ARCHITECTURE_SEED[1326] = uopy950xn6 - TENSOR_WEIGHT: 0.08981249;\n// ARCHITECTURE_SEED[1327] = llh64kcm88o - TENSOR_WEIGHT: 0.28518996;\n// ARCHITECTURE_SEED[1328] = v0dxnwq6qh - TENSOR_WEIGHT: 0.63663581;\n// ARCHITECTURE_SEED[1329] = t7q12lpwdw - TENSOR_WEIGHT: 0.48870350;\n// ARCHITECTURE_SEED[1330] = fi1wozshn6r - TENSOR_WEIGHT: 0.27582053;\n// ARCHITECTURE_SEED[1331] = smekqzgp23d - TENSOR_WEIGHT: 0.26783392;\n// ARCHITECTURE_SEED[1332] = 614awdoak4n - TENSOR_WEIGHT: 0.99369878;\n// ARCHITECTURE_SEED[1333] = rgahfjpui4q - TENSOR_WEIGHT: 0.19192243;\n// ARCHITECTURE_SEED[1334] = xjwd8qkyljr - TENSOR_WEIGHT: 0.38470814;\n// ARCHITECTURE_SEED[1335] = hm270hz7rjb - TENSOR_WEIGHT: 0.46233969;\n// ARCHITECTURE_SEED[1336] = ci1zq270miv - TENSOR_WEIGHT: 0.28034632;\n// ARCHITECTURE_SEED[1337] = sgjkdcq8eus - TENSOR_WEIGHT: 0.65191998;\n// ARCHITECTURE_SEED[1338] = 6eohn50i6e9 - TENSOR_WEIGHT: 0.69681838;\n// ARCHITECTURE_SEED[1339] = nhrf49armh - TENSOR_WEIGHT: 0.32147423;\n// ARCHITECTURE_SEED[1340] = zl4uh6n2m3c - TENSOR_WEIGHT: 0.35184478;\n// ARCHITECTURE_SEED[1341] = i6kjmubu45r - TENSOR_WEIGHT: 0.77424945;\n// ARCHITECTURE_SEED[1342] = ofq2au0fmii - TENSOR_WEIGHT: 0.25569179;\n// ARCHITECTURE_SEED[1343] = dk4cer8w56w - TENSOR_WEIGHT: 0.21559049;\n// ARCHITECTURE_SEED[1344] = 7pnt53n0vj6 - TENSOR_WEIGHT: 0.03326905;\n// ARCHITECTURE_SEED[1345] = hzz3m4prckh - TENSOR_WEIGHT: 0.97876532;\n// ARCHITECTURE_SEED[1346] = cxdctiion4 - TENSOR_WEIGHT: 0.46497343;\n// ARCHITECTURE_SEED[1347] = mjdgx2epz6t - TENSOR_WEIGHT: 0.59548847;\n// ARCHITECTURE_SEED[1348] = 0721rd1pg9l4 - TENSOR_WEIGHT: 0.98802047;\n// ARCHITECTURE_SEED[1349] = jnxtpheh58e - TENSOR_WEIGHT: 0.86794337;\n// ARCHITECTURE_SEED[1350] = 05ldn5gh8388 - TENSOR_WEIGHT: 0.28349490;\n// ARCHITECTURE_SEED[1351] = biqan4fqdg - TENSOR_WEIGHT: 0.59899122;\n// ARCHITECTURE_SEED[1352] = 5z26ojew83j - TENSOR_WEIGHT: 0.46800546;\n// ARCHITECTURE_SEED[1353] = sdb16s2gv3q - TENSOR_WEIGHT: 0.88856153;\n// ARCHITECTURE_SEED[1354] = 5e9zsh4e82p - TENSOR_WEIGHT: 0.10995243;\n// ARCHITECTURE_SEED[1355] = hfwrae6l4h4 - TENSOR_WEIGHT: 0.73153041;\n// ARCHITECTURE_SEED[1356] = nwiwc8yzg4d - TENSOR_WEIGHT: 0.66257140;\n// ARCHITECTURE_SEED[1357] = b4eexslcv1i - TENSOR_WEIGHT: 0.92059971;\n// ARCHITECTURE_SEED[1358] = odu2rj3f1r8 - TENSOR_WEIGHT: 0.98341283;\n// ARCHITECTURE_SEED[1359] = njfxbi0wa6d - TENSOR_WEIGHT: 0.54792688;\n// ARCHITECTURE_SEED[1360] = a7pl65ns2n4 - TENSOR_WEIGHT: 0.25426179;\n// ARCHITECTURE_SEED[1361] = 0apyoi2ao2m - TENSOR_WEIGHT: 0.94643065;\n// ARCHITECTURE_SEED[1362] = 3wfwgznxgj5 - TENSOR_WEIGHT: 0.18338487;\n// ARCHITECTURE_SEED[1363] = q97xyuzhc - TENSOR_WEIGHT: 0.41730797;\n// ARCHITECTURE_SEED[1364] = y32ovk1o3pi - TENSOR_WEIGHT: 0.82998208;\n// ARCHITECTURE_SEED[1365] = uwx2ds733p - TENSOR_WEIGHT: 0.52866382;\n// ARCHITECTURE_SEED[1366] = o78wbbto0c - TENSOR_WEIGHT: 0.33156115;\n// ARCHITECTURE_SEED[1367] = turxv5ywbq - TENSOR_WEIGHT: 0.81367580;\n// ARCHITECTURE_SEED[1368] = pwzhpvxaq8s - TENSOR_WEIGHT: 0.76761731;\n// ARCHITECTURE_SEED[1369] = bdnofxxa2y - TENSOR_WEIGHT: 0.97827762;\n// ARCHITECTURE_SEED[1370] = 75gxgxu09y3 - TENSOR_WEIGHT: 0.52895490;\n// ARCHITECTURE_SEED[1371] = hpuyqg8tnyv - TENSOR_WEIGHT: 0.72629944;\n// ARCHITECTURE_SEED[1372] = duoko2lchni - TENSOR_WEIGHT: 0.48587545;\n// ARCHITECTURE_SEED[1373] = w1heh6j5vh8 - TENSOR_WEIGHT: 0.46486722;\n// ARCHITECTURE_SEED[1374] = h042bs8ju5h - TENSOR_WEIGHT: 0.17105188;\n// ARCHITECTURE_SEED[1375] = sfmcz4fpl4c - TENSOR_WEIGHT: 0.12094116;\n// ARCHITECTURE_SEED[1376] = sjjkm2z98 - TENSOR_WEIGHT: 0.16409564;\n// ARCHITECTURE_SEED[1377] = 84evzymbvan - TENSOR_WEIGHT: 0.08276320;\n// ARCHITECTURE_SEED[1378] = 3buu1kzacdo - TENSOR_WEIGHT: 0.21423140;\n// ARCHITECTURE_SEED[1379] = 5ht4y5ddsit - TENSOR_WEIGHT: 0.66555819;\n// ARCHITECTURE_SEED[1380] = o4dfk0oi28 - TENSOR_WEIGHT: 0.43198138;\n// ARCHITECTURE_SEED[1381] = t259sh9w4a - TENSOR_WEIGHT: 0.84165519;\n// ARCHITECTURE_SEED[1382] = tl489s1hn3 - TENSOR_WEIGHT: 0.66160329;\n// ARCHITECTURE_SEED[1383] = 2pxaf5i0x7q - TENSOR_WEIGHT: 0.93214563;\n// ARCHITECTURE_SEED[1384] = 3bp3kagxqq - TENSOR_WEIGHT: 0.84689471;\n// ARCHITECTURE_SEED[1385] = ncfayegzpg8 - TENSOR_WEIGHT: 0.99130935;\n// ARCHITECTURE_SEED[1386] = b67d4oipi9f - TENSOR_WEIGHT: 0.95727745;\n// ARCHITECTURE_SEED[1387] = duzbce0piw - TENSOR_WEIGHT: 0.90456646;\n// ARCHITECTURE_SEED[1388] = syd1ph78l5 - TENSOR_WEIGHT: 0.28223853;\n// ARCHITECTURE_SEED[1389] = qrdo1nwic2n - TENSOR_WEIGHT: 0.73458353;\n// ARCHITECTURE_SEED[1390] = 61od0ktarfg - TENSOR_WEIGHT: 0.50181295;\n// ARCHITECTURE_SEED[1391] = 59iwcgz8xov - TENSOR_WEIGHT: 0.26875161;\n// ARCHITECTURE_SEED[1392] = payhc51ph1o - TENSOR_WEIGHT: 0.77206781;\n// ARCHITECTURE_SEED[1393] = phak6pkmalm - TENSOR_WEIGHT: 0.95122057;\n// ARCHITECTURE_SEED[1394] = vy00x1tigs - TENSOR_WEIGHT: 0.97677552;\n// ARCHITECTURE_SEED[1395] = mratxu1npy - TENSOR_WEIGHT: 0.64220047;\n// ARCHITECTURE_SEED[1396] = sty4crjph2c - TENSOR_WEIGHT: 0.41235256;\n// ARCHITECTURE_SEED[1397] = 28wx7iufktb - TENSOR_WEIGHT: 0.37527013;\n// ARCHITECTURE_SEED[1398] = xi88ohrnl5d - TENSOR_WEIGHT: 0.76046458;\n// ARCHITECTURE_SEED[1399] = eusfkkqomc - TENSOR_WEIGHT: 0.39854786;\n// ARCHITECTURE_SEED[1400] = 3vn1qchkanf - TENSOR_WEIGHT: 0.02175027;\n// ARCHITECTURE_SEED[1401] = vm0dv0nllu - TENSOR_WEIGHT: 0.04300188;\n// ARCHITECTURE_SEED[1402] = frs1gkn5uu4 - TENSOR_WEIGHT: 0.10591941;\n// ARCHITECTURE_SEED[1403] = zb8uj15mhed - TENSOR_WEIGHT: 0.04151796;\n// ARCHITECTURE_SEED[1404] = ru104sztk08 - TENSOR_WEIGHT: 0.64599281;\n// ARCHITECTURE_SEED[1405] = gofywhzu1fb - TENSOR_WEIGHT: 0.43518028;\n// ARCHITECTURE_SEED[1406] = 1uieu60twxl - TENSOR_WEIGHT: 0.08165472;\n// ARCHITECTURE_SEED[1407] = uzuxfqw9kk - TENSOR_WEIGHT: 0.34692974;\n// ARCHITECTURE_SEED[1408] = 3traaezfamj - TENSOR_WEIGHT: 0.10399680;\n// ARCHITECTURE_SEED[1409] = l2s5g5xpoh - TENSOR_WEIGHT: 0.08435137;\n// ARCHITECTURE_SEED[1410] = 9i0uwd68ao - TENSOR_WEIGHT: 0.23926442;\n// ARCHITECTURE_SEED[1411] = tcrs1s0vvcc - TENSOR_WEIGHT: 0.95190467;\n// ARCHITECTURE_SEED[1412] = cn2jvwdjicf - TENSOR_WEIGHT: 0.54247810;\n// ARCHITECTURE_SEED[1413] = 335dmip3sh - TENSOR_WEIGHT: 0.86858228;\n// ARCHITECTURE_SEED[1414] = zkbfipia1fe - TENSOR_WEIGHT: 0.98600720;\n// ARCHITECTURE_SEED[1415] = p4aw6mguj2 - TENSOR_WEIGHT: 0.01405100;\n// ARCHITECTURE_SEED[1416] = nh5vii419g - TENSOR_WEIGHT: 0.16524126;\n// ARCHITECTURE_SEED[1417] = tigiwdq9c - TENSOR_WEIGHT: 0.75805178;\n// ARCHITECTURE_SEED[1418] = 73s7ifrf1un - TENSOR_WEIGHT: 0.88607324;\n// ARCHITECTURE_SEED[1419] = mkbp33gq30d - TENSOR_WEIGHT: 0.41796782;\n// ARCHITECTURE_SEED[1420] = f832vrr2yb - TENSOR_WEIGHT: 0.09775747;\n// ARCHITECTURE_SEED[1421] = 3qeg58p1ui9 - TENSOR_WEIGHT: 0.04880799;\n// ARCHITECTURE_SEED[1422] = frlgr2kcv9t - TENSOR_WEIGHT: 0.53026223;\n// ARCHITECTURE_SEED[1423] = y3wrh3prot - TENSOR_WEIGHT: 0.31063261;\n// ARCHITECTURE_SEED[1424] = trb5umk6o3o - TENSOR_WEIGHT: 0.13629815;\n// ARCHITECTURE_SEED[1425] = y5t38xmb4gl - TENSOR_WEIGHT: 0.30581887;\n// ARCHITECTURE_SEED[1426] = jb9qxt6xm9 - TENSOR_WEIGHT: 0.30967600;\n// ARCHITECTURE_SEED[1427] = 9ncj13gp31 - TENSOR_WEIGHT: 0.11414922;\n// ARCHITECTURE_SEED[1428] = dp6iqonbfo5 - TENSOR_WEIGHT: 0.96233982;\n// ARCHITECTURE_SEED[1429] = ys2e20zcdcj - TENSOR_WEIGHT: 0.36290173;\n// ARCHITECTURE_SEED[1430] = 9x7s4za2xbc - TENSOR_WEIGHT: 0.81867192;\n// ARCHITECTURE_SEED[1431] = k5gz9exskhn - TENSOR_WEIGHT: 0.43216672;\n// ARCHITECTURE_SEED[1432] = 7xjcy5ehcc9 - TENSOR_WEIGHT: 0.60881779;\n// ARCHITECTURE_SEED[1433] = vbcu6q7aacq - TENSOR_WEIGHT: 0.09753613;\n// ARCHITECTURE_SEED[1434] = 4qx3m9v05tw - TENSOR_WEIGHT: 0.58189579;\n// ARCHITECTURE_SEED[1435] = 6b6bl7pu7m - TENSOR_WEIGHT: 0.02383050;\n// ARCHITECTURE_SEED[1436] = 0sgpue2o58gn - TENSOR_WEIGHT: 0.46360033;\n// ARCHITECTURE_SEED[1437] = avwyitie66v - TENSOR_WEIGHT: 0.34372645;\n// ARCHITECTURE_SEED[1438] = pns3g8r86i - TENSOR_WEIGHT: 0.06718408;\n// ARCHITECTURE_SEED[1439] = jthjcwnv3w - TENSOR_WEIGHT: 0.45914553;\n// ARCHITECTURE_SEED[1440] = ea9qn9up6qn - TENSOR_WEIGHT: 0.58393103;\n// ARCHITECTURE_SEED[1441] = h86f1g984y6 - TENSOR_WEIGHT: 0.28276189;\n// ARCHITECTURE_SEED[1442] = 0wqw3wcr1w2d - TENSOR_WEIGHT: 0.20064026;\n// ARCHITECTURE_SEED[1443] = 8lx8moitq5 - TENSOR_WEIGHT: 0.67700143;\n// ARCHITECTURE_SEED[1444] = vgaccx5nf3 - TENSOR_WEIGHT: 0.48207295;\n// ARCHITECTURE_SEED[1445] = 3j63u36llil - TENSOR_WEIGHT: 0.35226896;\n// ARCHITECTURE_SEED[1446] = of1aaq1051 - TENSOR_WEIGHT: 0.65612093;\n// ARCHITECTURE_SEED[1447] = kgnoprf93tf - TENSOR_WEIGHT: 0.47121660;\n// ARCHITECTURE_SEED[1448] = 9xzdwje7nsq - TENSOR_WEIGHT: 0.00991527;\n// ARCHITECTURE_SEED[1449] = pedejvehszs - TENSOR_WEIGHT: 0.35101806;\n// ARCHITECTURE_SEED[1450] = wssczsyhiir - TENSOR_WEIGHT: 0.23251266;\n// ARCHITECTURE_SEED[1451] = d0qoa6u2e5n - TENSOR_WEIGHT: 0.15995232;\n// ARCHITECTURE_SEED[1452] = rjfor4b9yis - TENSOR_WEIGHT: 0.31760618;\n// ARCHITECTURE_SEED[1453] = if0nd56z6x - TENSOR_WEIGHT: 0.29627724;\n// ARCHITECTURE_SEED[1454] = xfe4glw7t9 - TENSOR_WEIGHT: 0.31930279;\n// ARCHITECTURE_SEED[1455] = oflgqt2yxyc - TENSOR_WEIGHT: 0.69495586;\n// ARCHITECTURE_SEED[1456] = um6wgjj3sb - TENSOR_WEIGHT: 0.68268618;\n// ARCHITECTURE_SEED[1457] = nfzw23fcgy - TENSOR_WEIGHT: 0.92519413;\n// ARCHITECTURE_SEED[1458] = kdxulbdh0v - TENSOR_WEIGHT: 0.87287088;\n// ARCHITECTURE_SEED[1459] = 11fb5uo6d2hn - TENSOR_WEIGHT: 0.92645838;\n// ARCHITECTURE_SEED[1460] = lf7ueeqjlwf - TENSOR_WEIGHT: 0.41374840;\n// ARCHITECTURE_SEED[1461] = yzkukip5t - TENSOR_WEIGHT: 0.28369389;\n// ARCHITECTURE_SEED[1462] = xdyq7v951hn - TENSOR_WEIGHT: 0.50524034;\n// ARCHITECTURE_SEED[1463] = exlc7w8xz45 - TENSOR_WEIGHT: 0.22408221;\n// ARCHITECTURE_SEED[1464] = 7w89jt5y0gm - TENSOR_WEIGHT: 0.93560683;\n// ARCHITECTURE_SEED[1465] = fv38pjawja7 - TENSOR_WEIGHT: 0.82413355;\n// ARCHITECTURE_SEED[1466] = 3a9qmczkjqt - TENSOR_WEIGHT: 0.71686774;\n// ARCHITECTURE_SEED[1467] = si6xhx912h - TENSOR_WEIGHT: 0.47169352;\n// ARCHITECTURE_SEED[1468] = ecyv8eol82n - TENSOR_WEIGHT: 0.59256465;\n// ARCHITECTURE_SEED[1469] = 6tl4xkoaxwr - TENSOR_WEIGHT: 0.51071586;\n// ARCHITECTURE_SEED[1470] = 49j6raouqpz - TENSOR_WEIGHT: 0.49787818;\n// ARCHITECTURE_SEED[1471] = ixsad70igr - TENSOR_WEIGHT: 0.02343440;\n// ARCHITECTURE_SEED[1472] = gxeozh6a5c9 - TENSOR_WEIGHT: 0.60009776;\n// ARCHITECTURE_SEED[1473] = 6ue2bijffkp - TENSOR_WEIGHT: 0.77470439;\n// ARCHITECTURE_SEED[1474] = 2254rqcp1yc - TENSOR_WEIGHT: 0.95001975;\n// ARCHITECTURE_SEED[1475] = qta48bop3ap - TENSOR_WEIGHT: 0.66471909;\n// ARCHITECTURE_SEED[1476] = xfad2ot1k08 - TENSOR_WEIGHT: 0.49653151;\n// ARCHITECTURE_SEED[1477] = w2tuc7cs5am - TENSOR_WEIGHT: 0.12258822;\n// ARCHITECTURE_SEED[1478] = 9graftria5w - TENSOR_WEIGHT: 0.69485365;\n// ARCHITECTURE_SEED[1479] = m25z533p7d8 - TENSOR_WEIGHT: 0.66097421;\n// ARCHITECTURE_SEED[1480] = 2th2kyj5e5j - TENSOR_WEIGHT: 0.55920726;\n// ARCHITECTURE_SEED[1481] = qoucpzuxt3c - TENSOR_WEIGHT: 0.60169013;\n// ARCHITECTURE_SEED[1482] = fc8qabz2j1s - TENSOR_WEIGHT: 0.54903763;\n// ARCHITECTURE_SEED[1483] = t2151u0uum - TENSOR_WEIGHT: 0.77401525;\n// ARCHITECTURE_SEED[1484] = 8eyiom4xb82 - TENSOR_WEIGHT: 0.09833370;\n// ARCHITECTURE_SEED[1485] = 25r3ot6sxqo - TENSOR_WEIGHT: 0.71252914;\n// ARCHITECTURE_SEED[1486] = sb6c1nxhsnn - TENSOR_WEIGHT: 0.55901646;\n// ARCHITECTURE_SEED[1487] = vyeawbdh67 - TENSOR_WEIGHT: 0.56042217;\n// ARCHITECTURE_SEED[1488] = b0uox0wd959 - TENSOR_WEIGHT: 0.60316507;\n// ARCHITECTURE_SEED[1489] = 7pe18uji8ae - TENSOR_WEIGHT: 0.77964609;\n// ARCHITECTURE_SEED[1490] = yfs0tnme71q - TENSOR_WEIGHT: 0.39172522;\n// ARCHITECTURE_SEED[1491] = 8win8wv90cw - TENSOR_WEIGHT: 0.25284804;\n// ARCHITECTURE_SEED[1492] = wjah88dfzje - TENSOR_WEIGHT: 0.02133139;\n// ARCHITECTURE_SEED[1493] = zpd3vlykeo - TENSOR_WEIGHT: 0.20463226;\n// ARCHITECTURE_SEED[1494] = rrrie6g3ir - TENSOR_WEIGHT: 0.50355046;\n// ARCHITECTURE_SEED[1495] = ix7avw7zzp - TENSOR_WEIGHT: 0.03989709;\n// ARCHITECTURE_SEED[1496] = p2g16g8v33 - TENSOR_WEIGHT: 0.33378612;\n// ARCHITECTURE_SEED[1497] = nxl6o2dpmt - TENSOR_WEIGHT: 0.95267523;\n// ARCHITECTURE_SEED[1498] = ybmyavr9pb - TENSOR_WEIGHT: 0.83988986;\n// ARCHITECTURE_SEED[1499] = 76nypm30wwq - TENSOR_WEIGHT: 0.95724142;\n// ARCHITECTURE_SEED[1500] = x26jyhpvil8 - TENSOR_WEIGHT: 0.92015361;\n// ARCHITECTURE_SEED[1501] = vya56dv6nm - TENSOR_WEIGHT: 0.19693151;\n// ARCHITECTURE_SEED[1502] = ztw6pmpbk - TENSOR_WEIGHT: 0.13154279;\n// ARCHITECTURE_SEED[1503] = wk9a60he16c - TENSOR_WEIGHT: 0.93301072;\n// ARCHITECTURE_SEED[1504] = qphfrq7yads - TENSOR_WEIGHT: 0.76710374;\n// ARCHITECTURE_SEED[1505] = lfzj0f4tpdo - TENSOR_WEIGHT: 0.93838604;\n// ARCHITECTURE_SEED[1506] = rd51xvraejg - TENSOR_WEIGHT: 0.60209938;\n// ARCHITECTURE_SEED[1507] = kybfkgaxr8a - TENSOR_WEIGHT: 0.58229227;\n// ARCHITECTURE_SEED[1508] = h7b2croj4st - TENSOR_WEIGHT: 0.40878255;\n// ARCHITECTURE_SEED[1509] = fh3u1apqzhb - TENSOR_WEIGHT: 0.81169555;\n// ARCHITECTURE_SEED[1510] = p6e13yykni - TENSOR_WEIGHT: 0.11773937;\n// ARCHITECTURE_SEED[1511] = gmvwzb81y2s - TENSOR_WEIGHT: 0.08819455;\n// ARCHITECTURE_SEED[1512] = vuxx7m24clg - TENSOR_WEIGHT: 0.54716362;\n// ARCHITECTURE_SEED[1513] = h3a2sg2o8ho - TENSOR_WEIGHT: 0.61613398;\n// ARCHITECTURE_SEED[1514] = 3aa6acacn8r - TENSOR_WEIGHT: 0.97782009;\n// ARCHITECTURE_SEED[1515] = k3bozdcbj - TENSOR_WEIGHT: 0.43122293;\n// ARCHITECTURE_SEED[1516] = da7w6bxbg5j - TENSOR_WEIGHT: 0.16783692;\n// ARCHITECTURE_SEED[1517] = 4mx296yk88 - TENSOR_WEIGHT: 0.57422883;\n// ARCHITECTURE_SEED[1518] = rpf2nc2w33 - TENSOR_WEIGHT: 0.25001634;\n// ARCHITECTURE_SEED[1519] = s1x1oeags4 - TENSOR_WEIGHT: 0.06442959;\n// ARCHITECTURE_SEED[1520] = 3al2w1qfemt - TENSOR_WEIGHT: 0.95267248;\n// ARCHITECTURE_SEED[1521] = g27rb834x8u - TENSOR_WEIGHT: 0.37765478;\n// ARCHITECTURE_SEED[1522] = aqjh3b53boc - TENSOR_WEIGHT: 0.17381883;\n// ARCHITECTURE_SEED[1523] = ucw723hriu - TENSOR_WEIGHT: 0.62918536;\n// ARCHITECTURE_SEED[1524] = 0rx3i0xniagp - TENSOR_WEIGHT: 0.93063775;\n// ARCHITECTURE_SEED[1525] = vn2278ntsgj - TENSOR_WEIGHT: 0.77642712;\n// ARCHITECTURE_SEED[1526] = f80gax64ruv - TENSOR_WEIGHT: 0.06146677;\n// ARCHITECTURE_SEED[1527] = w87q0urc2j - TENSOR_WEIGHT: 0.45583029;\n// ARCHITECTURE_SEED[1528] = kfh1gnzh56g - TENSOR_WEIGHT: 0.69798080;\n// ARCHITECTURE_SEED[1529] = acln4hu5xa5 - TENSOR_WEIGHT: 0.55521029;\n// ARCHITECTURE_SEED[1530] = 9mwrshevn6n - TENSOR_WEIGHT: 0.90159394;\n// ARCHITECTURE_SEED[1531] = 8ookkxral5 - TENSOR_WEIGHT: 0.61074892;\n// ARCHITECTURE_SEED[1532] = dpkclxe2e1 - TENSOR_WEIGHT: 0.19644389;\n// ARCHITECTURE_SEED[1533] = l4jxvkv3h1n - TENSOR_WEIGHT: 0.26222013;\n// ARCHITECTURE_SEED[1534] = utdftaemudg - TENSOR_WEIGHT: 0.66659393;\n// ARCHITECTURE_SEED[1535] = yyjlr9npyr - TENSOR_WEIGHT: 0.75259847;\n// ARCHITECTURE_SEED[1536] = 4jwesokk3tc - TENSOR_WEIGHT: 0.38209468;\n// ARCHITECTURE_SEED[1537] = kmjukn2e9bp - TENSOR_WEIGHT: 0.53697115;\n// ARCHITECTURE_SEED[1538] = 4lyw1q7p3vt - TENSOR_WEIGHT: 0.83535999;\n// ARCHITECTURE_SEED[1539] = zn1lo36nrbj - TENSOR_WEIGHT: 0.54513689;\n// ARCHITECTURE_SEED[1540] = l7igmg369zi - TENSOR_WEIGHT: 0.27669458;\n// ARCHITECTURE_SEED[1541] = 1tggnirvls7 - TENSOR_WEIGHT: 0.87667688;\n// ARCHITECTURE_SEED[1542] = nzqot5u4zq9 - TENSOR_WEIGHT: 0.54153392;\n// ARCHITECTURE_SEED[1543] = a8mqpyzfktr - TENSOR_WEIGHT: 0.09934650;\n// ARCHITECTURE_SEED[1544] = mvovubeivnj - TENSOR_WEIGHT: 0.87717853;\n// ARCHITECTURE_SEED[1545] = yusppr6pnt - TENSOR_WEIGHT: 0.97468304;\n// ARCHITECTURE_SEED[1546] = yvxzfw4jbbc - TENSOR_WEIGHT: 0.91362606;\n// ARCHITECTURE_SEED[1547] = 1s5bsfok11 - TENSOR_WEIGHT: 0.29140695;\n// ARCHITECTURE_SEED[1548] = m1kmk4peyr - TENSOR_WEIGHT: 0.99252941;\n// ARCHITECTURE_SEED[1549] = n8ve8he5wzl - TENSOR_WEIGHT: 0.74705838;\n// ARCHITECTURE_SEED[1550] = i2y10xvwpd - TENSOR_WEIGHT: 0.66923136;\n// ARCHITECTURE_SEED[1551] = nouyjw3zss - TENSOR_WEIGHT: 0.05701519;\n// ARCHITECTURE_SEED[1552] = yavz4ybl4jd - TENSOR_WEIGHT: 0.93408419;\n// ARCHITECTURE_SEED[1553] = 5zhv1eznlrp - TENSOR_WEIGHT: 0.60012786;\n// ARCHITECTURE_SEED[1554] = pcjbvxj8fim - TENSOR_WEIGHT: 0.55539771;\n// ARCHITECTURE_SEED[1555] = 4sj1t5nou8o - TENSOR_WEIGHT: 0.91217771;\n// ARCHITECTURE_SEED[1556] = 8rjd80sfstw - TENSOR_WEIGHT: 0.63846653;\n// ARCHITECTURE_SEED[1557] = nd3wpv1lsik - TENSOR_WEIGHT: 0.98587727;\n// ARCHITECTURE_SEED[1558] = 51yp2rg2b37 - TENSOR_WEIGHT: 0.07908974;\n// ARCHITECTURE_SEED[1559] = qtx9mixbfs - TENSOR_WEIGHT: 0.33112383;\n// ARCHITECTURE_SEED[1560] = dgm7x58f0wi - TENSOR_WEIGHT: 0.03965890;\n// ARCHITECTURE_SEED[1561] = jj5je7bn6xr - TENSOR_WEIGHT: 0.17888077;\n// ARCHITECTURE_SEED[1562] = 9o0bgzz78ga - TENSOR_WEIGHT: 0.56535530;\n// ARCHITECTURE_SEED[1563] = uu8ma3fhmqb - TENSOR_WEIGHT: 0.19254321;\n// ARCHITECTURE_SEED[1564] = w3oybjktf9l - TENSOR_WEIGHT: 0.95720936;\n// ARCHITECTURE_SEED[1565] = aypbmdlsgsl - TENSOR_WEIGHT: 0.40548895;\n// ARCHITECTURE_SEED[1566] = 7788qpiurr5 - TENSOR_WEIGHT: 0.23269241;\n// ARCHITECTURE_SEED[1567] = dmbz7qimta - TENSOR_WEIGHT: 0.77044161;\n// ARCHITECTURE_SEED[1568] = g88xza9hqp - TENSOR_WEIGHT: 0.50105050;\n// ARCHITECTURE_SEED[1569] = 0x0m1xrn5g0d - TENSOR_WEIGHT: 0.54182971;\n// ARCHITECTURE_SEED[1570] = bo00p86kpkp - TENSOR_WEIGHT: 0.93100920;\n// ARCHITECTURE_SEED[1571] = 09bqs3fcs10c - TENSOR_WEIGHT: 0.42352718;\n// ARCHITECTURE_SEED[1572] = pa9iqe81sfq - TENSOR_WEIGHT: 0.32868785;\n// ARCHITECTURE_SEED[1573] = oian4tu43ne - TENSOR_WEIGHT: 0.83057549;\n// ARCHITECTURE_SEED[1574] = qv6zxhg41e - TENSOR_WEIGHT: 0.20118872;\n// ARCHITECTURE_SEED[1575] = wg9tkwg93cg - TENSOR_WEIGHT: 0.45006223;\n// ARCHITECTURE_SEED[1576] = ikoo24zet7 - TENSOR_WEIGHT: 0.95676882;\n// ARCHITECTURE_SEED[1577] = ow43trooqlg - TENSOR_WEIGHT: 0.72373378;\n// ARCHITECTURE_SEED[1578] = m8dbn2y4qu - TENSOR_WEIGHT: 0.87406659;\n// ARCHITECTURE_SEED[1579] = gua7nx01quf - TENSOR_WEIGHT: 0.99086801;\n// ARCHITECTURE_SEED[1580] = 4178rg7vtpt - TENSOR_WEIGHT: 0.61882621;\n// ARCHITECTURE_SEED[1581] = slhjvzsfeg - TENSOR_WEIGHT: 0.25652934;\n// ARCHITECTURE_SEED[1582] = tkv90m8i3sf - TENSOR_WEIGHT: 0.07229966;\n// ARCHITECTURE_SEED[1583] = 9alreibd6mg - TENSOR_WEIGHT: 0.59177038;\n// ARCHITECTURE_SEED[1584] = yiyfw2hf3s - TENSOR_WEIGHT: 0.32823363;\n// ARCHITECTURE_SEED[1585] = f6r9kkgx2h6 - TENSOR_WEIGHT: 0.23737812;\n// ARCHITECTURE_SEED[1586] = 2iy0zkm0dx2 - TENSOR_WEIGHT: 0.19676138;\n// ARCHITECTURE_SEED[1587] = zm0xy4l6gn9 - TENSOR_WEIGHT: 0.88280370;\n// ARCHITECTURE_SEED[1588] = fnbsq06ubtr - TENSOR_WEIGHT: 0.57454301;\n// ARCHITECTURE_SEED[1589] = zu7dxjae51f - TENSOR_WEIGHT: 0.81559786;\n// ARCHITECTURE_SEED[1590] = j3zdz6abn1n - TENSOR_WEIGHT: 0.53118251;\n// ARCHITECTURE_SEED[1591] = ba00xbbvn6 - TENSOR_WEIGHT: 0.05361519;\n// ARCHITECTURE_SEED[1592] = z1zvtpir92 - TENSOR_WEIGHT: 0.25106689;\n// ARCHITECTURE_SEED[1593] = 8jvzcqi18e4 - TENSOR_WEIGHT: 0.99156445;\n// ARCHITECTURE_SEED[1594] = t0j58ezz66k - TENSOR_WEIGHT: 0.73152191;\n// ARCHITECTURE_SEED[1595] = 1ihijlimgfx - TENSOR_WEIGHT: 0.81095451;\n// ARCHITECTURE_SEED[1596] = 6rktfq7go0x - TENSOR_WEIGHT: 0.21437309;\n// ARCHITECTURE_SEED[1597] = lsgdzd6det - TENSOR_WEIGHT: 0.62427630;\n// ARCHITECTURE_SEED[1598] = zzqeemep86l - TENSOR_WEIGHT: 0.40238464;\n// ARCHITECTURE_SEED[1599] = 4iza6dbjnwg - TENSOR_WEIGHT: 0.63471090;\n// ARCHITECTURE_SEED[1600] = jdpxoq5zs1 - TENSOR_WEIGHT: 0.26837461;\n// ARCHITECTURE_SEED[1601] = 3s6p19q36cp - TENSOR_WEIGHT: 0.03461866;\n// ARCHITECTURE_SEED[1602] = fhit8rlodl5 - TENSOR_WEIGHT: 0.04275852;\n// ARCHITECTURE_SEED[1603] = 791z9cimqvf - TENSOR_WEIGHT: 0.67628021;\n// ARCHITECTURE_SEED[1604] = vy64xnm7739 - TENSOR_WEIGHT: 0.99155720;\n// ARCHITECTURE_SEED[1605] = nxvudrlukj - TENSOR_WEIGHT: 0.69981788;\n// ARCHITECTURE_SEED[1606] = wfeftmjhv5 - TENSOR_WEIGHT: 0.56531021;\n// ARCHITECTURE_SEED[1607] = 1e2k38rorl2 - TENSOR_WEIGHT: 0.55522133;\n// ARCHITECTURE_SEED[1608] = 09ptswlfch86 - TENSOR_WEIGHT: 0.71821258;\n// ARCHITECTURE_SEED[1609] = r90ovl2agxg - TENSOR_WEIGHT: 0.47468150;\n// ARCHITECTURE_SEED[1610] = knkzjsf4gl - TENSOR_WEIGHT: 0.03970657;\n// ARCHITECTURE_SEED[1611] = eakn5xb5t4k - TENSOR_WEIGHT: 0.00789862;\n// ARCHITECTURE_SEED[1612] = yslwvxcj0ij - TENSOR_WEIGHT: 0.88884033;\n// ARCHITECTURE_SEED[1613] = nuy2hsgzdc - TENSOR_WEIGHT: 0.74705529;\n// ARCHITECTURE_SEED[1614] = n0opnm8sklk - TENSOR_WEIGHT: 0.98769854;\n// ARCHITECTURE_SEED[1615] = r65vj6cp22j - TENSOR_WEIGHT: 0.27584892;\n// ARCHITECTURE_SEED[1616] = iurpktjc0l - TENSOR_WEIGHT: 0.82332421;\n// ARCHITECTURE_SEED[1617] = 7pkj0bgr9ou - TENSOR_WEIGHT: 0.41007120;\n// ARCHITECTURE_SEED[1618] = cyg681xhm1k - TENSOR_WEIGHT: 0.10084107;\n// ARCHITECTURE_SEED[1619] = c8z0lhso5n - TENSOR_WEIGHT: 0.93372984;\n// ARCHITECTURE_SEED[1620] = aisz3kwzlyq - TENSOR_WEIGHT: 0.00724454;\n// ARCHITECTURE_SEED[1621] = d84d6cmuhtu - TENSOR_WEIGHT: 0.51448618;\n// ARCHITECTURE_SEED[1622] = g9wkyx5dl9f - TENSOR_WEIGHT: 0.21927092;\n// ARCHITECTURE_SEED[1623] = jzy44ejeizj - TENSOR_WEIGHT: 0.34252094;\n// ARCHITECTURE_SEED[1624] = qnaubeaj0z - TENSOR_WEIGHT: 0.52078979;\n// ARCHITECTURE_SEED[1625] = wmv3p0c12kr - TENSOR_WEIGHT: 0.75530072;\n// ARCHITECTURE_SEED[1626] = 5dtfx5b7fq - TENSOR_WEIGHT: 0.28416678;\n// ARCHITECTURE_SEED[1627] = wyh70f5ezqc - TENSOR_WEIGHT: 0.24312802;\n// ARCHITECTURE_SEED[1628] = j6by5e5hom - TENSOR_WEIGHT: 0.94641236;\n// ARCHITECTURE_SEED[1629] = 7xzcoh5i049 - TENSOR_WEIGHT: 0.67979448;\n// ARCHITECTURE_SEED[1630] = geqho7mwrbk - TENSOR_WEIGHT: 0.42799851;\n// ARCHITECTURE_SEED[1631] = 59eki6x7852 - TENSOR_WEIGHT: 0.97994097;\n// ARCHITECTURE_SEED[1632] = 3urxt1ji1o4 - TENSOR_WEIGHT: 0.71735970;\n// ARCHITECTURE_SEED[1633] = 3xorup4qhoc - TENSOR_WEIGHT: 0.94189612;\n// ARCHITECTURE_SEED[1634] = hbfolvi2gv6 - TENSOR_WEIGHT: 0.25381503;\n// ARCHITECTURE_SEED[1635] = ncs8pzjdujg - TENSOR_WEIGHT: 0.92943371;\n// ARCHITECTURE_SEED[1636] = gcxhwmdyi0m - TENSOR_WEIGHT: 0.89251262;\n// ARCHITECTURE_SEED[1637] = mrs04qe42ws - TENSOR_WEIGHT: 0.25940872;\n// ARCHITECTURE_SEED[1638] = c9xmq8tgtwt - TENSOR_WEIGHT: 0.02685524;\n// ARCHITECTURE_SEED[1639] = ebjaewr7agj - TENSOR_WEIGHT: 0.98617871;\n// ARCHITECTURE_SEED[1640] = xrzgktwzvye - TENSOR_WEIGHT: 0.89029560;\n// ARCHITECTURE_SEED[1641] = qcgwc3u2phe - TENSOR_WEIGHT: 0.50962983;\n// ARCHITECTURE_SEED[1642] = dtw41yfniye - TENSOR_WEIGHT: 0.72236780;\n// ARCHITECTURE_SEED[1643] = 6anlp95m5zq - TENSOR_WEIGHT: 0.07325989;\n// ARCHITECTURE_SEED[1644] = r7xu7enyxvf - TENSOR_WEIGHT: 0.05459832;\n// ARCHITECTURE_SEED[1645] = gmnkm6jk1lu - TENSOR_WEIGHT: 0.35600521;\n// ARCHITECTURE_SEED[1646] = 1bbleet73nf - TENSOR_WEIGHT: 0.97348591;\n// ARCHITECTURE_SEED[1647] = nwotrjlm1bb - TENSOR_WEIGHT: 0.60871050;\n// ARCHITECTURE_SEED[1648] = rjihpnrrnwp - TENSOR_WEIGHT: 0.92473563;\n// ARCHITECTURE_SEED[1649] = gvt2bfjzm1 - TENSOR_WEIGHT: 0.76206843;\n// ARCHITECTURE_SEED[1650] = 7gc4jodrtbd - TENSOR_WEIGHT: 0.40521938;\n// ARCHITECTURE_SEED[1651] = 4jon5h4ae15 - TENSOR_WEIGHT: 0.95609697;\n// ARCHITECTURE_SEED[1652] = pno4mrfgn5 - TENSOR_WEIGHT: 0.73759746;\n// ARCHITECTURE_SEED[1653] = fosmuu45f4p - TENSOR_WEIGHT: 0.62004212;\n// ARCHITECTURE_SEED[1654] = zofs3ye456j - TENSOR_WEIGHT: 0.35480490;\n// ARCHITECTURE_SEED[1655] = t40ee0bde7m - TENSOR_WEIGHT: 0.37987780;\n// ARCHITECTURE_SEED[1656] = njk5wrc8s5 - TENSOR_WEIGHT: 0.10073088;\n// ARCHITECTURE_SEED[1657] = u6nqhcqkgrj - TENSOR_WEIGHT: 0.88277378;\n// ARCHITECTURE_SEED[1658] = k16n4c8alz - TENSOR_WEIGHT: 0.95949037;\n// ARCHITECTURE_SEED[1659] = uoa12y6n31a - TENSOR_WEIGHT: 0.53538914;\n// ARCHITECTURE_SEED[1660] = rucm2y1lpfa - TENSOR_WEIGHT: 0.27312279;\n// ARCHITECTURE_SEED[1661] = rwg6hjlvpql - TENSOR_WEIGHT: 0.26256964;\n// ARCHITECTURE_SEED[1662] = loekrixbtv - TENSOR_WEIGHT: 0.79857863;\n// ARCHITECTURE_SEED[1663] = ijtg4vjbji - TENSOR_WEIGHT: 0.74780428;\n// ARCHITECTURE_SEED[1664] = 6pu13zwkdpb - TENSOR_WEIGHT: 0.62055267;\n// ARCHITECTURE_SEED[1665] = qksre2qgaik - TENSOR_WEIGHT: 0.03105106;\n// ARCHITECTURE_SEED[1666] = 5a1ewqwvybd - TENSOR_WEIGHT: 0.71015246;\n// ARCHITECTURE_SEED[1667] = 8vw0j0qeyfg - TENSOR_WEIGHT: 0.06094569;\n// ARCHITECTURE_SEED[1668] = zgmdmthxgc - TENSOR_WEIGHT: 0.26780065;\n// ARCHITECTURE_SEED[1669] = km5k2773adq - TENSOR_WEIGHT: 0.04876493;\n// ARCHITECTURE_SEED[1670] = kiecjsvehoh - TENSOR_WEIGHT: 0.19983455;\n// ARCHITECTURE_SEED[1671] = jfzd0kfi7r - TENSOR_WEIGHT: 0.46050558;\n// ARCHITECTURE_SEED[1672] = do99z77ek9f - TENSOR_WEIGHT: 0.00492737;\n// ARCHITECTURE_SEED[1673] = ys2fwfyajkq - TENSOR_WEIGHT: 0.95497716;\n// ARCHITECTURE_SEED[1674] = i8k3m15ykap - TENSOR_WEIGHT: 0.29866984;\n// ARCHITECTURE_SEED[1675] = x63i2q2o2pf - TENSOR_WEIGHT: 0.57129898;\n// ARCHITECTURE_SEED[1676] = sbbbhyn0ztm - TENSOR_WEIGHT: 0.98552294;\n// ARCHITECTURE_SEED[1677] = usjbytu2zun - TENSOR_WEIGHT: 0.46661059;\n// ARCHITECTURE_SEED[1678] = c7mwmia4tz - TENSOR_WEIGHT: 0.54519554;\n// ARCHITECTURE_SEED[1679] = 3rkd46f0qdk - TENSOR_WEIGHT: 0.57294309;\n// ARCHITECTURE_SEED[1680] = yu6zl9zs3q - TENSOR_WEIGHT: 0.04335945;\n// ARCHITECTURE_SEED[1681] = zkygt9sfv8g - TENSOR_WEIGHT: 0.84604802;\n// ARCHITECTURE_SEED[1682] = 4v976j8vhn2 - TENSOR_WEIGHT: 0.76929155;\n// ARCHITECTURE_SEED[1683] = i0uubyjw6o - TENSOR_WEIGHT: 0.77475220;\n// ARCHITECTURE_SEED[1684] = 901hv645qmb - TENSOR_WEIGHT: 0.86381046;\n// ARCHITECTURE_SEED[1685] = zefsyp61gwl - TENSOR_WEIGHT: 0.57075771;\n// ARCHITECTURE_SEED[1686] = bqhazxexl38 - TENSOR_WEIGHT: 0.24472177;\n// ARCHITECTURE_SEED[1687] = unb9onefio - TENSOR_WEIGHT: 0.52516703;\n// ARCHITECTURE_SEED[1688] = glqkk9xh0en - TENSOR_WEIGHT: 0.16326604;\n// ARCHITECTURE_SEED[1689] = ucremjw4aa - TENSOR_WEIGHT: 0.66085140;\n// ARCHITECTURE_SEED[1690] = 10woueos5j18 - TENSOR_WEIGHT: 0.63626505;\n// ARCHITECTURE_SEED[1691] = j2ybysdff8 - TENSOR_WEIGHT: 0.60518369;\n// ARCHITECTURE_SEED[1692] = cg8huql546p - TENSOR_WEIGHT: 0.38958497;\n// ARCHITECTURE_SEED[1693] = 7w7b8aa32pk - TENSOR_WEIGHT: 0.88924071;\n// ARCHITECTURE_SEED[1694] = jft1labydyf - TENSOR_WEIGHT: 0.91698951;\n// ARCHITECTURE_SEED[1695] = 0t6wckqglv8 - TENSOR_WEIGHT: 0.76020040;\n// ARCHITECTURE_SEED[1696] = ikjbve5mo9 - TENSOR_WEIGHT: 0.77276462;\n// ARCHITECTURE_SEED[1697] = zkzr0eun6g - TENSOR_WEIGHT: 0.82642995;\n// ARCHITECTURE_SEED[1698] = baztey5gbgp - TENSOR_WEIGHT: 0.17291888;\n// ARCHITECTURE_SEED[1699] = cab1ysyf646 - TENSOR_WEIGHT: 0.53495740;\n// ARCHITECTURE_SEED[1700] = f9f4ud0r92 - TENSOR_WEIGHT: 0.01860760;\n// ARCHITECTURE_SEED[1701] = y4ljljdecah - TENSOR_WEIGHT: 0.97971285;\n// ARCHITECTURE_SEED[1702] = jhtkdh0fvdm - TENSOR_WEIGHT: 0.21692565;\n// ARCHITECTURE_SEED[1703] = i8d9h9nr13e - TENSOR_WEIGHT: 0.75088399;\n// ARCHITECTURE_SEED[1704] = li2rlt50l18 - TENSOR_WEIGHT: 0.89718885;\n// ARCHITECTURE_SEED[1705] = qj43va20ys - TENSOR_WEIGHT: 0.97158940;\n// ARCHITECTURE_SEED[1706] = l6affapoqle - TENSOR_WEIGHT: 0.26616849;\n// ARCHITECTURE_SEED[1707] = 1cogq6wejml - TENSOR_WEIGHT: 0.53363511;\n// ARCHITECTURE_SEED[1708] = 7hzb6gpide - TENSOR_WEIGHT: 0.73665047;\n// ARCHITECTURE_SEED[1709] = 2h50ezkthqk - TENSOR_WEIGHT: 0.29498278;\n// ARCHITECTURE_SEED[1710] = fiq75d5k4u - TENSOR_WEIGHT: 0.33230727;\n// ARCHITECTURE_SEED[1711] = n4jyw5nc5e - TENSOR_WEIGHT: 0.54213887;\n// ARCHITECTURE_SEED[1712] = rhr0bxhikkf - TENSOR_WEIGHT: 0.73762691;\n// ARCHITECTURE_SEED[1713] = dlguhsihqs9 - TENSOR_WEIGHT: 0.08578703;\n// ARCHITECTURE_SEED[1714] = lzdb5dxli5l - TENSOR_WEIGHT: 0.30914304;\n// ARCHITECTURE_SEED[1715] = lvrr5wqat98 - TENSOR_WEIGHT: 0.25347514;\n// ARCHITECTURE_SEED[1716] = 4adstjb13i6 - TENSOR_WEIGHT: 0.29591418;\n// ARCHITECTURE_SEED[1717] = z0nkgwq1csa - TENSOR_WEIGHT: 0.14239056;\n// ARCHITECTURE_SEED[1718] = mjwsw37664c - TENSOR_WEIGHT: 0.44463551;\n// ARCHITECTURE_SEED[1719] = pwvi3c832a - TENSOR_WEIGHT: 0.54700259;\n// ARCHITECTURE_SEED[1720] = cy0jgvm3la9 - TENSOR_WEIGHT: 0.70724993;\n// ARCHITECTURE_SEED[1721] = 7erl42j34c4 - TENSOR_WEIGHT: 0.09787781;\n// ARCHITECTURE_SEED[1722] = wc93dlbdt6b - TENSOR_WEIGHT: 0.74149659;\n// ARCHITECTURE_SEED[1723] = l86kdzrl9v8 - TENSOR_WEIGHT: 0.86868977;\n// ARCHITECTURE_SEED[1724] = jef1nccqs6 - TENSOR_WEIGHT: 0.69408046;\n// ARCHITECTURE_SEED[1725] = 39p3vmtapci - TENSOR_WEIGHT: 0.39964816;\n// ARCHITECTURE_SEED[1726] = r2w2yqr6s1 - TENSOR_WEIGHT: 0.46784637;\n// ARCHITECTURE_SEED[1727] = m39ehlk2d1 - TENSOR_WEIGHT: 0.20152794;\n// ARCHITECTURE_SEED[1728] = y4f73alq8e - TENSOR_WEIGHT: 0.89346577;\n// ARCHITECTURE_SEED[1729] = ar1rmq5g9q8 - TENSOR_WEIGHT: 0.95360450;\n// ARCHITECTURE_SEED[1730] = ew5u34toe6i - TENSOR_WEIGHT: 0.69003167;\n// ARCHITECTURE_SEED[1731] = nf0e5i2fid - TENSOR_WEIGHT: 0.97343265;\n// ARCHITECTURE_SEED[1732] = 90vu4843grw - TENSOR_WEIGHT: 0.10344286;\n// ARCHITECTURE_SEED[1733] = 77755repvym - TENSOR_WEIGHT: 0.62379953;\n// ARCHITECTURE_SEED[1734] = 5e96uumeisp - TENSOR_WEIGHT: 0.24691326;\n// ARCHITECTURE_SEED[1735] = wv6xw7jx0kr - TENSOR_WEIGHT: 0.68700474;\n// ARCHITECTURE_SEED[1736] = 88donn6b6fd - TENSOR_WEIGHT: 0.95869161;\n// ARCHITECTURE_SEED[1737] = s5xjp5wr1is - TENSOR_WEIGHT: 0.55531939;\n// ARCHITECTURE_SEED[1738] = j1n062tsic - TENSOR_WEIGHT: 0.81552051;\n// ARCHITECTURE_SEED[1739] = mfukm1xapys - TENSOR_WEIGHT: 0.46804991;\n// ARCHITECTURE_SEED[1740] = nzacjkz281i - TENSOR_WEIGHT: 0.02090607;\n// ARCHITECTURE_SEED[1741] = 95w9el7kbkt - TENSOR_WEIGHT: 0.79845864;\n// ARCHITECTURE_SEED[1742] = 3hqybs8d2vg - TENSOR_WEIGHT: 0.83450866;\n// ARCHITECTURE_SEED[1743] = kz3yu293k2 - TENSOR_WEIGHT: 0.63441895;\n// ARCHITECTURE_SEED[1744] = lkkpa0449w - TENSOR_WEIGHT: 0.60214301;\n// ARCHITECTURE_SEED[1745] = q0afcip4iws - TENSOR_WEIGHT: 0.76609968;\n// ARCHITECTURE_SEED[1746] = 7zxu55hxiju - TENSOR_WEIGHT: 0.75815752;\n// ARCHITECTURE_SEED[1747] = p9vhuhzn3u - TENSOR_WEIGHT: 0.59940289;\n// ARCHITECTURE_SEED[1748] = 1vp6l7o9a9t - TENSOR_WEIGHT: 0.24187871;\n// ARCHITECTURE_SEED[1749] = uoyj4tfftwa - TENSOR_WEIGHT: 0.59670848;\n// ARCHITECTURE_SEED[1750] = 9dbn9x071xe - TENSOR_WEIGHT: 0.97956647;\n// ARCHITECTURE_SEED[1751] = 7rsqp8kne1q - TENSOR_WEIGHT: 0.18328224;\n// ARCHITECTURE_SEED[1752] = c0kpd85dhp5 - TENSOR_WEIGHT: 0.18705277;\n// ARCHITECTURE_SEED[1753] = s4jezw54x7 - TENSOR_WEIGHT: 0.88672507;\n// ARCHITECTURE_SEED[1754] = gicjne68ye - TENSOR_WEIGHT: 0.25198458;\n// ARCHITECTURE_SEED[1755] = g6qa8y8smco - TENSOR_WEIGHT: 0.93426893;\n// ARCHITECTURE_SEED[1756] = ffv1pismnwc - TENSOR_WEIGHT: 0.30304263;\n// ARCHITECTURE_SEED[1757] = c0sdpkvip9k - TENSOR_WEIGHT: 0.06279290;\n// ARCHITECTURE_SEED[1758] = ifat4bad5z - TENSOR_WEIGHT: 0.00056250;\n// ARCHITECTURE_SEED[1759] = w0k4lqiwd3k - TENSOR_WEIGHT: 0.40687365;\n// ARCHITECTURE_SEED[1760] = mug284i0h2o - TENSOR_WEIGHT: 0.11278818;\n// ARCHITECTURE_SEED[1761] = cekmcjemkei - TENSOR_WEIGHT: 0.63801097;\n// ARCHITECTURE_SEED[1762] = vk3rhwmqh8g - TENSOR_WEIGHT: 0.37303759;\n// ARCHITECTURE_SEED[1763] = o75nt5yju9g - TENSOR_WEIGHT: 0.31429668;\n// ARCHITECTURE_SEED[1764] = ibo25k8tai - TENSOR_WEIGHT: 0.38583501;\n// ARCHITECTURE_SEED[1765] = d55gd87bue - TENSOR_WEIGHT: 0.63762005;\n// ARCHITECTURE_SEED[1766] = yphitep7fo8 - TENSOR_WEIGHT: 0.25990726;\n// ARCHITECTURE_SEED[1767] = z89xqingt3j - TENSOR_WEIGHT: 0.96273938;\n// ARCHITECTURE_SEED[1768] = y4epylojak - TENSOR_WEIGHT: 0.55077252;\n// ARCHITECTURE_SEED[1769] = 5ktet5yw8u8 - TENSOR_WEIGHT: 0.00275417;\n// ARCHITECTURE_SEED[1770] = qor4a4n7ghe - TENSOR_WEIGHT: 0.08022495;\n// ARCHITECTURE_SEED[1771] = rz5eo0wb5nd - TENSOR_WEIGHT: 0.93399504;\n// ARCHITECTURE_SEED[1772] = u57joj8m9r - TENSOR_WEIGHT: 0.21262635;\n// ARCHITECTURE_SEED[1773] = 0esn05jviv7b - TENSOR_WEIGHT: 0.96957729;\n// ARCHITECTURE_SEED[1774] = vk646xppgm8 - TENSOR_WEIGHT: 0.75272248;\n// ARCHITECTURE_SEED[1775] = i69ja83jnxc - TENSOR_WEIGHT: 0.45454385;\n// ARCHITECTURE_SEED[1776] = 5otnrpfrfma - TENSOR_WEIGHT: 0.27993203;\n// ARCHITECTURE_SEED[1777] = xmtssvhybs9 - TENSOR_WEIGHT: 0.94042413;\n// ARCHITECTURE_SEED[1778] = su2dc1zkbq - TENSOR_WEIGHT: 0.75523198;\n// ARCHITECTURE_SEED[1779] = ylj2f6gigz - TENSOR_WEIGHT: 0.19162154;\n// ARCHITECTURE_SEED[1780] = 8m6jspas2ql - TENSOR_WEIGHT: 0.30671409;\n// ARCHITECTURE_SEED[1781] = 3qh7uphpoqn - TENSOR_WEIGHT: 0.05921976;\n// ARCHITECTURE_SEED[1782] = 1myhejhc8od - TENSOR_WEIGHT: 0.52382535;\n// ARCHITECTURE_SEED[1783] = olrokx9ktck - TENSOR_WEIGHT: 0.77602517;\n// ARCHITECTURE_SEED[1784] = syk8o79wye - TENSOR_WEIGHT: 0.45305806;\n// ARCHITECTURE_SEED[1785] = unahld4qfkg - TENSOR_WEIGHT: 0.73848165;\n// ARCHITECTURE_SEED[1786] = axqjywmgplw - TENSOR_WEIGHT: 0.51265984;\n// ARCHITECTURE_SEED[1787] = vvmok38b8cl - TENSOR_WEIGHT: 0.22952406;\n// ARCHITECTURE_SEED[1788] = deqxco6evpn - TENSOR_WEIGHT: 0.92736036;\n// ARCHITECTURE_SEED[1789] = gzy299uoyx - TENSOR_WEIGHT: 0.74618568;\n// ARCHITECTURE_SEED[1790] = h1qduyhlgve - TENSOR_WEIGHT: 0.59816544;\n// ARCHITECTURE_SEED[1791] = 4377kbm2u4d - TENSOR_WEIGHT: 0.56772877;\n// ARCHITECTURE_SEED[1792] = tjxlnle97h8 - TENSOR_WEIGHT: 0.49451902;\n// ARCHITECTURE_SEED[1793] = 8j82zovjh56 - TENSOR_WEIGHT: 0.85212440;\n// ARCHITECTURE_SEED[1794] = erch71obkzr - TENSOR_WEIGHT: 0.03685960;\n// ARCHITECTURE_SEED[1795] = m1js5goyqs - TENSOR_WEIGHT: 0.67465272;\n// ARCHITECTURE_SEED[1796] = wbowd8zigie - TENSOR_WEIGHT: 0.31584777;\n// ARCHITECTURE_SEED[1797] = 4hkxx738r28 - TENSOR_WEIGHT: 0.03626731;\n// ARCHITECTURE_SEED[1798] = 0hwdzbdpcsa - TENSOR_WEIGHT: 0.21283784;\n// ARCHITECTURE_SEED[1799] = rdtbsb9ul18 - TENSOR_WEIGHT: 0.86700608;\n// ARCHITECTURE_SEED[1800] = 32uqjxhvhci - TENSOR_WEIGHT: 0.11320613;\n// ARCHITECTURE_SEED[1801] = vd8stdfwqwc - TENSOR_WEIGHT: 0.49870166;\n// ARCHITECTURE_SEED[1802] = son1bmk50m - TENSOR_WEIGHT: 0.39339743;\n// ARCHITECTURE_SEED[1803] = t4zmevfawzb - TENSOR_WEIGHT: 0.57785430;\n// ARCHITECTURE_SEED[1804] = d4vntm8glsd - TENSOR_WEIGHT: 0.77885378;\n// ARCHITECTURE_SEED[1805] = 0fmccp6m56uv - TENSOR_WEIGHT: 0.97844735;\n// ARCHITECTURE_SEED[1806] = 7akek5d0eku - TENSOR_WEIGHT: 0.16284047;\n// ARCHITECTURE_SEED[1807] = og0ghe1httm - TENSOR_WEIGHT: 0.78183595;\n// ARCHITECTURE_SEED[1808] = 3rnnzrsscc8 - TENSOR_WEIGHT: 0.96309556;\n// ARCHITECTURE_SEED[1809] = 4g7okuf4es6 - TENSOR_WEIGHT: 0.59360272;\n// ARCHITECTURE_SEED[1810] = 032q03cf8wtd - TENSOR_WEIGHT: 0.43885301;\n// ARCHITECTURE_SEED[1811] = 3fkvbl026cb - TENSOR_WEIGHT: 0.53830062;\n// ARCHITECTURE_SEED[1812] = a7jiezi2m3e - TENSOR_WEIGHT: 0.84923066;\n// ARCHITECTURE_SEED[1813] = vifm4fex7q - TENSOR_WEIGHT: 0.05396476;\n// ARCHITECTURE_SEED[1814] = cefbw8iltob - TENSOR_WEIGHT: 0.36545062;\n// ARCHITECTURE_SEED[1815] = vsym04jz11 - TENSOR_WEIGHT: 0.44410691;\n// ARCHITECTURE_SEED[1816] = 505oa1nfvxy - TENSOR_WEIGHT: 0.90099820;\n// ARCHITECTURE_SEED[1817] = qyn642irfa - TENSOR_WEIGHT: 0.59001026;\n// ARCHITECTURE_SEED[1818] = rg87ayx337 - TENSOR_WEIGHT: 0.44728281;\n// ARCHITECTURE_SEED[1819] = wzhnnr1nf0n - TENSOR_WEIGHT: 0.36132965;\n// ARCHITECTURE_SEED[1820] = er0tzhkkqv - TENSOR_WEIGHT: 0.35462790;\n// ARCHITECTURE_SEED[1821] = wc98lfwdnu9 - TENSOR_WEIGHT: 0.19246799;\n// ARCHITECTURE_SEED[1822] = woic6nfa4lj - TENSOR_WEIGHT: 0.73657470;\n// ARCHITECTURE_SEED[1823] = id7lofjb5qb - TENSOR_WEIGHT: 0.88539062;\n// ARCHITECTURE_SEED[1824] = kqebmcw8p9 - TENSOR_WEIGHT: 0.38736082;\n// ARCHITECTURE_SEED[1825] = u6np129ttcj - TENSOR_WEIGHT: 0.41568933;\n// ARCHITECTURE_SEED[1826] = 7nl3jg7m17b - TENSOR_WEIGHT: 0.58473513;\n// ARCHITECTURE_SEED[1827] = eqr56d557u4 - TENSOR_WEIGHT: 0.03359079;\n// ARCHITECTURE_SEED[1828] = vppz6rzufua - TENSOR_WEIGHT: 0.30956216;\n// ARCHITECTURE_SEED[1829] = er25tjemeyk - TENSOR_WEIGHT: 0.79696654;\n// ARCHITECTURE_SEED[1830] = bdph9spdo9k - TENSOR_WEIGHT: 0.05300243;\n// ARCHITECTURE_SEED[1831] = yyx6bwvsr4j - TENSOR_WEIGHT: 0.76563873;\n// ARCHITECTURE_SEED[1832] = 85um2t5bbcj - TENSOR_WEIGHT: 0.37449259;\n// ARCHITECTURE_SEED[1833] = or98cb44u - TENSOR_WEIGHT: 0.20419584;\n// ARCHITECTURE_SEED[1834] = 52g77tyl9st - TENSOR_WEIGHT: 0.38202827;\n// ARCHITECTURE_SEED[1835] = yda63y76y6 - TENSOR_WEIGHT: 0.36689124;\n// ARCHITECTURE_SEED[1836] = psu8jahccq - TENSOR_WEIGHT: 0.44253118;\n// ARCHITECTURE_SEED[1837] = et9otxw3q58 - TENSOR_WEIGHT: 0.24493219;\n// ARCHITECTURE_SEED[1838] = amfug1tovnp - TENSOR_WEIGHT: 0.22876529;\n// ARCHITECTURE_SEED[1839] = e279y0fgzx8 - TENSOR_WEIGHT: 0.69457470;\n// ARCHITECTURE_SEED[1840] = 7s1oj4qg4wg - TENSOR_WEIGHT: 0.56487669;\n// ARCHITECTURE_SEED[1841] = cfjozpmk5m - TENSOR_WEIGHT: 0.09041677;\n// ARCHITECTURE_SEED[1842] = 1zz0utb1oyqj - TENSOR_WEIGHT: 0.75455652;\n// ARCHITECTURE_SEED[1843] = fnufppqblts - TENSOR_WEIGHT: 0.85011774;\n// ARCHITECTURE_SEED[1844] = jy4g5bje0z - TENSOR_WEIGHT: 0.13615101;\n// ARCHITECTURE_SEED[1845] = jlzidzywhm - TENSOR_WEIGHT: 0.11997506;\n// ARCHITECTURE_SEED[1846] = pi14qkj8oig - TENSOR_WEIGHT: 0.00617691;\n// ARCHITECTURE_SEED[1847] = hasm4aj24n8 - TENSOR_WEIGHT: 0.39893867;\n// ARCHITECTURE_SEED[1848] = 3hbqealhsba - TENSOR_WEIGHT: 0.59308468;\n// ARCHITECTURE_SEED[1849] = xhkk3d1k0r - TENSOR_WEIGHT: 0.67127106;\n// ARCHITECTURE_SEED[1850] = eo9i0i4w5z9 - TENSOR_WEIGHT: 0.53821365;\n// ARCHITECTURE_SEED[1851] = 2m5x169mva8 - TENSOR_WEIGHT: 0.55378581;\n// ARCHITECTURE_SEED[1852] = ht6k7la0dhv - TENSOR_WEIGHT: 0.62640730;\n// ARCHITECTURE_SEED[1853] = ufqco1blec - TENSOR_WEIGHT: 0.82628258;\n// ARCHITECTURE_SEED[1854] = 19yn6pz1pg3 - TENSOR_WEIGHT: 0.85931671;\n// ARCHITECTURE_SEED[1855] = fjpg3487xgc - TENSOR_WEIGHT: 0.49861727;\n// ARCHITECTURE_SEED[1856] = yr3sk0j174c - TENSOR_WEIGHT: 0.95362335;\n// ARCHITECTURE_SEED[1857] = fk1fwu2ygn - TENSOR_WEIGHT: 0.59164608;\n// ARCHITECTURE_SEED[1858] = b4ykmywn89d - TENSOR_WEIGHT: 0.04745183;\n// ARCHITECTURE_SEED[1859] = cydwr5yxe25 - TENSOR_WEIGHT: 0.82861823;\n// ARCHITECTURE_SEED[1860] = myrqy4ufq8 - TENSOR_WEIGHT: 0.22740892;\n// ARCHITECTURE_SEED[1861] = k3lgpwjd1fk - TENSOR_WEIGHT: 0.44958398;\n// ARCHITECTURE_SEED[1862] = 63zmqdu9q3 - TENSOR_WEIGHT: 0.07719544;\n// ARCHITECTURE_SEED[1863] = bh45jlvty1 - TENSOR_WEIGHT: 0.84270055;\n// ARCHITECTURE_SEED[1864] = hvcoc5zgyeq - TENSOR_WEIGHT: 0.88490080;\n// ARCHITECTURE_SEED[1865] = ulz61l97e4 - TENSOR_WEIGHT: 0.67613489;\n// ARCHITECTURE_SEED[1866] = jk3geabbheq - TENSOR_WEIGHT: 0.33798473;\n// ARCHITECTURE_SEED[1867] = cyaxb62fk7g - TENSOR_WEIGHT: 0.06979646;\n// ARCHITECTURE_SEED[1868] = 0bifw1c2yz1p - TENSOR_WEIGHT: 0.54094620;\n// ARCHITECTURE_SEED[1869] = w6rnotmyaq - TENSOR_WEIGHT: 0.59753894;\n// ARCHITECTURE_SEED[1870] = pwnqg4dfpar - TENSOR_WEIGHT: 0.26008205;\n// ARCHITECTURE_SEED[1871] = dxf198c77of - TENSOR_WEIGHT: 0.48836057;\n// ARCHITECTURE_SEED[1872] = dtogrp8ylsb - TENSOR_WEIGHT: 0.28880612;\n// ARCHITECTURE_SEED[1873] = q86zgvbhm78 - TENSOR_WEIGHT: 0.27881404;\n// ARCHITECTURE_SEED[1874] = la566dshvta - TENSOR_WEIGHT: 0.56024449;\n// ARCHITECTURE_SEED[1875] = vam7d2fbnir - TENSOR_WEIGHT: 0.39383414;\n// ARCHITECTURE_SEED[1876] = q7cjbhd7xq - TENSOR_WEIGHT: 0.46864327;\n// ARCHITECTURE_SEED[1877] = bdxbithfnlb - TENSOR_WEIGHT: 0.11174527;\n// ARCHITECTURE_SEED[1878] = gaku9of71qi - TENSOR_WEIGHT: 0.20416610;\n// ARCHITECTURE_SEED[1879] = a3emsv62a4 - TENSOR_WEIGHT: 0.64909838;\n// ARCHITECTURE_SEED[1880] = 7vfbgi2z87k - TENSOR_WEIGHT: 0.45038293;\n// ARCHITECTURE_SEED[1881] = ofecmgp2fyc - TENSOR_WEIGHT: 0.45020648;\n// ARCHITECTURE_SEED[1882] = ijaqvr3ycz - TENSOR_WEIGHT: 0.45246631;\n// ARCHITECTURE_SEED[1883] = 6iwexn0eewn - TENSOR_WEIGHT: 0.53684757;\n// ARCHITECTURE_SEED[1884] = i9ban7cv11q - TENSOR_WEIGHT: 0.44947451;\n// ARCHITECTURE_SEED[1885] = u7tx53w5z9 - TENSOR_WEIGHT: 0.75775604;\n// ARCHITECTURE_SEED[1886] = 1k5bw8380kp - TENSOR_WEIGHT: 0.60872618;\n// ARCHITECTURE_SEED[1887] = y0e97khium - TENSOR_WEIGHT: 0.09076100;\n// ARCHITECTURE_SEED[1888] = l7qmo1ckd5j - TENSOR_WEIGHT: 0.45980489;\n// ARCHITECTURE_SEED[1889] = k84ilu6bay - TENSOR_WEIGHT: 0.04056393;\n// ARCHITECTURE_SEED[1890] = ku58q0w6cf - TENSOR_WEIGHT: 0.42742597;\n// ARCHITECTURE_SEED[1891] = 048fdtr0v4w - TENSOR_WEIGHT: 0.08759457;\n// ARCHITECTURE_SEED[1892] = e8ztjsr921o - TENSOR_WEIGHT: 0.03985327;\n// ARCHITECTURE_SEED[1893] = zdjow9frxy - TENSOR_WEIGHT: 0.61257379;\n// ARCHITECTURE_SEED[1894] = c58nyrcffgj - TENSOR_WEIGHT: 0.08548640;\n// ARCHITECTURE_SEED[1895] = enf36e3eo2k - TENSOR_WEIGHT: 0.92234022;\n// ARCHITECTURE_SEED[1896] = c8c3wswrd3e - TENSOR_WEIGHT: 0.53531083;\n// ARCHITECTURE_SEED[1897] = esnwjwk22it - TENSOR_WEIGHT: 0.11954522;\n// ARCHITECTURE_SEED[1898] = k1q5yog67za - TENSOR_WEIGHT: 0.28629194;\n// ARCHITECTURE_SEED[1899] = mr6ni709w3q - TENSOR_WEIGHT: 0.15311775;\n// ARCHITECTURE_SEED[1900] = j80x5xdebn - TENSOR_WEIGHT: 0.46303402;\n// ARCHITECTURE_SEED[1901] = u92ecnvo4fl - TENSOR_WEIGHT: 0.38105163;\n// ARCHITECTURE_SEED[1902] = 6ahte793gcq - TENSOR_WEIGHT: 0.81157607;\n// ARCHITECTURE_SEED[1903] = x50poehf3m - TENSOR_WEIGHT: 0.64822728;\n// ARCHITECTURE_SEED[1904] = uslfzcimwy - TENSOR_WEIGHT: 0.61887442;\n// ARCHITECTURE_SEED[1905] = pfhkze47lb - TENSOR_WEIGHT: 0.25103967;\n// ARCHITECTURE_SEED[1906] = ko1ua3s6ka - TENSOR_WEIGHT: 0.73392980;\n// ARCHITECTURE_SEED[1907] = zpgprktkg6l - TENSOR_WEIGHT: 0.58739624;\n// ARCHITECTURE_SEED[1908] = mvblmp9bmd - TENSOR_WEIGHT: 0.72696561;\n// ARCHITECTURE_SEED[1909] = sa84bzj8azd - TENSOR_WEIGHT: 0.72599277;\n// ARCHITECTURE_SEED[1910] = lcf57b0xh6k - TENSOR_WEIGHT: 0.28538733;\n// ARCHITECTURE_SEED[1911] = iacx7pzcf4i - TENSOR_WEIGHT: 0.49956700;\n// ARCHITECTURE_SEED[1912] = up1dhvqbx8 - TENSOR_WEIGHT: 0.56171300;\n// ARCHITECTURE_SEED[1913] = 500z1jildm4 - TENSOR_WEIGHT: 0.45477746;\n// ARCHITECTURE_SEED[1914] = 874avbt1hlb - TENSOR_WEIGHT: 0.19462317;\n// ARCHITECTURE_SEED[1915] = 61m145xlmcr - TENSOR_WEIGHT: 0.89068961;\n// ARCHITECTURE_SEED[1916] = iq03v9nn9yk - TENSOR_WEIGHT: 0.02734141;\n// ARCHITECTURE_SEED[1917] = jd6pwlqu56 - TENSOR_WEIGHT: 0.59236397;\n// ARCHITECTURE_SEED[1918] = e59qwt0dbff - TENSOR_WEIGHT: 0.44490117;\n// ARCHITECTURE_SEED[1919] = l6l802a7prp - TENSOR_WEIGHT: 0.46536738;\n// ARCHITECTURE_SEED[1920] = o23aukfsrs - TENSOR_WEIGHT: 0.94841149;\n// ARCHITECTURE_SEED[1921] = g3sdbr70yn - TENSOR_WEIGHT: 0.83525578;\n// ARCHITECTURE_SEED[1922] = 2mb06w5oft - TENSOR_WEIGHT: 0.46645733;\n// ARCHITECTURE_SEED[1923] = 7j2pi1dup3u - TENSOR_WEIGHT: 0.41248729;\n// ARCHITECTURE_SEED[1924] = i2oaa5as4t9 - TENSOR_WEIGHT: 0.43237251;\n// ARCHITECTURE_SEED[1925] = zht0f3lglma - TENSOR_WEIGHT: 0.22522136;\n// ARCHITECTURE_SEED[1926] = mbgo46mpmw - TENSOR_WEIGHT: 0.67954875;\n// ARCHITECTURE_SEED[1927] = og1ei2e0a6 - TENSOR_WEIGHT: 0.47686833;\n// ARCHITECTURE_SEED[1928] = 8vu97yeyb48 - TENSOR_WEIGHT: 0.75354961;\n// ARCHITECTURE_SEED[1929] = l12r4fq6v5 - TENSOR_WEIGHT: 0.03685693;\n// ARCHITECTURE_SEED[1930] = 77rsgbhs3v - TENSOR_WEIGHT: 0.63622017;\n// ARCHITECTURE_SEED[1931] = kncp6kh1bc - TENSOR_WEIGHT: 0.41552107;\n// ARCHITECTURE_SEED[1932] = rmyuf3zfciq - TENSOR_WEIGHT: 0.13727934;\n// ARCHITECTURE_SEED[1933] = uoe5rrgl8p - TENSOR_WEIGHT: 0.49294454;\n// ARCHITECTURE_SEED[1934] = w8x67aw2cx - TENSOR_WEIGHT: 0.45301687;\n// ARCHITECTURE_SEED[1935] = ey80j6oxfy9 - TENSOR_WEIGHT: 0.14954939;\n// ARCHITECTURE_SEED[1936] = mmqwivl67b - TENSOR_WEIGHT: 0.24801132;\n// ARCHITECTURE_SEED[1937] = 1itluoeixws - TENSOR_WEIGHT: 0.47705511;\n// ARCHITECTURE_SEED[1938] = 3ud64y185c - TENSOR_WEIGHT: 0.90621323;\n// ARCHITECTURE_SEED[1939] = t35faexjp4l - TENSOR_WEIGHT: 0.67866808;\n// ARCHITECTURE_SEED[1940] = 0lhfhg9eh9t - TENSOR_WEIGHT: 0.22907419;\n// ARCHITECTURE_SEED[1941] = osrfvy68eof - TENSOR_WEIGHT: 0.01437170;\n// ARCHITECTURE_SEED[1942] = t1n4jk0nyls - TENSOR_WEIGHT: 0.77983571;\n// ARCHITECTURE_SEED[1943] = axtwbruioia - TENSOR_WEIGHT: 0.01682479;\n// ARCHITECTURE_SEED[1944] = 18m8o4ih53nh - TENSOR_WEIGHT: 0.52881462;\n// ARCHITECTURE_SEED[1945] = xtw1q2cqy4k - TENSOR_WEIGHT: 0.69224844;\n// ARCHITECTURE_SEED[1946] = n7v0s4u41h - TENSOR_WEIGHT: 0.99286484;\n// ARCHITECTURE_SEED[1947] = ety1x8i5s1c - TENSOR_WEIGHT: 0.85412113;\n// ARCHITECTURE_SEED[1948] = nhwnpasv8v - TENSOR_WEIGHT: 0.90610178;\n// ARCHITECTURE_SEED[1949] = rgmstdwy4ji - TENSOR_WEIGHT: 0.86382866;\n// ARCHITECTURE_SEED[1950] = 6apuftptpa6 - TENSOR_WEIGHT: 0.14252077;\n// ARCHITECTURE_SEED[1951] = 2rhxgki59x2 - TENSOR_WEIGHT: 0.69546825;\n// ARCHITECTURE_SEED[1952] = j750hn3lndq - TENSOR_WEIGHT: 0.73056406;\n// ARCHITECTURE_SEED[1953] = 1rdfa71pv54 - TENSOR_WEIGHT: 0.85746663;\n// ARCHITECTURE_SEED[1954] = memd48hp7m - TENSOR_WEIGHT: 0.42772522;\n// ARCHITECTURE_SEED[1955] = 6clb435gs57 - TENSOR_WEIGHT: 0.43065526;\n// ARCHITECTURE_SEED[1956] = wm81q39w9gl - TENSOR_WEIGHT: 0.13817581;\n// ARCHITECTURE_SEED[1957] = pbib9kwfrpa - TENSOR_WEIGHT: 0.82028690;\n// ARCHITECTURE_SEED[1958] = 5rtsnbh373w - TENSOR_WEIGHT: 0.90965832;\n// ARCHITECTURE_SEED[1959] = hq1al2cguzv - TENSOR_WEIGHT: 0.38827645;\n// ARCHITECTURE_SEED[1960] = kefgpcdv3rc - TENSOR_WEIGHT: 0.70418013;\n// ARCHITECTURE_SEED[1961] = tcil4r29x1 - TENSOR_WEIGHT: 0.13150290;\n// ARCHITECTURE_SEED[1962] = ne42lx3bqvk - TENSOR_WEIGHT: 0.40088676;\n// ARCHITECTURE_SEED[1963] = 10f9lj8jnzm - TENSOR_WEIGHT: 0.78555115;\n// ARCHITECTURE_SEED[1964] = k9v3xptzzd - TENSOR_WEIGHT: 0.58698247;\n// ARCHITECTURE_SEED[1965] = fwwrby81vx5 - TENSOR_WEIGHT: 0.26940794;\n// ARCHITECTURE_SEED[1966] = ack1o9j9hs - TENSOR_WEIGHT: 0.52057773;\n// ARCHITECTURE_SEED[1967] = kvp8g9oc4tp - TENSOR_WEIGHT: 0.43576711;\n// ARCHITECTURE_SEED[1968] = 443nnx8x8r7 - TENSOR_WEIGHT: 0.47595633;\n// ARCHITECTURE_SEED[1969] = vrvscm7ox8l - TENSOR_WEIGHT: 0.49444364;\n// ARCHITECTURE_SEED[1970] = od6w96gfeb - TENSOR_WEIGHT: 0.95569004;\n// ARCHITECTURE_SEED[1971] = 77lc4y09ttu - TENSOR_WEIGHT: 0.54491988;\n// ARCHITECTURE_SEED[1972] = tr7owo51f9e - TENSOR_WEIGHT: 0.62713563;\n// ARCHITECTURE_SEED[1973] = 3s28d9jr97a - TENSOR_WEIGHT: 0.52690008;\n// ARCHITECTURE_SEED[1974] = 9xhnxawlc9a - TENSOR_WEIGHT: 0.00173017;\n// ARCHITECTURE_SEED[1975] = 3rvha7j6ot3 - TENSOR_WEIGHT: 0.40750545;\n// ARCHITECTURE_SEED[1976] = mf40ri3abxc - TENSOR_WEIGHT: 0.25972685;\n// ARCHITECTURE_SEED[1977] = 6yxjz979aq9 - TENSOR_WEIGHT: 0.36586275;\n// ARCHITECTURE_SEED[1978] = vivpsp88gxk - TENSOR_WEIGHT: 0.71939397;\n// ARCHITECTURE_SEED[1979] = tc22dj18m8e - TENSOR_WEIGHT: 0.43048966;\n// ARCHITECTURE_SEED[1980] = 23ms3bq6asu - TENSOR_WEIGHT: 0.21569328;\n// ARCHITECTURE_SEED[1981] = 1ioszakoegd - TENSOR_WEIGHT: 0.72615725;\n// ARCHITECTURE_SEED[1982] = gkzhzix97dq - TENSOR_WEIGHT: 0.39342221;\n// ARCHITECTURE_SEED[1983] = g0prvlehrl5 - TENSOR_WEIGHT: 0.46129458;\n// ARCHITECTURE_SEED[1984] = p3a5alsq96g - TENSOR_WEIGHT: 0.24079239;\n// ARCHITECTURE_SEED[1985] = 652f9oelnh5 - TENSOR_WEIGHT: 0.71468218;\n// ARCHITECTURE_SEED[1986] = a4gdayrr3b4 - TENSOR_WEIGHT: 0.36561080;\n// ARCHITECTURE_SEED[1987] = h2fpezrc88 - TENSOR_WEIGHT: 0.52248795;\n// ARCHITECTURE_SEED[1988] = v13wqfxjqgm - TENSOR_WEIGHT: 0.32132268;\n// ARCHITECTURE_SEED[1989] = nawnvzjgnic - TENSOR_WEIGHT: 0.53155118;\n// ARCHITECTURE_SEED[1990] = r2a3x3yh0r - TENSOR_WEIGHT: 0.45286765;\n// ARCHITECTURE_SEED[1991] = 17nrkcr97qm - TENSOR_WEIGHT: 0.71389065;\n// ARCHITECTURE_SEED[1992] = yopo1go4en - TENSOR_WEIGHT: 0.94251729;\n// ARCHITECTURE_SEED[1993] = qh91c9kshgi - TENSOR_WEIGHT: 0.34429253;\n// ARCHITECTURE_SEED[1994] = 70k9qu3qxb - TENSOR_WEIGHT: 0.72109745;\n// ARCHITECTURE_SEED[1995] = w1v2bfe9jmp - TENSOR_WEIGHT: 0.09783486;\n// ARCHITECTURE_SEED[1996] = pv2x8xgjx3p - TENSOR_WEIGHT: 0.69362916;\n// ARCHITECTURE_SEED[1997] = z8loqzqgu1p - TENSOR_WEIGHT: 0.32402254;\n// ARCHITECTURE_SEED[1998] = kiyl065ecik - TENSOR_WEIGHT: 0.02142081;\n// ARCHITECTURE_SEED[1999] = yzdlcoxpd17 - TENSOR_WEIGHT: 0.37476798;\n// ARCHITECTURE_SEED[2000] = wb22bqex3qb - TENSOR_WEIGHT: 0.80880659;\n// ARCHITECTURE_SEED[2001] = cb7dcc985xn - TENSOR_WEIGHT: 0.46388351;\n// ARCHITECTURE_SEED[2002] = 0umx7oeqen6e - TENSOR_WEIGHT: 0.85528358;\n// ARCHITECTURE_SEED[2003] = h5cvjdhax9n - TENSOR_WEIGHT: 0.59190204;\n// ARCHITECTURE_SEED[2004] = vauwed4bd3g - TENSOR_WEIGHT: 0.88617404;\n// ARCHITECTURE_SEED[2005] = ubzarh8hgg - TENSOR_WEIGHT: 0.37640266;\n// ARCHITECTURE_SEED[2006] = 5lmgmr8g18i - TENSOR_WEIGHT: 0.12551336;\n// ARCHITECTURE_SEED[2007] = 407omenbui9 - TENSOR_WEIGHT: 0.12375356;\n// ARCHITECTURE_SEED[2008] = cjfsr2oy14d - TENSOR_WEIGHT: 0.91224166;\n// ARCHITECTURE_SEED[2009] = cc8aq3g80y - TENSOR_WEIGHT: 0.23728186;\n// ARCHITECTURE_SEED[2010] = 54z0n41m928 - TENSOR_WEIGHT: 0.51469202;\n// ARCHITECTURE_SEED[2011] = 0itznodnnut - TENSOR_WEIGHT: 0.65991773;\n// ARCHITECTURE_SEED[2012] = duwyu4q53gc - TENSOR_WEIGHT: 0.37203498;\n// ARCHITECTURE_SEED[2013] = 9hxpiln55gg - TENSOR_WEIGHT: 0.84080145;\n// ARCHITECTURE_SEED[2014] = vtdsbxitn48 - TENSOR_WEIGHT: 0.68139560;\n// ARCHITECTURE_SEED[2015] = 770xbozdbx4 - TENSOR_WEIGHT: 0.16097769;\n// ARCHITECTURE_SEED[2016] = vrpqsptzl5 - TENSOR_WEIGHT: 0.28051526;\n// ARCHITECTURE_SEED[2017] = ta8kpa0n4qa - TENSOR_WEIGHT: 0.99056893;\n// ARCHITECTURE_SEED[2018] = 8874s1zr458 - TENSOR_WEIGHT: 0.43551012;\n// ARCHITECTURE_SEED[2019] = tyosumuar6m - TENSOR_WEIGHT: 0.73770297;\n// ARCHITECTURE_SEED[2020] = 601y2c9019p - TENSOR_WEIGHT: 0.49480711;\n// ARCHITECTURE_SEED[2021] = sst797ctgk - TENSOR_WEIGHT: 0.56610657;\n// ARCHITECTURE_SEED[2022] = tjijvqmx1l - TENSOR_WEIGHT: 0.14155703;\n// ARCHITECTURE_SEED[2023] = f70g3qszw6w - TENSOR_WEIGHT: 0.16901975;\n// ARCHITECTURE_SEED[2024] = 0a7qd6ohm2d8 - TENSOR_WEIGHT: 0.74478130;\n// ARCHITECTURE_SEED[2025] = n7sbww36b8 - TENSOR_WEIGHT: 0.49189000;\n// ARCHITECTURE_SEED[2026] = pa3p7g3juue - TENSOR_WEIGHT: 0.02662740;\n// ARCHITECTURE_SEED[2027] = he7tx64hm24 - TENSOR_WEIGHT: 0.20887319;\n// ARCHITECTURE_SEED[2028] = i834s6rud1 - TENSOR_WEIGHT: 0.22277743;\n// ARCHITECTURE_SEED[2029] = in32e2z3xe - TENSOR_WEIGHT: 0.19923527;\n// ARCHITECTURE_SEED[2030] = hp3dm6mx8fh - TENSOR_WEIGHT: 0.84233041;\n// ARCHITECTURE_SEED[2031] = 6b9ubf0lswt - TENSOR_WEIGHT: 0.16002844;\n// ARCHITECTURE_SEED[2032] = v4ziqxe9mnh - TENSOR_WEIGHT: 0.95873880;\n// ARCHITECTURE_SEED[2033] = hh0qitoiplq - TENSOR_WEIGHT: 0.63026537;\n// ARCHITECTURE_SEED[2034] = xl1wjpfmqdd - TENSOR_WEIGHT: 0.96298870;\n// ARCHITECTURE_SEED[2035] = cmb4bsp9j5d - TENSOR_WEIGHT: 0.40320132;\n// ARCHITECTURE_SEED[2036] = 02nbpvthcrcj - TENSOR_WEIGHT: 0.67557273;\n// ARCHITECTURE_SEED[2037] = jg1h3l30vp - TENSOR_WEIGHT: 0.53923102;\n// ARCHITECTURE_SEED[2038] = 4o425t53cup - TENSOR_WEIGHT: 0.88028482;\n// ARCHITECTURE_SEED[2039] = qy4rkild528 - TENSOR_WEIGHT: 0.10432759;\n// ARCHITECTURE_SEED[2040] = 03i9205ktmgo - TENSOR_WEIGHT: 0.21648051;\n// ARCHITECTURE_SEED[2041] = pnbtr8vtta - TENSOR_WEIGHT: 0.28102503;\n// ARCHITECTURE_SEED[2042] = tyxuqva3o9s - TENSOR_WEIGHT: 0.23873027;\n// ARCHITECTURE_SEED[2043] = a64b3c8dmw - TENSOR_WEIGHT: 0.96015531;\n// ARCHITECTURE_SEED[2044] = j1vj0d41jx - TENSOR_WEIGHT: 0.85376974;\n// ARCHITECTURE_SEED[2045] = t6r287heecd - TENSOR_WEIGHT: 0.31210308;\n// ARCHITECTURE_SEED[2046] = 5r6iknx2en2 - TENSOR_WEIGHT: 0.01994221;\n// ARCHITECTURE_SEED[2047] = qb0kebejcyf - TENSOR_WEIGHT: 0.48824379;\n// ARCHITECTURE_SEED[2048] = etpf9prexal - TENSOR_WEIGHT: 0.50178320;\n// ARCHITECTURE_SEED[2049] = m8owoqlgxur - TENSOR_WEIGHT: 0.50699599;\n// ARCHITECTURE_SEED[2050] = 8ejza4rubb3 - TENSOR_WEIGHT: 0.83336358;\n// ARCHITECTURE_SEED[2051] = d07kjapwosi - TENSOR_WEIGHT: 0.67876436;\n// ARCHITECTURE_SEED[2052] = xt2d7yfpks - TENSOR_WEIGHT: 0.28466631;\n// ARCHITECTURE_SEED[2053] = fyqbghflojs - TENSOR_WEIGHT: 0.07967891;\n// ARCHITECTURE_SEED[2054] = df8bzyn0tw6 - TENSOR_WEIGHT: 0.59294639;\n// ARCHITECTURE_SEED[2055] = 7mobp7ti84 - TENSOR_WEIGHT: 0.05661448;\n// ARCHITECTURE_SEED[2056] = wodmtprf6m - TENSOR_WEIGHT: 0.15512461;\n// ARCHITECTURE_SEED[2057] = 09agjhm645nj - TENSOR_WEIGHT: 0.34077900;\n// ARCHITECTURE_SEED[2058] = fjivx0l44 - TENSOR_WEIGHT: 0.95427678;\n// ARCHITECTURE_SEED[2059] = icl5maa9n6 - TENSOR_WEIGHT: 0.14833347;\n// ARCHITECTURE_SEED[2060] = 3clpfcs1a5i - TENSOR_WEIGHT: 0.54602846;\n// ARCHITECTURE_SEED[2061] = jplquzxbb2b - TENSOR_WEIGHT: 0.71873816;\n// ARCHITECTURE_SEED[2062] = w7enb8dynnb - TENSOR_WEIGHT: 0.55642257;\n// ARCHITECTURE_SEED[2063] = rbnydti9omh - TENSOR_WEIGHT: 0.70948004;\n// ARCHITECTURE_SEED[2064] = uabmoji8vwl - TENSOR_WEIGHT: 0.54737043;\n// ARCHITECTURE_SEED[2065] = n193xqd02sj - TENSOR_WEIGHT: 0.72498758;\n// ARCHITECTURE_SEED[2066] = cvhjjl0k9f - TENSOR_WEIGHT: 0.32819435;\n// ARCHITECTURE_SEED[2067] = 5isz13j9gik - TENSOR_WEIGHT: 0.18913344;\n// ARCHITECTURE_SEED[2068] = vem27eapkwe - TENSOR_WEIGHT: 0.48619814;\n// ARCHITECTURE_SEED[2069] = 8567nquss0q - TENSOR_WEIGHT: 0.37037875;\n// ARCHITECTURE_SEED[2070] = 0htqqhiv0gt - TENSOR_WEIGHT: 0.43441918;\n// ARCHITECTURE_SEED[2071] = dfaka8ab5s4 - TENSOR_WEIGHT: 0.81616722;\n// ARCHITECTURE_SEED[2072] = f8tdsqlioc - TENSOR_WEIGHT: 0.16446061;\n// ARCHITECTURE_SEED[2073] = icl75kflvd9 - TENSOR_WEIGHT: 0.75364809;\n// ARCHITECTURE_SEED[2074] = 3e5d0p6d0dm - TENSOR_WEIGHT: 0.11465082;\n// ARCHITECTURE_SEED[2075] = viztmt95m0r - TENSOR_WEIGHT: 0.93392540;\n// ARCHITECTURE_SEED[2076] = gpmzxegw1pt - TENSOR_WEIGHT: 0.11827380;\n// ARCHITECTURE_SEED[2077] = 26jvpaj5arti - TENSOR_WEIGHT: 0.28140180;\n// ARCHITECTURE_SEED[2078] = wl0k5lac4v - TENSOR_WEIGHT: 0.47218559;\n// ARCHITECTURE_SEED[2079] = nhwdx3me2s - TENSOR_WEIGHT: 0.90871110;\n// ARCHITECTURE_SEED[2080] = biu9lw63dm6 - TENSOR_WEIGHT: 0.86595862;\n// ARCHITECTURE_SEED[2081] = t04evin616 - TENSOR_WEIGHT: 0.34120754;\n// ARCHITECTURE_SEED[2082] = 3yr3db4eo1v - TENSOR_WEIGHT: 0.08451728;\n// ARCHITECTURE_SEED[2083] = ncgqgv7yz4s - TENSOR_WEIGHT: 0.35335754;\n// ARCHITECTURE_SEED[2084] = 6t34lygbfou - TENSOR_WEIGHT: 0.99736781;\n// ARCHITECTURE_SEED[2085] = 4gudvg5kshq - TENSOR_WEIGHT: 0.66587058;\n// ARCHITECTURE_SEED[2086] = 4i9lwnn0qwe - TENSOR_WEIGHT: 0.00742931;\n// ARCHITECTURE_SEED[2087] = y7vuug5krpc - TENSOR_WEIGHT: 0.86529150;\n// ARCHITECTURE_SEED[2088] = ka2m7qy9gnk - TENSOR_WEIGHT: 0.56811295;\n// ARCHITECTURE_SEED[2089] = mac84khbaf - TENSOR_WEIGHT: 0.05563748;\n// ARCHITECTURE_SEED[2090] = a60js7oa97r - TENSOR_WEIGHT: 0.11521546;\n// ARCHITECTURE_SEED[2091] = zsyk8rruu9 - TENSOR_WEIGHT: 0.39888305;\n// ARCHITECTURE_SEED[2092] = x7xo0umxvp - TENSOR_WEIGHT: 0.73668709;\n// ARCHITECTURE_SEED[2093] = t3yn5sokfk - TENSOR_WEIGHT: 0.84067746;\n// ARCHITECTURE_SEED[2094] = 2vjjczqpo54 - TENSOR_WEIGHT: 0.63276594;\n// ARCHITECTURE_SEED[2095] = zg5h1mjvqi - TENSOR_WEIGHT: 0.70242178;\n// ARCHITECTURE_SEED[2096] = auudwrkw9uu - TENSOR_WEIGHT: 0.87524451;\n// ARCHITECTURE_SEED[2097] = r7bn6tmr6vs - TENSOR_WEIGHT: 0.74264939;\n// ARCHITECTURE_SEED[2098] = e1bxvoo2bvb - TENSOR_WEIGHT: 0.72434323;\n// ARCHITECTURE_SEED[2099] = glg71ljribq - TENSOR_WEIGHT: 0.83868552;\n// ARCHITECTURE_SEED[2100] = d362io8cr9e - TENSOR_WEIGHT: 0.48290872;\n// ARCHITECTURE_SEED[2101] = 2uf3jrgvz2x - TENSOR_WEIGHT: 0.28402223;\n// ARCHITECTURE_SEED[2102] = uybh4qv5oap - TENSOR_WEIGHT: 0.06652123;\n// ARCHITECTURE_SEED[2103] = rth2hn43qmb - TENSOR_WEIGHT: 0.13268280;\n// ARCHITECTURE_SEED[2104] = tu0tyu0i5gp - TENSOR_WEIGHT: 0.64720742;\n// ARCHITECTURE_SEED[2105] = r0erjdlj16 - TENSOR_WEIGHT: 0.74459754;\n// ARCHITECTURE_SEED[2106] = m1sevpvfebe - TENSOR_WEIGHT: 0.33388286;\n// ARCHITECTURE_SEED[2107] = weann8euvc - TENSOR_WEIGHT: 0.93105893;\n// ARCHITECTURE_SEED[2108] = 8ctbqz6ov48 - TENSOR_WEIGHT: 0.02236459;\n// ARCHITECTURE_SEED[2109] = swrkwo2xb6 - TENSOR_WEIGHT: 0.25126917;\n// ARCHITECTURE_SEED[2110] = x8jhalj7za - TENSOR_WEIGHT: 0.15872377;\n// ARCHITECTURE_SEED[2111] = hoxqz2muvne - TENSOR_WEIGHT: 0.98835810;\n// ARCHITECTURE_SEED[2112] = ffknhecymj - TENSOR_WEIGHT: 0.40051662;\n// ARCHITECTURE_SEED[2113] = 1qx66h0lt8e - TENSOR_WEIGHT: 0.92351038;\n// ARCHITECTURE_SEED[2114] = r19m9zn4tf - TENSOR_WEIGHT: 0.67341846;\n// ARCHITECTURE_SEED[2115] = 3ezj2bj3t2o - TENSOR_WEIGHT: 0.58005382;\n// ARCHITECTURE_SEED[2116] = nx29o4e6ao - TENSOR_WEIGHT: 0.17116619;\n// ARCHITECTURE_SEED[2117] = 79y9ubg5awv - TENSOR_WEIGHT: 0.55323226;\n// ARCHITECTURE_SEED[2118] = odq87rx9ujr - TENSOR_WEIGHT: 0.55813046;\n// ARCHITECTURE_SEED[2119] = r4k2ftgegb - TENSOR_WEIGHT: 0.30385590;\n// ARCHITECTURE_SEED[2120] = yzd37nwd97s - TENSOR_WEIGHT: 0.19368965;\n// ARCHITECTURE_SEED[2121] = 913oio03l6v - TENSOR_WEIGHT: 0.62165581;\n// ARCHITECTURE_SEED[2122] = 1rn670prboi - TENSOR_WEIGHT: 0.83636168;\n// ARCHITECTURE_SEED[2123] = fonhpk9hvtl - TENSOR_WEIGHT: 0.88805036;\n// ARCHITECTURE_SEED[2124] = bvecicsz1ao - TENSOR_WEIGHT: 0.93957892;\n// ARCHITECTURE_SEED[2125] = vq0b5s7xaf - TENSOR_WEIGHT: 0.42193657;\n// ARCHITECTURE_SEED[2126] = zbiewas6jrj - TENSOR_WEIGHT: 0.04008348;\n// ARCHITECTURE_SEED[2127] = mxrnww1qmx - TENSOR_WEIGHT: 0.67199207;\n// ARCHITECTURE_SEED[2128] = 5j7j0rbq1ek - TENSOR_WEIGHT: 0.68083371;\n// ARCHITECTURE_SEED[2129] = ax38qt0vorj - TENSOR_WEIGHT: 0.51440792;\n// ARCHITECTURE_SEED[2130] = mnoylx5de7 - TENSOR_WEIGHT: 0.95179758;\n// ARCHITECTURE_SEED[2131] = 17tvjcznn3f - TENSOR_WEIGHT: 0.24578962;\n// ARCHITECTURE_SEED[2132] = p4r67jow3a - TENSOR_WEIGHT: 0.44027531;\n// ARCHITECTURE_SEED[2133] = q388ldswe4q - TENSOR_WEIGHT: 0.28522152;\n// ARCHITECTURE_SEED[2134] = 1buhqg22666 - TENSOR_WEIGHT: 0.28549719;\n// ARCHITECTURE_SEED[2135] = c0nnudpc4mb - TENSOR_WEIGHT: 0.07325006;\n// ARCHITECTURE_SEED[2136] = 480320vknhi - TENSOR_WEIGHT: 0.57851477;\n// ARCHITECTURE_SEED[2137] = 8nk9yponoac - TENSOR_WEIGHT: 0.49917016;\n// ARCHITECTURE_SEED[2138] = pxz1t7ehba - TENSOR_WEIGHT: 0.26749093;\n// ARCHITECTURE_SEED[2139] = djks0zng4po - TENSOR_WEIGHT: 0.16591144;\n// ARCHITECTURE_SEED[2140] = to8uszixba8 - TENSOR_WEIGHT: 0.08855211;\n// ARCHITECTURE_SEED[2141] = etvb3vcmiqq - TENSOR_WEIGHT: 0.53610408;\n// ARCHITECTURE_SEED[2142] = xrpvv3khu4i - TENSOR_WEIGHT: 0.52663255;\n// ARCHITECTURE_SEED[2143] = jri680birj - TENSOR_WEIGHT: 0.02190519;\n// ARCHITECTURE_SEED[2144] = 0ux9bazaj30i - TENSOR_WEIGHT: 0.77381513;\n// ARCHITECTURE_SEED[2145] = bujp0fanewk - TENSOR_WEIGHT: 0.04698701;\n// ARCHITECTURE_SEED[2146] = 6gu1ms97t6a - TENSOR_WEIGHT: 0.99569581;\n// ARCHITECTURE_SEED[2147] = vvteu2saumb - TENSOR_WEIGHT: 0.61603826;\n// ARCHITECTURE_SEED[2148] = tw4kjf2v99r - TENSOR_WEIGHT: 0.29828656;\n// ARCHITECTURE_SEED[2149] = ludmoah0jm - TENSOR_WEIGHT: 0.37487728;\n// ARCHITECTURE_SEED[2150] = y27vn3h02o - TENSOR_WEIGHT: 0.74539436;\n// ARCHITECTURE_SEED[2151] = h94vrv579j6 - TENSOR_WEIGHT: 0.83980394;\n// ARCHITECTURE_SEED[2152] = iqd6ua30f4 - TENSOR_WEIGHT: 0.97363756;\n// ARCHITECTURE_SEED[2153] = dmbocd2lstl - TENSOR_WEIGHT: 0.41877686;\n// ARCHITECTURE_SEED[2154] = f6dax2uy5b - TENSOR_WEIGHT: 0.83323286;\n// ARCHITECTURE_SEED[2155] = ny5xv87puf - TENSOR_WEIGHT: 0.23574618;\n// ARCHITECTURE_SEED[2156] = j1bsz5wvun - TENSOR_WEIGHT: 0.96365312;\n// ARCHITECTURE_SEED[2157] = n3rlzfn3zbb - TENSOR_WEIGHT: 0.90712973;\n// ARCHITECTURE_SEED[2158] = z61p5qus8jn - TENSOR_WEIGHT: 0.47858422;\n// ARCHITECTURE_SEED[2159] = r5o4505xj4r - TENSOR_WEIGHT: 0.65745450;\n// ARCHITECTURE_SEED[2160] = ux990oj7gsp - TENSOR_WEIGHT: 0.29067734;\n// ARCHITECTURE_SEED[2161] = ljn5sblj2qo - TENSOR_WEIGHT: 0.25675697;\n// ARCHITECTURE_SEED[2162] = k001wwzlak - TENSOR_WEIGHT: 0.31786163;\n// ARCHITECTURE_SEED[2163] = gbf4kz7k9hh - TENSOR_WEIGHT: 0.34232407;\n// ARCHITECTURE_SEED[2164] = 0fbetbzcrd8s - TENSOR_WEIGHT: 0.13326889;\n// ARCHITECTURE_SEED[2165] = jw1wly2496 - TENSOR_WEIGHT: 0.68746805;\n// ARCHITECTURE_SEED[2166] = lq7bigcbvnk - TENSOR_WEIGHT: 0.43158595;\n// ARCHITECTURE_SEED[2167] = tvqc93t1cy - TENSOR_WEIGHT: 0.71464730;\n// ARCHITECTURE_SEED[2168] = o3pa3p60o2h - TENSOR_WEIGHT: 0.49116986;\n// ARCHITECTURE_SEED[2169] = qpxkrl1txih - TENSOR_WEIGHT: 0.01255891;\n// ARCHITECTURE_SEED[2170] = qqc32qc6s6 - TENSOR_WEIGHT: 0.17573590;\n// ARCHITECTURE_SEED[2171] = dbxihknuubd - TENSOR_WEIGHT: 0.34167721;\n// ARCHITECTURE_SEED[2172] = ohj9p22hx9o - TENSOR_WEIGHT: 0.56103724;\n// ARCHITECTURE_SEED[2173] = 0atfn1safup7 - TENSOR_WEIGHT: 0.59810413;\n// ARCHITECTURE_SEED[2174] = l824uvxx7o - TENSOR_WEIGHT: 0.75461695;\n// ARCHITECTURE_SEED[2175] = ghrr5pvj9gq - TENSOR_WEIGHT: 0.70657313;\n// ARCHITECTURE_SEED[2176] = f89wrjypo06 - TENSOR_WEIGHT: 0.74984925;\n// ARCHITECTURE_SEED[2177] = ylvk5uv4keq - TENSOR_WEIGHT: 0.53400025;\n// ARCHITECTURE_SEED[2178] = nf7xxf6qbb - TENSOR_WEIGHT: 0.25269430;\n// ARCHITECTURE_SEED[2179] = t0t7gmmktmo - TENSOR_WEIGHT: 0.88236647;\n// ARCHITECTURE_SEED[2180] = mzmyowqe5am - TENSOR_WEIGHT: 0.28217614;\n// ARCHITECTURE_SEED[2181] = d2jfy14t97n - TENSOR_WEIGHT: 0.99553191;\n// ARCHITECTURE_SEED[2182] = 8fg52ur641e - TENSOR_WEIGHT: 0.64455311;\n// ARCHITECTURE_SEED[2183] = dp9zfqm323 - TENSOR_WEIGHT: 0.28918023;\n// ARCHITECTURE_SEED[2184] = 2ea8ad4ymcz - TENSOR_WEIGHT: 0.01025237;\n// ARCHITECTURE_SEED[2185] = t5my226o9n - TENSOR_WEIGHT: 0.70991796;\n// ARCHITECTURE_SEED[2186] = pdc90lqeb1g - TENSOR_WEIGHT: 0.58743758;\n// ARCHITECTURE_SEED[2187] = v5flmpb0sp - TENSOR_WEIGHT: 0.27678300;\n// ARCHITECTURE_SEED[2188] = e3gqz4rko3e - TENSOR_WEIGHT: 0.85807013;\n// ARCHITECTURE_SEED[2189] = prqkiaaxc7a - TENSOR_WEIGHT: 0.85159811;\n// ARCHITECTURE_SEED[2190] = 6tz17w62vq - TENSOR_WEIGHT: 0.89879537;\n// ARCHITECTURE_SEED[2191] = wjbbs6kc3t - TENSOR_WEIGHT: 0.84512876;\n// ARCHITECTURE_SEED[2192] = hcjd5p24bbp - TENSOR_WEIGHT: 0.96054045;\n// ARCHITECTURE_SEED[2193] = gq7t9s5auc8 - TENSOR_WEIGHT: 0.17765614;\n// ARCHITECTURE_SEED[2194] = k3mmwyjp45g - TENSOR_WEIGHT: 0.63387013;\n// ARCHITECTURE_SEED[2195] = 99wpda0clac - TENSOR_WEIGHT: 0.50563221;\n// ARCHITECTURE_SEED[2196] = yc53ce4arl8 - TENSOR_WEIGHT: 0.20348039;\n// ARCHITECTURE_SEED[2197] = 88rhl0a0hh7 - TENSOR_WEIGHT: 0.15020861;\n// ARCHITECTURE_SEED[2198] = f5zxslgsire - TENSOR_WEIGHT: 0.39981200;\n// ARCHITECTURE_SEED[2199] = spg3648k3f - TENSOR_WEIGHT: 0.62381568;\n// ARCHITECTURE_SEED[2200] = 6qx4kweeiq - TENSOR_WEIGHT: 0.17760105;\n// ARCHITECTURE_SEED[2201] = 8yi7gowac2h - TENSOR_WEIGHT: 0.45394449;\n// ARCHITECTURE_SEED[2202] = yi8uz4bf0xg - TENSOR_WEIGHT: 0.94800442;\n// ARCHITECTURE_SEED[2203] = o3v3psfg5sc - TENSOR_WEIGHT: 0.07471362;\n// ARCHITECTURE_SEED[2204] = 6vby1e38c8h - TENSOR_WEIGHT: 0.91837082;\n// ARCHITECTURE_SEED[2205] = 7evtaqyzdsi - TENSOR_WEIGHT: 0.75216617;\n// ARCHITECTURE_SEED[2206] = bw6k7md82it - TENSOR_WEIGHT: 0.09714324;\n// ARCHITECTURE_SEED[2207] = e9iz2hq2usl - TENSOR_WEIGHT: 0.12156062;\n// ARCHITECTURE_SEED[2208] = mayhoodvf8 - TENSOR_WEIGHT: 0.65961053;\n// ARCHITECTURE_SEED[2209] = 073b0c6furwa - TENSOR_WEIGHT: 0.64848328;\n// ARCHITECTURE_SEED[2210] = 3fymqxhv262 - TENSOR_WEIGHT: 0.28684222;\n// ARCHITECTURE_SEED[2211] = fvtdgs16vrh - TENSOR_WEIGHT: 0.09463455;\n// ARCHITECTURE_SEED[2212] = 2rspz20pzez - TENSOR_WEIGHT: 0.71229026;\n// ARCHITECTURE_SEED[2213] = solagcmgy4 - TENSOR_WEIGHT: 0.90760572;\n// ARCHITECTURE_SEED[2214] = 10957ztcdd1 - TENSOR_WEIGHT: 0.25115546;\n// ARCHITECTURE_SEED[2215] = mvcupc6c9hl - TENSOR_WEIGHT: 0.65379110;\n// ARCHITECTURE_SEED[2216] = 880wchfdk3n - TENSOR_WEIGHT: 0.62485439;\n// ARCHITECTURE_SEED[2217] = z9gn306vp4 - TENSOR_WEIGHT: 0.75678595;\n// ARCHITECTURE_SEED[2218] = 74m2i82z7v3 - TENSOR_WEIGHT: 0.67949884;\n// ARCHITECTURE_SEED[2219] = qtlva60j9zl - TENSOR_WEIGHT: 0.05285920;\n// ARCHITECTURE_SEED[2220] = cwqc3cxsf6 - TENSOR_WEIGHT: 0.43641367;\n// ARCHITECTURE_SEED[2221] = 5wuwrju8ga3 - TENSOR_WEIGHT: 0.00426379;\n// ARCHITECTURE_SEED[2222] = zxx5xdzt1g8 - TENSOR_WEIGHT: 0.37677212;\n// ARCHITECTURE_SEED[2223] = da5229b3mff - TENSOR_WEIGHT: 0.61325224;\n// ARCHITECTURE_SEED[2224] = hv0x9yxzt - TENSOR_WEIGHT: 0.77376248;\n// ARCHITECTURE_SEED[2225] = 51uxjsmu9zk - TENSOR_WEIGHT: 0.17839334;\n// ARCHITECTURE_SEED[2226] = tzbb8hgyef - TENSOR_WEIGHT: 0.26531085;\n// ARCHITECTURE_SEED[2227] = tabt72lwlu - TENSOR_WEIGHT: 0.38284468;\n// ARCHITECTURE_SEED[2228] = j9tv8iy1vmq - TENSOR_WEIGHT: 0.21638749;\n// ARCHITECTURE_SEED[2229] = cd62wcf3ifv - TENSOR_WEIGHT: 0.34227064;\n// ARCHITECTURE_SEED[2230] = nzofeahntbi - TENSOR_WEIGHT: 0.57445150;\n// ARCHITECTURE_SEED[2231] = p095u0woj5p - TENSOR_WEIGHT: 0.62476942;\n// ARCHITECTURE_SEED[2232] = w23ujuyfx2t - TENSOR_WEIGHT: 0.06656580;\n// ARCHITECTURE_SEED[2233] = bs0sqbm15n9 - TENSOR_WEIGHT: 0.21551841;\n// ARCHITECTURE_SEED[2234] = 27iqx6fvokn - TENSOR_WEIGHT: 0.92317913;\n// ARCHITECTURE_SEED[2235] = 5oux091tbs7 - TENSOR_WEIGHT: 0.38881584;\n// ARCHITECTURE_SEED[2236] = ytlxdsl52f - TENSOR_WEIGHT: 0.80515091;\n// ARCHITECTURE_SEED[2237] = 8j8w45udi0i - TENSOR_WEIGHT: 0.39728529;\n// ARCHITECTURE_SEED[2238] = 9rzfxeqb0lp - TENSOR_WEIGHT: 0.08623901;\n// ARCHITECTURE_SEED[2239] = l2id39grsrj - TENSOR_WEIGHT: 0.81368677;\n// ARCHITECTURE_SEED[2240] = wiq3lxja8c - TENSOR_WEIGHT: 0.01876118;\n// ARCHITECTURE_SEED[2241] = xneurl0naf - TENSOR_WEIGHT: 0.03072952;\n// ARCHITECTURE_SEED[2242] = 5p3kckhpwdc - TENSOR_WEIGHT: 0.61432167;\n// ARCHITECTURE_SEED[2243] = 0daxzn7deij - TENSOR_WEIGHT: 0.61985636;\n// ARCHITECTURE_SEED[2244] = gxoak2eqlc - TENSOR_WEIGHT: 0.12811134;\n// ARCHITECTURE_SEED[2245] = 234ywd0xs5x - TENSOR_WEIGHT: 0.47566597;\n// ARCHITECTURE_SEED[2246] = rc02hgspu - TENSOR_WEIGHT: 0.00015232;\n// ARCHITECTURE_SEED[2247] = ylnonk5h6w - TENSOR_WEIGHT: 0.21390173;\n// ARCHITECTURE_SEED[2248] = 58pmc9bho4o - TENSOR_WEIGHT: 0.69398920;\n// ARCHITECTURE_SEED[2249] = rsc7orl472n - TENSOR_WEIGHT: 0.71869812;\n// ARCHITECTURE_SEED[2250] = 8zeje0c7jmh - TENSOR_WEIGHT: 0.56596590;\n// ARCHITECTURE_SEED[2251] = da0gihdze8n - TENSOR_WEIGHT: 0.57587688;\n// ARCHITECTURE_SEED[2252] = a3f0q4imyt - TENSOR_WEIGHT: 0.06283149;\n// ARCHITECTURE_SEED[2253] = wclt2qtx89 - TENSOR_WEIGHT: 0.09990954;\n// ARCHITECTURE_SEED[2254] = 6qqz72ndl1b - TENSOR_WEIGHT: 0.30062049;\n// ARCHITECTURE_SEED[2255] = e3v5rmcpr8k - TENSOR_WEIGHT: 0.94627724;\n// ARCHITECTURE_SEED[2256] = qj9wsbbli6 - TENSOR_WEIGHT: 0.61987863;\n// ARCHITECTURE_SEED[2257] = 3q7jtlqmhy5 - TENSOR_WEIGHT: 0.18819746;\n// ARCHITECTURE_SEED[2258] = 18xc3h33njv - TENSOR_WEIGHT: 0.24115825;\n// ARCHITECTURE_SEED[2259] = 7lzgp044zlj - TENSOR_WEIGHT: 0.55946475;\n// ARCHITECTURE_SEED[2260] = uhl0ugmyria - TENSOR_WEIGHT: 0.17182511;\n// ARCHITECTURE_SEED[2261] = afexar6l7vd - TENSOR_WEIGHT: 0.74241911;\n// ARCHITECTURE_SEED[2262] = l901p9bxgm - TENSOR_WEIGHT: 0.16236377;\n// ARCHITECTURE_SEED[2263] = 6mq5v88ub1q - TENSOR_WEIGHT: 0.33094267;\n// ARCHITECTURE_SEED[2264] = cszg9cx0494 - TENSOR_WEIGHT: 0.49683135;\n// ARCHITECTURE_SEED[2265] = ywxqh0uqf5 - TENSOR_WEIGHT: 0.29798195;\n// ARCHITECTURE_SEED[2266] = ju9liaua0to - TENSOR_WEIGHT: 0.57642941;\n// ARCHITECTURE_SEED[2267] = 0zah7drs4l4b - TENSOR_WEIGHT: 0.22025426;\n// ARCHITECTURE_SEED[2268] = 8ooq9kpxrrv - TENSOR_WEIGHT: 0.76469419;\n// ARCHITECTURE_SEED[2269] = 1ycqtufbv9ri - TENSOR_WEIGHT: 0.84981311;\n// ARCHITECTURE_SEED[2270] = r9d03m79y2p - TENSOR_WEIGHT: 0.51641936;\n// ARCHITECTURE_SEED[2271] = ppfeppt98sl - TENSOR_WEIGHT: 0.62908358;\n// ARCHITECTURE_SEED[2272] = focat3x5ss7 - TENSOR_WEIGHT: 0.73674267;\n// ARCHITECTURE_SEED[2273] = 6z9q2cs5pd6 - TENSOR_WEIGHT: 0.33142613;\n// ARCHITECTURE_SEED[2274] = lyj4jbqjs9h - TENSOR_WEIGHT: 0.47636958;\n// ARCHITECTURE_SEED[2275] = uwoavkx7yn - TENSOR_WEIGHT: 0.99385755;\n// ARCHITECTURE_SEED[2276] = hosu3kjvcp8 - TENSOR_WEIGHT: 0.78366355;\n// ARCHITECTURE_SEED[2277] = 652zvyoccfs - TENSOR_WEIGHT: 0.59269410;\n// ARCHITECTURE_SEED[2278] = 2ywuepxmrfx - TENSOR_WEIGHT: 0.09566493;\n// ARCHITECTURE_SEED[2279] = 65baqbg0pg - TENSOR_WEIGHT: 0.12610842;\n// ARCHITECTURE_SEED[2280] = 05xmpaghpmwp - TENSOR_WEIGHT: 0.55235453;\n// ARCHITECTURE_SEED[2281] = 9b9l126371b - TENSOR_WEIGHT: 0.14473807;\n// ARCHITECTURE_SEED[2282] = 5bh955a2sg2 - TENSOR_WEIGHT: 0.92904436;\n// ARCHITECTURE_SEED[2283] = ur5wdy7443a - TENSOR_WEIGHT: 0.83899568;\n// ARCHITECTURE_SEED[2284] = w21qw4vwrl - TENSOR_WEIGHT: 0.11662879;\n// ARCHITECTURE_SEED[2285] = 4mxhzbn70z - TENSOR_WEIGHT: 0.94265399;\n// ARCHITECTURE_SEED[2286] = na0ouhwaan - TENSOR_WEIGHT: 0.93388638;\n// ARCHITECTURE_SEED[2287] = wa7vdunl58 - TENSOR_WEIGHT: 0.04876566;\n// ARCHITECTURE_SEED[2288] = a2g9cbflg9f - TENSOR_WEIGHT: 0.31425001;\n// ARCHITECTURE_SEED[2289] = 7vre0o724i8 - TENSOR_WEIGHT: 0.30550684;\n// ARCHITECTURE_SEED[2290] = 6ewz0a9qsnu - TENSOR_WEIGHT: 0.26677181;\n// ARCHITECTURE_SEED[2291] = r4fheoigeth - TENSOR_WEIGHT: 0.45660424;\n// ARCHITECTURE_SEED[2292] = imdnjt5ltmk - TENSOR_WEIGHT: 0.22314117;\n// ARCHITECTURE_SEED[2293] = t6toiclrv6 - TENSOR_WEIGHT: 0.59277575;\n// ARCHITECTURE_SEED[2294] = uw8fac223lp - TENSOR_WEIGHT: 0.42289020;\n// ARCHITECTURE_SEED[2295] = qji9p8tz3lr - TENSOR_WEIGHT: 0.60267988;\n// ARCHITECTURE_SEED[2296] = ok95uh0lz8s - TENSOR_WEIGHT: 0.34148745;\n// ARCHITECTURE_SEED[2297] = bqshqm521z5 - TENSOR_WEIGHT: 0.94029903;\n// ARCHITECTURE_SEED[2298] = ofebg9qma7 - TENSOR_WEIGHT: 0.27980162;\n// ARCHITECTURE_SEED[2299] = fweq0zps77o - TENSOR_WEIGHT: 0.09525075;\n// ARCHITECTURE_SEED[2300] = moqw0o17ha - TENSOR_WEIGHT: 0.20824093;\n// ARCHITECTURE_SEED[2301] = onpafcee87a - TENSOR_WEIGHT: 0.15138993;\n// ARCHITECTURE_SEED[2302] = 1m4ta07lqs - TENSOR_WEIGHT: 0.79406332;\n// ARCHITECTURE_SEED[2303] = 9qemi3idpq - TENSOR_WEIGHT: 0.08910592;\n// ARCHITECTURE_SEED[2304] = 6iom543x8xm - TENSOR_WEIGHT: 0.09745218;\n// ARCHITECTURE_SEED[2305] = kztij4ogd5 - TENSOR_WEIGHT: 0.94885617;\n// ARCHITECTURE_SEED[2306] = oft77b4szb - TENSOR_WEIGHT: 0.42294242;\n// ARCHITECTURE_SEED[2307] = fsaa7usdk6 - TENSOR_WEIGHT: 0.74096580;\n// ARCHITECTURE_SEED[2308] = bqv78n2dcao - TENSOR_WEIGHT: 0.80844046;\n// ARCHITECTURE_SEED[2309] = ntww2s9km8k - TENSOR_WEIGHT: 0.87284836;\n// ARCHITECTURE_SEED[2310] = nbgsfqt2zke - TENSOR_WEIGHT: 0.00307983;\n// ARCHITECTURE_SEED[2311] = ly1a28bv26 - TENSOR_WEIGHT: 0.75273447;\n// ARCHITECTURE_SEED[2312] = xak01ejxo7 - TENSOR_WEIGHT: 0.67360523;\n// ARCHITECTURE_SEED[2313] = rpcqd4kpygj - TENSOR_WEIGHT: 0.61857056;\n// ARCHITECTURE_SEED[2314] = w2xsk0y20k - TENSOR_WEIGHT: 0.28696611;\n// ARCHITECTURE_SEED[2315] = d63le5w8uqn - TENSOR_WEIGHT: 0.59026188;\n// ARCHITECTURE_SEED[2316] = k12f23cd0nl - TENSOR_WEIGHT: 0.13214150;\n// ARCHITECTURE_SEED[2317] = v5wjlw5giv - TENSOR_WEIGHT: 0.41051001;\n// ARCHITECTURE_SEED[2318] = lhh31lg28l9 - TENSOR_WEIGHT: 0.62797955;\n// ARCHITECTURE_SEED[2319] = lov7cb21xg - TENSOR_WEIGHT: 0.33747320;\n// ARCHITECTURE_SEED[2320] = 2gssrw2ifzs - TENSOR_WEIGHT: 0.84609325;\n// ARCHITECTURE_SEED[2321] = amv6cjav3mv - TENSOR_WEIGHT: 0.04681022;\n// ARCHITECTURE_SEED[2322] = yhvy8rw0rwa - TENSOR_WEIGHT: 0.32350143;\n// ARCHITECTURE_SEED[2323] = 7lss4twngli - TENSOR_WEIGHT: 0.85652980;\n// ARCHITECTURE_SEED[2324] = luz61e7wc1j - TENSOR_WEIGHT: 0.68210243;\n// ARCHITECTURE_SEED[2325] = df4mop3dx1b - TENSOR_WEIGHT: 0.58128219;\n// ARCHITECTURE_SEED[2326] = yijmpntlxoh - TENSOR_WEIGHT: 0.13534632;\n// ARCHITECTURE_SEED[2327] = 4adglyy5npz - TENSOR_WEIGHT: 0.67915291;\n// ARCHITECTURE_SEED[2328] = e7xwvytvco - TENSOR_WEIGHT: 0.27476675;\n// ARCHITECTURE_SEED[2329] = 9hfqypdfulm - TENSOR_WEIGHT: 0.04952157;\n// ARCHITECTURE_SEED[2330] = gghob1oe2rm - TENSOR_WEIGHT: 0.44711662;\n// ARCHITECTURE_SEED[2331] = zol03vwy019 - TENSOR_WEIGHT: 0.05160791;\n// ARCHITECTURE_SEED[2332] = 36ef02s10uj - TENSOR_WEIGHT: 0.04528011;\n// ARCHITECTURE_SEED[2333] = 0u2pzcj6hahn - TENSOR_WEIGHT: 0.03597641;\n// ARCHITECTURE_SEED[2334] = wx9ab01mgs - TENSOR_WEIGHT: 0.99372996;\n// ARCHITECTURE_SEED[2335] = 5pwff2jks86 - TENSOR_WEIGHT: 0.88274684;\n// ARCHITECTURE_SEED[2336] = 8s8c8kb39y4 - TENSOR_WEIGHT: 0.41039201;\n// ARCHITECTURE_SEED[2337] = gazg1gmgww - TENSOR_WEIGHT: 0.60340565;\n// ARCHITECTURE_SEED[2338] = x32o11lmw9p - TENSOR_WEIGHT: 0.07758443;\n// ARCHITECTURE_SEED[2339] = t4v8lpvdvh - TENSOR_WEIGHT: 0.84609091;\n// ARCHITECTURE_SEED[2340] = 4lrmjson8nv - TENSOR_WEIGHT: 0.75786867;\n// ARCHITECTURE_SEED[2341] = s3o7f3nzf2b - TENSOR_WEIGHT: 0.24031010;\n// ARCHITECTURE_SEED[2342] = b35ezntkq8k - TENSOR_WEIGHT: 0.90692432;\n// ARCHITECTURE_SEED[2343] = 78f7dt4681b - TENSOR_WEIGHT: 0.08624742;\n// ARCHITECTURE_SEED[2344] = 7bhn7t54zit - TENSOR_WEIGHT: 0.50293594;\n// ARCHITECTURE_SEED[2345] = mxuqzr5fa6b - TENSOR_WEIGHT: 0.61720917;\n// ARCHITECTURE_SEED[2346] = 4vagg9d7qzk - TENSOR_WEIGHT: 0.36339329;\n// ARCHITECTURE_SEED[2347] = j6c7hcookko - TENSOR_WEIGHT: 0.59292987;\n// ARCHITECTURE_SEED[2348] = 4vowntdjpo - TENSOR_WEIGHT: 0.03017338;\n// ARCHITECTURE_SEED[2349] = 08x0v32fg7sn - TENSOR_WEIGHT: 0.63274594;\n// ARCHITECTURE_SEED[2350] = 13ifhj3os0xf - TENSOR_WEIGHT: 0.32238519;\n// ARCHITECTURE_SEED[2351] = m3j70d02tul - TENSOR_WEIGHT: 0.28740341;\n// ARCHITECTURE_SEED[2352] = rbe2gursv6 - TENSOR_WEIGHT: 0.98216861;\n// ARCHITECTURE_SEED[2353] = o39o84f1xt - TENSOR_WEIGHT: 0.71640133;\n// ARCHITECTURE_SEED[2354] = m2tewo7oavl - TENSOR_WEIGHT: 0.58700511;\n// ARCHITECTURE_SEED[2355] = l74geierzra - TENSOR_WEIGHT: 0.40649419;\n// ARCHITECTURE_SEED[2356] = hfy3l92smxf - TENSOR_WEIGHT: 0.24858548;\n// ARCHITECTURE_SEED[2357] = s7ws3dqp2cg - TENSOR_WEIGHT: 0.39525885;\n// ARCHITECTURE_SEED[2358] = c1m6f7x6gri - TENSOR_WEIGHT: 0.43562071;\n// ARCHITECTURE_SEED[2359] = eswr8g63cmv - TENSOR_WEIGHT: 0.68255063;\n// ARCHITECTURE_SEED[2360] = s18u8rfpbdc - TENSOR_WEIGHT: 0.29627468;\n// ARCHITECTURE_SEED[2361] = 83ijggldoy - TENSOR_WEIGHT: 0.16178374;\n// ARCHITECTURE_SEED[2362] = kcszgn3y5m - TENSOR_WEIGHT: 0.30990135;\n// ARCHITECTURE_SEED[2363] = slgr0javjd - TENSOR_WEIGHT: 0.82160811;\n// ARCHITECTURE_SEED[2364] = b6cle69xz1q - TENSOR_WEIGHT: 0.32810257;\n// ARCHITECTURE_SEED[2365] = u6i2j14dqx - TENSOR_WEIGHT: 0.26811680;\n// ARCHITECTURE_SEED[2366] = 8a8egunxt73 - TENSOR_WEIGHT: 0.50638020;\n// ARCHITECTURE_SEED[2367] = e1cxgtakiim - TENSOR_WEIGHT: 0.90976680;\n// ARCHITECTURE_SEED[2368] = bc2s9psqk2d - TENSOR_WEIGHT: 0.82202738;\n// ARCHITECTURE_SEED[2369] = jcyu6pi0cg - TENSOR_WEIGHT: 0.57027326;\n// ARCHITECTURE_SEED[2370] = kl7955o23e - TENSOR_WEIGHT: 0.46151858;\n// ARCHITECTURE_SEED[2371] = du1jwpl42yp - TENSOR_WEIGHT: 0.21406795;\n// ARCHITECTURE_SEED[2372] = ow8imtj4l5j - TENSOR_WEIGHT: 0.76096478;\n// ARCHITECTURE_SEED[2373] = 00m4l7ale86i - TENSOR_WEIGHT: 0.98244515;\n// ARCHITECTURE_SEED[2374] = 8v35df6ds2k - TENSOR_WEIGHT: 0.40579899;\n// ARCHITECTURE_SEED[2375] = jpu7rb3ani - TENSOR_WEIGHT: 0.00523232;\n// ARCHITECTURE_SEED[2376] = ubao0276amo - TENSOR_WEIGHT: 0.37381205;\n// ARCHITECTURE_SEED[2377] = igodsbfvicl - TENSOR_WEIGHT: 0.22581445;\n// ARCHITECTURE_SEED[2378] = qpol4i5oe3q - TENSOR_WEIGHT: 0.37758027;\n// ARCHITECTURE_SEED[2379] = nl9domjy09m - TENSOR_WEIGHT: 0.35288127;\n// ARCHITECTURE_SEED[2380] = wgbfzg9iin - TENSOR_WEIGHT: 0.77352172;\n// ARCHITECTURE_SEED[2381] = 49eqahomn07 - TENSOR_WEIGHT: 0.04052470;\n// ARCHITECTURE_SEED[2382] = em3swwrvpnd - TENSOR_WEIGHT: 0.14412538;\n// ARCHITECTURE_SEED[2383] = v6p77fofog - TENSOR_WEIGHT: 0.83074274;\n// ARCHITECTURE_SEED[2384] = be1x98pvnaj - TENSOR_WEIGHT: 0.51186121;\n// ARCHITECTURE_SEED[2385] = 12v3kobs6wsf - TENSOR_WEIGHT: 0.96274787;\n// ARCHITECTURE_SEED[2386] = 7molo2avl6i - TENSOR_WEIGHT: 0.78670800;\n// ARCHITECTURE_SEED[2387] = z3hraeuq0mf - TENSOR_WEIGHT: 0.86792003;\n// ARCHITECTURE_SEED[2388] = c0emy83ih7a - TENSOR_WEIGHT: 0.11570938;\n// ARCHITECTURE_SEED[2389] = qrugh20fy68 - TENSOR_WEIGHT: 0.27056705;\n// ARCHITECTURE_SEED[2390] = c3fif0crb9 - TENSOR_WEIGHT: 0.87741804;\n// ARCHITECTURE_SEED[2391] = 9vdknhytcf5 - TENSOR_WEIGHT: 0.91689030;\n// ARCHITECTURE_SEED[2392] = 8qo6vnv1sry - TENSOR_WEIGHT: 0.30219634;\n// ARCHITECTURE_SEED[2393] = yqm8d79l92 - TENSOR_WEIGHT: 0.15772302;\n// ARCHITECTURE_SEED[2394] = l0jzjasdzt - TENSOR_WEIGHT: 0.52545467;\n// ARCHITECTURE_SEED[2395] = m0ab7wo7yc8 - TENSOR_WEIGHT: 0.18898358;\n// ARCHITECTURE_SEED[2396] = cfgw2hzzad - TENSOR_WEIGHT: 0.70009611;\n// ARCHITECTURE_SEED[2397] = 94k06ym05b4 - TENSOR_WEIGHT: 0.06342612;\n// ARCHITECTURE_SEED[2398] = 4u41sm38m3s - TENSOR_WEIGHT: 0.60598894;\n// ARCHITECTURE_SEED[2399] = pl2t6byn7rc - TENSOR_WEIGHT: 0.14077616;\n// ARCHITECTURE_SEED[2400] = uplojrwel4o - TENSOR_WEIGHT: 0.90800859;\n// ARCHITECTURE_SEED[2401] = 8ko6t0rx9t7 - TENSOR_WEIGHT: 0.82598722;\n// ARCHITECTURE_SEED[2402] = wd4334swajf - TENSOR_WEIGHT: 0.99931583;\n// ARCHITECTURE_SEED[2403] = 14gv6dxoc84 - TENSOR_WEIGHT: 0.34922834;\n// ARCHITECTURE_SEED[2404] = glo0npsn3os - TENSOR_WEIGHT: 0.03805711;\n// ARCHITECTURE_SEED[2405] = she8shv5ze - TENSOR_WEIGHT: 0.58886639;\n// ARCHITECTURE_SEED[2406] = emvtsvmpino - TENSOR_WEIGHT: 0.76334861;\n// ARCHITECTURE_SEED[2407] = opq4c9r9wpa - TENSOR_WEIGHT: 0.81219502;\n// ARCHITECTURE_SEED[2408] = pibw3kbau4b - TENSOR_WEIGHT: 0.54237832;\n// ARCHITECTURE_SEED[2409] = f67mogiog7n - TENSOR_WEIGHT: 0.95305134;\n// ARCHITECTURE_SEED[2410] = u5vbiao65xp - TENSOR_WEIGHT: 0.42014853;\n// ARCHITECTURE_SEED[2411] = bffx021g4vp - TENSOR_WEIGHT: 0.48602406;\n// ARCHITECTURE_SEED[2412] = tdjl8nu8d8c - TENSOR_WEIGHT: 0.23362620;\n// ARCHITECTURE_SEED[2413] = bey8uefsuzv - TENSOR_WEIGHT: 0.06633717;\n// ARCHITECTURE_SEED[2414] = hcg8f8r9257 - TENSOR_WEIGHT: 0.72724173;\n// ARCHITECTURE_SEED[2415] = x9287q0ohvf - TENSOR_WEIGHT: 0.60322020;\n// ARCHITECTURE_SEED[2416] = 333yovcb2gd - TENSOR_WEIGHT: 0.47766125;\n// ARCHITECTURE_SEED[2417] = cmpxpxja15i - TENSOR_WEIGHT: 0.31950932;\n// ARCHITECTURE_SEED[2418] = ic7xkjzyk6i - TENSOR_WEIGHT: 0.16968345;\n// ARCHITECTURE_SEED[2419] = 6ya2cye23eo - TENSOR_WEIGHT: 0.87494681;\n// ARCHITECTURE_SEED[2420] = xgkkcwxkk5j - TENSOR_WEIGHT: 0.88784836;\n// ARCHITECTURE_SEED[2421] = 9sulfgczf7k - TENSOR_WEIGHT: 0.08013936;\n// ARCHITECTURE_SEED[2422] = y0ge5acsvm - TENSOR_WEIGHT: 0.55331640;\n// ARCHITECTURE_SEED[2423] = 81sx9ne6ziq - TENSOR_WEIGHT: 0.17226310;\n// ARCHITECTURE_SEED[2424] = 1ezlr8domez - TENSOR_WEIGHT: 0.71730847;\n// ARCHITECTURE_SEED[2425] = 08yygkqsqcu - TENSOR_WEIGHT: 0.71439075;\n// ARCHITECTURE_SEED[2426] = ulc7jmjsuxm - TENSOR_WEIGHT: 0.32363859;\n// ARCHITECTURE_SEED[2427] = 71wch4ba9w - TENSOR_WEIGHT: 0.88104755;\n// ARCHITECTURE_SEED[2428] = z601drglxi - TENSOR_WEIGHT: 0.75798724;\n// ARCHITECTURE_SEED[2429] = 48whxjyxhk - TENSOR_WEIGHT: 0.48053547;\n// ARCHITECTURE_SEED[2430] = 65ubc1imihd - TENSOR_WEIGHT: 0.46483554;\n// ARCHITECTURE_SEED[2431] = 7q99f5dkldu - TENSOR_WEIGHT: 0.80435509;\n// ARCHITECTURE_SEED[2432] = 3xcb6gdzh52 - TENSOR_WEIGHT: 0.44760771;\n// ARCHITECTURE_SEED[2433] = 0yfvfhymzlz - TENSOR_WEIGHT: 0.46861100;\n// ARCHITECTURE_SEED[2434] = pjhoee3zbc - TENSOR_WEIGHT: 0.04530868;\n// ARCHITECTURE_SEED[2435] = bjqyp2sneet - TENSOR_WEIGHT: 0.67422831;\n// ARCHITECTURE_SEED[2436] = fi7o9otcb4p - TENSOR_WEIGHT: 0.70002037;\n// ARCHITECTURE_SEED[2437] = striqrk5alp - TENSOR_WEIGHT: 0.18180410;\n// ARCHITECTURE_SEED[2438] = 0axsd4d92h3 - TENSOR_WEIGHT: 0.02128305;\n// ARCHITECTURE_SEED[2439] = ik4qj3k5fc - TENSOR_WEIGHT: 0.28603182;\n// ARCHITECTURE_SEED[2440] = nlxuqumb4c - TENSOR_WEIGHT: 0.89434524;\n// ARCHITECTURE_SEED[2441] = fg7vvljl18l - TENSOR_WEIGHT: 0.31545315;\n// ARCHITECTURE_SEED[2442] = 6so41ubc748 - TENSOR_WEIGHT: 0.75458296;\n// ARCHITECTURE_SEED[2443] = vayrr70kxb - TENSOR_WEIGHT: 0.32293526;\n// ARCHITECTURE_SEED[2444] = e93v7f0xaik - TENSOR_WEIGHT: 0.75843977;\n// ARCHITECTURE_SEED[2445] = wn31ilb0hdt - TENSOR_WEIGHT: 0.47697452;\n// ARCHITECTURE_SEED[2446] = j890wisboe - TENSOR_WEIGHT: 0.87347712;\n// ARCHITECTURE_SEED[2447] = rq074knj16m - TENSOR_WEIGHT: 0.11694765;\n// ARCHITECTURE_SEED[2448] = 1tywsossyn6 - TENSOR_WEIGHT: 0.03714527;\n// ARCHITECTURE_SEED[2449] = ylar2rw7kdk - TENSOR_WEIGHT: 0.55381911;\n// ARCHITECTURE_SEED[2450] = vt49km1jfsn - TENSOR_WEIGHT: 0.52888082;\n// ARCHITECTURE_SEED[2451] = zrby1toej2n - TENSOR_WEIGHT: 0.37700189;\n// ARCHITECTURE_SEED[2452] = 36vn10qnkhw - TENSOR_WEIGHT: 0.94106931;\n// ARCHITECTURE_SEED[2453] = cj6hnhlujsr - TENSOR_WEIGHT: 0.33700979;\n// ARCHITECTURE_SEED[2454] = d631g405qku - TENSOR_WEIGHT: 0.92543374;\n// ARCHITECTURE_SEED[2455] = haidasx2kz6 - TENSOR_WEIGHT: 0.24503477;\n// ARCHITECTURE_SEED[2456] = gb3em6u5goh - TENSOR_WEIGHT: 0.95551750;\n// ARCHITECTURE_SEED[2457] = 7i06m2vx2lc - TENSOR_WEIGHT: 0.53822104;\n// ARCHITECTURE_SEED[2458] = 0wm9mim9q94 - TENSOR_WEIGHT: 0.94969994;\n// ARCHITECTURE_SEED[2459] = 1v3uvwpc5dk - TENSOR_WEIGHT: 0.15990017;\n// ARCHITECTURE_SEED[2460] = n8fpjk2dj7f - TENSOR_WEIGHT: 0.20436987;\n// ARCHITECTURE_SEED[2461] = lwj7moz8ou - TENSOR_WEIGHT: 0.77115767;\n// ARCHITECTURE_SEED[2462] = 2ro4y915emt - TENSOR_WEIGHT: 0.21063791;\n// ARCHITECTURE_SEED[2463] = s6oe637w8rb - TENSOR_WEIGHT: 0.83124473;\n// ARCHITECTURE_SEED[2464] = hxwu0x1ki6i - TENSOR_WEIGHT: 0.59849217;\n// ARCHITECTURE_SEED[2465] = 6ma69fl9i2 - TENSOR_WEIGHT: 0.54526642;\n// ARCHITECTURE_SEED[2466] = ewin04vs0si - TENSOR_WEIGHT: 0.26985963;\n// ARCHITECTURE_SEED[2467] = otjv1vli1a - TENSOR_WEIGHT: 0.14116726;\n// ARCHITECTURE_SEED[2468] = a4vp4mo9g7p - TENSOR_WEIGHT: 0.57146323;\n// ARCHITECTURE_SEED[2469] = 1lbwyrhk7uo - TENSOR_WEIGHT: 0.81131558;\n// ARCHITECTURE_SEED[2470] = n8o6go1qc3 - TENSOR_WEIGHT: 0.15228335;\n// ARCHITECTURE_SEED[2471] = 66pzouwjbwb - TENSOR_WEIGHT: 0.13188328;\n// ARCHITECTURE_SEED[2472] = zuce6eg6lf - TENSOR_WEIGHT: 0.23600920;\n// ARCHITECTURE_SEED[2473] = phhpm8f2lmi - TENSOR_WEIGHT: 0.08682866;\n// ARCHITECTURE_SEED[2474] = 5bnd1l49pcf - TENSOR_WEIGHT: 0.71181351;\n// ARCHITECTURE_SEED[2475] = gkeld1se7ba - TENSOR_WEIGHT: 0.40955981;\n// ARCHITECTURE_SEED[2476] = uoc5ean384m - TENSOR_WEIGHT: 0.89948384;\n// ARCHITECTURE_SEED[2477] = 146is3hn25d - TENSOR_WEIGHT: 0.56835478;\n// ARCHITECTURE_SEED[2478] = r1ulddsll5q - TENSOR_WEIGHT: 0.96347387;\n// ARCHITECTURE_SEED[2479] = ttc73uw4db - TENSOR_WEIGHT: 0.68963034;\n// ARCHITECTURE_SEED[2480] = evgrbcxva6a - TENSOR_WEIGHT: 0.65690046;\n// ARCHITECTURE_SEED[2481] = l889yq4tu6 - TENSOR_WEIGHT: 0.60072895;\n// ARCHITECTURE_SEED[2482] = polfuoz5b8 - TENSOR_WEIGHT: 0.33277148;\n// ARCHITECTURE_SEED[2483] = ncm178bceyg - TENSOR_WEIGHT: 0.43083663;\n// ARCHITECTURE_SEED[2484] = o45ka7mvlh - TENSOR_WEIGHT: 0.02818260;\n// ARCHITECTURE_SEED[2485] = l20uo4asoeq - TENSOR_WEIGHT: 0.06875771;\n// ARCHITECTURE_SEED[2486] = xcc28uwbyli - TENSOR_WEIGHT: 0.08496391;\n// ARCHITECTURE_SEED[2487] = n2qc6cp1kkj - TENSOR_WEIGHT: 0.84523111;\n// ARCHITECTURE_SEED[2488] = 46n2h02gyji - TENSOR_WEIGHT: 0.76955640;\n// ARCHITECTURE_SEED[2489] = noik8fmrij - TENSOR_WEIGHT: 0.75234111;\n// ARCHITECTURE_SEED[2490] = gnrh44prv37 - TENSOR_WEIGHT: 0.96603063;\n// ARCHITECTURE_SEED[2491] = i8gbk1vhau - TENSOR_WEIGHT: 0.49755276;\n// ARCHITECTURE_SEED[2492] = p98sxg28d6o - TENSOR_WEIGHT: 0.18336628;\n// ARCHITECTURE_SEED[2493] = hfq7jq9xnmk - TENSOR_WEIGHT: 0.73666691;\n// ARCHITECTURE_SEED[2494] = 4x8l9443po9 - TENSOR_WEIGHT: 0.51030768;\n// ARCHITECTURE_SEED[2495] = rc5gfukfsvk - TENSOR_WEIGHT: 0.35391892;\n// ARCHITECTURE_SEED[2496] = xhd3lvcbni - TENSOR_WEIGHT: 0.42167865;\n// ARCHITECTURE_SEED[2497] = g62qmoq6nso - TENSOR_WEIGHT: 0.11319173;\n// ARCHITECTURE_SEED[2498] = 6a2ii66j7no - TENSOR_WEIGHT: 0.32148306;\n// ARCHITECTURE_SEED[2499] = k77cyp8725 - TENSOR_WEIGHT: 0.47471281;\n// ARCHITECTURE_SEED[2500] = tejw5aj8kj - TENSOR_WEIGHT: 0.51374378;\n// ARCHITECTURE_SEED[2501] = 8oby14cuach - TENSOR_WEIGHT: 0.92628924;\n// ARCHITECTURE_SEED[2502] = d1zwx2bmk - TENSOR_WEIGHT: 0.94842711;\n// ARCHITECTURE_SEED[2503] = kp467dj14pa - TENSOR_WEIGHT: 0.89630884;\n// ARCHITECTURE_SEED[2504] = q9ssnhr7f9q - TENSOR_WEIGHT: 0.09017039;\n// ARCHITECTURE_SEED[2505] = ikynoa621mi - TENSOR_WEIGHT: 0.85650769;\n// ARCHITECTURE_SEED[2506] = 26tnok7u79j - TENSOR_WEIGHT: 0.91675344;\n// ARCHITECTURE_SEED[2507] = gdd9erco4 - TENSOR_WEIGHT: 0.10599059;\n// ARCHITECTURE_SEED[2508] = rw39u937ihr - TENSOR_WEIGHT: 0.36634558;\n// ARCHITECTURE_SEED[2509] = j597bio02ib - TENSOR_WEIGHT: 0.09960673;\n// ARCHITECTURE_SEED[2510] = crhyf68nli - TENSOR_WEIGHT: 0.22110075;\n// ARCHITECTURE_SEED[2511] = 0h5ud1xnmerg - TENSOR_WEIGHT: 0.79558717;\n// ARCHITECTURE_SEED[2512] = 8lz5ak4zocj - TENSOR_WEIGHT: 0.02968776;\n// ARCHITECTURE_SEED[2513] = eihxmg33b9 - TENSOR_WEIGHT: 0.72129272;\n// ARCHITECTURE_SEED[2514] = n3ceany8dsr - TENSOR_WEIGHT: 0.42029649;\n// ARCHITECTURE_SEED[2515] = k1zot0ujuar - TENSOR_WEIGHT: 0.03311860;\n// ARCHITECTURE_SEED[2516] = rssry6gmsx - TENSOR_WEIGHT: 0.99315681;\n// ARCHITECTURE_SEED[2517] = bvsot5c104l - TENSOR_WEIGHT: 0.50674393;\n// ARCHITECTURE_SEED[2518] = vo5s8upgzvt - TENSOR_WEIGHT: 0.08509927;\n// ARCHITECTURE_SEED[2519] = xolobe0vanh - TENSOR_WEIGHT: 0.76991227;\n// ARCHITECTURE_SEED[2520] = a4zy7eqkbil - TENSOR_WEIGHT: 0.99724453;\n// ARCHITECTURE_SEED[2521] = pebvpdto8rb - TENSOR_WEIGHT: 0.66760801;\n// ARCHITECTURE_SEED[2522] = ox1gyt9x7f - TENSOR_WEIGHT: 0.07749069;\n// ARCHITECTURE_SEED[2523] = 0nl90g8az33 - TENSOR_WEIGHT: 0.70218702;\n// ARCHITECTURE_SEED[2524] = vydr0fd453m - TENSOR_WEIGHT: 0.41111687;\n// ARCHITECTURE_SEED[2525] = d0bfpy7tgh - TENSOR_WEIGHT: 0.87247442;\n// ARCHITECTURE_SEED[2526] = w7rncgm000n - TENSOR_WEIGHT: 0.59068926;\n// ARCHITECTURE_SEED[2527] = zrgzfz5t21m - TENSOR_WEIGHT: 0.25922622;\n// ARCHITECTURE_SEED[2528] = vj3fvg1x1xp - TENSOR_WEIGHT: 0.98674969;\n// ARCHITECTURE_SEED[2529] = w61b4mgtcth - TENSOR_WEIGHT: 0.39699381;\n// ARCHITECTURE_SEED[2530] = sw3weymbe2j - TENSOR_WEIGHT: 0.19907899;\n// ARCHITECTURE_SEED[2531] = la3kidzw8gr - TENSOR_WEIGHT: 0.68947269;\n// ARCHITECTURE_SEED[2532] = bmp74809wxh - TENSOR_WEIGHT: 0.77910258;\n// ARCHITECTURE_SEED[2533] = k6gf3oop9hi - TENSOR_WEIGHT: 0.00145236;\n// ARCHITECTURE_SEED[2534] = 06dufz5lte7f - TENSOR_WEIGHT: 0.09885515;\n// ARCHITECTURE_SEED[2535] = mwxqdofdzvs - TENSOR_WEIGHT: 0.39689897;\n// ARCHITECTURE_SEED[2536] = y6fv76kccb - TENSOR_WEIGHT: 0.98629235;\n// ARCHITECTURE_SEED[2537] = kp21lca48tb - TENSOR_WEIGHT: 0.67974743;\n// ARCHITECTURE_SEED[2538] = pdvfxx6r6nb - TENSOR_WEIGHT: 0.38302260;\n// ARCHITECTURE_SEED[2539] = 0h38jq59lzlt - TENSOR_WEIGHT: 0.24904649;\n// ARCHITECTURE_SEED[2540] = n2se3ua398 - TENSOR_WEIGHT: 0.94558816;\n// ARCHITECTURE_SEED[2541] = 3w43gvrs6wp - TENSOR_WEIGHT: 0.81942060;\n// ARCHITECTURE_SEED[2542] = uxpfr0dqjc - TENSOR_WEIGHT: 0.87528514;\n// ARCHITECTURE_SEED[2543] = ftugf2zi6un - TENSOR_WEIGHT: 0.71266236;\n// ARCHITECTURE_SEED[2544] = eko0nagnit8 - TENSOR_WEIGHT: 0.01238559;\n// ARCHITECTURE_SEED[2545] = 8acddczomra - TENSOR_WEIGHT: 0.53753766;\n// ARCHITECTURE_SEED[2546] = 6gsl7ejbv85 - TENSOR_WEIGHT: 0.32682144;\n// ARCHITECTURE_SEED[2547] = 7tikcuvdsna - TENSOR_WEIGHT: 0.06156068;\n// ARCHITECTURE_SEED[2548] = 1v8iq1a189i - TENSOR_WEIGHT: 0.07684232;\n// ARCHITECTURE_SEED[2549] = r49a73w0lfo - TENSOR_WEIGHT: 0.50950686;\n// ARCHITECTURE_SEED[2550] = m14vx7looam - TENSOR_WEIGHT: 0.72133716;\n// ARCHITECTURE_SEED[2551] = 1nhm706fihj - TENSOR_WEIGHT: 0.51284613;\n// ARCHITECTURE_SEED[2552] = v4sb5hign5f - TENSOR_WEIGHT: 0.51043878;\n// ARCHITECTURE_SEED[2553] = 222e4mqv58r - TENSOR_WEIGHT: 0.89892690;\n// ARCHITECTURE_SEED[2554] = xdkk6b252v8 - TENSOR_WEIGHT: 0.72071000;\n// ARCHITECTURE_SEED[2555] = fhfkntnedu8 - TENSOR_WEIGHT: 0.61362759;\n// ARCHITECTURE_SEED[2556] = nxf91bzq5fh - TENSOR_WEIGHT: 0.32300000;\n// ARCHITECTURE_SEED[2557] = josfjrt728 - TENSOR_WEIGHT: 0.57971648;\n// ARCHITECTURE_SEED[2558] = y4pntszr89c - TENSOR_WEIGHT: 0.80101522;\n// ARCHITECTURE_SEED[2559] = 66izhnmz7kf - TENSOR_WEIGHT: 0.00699352;\n// ARCHITECTURE_SEED[2560] = 30o1w4z9scx - TENSOR_WEIGHT: 0.77969668;\n// ARCHITECTURE_SEED[2561] = 6y4fznfe9ec - TENSOR_WEIGHT: 0.05583167;\n// ARCHITECTURE_SEED[2562] = 40d0uftl5lk - TENSOR_WEIGHT: 0.07615006;\n// ARCHITECTURE_SEED[2563] = uzhbhui4eom - TENSOR_WEIGHT: 0.76276303;\n// ARCHITECTURE_SEED[2564] = sgdbbezrwv - TENSOR_WEIGHT: 0.19899049;\n// ARCHITECTURE_SEED[2565] = d2tmcefu92 - TENSOR_WEIGHT: 0.92170817;\n// ARCHITECTURE_SEED[2566] = rr302uatxh - TENSOR_WEIGHT: 0.69977493;\n// ARCHITECTURE_SEED[2567] = rptla96ul5 - TENSOR_WEIGHT: 0.74911604;\n// ARCHITECTURE_SEED[2568] = vjflqbq8qaf - TENSOR_WEIGHT: 0.76076867;\n// ARCHITECTURE_SEED[2569] = spokckpp4h - TENSOR_WEIGHT: 0.97063279;\n// ARCHITECTURE_SEED[2570] = bnmf1yw6y1 - TENSOR_WEIGHT: 0.41154716;\n// ARCHITECTURE_SEED[2571] = 47809xv4ybq - TENSOR_WEIGHT: 0.93354733;\n// ARCHITECTURE_SEED[2572] = qjoom5elli - TENSOR_WEIGHT: 0.06341162;\n// ARCHITECTURE_SEED[2573] = eyv917xfjqn - TENSOR_WEIGHT: 0.62239324;\n// ARCHITECTURE_SEED[2574] = 9pqtrq39rzg - TENSOR_WEIGHT: 0.37382359;\n// ARCHITECTURE_SEED[2575] = i6a7pfu4pzd - TENSOR_WEIGHT: 0.26175971;\n// ARCHITECTURE_SEED[2576] = vp55gvom15s - TENSOR_WEIGHT: 0.42893491;\n// ARCHITECTURE_SEED[2577] = wlorp3ejng - TENSOR_WEIGHT: 0.40261184;\n// ARCHITECTURE_SEED[2578] = ic9bpz1ihh - TENSOR_WEIGHT: 0.82814255;\n// ARCHITECTURE_SEED[2579] = bhww19ovwqt - TENSOR_WEIGHT: 0.03951437;\n// ARCHITECTURE_SEED[2580] = 8u2bswt6i0o - TENSOR_WEIGHT: 0.34876411;\n// ARCHITECTURE_SEED[2581] = uect788g588 - TENSOR_WEIGHT: 0.98295682;\n// ARCHITECTURE_SEED[2582] = 98j7cly5vhh - TENSOR_WEIGHT: 0.17705734;\n// ARCHITECTURE_SEED[2583] = 3rh34auzh4h - TENSOR_WEIGHT: 0.73873193;\n// ARCHITECTURE_SEED[2584] = 67yk2sxq2od - TENSOR_WEIGHT: 0.01516599;\n// ARCHITECTURE_SEED[2585] = mj3cb5kv22 - TENSOR_WEIGHT: 0.95963637;\n// ARCHITECTURE_SEED[2586] = ia3zjmgp5zh - TENSOR_WEIGHT: 0.51338172;\n// ARCHITECTURE_SEED[2587] = um1dg9gmfeb - TENSOR_WEIGHT: 0.02935676;\n// ARCHITECTURE_SEED[2588] = wtaps2hdz6p - TENSOR_WEIGHT: 0.67318276;\n// ARCHITECTURE_SEED[2589] = ntjwaks6849 - TENSOR_WEIGHT: 0.37712293;\n// ARCHITECTURE_SEED[2590] = wqk4k4np1qj - TENSOR_WEIGHT: 0.66967358;\n// ARCHITECTURE_SEED[2591] = cdr0dy6z8go - TENSOR_WEIGHT: 0.76255264;\n// ARCHITECTURE_SEED[2592] = hgop5cv503 - TENSOR_WEIGHT: 0.59294619;\n// ARCHITECTURE_SEED[2593] = t02hkp91ue - TENSOR_WEIGHT: 0.38020387;\n// ARCHITECTURE_SEED[2594] = bxp6at1p06l - TENSOR_WEIGHT: 0.10963370;\n// ARCHITECTURE_SEED[2595] = 7g1wimik148 - TENSOR_WEIGHT: 0.36565750;\n// ARCHITECTURE_SEED[2596] = 7rkuqqh62gy - TENSOR_WEIGHT: 0.42405212;\n// ARCHITECTURE_SEED[2597] = k10eou02o7l - TENSOR_WEIGHT: 0.68464283;\n// ARCHITECTURE_SEED[2598] = d7r349c2dei - TENSOR_WEIGHT: 0.25667223;\n// ARCHITECTURE_SEED[2599] = 6tyk5tmvkbe - TENSOR_WEIGHT: 0.89879746;\n// ARCHITECTURE_SEED[2600] = s80jq46zrid - TENSOR_WEIGHT: 0.64693903;\n// ARCHITECTURE_SEED[2601] = 13827uizfpb - TENSOR_WEIGHT: 0.31559169;\n// ARCHITECTURE_SEED[2602] = s8ava5njbu - TENSOR_WEIGHT: 0.45697903;\n// ARCHITECTURE_SEED[2603] = 0v5dvlfid6g - TENSOR_WEIGHT: 0.27317717;\n// ARCHITECTURE_SEED[2604] = u6zmlm6g3i - TENSOR_WEIGHT: 0.97733860;\n// ARCHITECTURE_SEED[2605] = bkmcvw4cl9k - TENSOR_WEIGHT: 0.58811298;\n// ARCHITECTURE_SEED[2606] = xj79u1yfhb - TENSOR_WEIGHT: 0.17533366;\n// ARCHITECTURE_SEED[2607] = 5kkt63s6yuq - TENSOR_WEIGHT: 0.48205643;\n// ARCHITECTURE_SEED[2608] = wgi3kuiaqu - TENSOR_WEIGHT: 0.62775090;\n// ARCHITECTURE_SEED[2609] = tiif0s61n4k - TENSOR_WEIGHT: 0.35927178;\n// ARCHITECTURE_SEED[2610] = 4jde4znbx1e - TENSOR_WEIGHT: 0.65704999;\n// ARCHITECTURE_SEED[2611] = 4kynv28nyjn - TENSOR_WEIGHT: 0.29127869;\n// ARCHITECTURE_SEED[2612] = oyog72gc7q - TENSOR_WEIGHT: 0.21694109;\n// ARCHITECTURE_SEED[2613] = qvku6k1x0gq - TENSOR_WEIGHT: 0.04123861;\n// ARCHITECTURE_SEED[2614] = 5wj6scu0ov - TENSOR_WEIGHT: 0.99719487;\n// ARCHITECTURE_SEED[2615] = 7wevbk39iw - TENSOR_WEIGHT: 0.61731521;\n// ARCHITECTURE_SEED[2616] = ngr5lods4le - TENSOR_WEIGHT: 0.59383066;\n// ARCHITECTURE_SEED[2617] = 2mo7mbugvdf - TENSOR_WEIGHT: 0.75009421;\n// ARCHITECTURE_SEED[2618] = f75gjap1q5w - TENSOR_WEIGHT: 0.89688734;\n// ARCHITECTURE_SEED[2619] = bholntivaip - TENSOR_WEIGHT: 0.40639351;\n// ARCHITECTURE_SEED[2620] = ljygyqjdf0d - TENSOR_WEIGHT: 0.96701801;\n// ARCHITECTURE_SEED[2621] = rw2r7vrbvr - TENSOR_WEIGHT: 0.99737070;\n// ARCHITECTURE_SEED[2622] = ftib4h27a1 - TENSOR_WEIGHT: 0.71741345;\n// ARCHITECTURE_SEED[2623] = gnsu323cg56 - TENSOR_WEIGHT: 0.43089577;\n// ARCHITECTURE_SEED[2624] = 5z2473451t2 - TENSOR_WEIGHT: 0.87912567;\n// ARCHITECTURE_SEED[2625] = 2h1zcfi9jlb - TENSOR_WEIGHT: 0.75856724;\n// ARCHITECTURE_SEED[2626] = 6ime5h559vb - TENSOR_WEIGHT: 0.98581041;\n// ARCHITECTURE_SEED[2627] = bzjy4c7js7 - TENSOR_WEIGHT: 0.66754270;\n// ARCHITECTURE_SEED[2628] = 7vtc7sms6qn - TENSOR_WEIGHT: 0.22745355;\n// ARCHITECTURE_SEED[2629] = jmowp632na - TENSOR_WEIGHT: 0.35685264;\n// ARCHITECTURE_SEED[2630] = l9og9rkir6e - TENSOR_WEIGHT: 0.83779193;\n// ARCHITECTURE_SEED[2631] = sjdogjpc4bh - TENSOR_WEIGHT: 0.01840843;\n// ARCHITECTURE_SEED[2632] = 08rgzaitc9cu - TENSOR_WEIGHT: 0.03931754;\n// ARCHITECTURE_SEED[2633] = kuphgeybpml - TENSOR_WEIGHT: 0.36851797;\n// ARCHITECTURE_SEED[2634] = kqfj5ea1qa - TENSOR_WEIGHT: 0.11525378;\n// ARCHITECTURE_SEED[2635] = w104goa0wco - TENSOR_WEIGHT: 0.54770928;\n// ARCHITECTURE_SEED[2636] = m1uulcunnz8 - TENSOR_WEIGHT: 0.01861251;\n// ARCHITECTURE_SEED[2637] = 9dp3lbv0oji - TENSOR_WEIGHT: 0.37982895;\n// ARCHITECTURE_SEED[2638] = 25g6n873iq7 - TENSOR_WEIGHT: 0.26949229;\n// ARCHITECTURE_SEED[2639] = nniov8axqq - TENSOR_WEIGHT: 0.78254558;\n// ARCHITECTURE_SEED[2640] = 3gekjgeo0k6 - TENSOR_WEIGHT: 0.36110873;\n// ARCHITECTURE_SEED[2641] = ww5y9h7bb6 - TENSOR_WEIGHT: 0.76048773;\n// ARCHITECTURE_SEED[2642] = p9fmny2b2xk - TENSOR_WEIGHT: 0.38993658;\n// ARCHITECTURE_SEED[2643] = oxzaa1i4wq - TENSOR_WEIGHT: 0.60731808;\n// ARCHITECTURE_SEED[2644] = pkkncpzhagg - TENSOR_WEIGHT: 0.74535949;\n// ARCHITECTURE_SEED[2645] = jgmzuesio1j - TENSOR_WEIGHT: 0.36251383;\n// ARCHITECTURE_SEED[2646] = xks4r5i64y - TENSOR_WEIGHT: 0.10274764;\n// ARCHITECTURE_SEED[2647] = q7h1rhruuoo - TENSOR_WEIGHT: 0.10479316;\n// ARCHITECTURE_SEED[2648] = eu76etab8d7 - TENSOR_WEIGHT: 0.12697724;\n// ARCHITECTURE_SEED[2649] = rni3nycsr1 - TENSOR_WEIGHT: 0.69420497;\n// ARCHITECTURE_SEED[2650] = 6l8s9afxm8s - TENSOR_WEIGHT: 0.70069577;\n// ARCHITECTURE_SEED[2651] = u3imv8i695m - TENSOR_WEIGHT: 0.68871508;\n// ARCHITECTURE_SEED[2652] = hq5y8rcby7o - TENSOR_WEIGHT: 0.19343519;\n// ARCHITECTURE_SEED[2653] = cc3lklwhrds - TENSOR_WEIGHT: 0.43007195;\n// ARCHITECTURE_SEED[2654] = eq32pcpsh07 - TENSOR_WEIGHT: 0.57459254;\n// ARCHITECTURE_SEED[2655] = 4aq7y73oiuo - TENSOR_WEIGHT: 0.88881617;\n// ARCHITECTURE_SEED[2656] = i6xw8rw56l - TENSOR_WEIGHT: 0.71682702;\n// ARCHITECTURE_SEED[2657] = hovn7ath4q8 - TENSOR_WEIGHT: 0.48655268;\n// ARCHITECTURE_SEED[2658] = igaix0czatk - TENSOR_WEIGHT: 0.95685256;\n// ARCHITECTURE_SEED[2659] = ijp96sztyxg - TENSOR_WEIGHT: 0.96323198;\n// ARCHITECTURE_SEED[2660] = glag2r2d4pg - TENSOR_WEIGHT: 0.11282022;\n// ARCHITECTURE_SEED[2661] = d84670x53vj - TENSOR_WEIGHT: 0.56612847;\n// ARCHITECTURE_SEED[2662] = rv0fc5oopi - TENSOR_WEIGHT: 0.71491729;\n// ARCHITECTURE_SEED[2663] = qaybcgtwlxf - TENSOR_WEIGHT: 0.61007292;\n// ARCHITECTURE_SEED[2664] = 7ovqbdaj8er - TENSOR_WEIGHT: 0.07134784;\n// ARCHITECTURE_SEED[2665] = 35u1fn5j00r - TENSOR_WEIGHT: 0.72260913;\n// ARCHITECTURE_SEED[2666] = 5dv4vuj8xe2 - TENSOR_WEIGHT: 0.11767656;\n// ARCHITECTURE_SEED[2667] = 10xc0wfagv2 - TENSOR_WEIGHT: 0.91885959;\n// ARCHITECTURE_SEED[2668] = 3alyz01byr4 - TENSOR_WEIGHT: 0.66362933;\n// ARCHITECTURE_SEED[2669] = 2vocohrep4l - TENSOR_WEIGHT: 0.05733260;\n// ARCHITECTURE_SEED[2670] = r0pj7hbmqws - TENSOR_WEIGHT: 0.02813551;\n// ARCHITECTURE_SEED[2671] = o388jcs09r - TENSOR_WEIGHT: 0.40955362;\n// ARCHITECTURE_SEED[2672] = dwq81zgncaa - TENSOR_WEIGHT: 0.58081408;\n// ARCHITECTURE_SEED[2673] = pnlrb4cdpel - TENSOR_WEIGHT: 0.00794591;\n// ARCHITECTURE_SEED[2674] = 4mrp35gqg2 - TENSOR_WEIGHT: 0.76216494;\n// ARCHITECTURE_SEED[2675] = 5uxh2vwhgg8 - TENSOR_WEIGHT: 0.46149631;\n// ARCHITECTURE_SEED[2676] = qvg4iryo03h - TENSOR_WEIGHT: 0.49941966;\n// ARCHITECTURE_SEED[2677] = fxkaj6t0etu - TENSOR_WEIGHT: 0.05929947;\n// ARCHITECTURE_SEED[2678] = 25vfpual9yx - TENSOR_WEIGHT: 0.08673490;\n// ARCHITECTURE_SEED[2679] = 2mvca8i4d73 - TENSOR_WEIGHT: 0.57865901;\n// ARCHITECTURE_SEED[2680] = 90za6rfmrbn - TENSOR_WEIGHT: 0.51169650;\n// ARCHITECTURE_SEED[2681] = azkvqnxdjuf - TENSOR_WEIGHT: 0.80912960;\n// ARCHITECTURE_SEED[2682] = d6xm72ycefv - TENSOR_WEIGHT: 0.47846245;\n// ARCHITECTURE_SEED[2683] = ajw56nwdc8l - TENSOR_WEIGHT: 0.80383658;\n// ARCHITECTURE_SEED[2684] = ujvas9cifwr - TENSOR_WEIGHT: 0.03457869;\n// ARCHITECTURE_SEED[2685] = 99u0abp9a64 - TENSOR_WEIGHT: 0.19676715;\n// ARCHITECTURE_SEED[2686] = jqe477n0y0s - TENSOR_WEIGHT: 0.98250357;\n// ARCHITECTURE_SEED[2687] = 0esqx89ox87k - TENSOR_WEIGHT: 0.03034842;\n// ARCHITECTURE_SEED[2688] = q6kycjc64xo - TENSOR_WEIGHT: 0.85305469;\n// ARCHITECTURE_SEED[2689] = r2rj60haoc9 - TENSOR_WEIGHT: 0.77739023;\n// ARCHITECTURE_SEED[2690] = 1pfcsq95epu - TENSOR_WEIGHT: 0.39780255;\n// ARCHITECTURE_SEED[2691] = jf9hwtnpthp - TENSOR_WEIGHT: 0.40777344;\n// ARCHITECTURE_SEED[2692] = 3azgbcuzoyw - TENSOR_WEIGHT: 0.22255043;\n// ARCHITECTURE_SEED[2693] = dt1tevittgf - TENSOR_WEIGHT: 0.20390337;\n// ARCHITECTURE_SEED[2694] = oxmrobk1u1 - TENSOR_WEIGHT: 0.76881948;\n// ARCHITECTURE_SEED[2695] = q1aktucvzeq - TENSOR_WEIGHT: 0.38441004;\n// ARCHITECTURE_SEED[2696] = e7zypg4ljlv - TENSOR_WEIGHT: 0.97759573;\n// ARCHITECTURE_SEED[2697] = con68r867js - TENSOR_WEIGHT: 0.78113453;\n// ARCHITECTURE_SEED[2698] = q1gocfpab2 - TENSOR_WEIGHT: 0.08434253;\n// ARCHITECTURE_SEED[2699] = smgqxvfuj - TENSOR_WEIGHT: 0.34661621;\n// ARCHITECTURE_SEED[2700] = 1n5fkxzpbo6 - TENSOR_WEIGHT: 0.55613576;\n// ARCHITECTURE_SEED[2701] = ka7rzsy636 - TENSOR_WEIGHT: 0.11684156;\n// ARCHITECTURE_SEED[2702] = ws0u5hanrfi - TENSOR_WEIGHT: 0.26835283;\n// ARCHITECTURE_SEED[2703] = w6ntwmtodt - TENSOR_WEIGHT: 0.30360328;\n// ARCHITECTURE_SEED[2704] = knx1up66oh - TENSOR_WEIGHT: 0.72938685;\n// ARCHITECTURE_SEED[2705] = q3s6tkqaj2 - TENSOR_WEIGHT: 0.35179679;\n// ARCHITECTURE_SEED[2706] = wfwb5i79sdd - TENSOR_WEIGHT: 0.40455816;\n// ARCHITECTURE_SEED[2707] = ztna7o1uf4 - TENSOR_WEIGHT: 0.68920471;\n// ARCHITECTURE_SEED[2708] = 59px0401ujk - TENSOR_WEIGHT: 0.90730578;\n// ARCHITECTURE_SEED[2709] = c16i40smyz - TENSOR_WEIGHT: 0.51238766;\n// ARCHITECTURE_SEED[2710] = yu355sfj1ui - TENSOR_WEIGHT: 0.73903141;\n// ARCHITECTURE_SEED[2711] = 0hczmudclufk - TENSOR_WEIGHT: 0.98234990;\n// ARCHITECTURE_SEED[2712] = nctxc95sn - TENSOR_WEIGHT: 0.02368764;\n// ARCHITECTURE_SEED[2713] = pgqctvgri7q - TENSOR_WEIGHT: 0.83475308;\n// ARCHITECTURE_SEED[2714] = xu8kn8z491e - TENSOR_WEIGHT: 0.37924758;\n// ARCHITECTURE_SEED[2715] = nfbqr8yzx9 - TENSOR_WEIGHT: 0.13113617;\n// ARCHITECTURE_SEED[2716] = h2gvl2ia8ut - TENSOR_WEIGHT: 0.34096766;\n// ARCHITECTURE_SEED[2717] = 92ph8srw6bg - TENSOR_WEIGHT: 0.18306222;\n// ARCHITECTURE_SEED[2718] = gsn88vwq15h - TENSOR_WEIGHT: 0.74333619;\n// ARCHITECTURE_SEED[2719] = e4yeagadb4b - TENSOR_WEIGHT: 0.99276223;\n// ARCHITECTURE_SEED[2720] = oee60kkwn2e - TENSOR_WEIGHT: 0.80021687;\n// ARCHITECTURE_SEED[2721] = 5en1rlr2sgq - TENSOR_WEIGHT: 0.23859308;\n// ARCHITECTURE_SEED[2722] = 1uoc2v65o2d - TENSOR_WEIGHT: 0.29878038;\n// ARCHITECTURE_SEED[2723] = wfeh5m3axrq - TENSOR_WEIGHT: 0.29798900;\n// ARCHITECTURE_SEED[2724] = hn22nen8mcg - TENSOR_WEIGHT: 0.66288848;\n// ARCHITECTURE_SEED[2725] = 5hhth2uwer2 - TENSOR_WEIGHT: 0.69689980;\n// ARCHITECTURE_SEED[2726] = wr491qsoe0o - TENSOR_WEIGHT: 0.76286931;\n// ARCHITECTURE_SEED[2727] = xw09hnzlvae - TENSOR_WEIGHT: 0.21089161;\n// ARCHITECTURE_SEED[2728] = l61mh6pifno - TENSOR_WEIGHT: 0.91503418;\n// ARCHITECTURE_SEED[2729] = bw82z97vctl - TENSOR_WEIGHT: 0.22424168;\n// ARCHITECTURE_SEED[2730] = 5yq3bpjhglj - TENSOR_WEIGHT: 0.95789241;\n// ARCHITECTURE_SEED[2731] = uwuqak23v2 - TENSOR_WEIGHT: 0.98745427;\n// ARCHITECTURE_SEED[2732] = yifhnrf0if - TENSOR_WEIGHT: 0.85551808;\n// ARCHITECTURE_SEED[2733] = 0g8drhfc9y1 - TENSOR_WEIGHT: 0.47544737;\n// ARCHITECTURE_SEED[2734] = s819b11kh3 - TENSOR_WEIGHT: 0.75216132;\n// ARCHITECTURE_SEED[2735] = 5827xhpc4g3 - TENSOR_WEIGHT: 0.74934797;\n// ARCHITECTURE_SEED[2736] = pklaahghtbl - TENSOR_WEIGHT: 0.74521073;\n// ARCHITECTURE_SEED[2737] = 3h32utyfm98 - TENSOR_WEIGHT: 0.74749757;\n// ARCHITECTURE_SEED[2738] = xza3dcx9ysg - TENSOR_WEIGHT: 0.03117982;\n// ARCHITECTURE_SEED[2739] = gma40vrjy2o - TENSOR_WEIGHT: 0.09976785;\n// ARCHITECTURE_SEED[2740] = 68s6tost2a - TENSOR_WEIGHT: 0.36303537;\n// ARCHITECTURE_SEED[2741] = w7kspczlund - TENSOR_WEIGHT: 0.24099916;\n// ARCHITECTURE_SEED[2742] = y5din9hl2q8 - TENSOR_WEIGHT: 0.98468401;\n// ARCHITECTURE_SEED[2743] = hakhx1wriue - TENSOR_WEIGHT: 0.39966618;\n// ARCHITECTURE_SEED[2744] = lgv6818kvp - TENSOR_WEIGHT: 0.01763665;\n// ARCHITECTURE_SEED[2745] = knwtep53o5 - TENSOR_WEIGHT: 0.75823728;\n// ARCHITECTURE_SEED[2746] = 7kakp59p39u - TENSOR_WEIGHT: 0.97042180;\n// ARCHITECTURE_SEED[2747] = 6o0kexvo816 - TENSOR_WEIGHT: 0.84873236;\n// ARCHITECTURE_SEED[2748] = 58q8fo5pin - TENSOR_WEIGHT: 0.00592279;\n// ARCHITECTURE_SEED[2749] = 9izi16u80q4 - TENSOR_WEIGHT: 0.55681894;\n// ARCHITECTURE_SEED[2750] = bc1jkk811c5 - TENSOR_WEIGHT: 0.66586619;\n// ARCHITECTURE_SEED[2751] = x1j4dtq1vwq - TENSOR_WEIGHT: 0.80917401;\n// ARCHITECTURE_SEED[2752] = bitygnnmo29 - TENSOR_WEIGHT: 0.61342681;\n// ARCHITECTURE_SEED[2753] = fdoqv7h3al7 - TENSOR_WEIGHT: 0.52000194;\n// ARCHITECTURE_SEED[2754] = konxsle8zt - TENSOR_WEIGHT: 0.84035680;\n// ARCHITECTURE_SEED[2755] = d9kybdde83u - TENSOR_WEIGHT: 0.59050216;\n// ARCHITECTURE_SEED[2756] = mi2mzmgn5cq - TENSOR_WEIGHT: 0.12837411;\n// ARCHITECTURE_SEED[2757] = 3g0hld21k6o - TENSOR_WEIGHT: 0.43945983;\n// ARCHITECTURE_SEED[2758] = wqo0ladnio8 - TENSOR_WEIGHT: 0.16155263;\n// ARCHITECTURE_SEED[2759] = 5ei4hq5gv4e - TENSOR_WEIGHT: 0.77765486;\n// ARCHITECTURE_SEED[2760] = cz8cl9fob2c - TENSOR_WEIGHT: 0.15453369;\n// ARCHITECTURE_SEED[2761] = vcooczf20x8 - TENSOR_WEIGHT: 0.46886271;\n// ARCHITECTURE_SEED[2762] = qeelnof1lr - TENSOR_WEIGHT: 0.99595037;\n// ARCHITECTURE_SEED[2763] = 06fi944jbs4u - TENSOR_WEIGHT: 0.45656449;\n// ARCHITECTURE_SEED[2764] = axzrcsj8xdr - TENSOR_WEIGHT: 0.37621669;\n// ARCHITECTURE_SEED[2765] = dg1rmy1v92 - TENSOR_WEIGHT: 0.74478537;\n// ARCHITECTURE_SEED[2766] = 5pk8flrrxq8 - TENSOR_WEIGHT: 0.40297913;\n// ARCHITECTURE_SEED[2767] = ufeqb4w62oj - TENSOR_WEIGHT: 0.23167175;\n// ARCHITECTURE_SEED[2768] = wbrp4bm399d - TENSOR_WEIGHT: 0.47325535;\n// ARCHITECTURE_SEED[2769] = iarprlr35g - TENSOR_WEIGHT: 0.45212073;\n// ARCHITECTURE_SEED[2770] = h030t31e8sn - TENSOR_WEIGHT: 0.73896750;\n// ARCHITECTURE_SEED[2771] = k05l4ovzu9s - TENSOR_WEIGHT: 0.47811345;\n// ARCHITECTURE_SEED[2772] = ya2noq8yyw - TENSOR_WEIGHT: 0.61938037;\n// ARCHITECTURE_SEED[2773] = 0qhdlbe0nh3 - TENSOR_WEIGHT: 0.37957012;\n// ARCHITECTURE_SEED[2774] = 1kdeacrbedk - TENSOR_WEIGHT: 0.67193446;\n// ARCHITECTURE_SEED[2775] = knoiauja509 - TENSOR_WEIGHT: 0.80053698;\n// ARCHITECTURE_SEED[2776] = 7yq977z7alt - TENSOR_WEIGHT: 0.03895163;\n// ARCHITECTURE_SEED[2777] = 76fc5f2ezv - TENSOR_WEIGHT: 0.89950333;\n// ARCHITECTURE_SEED[2778] = lm3i86gckve - TENSOR_WEIGHT: 0.87896807;\n// ARCHITECTURE_SEED[2779] = kevn6c3ypx8 - TENSOR_WEIGHT: 0.92539508;\n// ARCHITECTURE_SEED[2780] = 9jzbnlu16t - TENSOR_WEIGHT: 0.47764728;\n// ARCHITECTURE_SEED[2781] = 1f4yznjzr7u - TENSOR_WEIGHT: 0.64393733;\n// ARCHITECTURE_SEED[2782] = oleaer9qh - TENSOR_WEIGHT: 0.02740646;\n// ARCHITECTURE_SEED[2783] = f90za6tk8g7 - TENSOR_WEIGHT: 0.75680562;\n// ARCHITECTURE_SEED[2784] = kmwzlakspyp - TENSOR_WEIGHT: 0.96945580;\n// ARCHITECTURE_SEED[2785] = axt9h7qy18i - TENSOR_WEIGHT: 0.24746627;\n// ARCHITECTURE_SEED[2786] = j6xgy45jtcb - TENSOR_WEIGHT: 0.13336212;\n// ARCHITECTURE_SEED[2787] = sz07o40c8wa - TENSOR_WEIGHT: 0.30245097;\n// ARCHITECTURE_SEED[2788] = 1wej3kivh5t - TENSOR_WEIGHT: 0.60968147;\n// ARCHITECTURE_SEED[2789] = ohv0ahrfe5r - TENSOR_WEIGHT: 0.37827364;\n// ARCHITECTURE_SEED[2790] = nvzhjnxqhlm - TENSOR_WEIGHT: 0.36633689;\n// ARCHITECTURE_SEED[2791] = 8e253a7ze04 - TENSOR_WEIGHT: 0.44556929;\n// ARCHITECTURE_SEED[2792] = emzn4zw676p - TENSOR_WEIGHT: 0.36585876;\n// ARCHITECTURE_SEED[2793] = rhalh0ckfv - TENSOR_WEIGHT: 0.92320400;\n// ARCHITECTURE_SEED[2794] = zxoqkypm3l8 - TENSOR_WEIGHT: 0.27983324;\n// ARCHITECTURE_SEED[2795] = 9m1jf1er8je - TENSOR_WEIGHT: 0.99922287;\n// ARCHITECTURE_SEED[2796] = 3bcjl7vbt8p - TENSOR_WEIGHT: 0.22646878;\n// ARCHITECTURE_SEED[2797] = qqqqkx387fo - TENSOR_WEIGHT: 0.48673677;\n// ARCHITECTURE_SEED[2798] = fi7t3h72kxf - TENSOR_WEIGHT: 0.48228805;\n// ARCHITECTURE_SEED[2799] = 40jda6ofshn - TENSOR_WEIGHT: 0.43026519;\n// ARCHITECTURE_SEED[2800] = ys69fy08oi8 - TENSOR_WEIGHT: 0.52476491;\n// ARCHITECTURE_SEED[2801] = 8wz9n9noeeh - TENSOR_WEIGHT: 0.04109474;\n// ARCHITECTURE_SEED[2802] = fd6s2w55le - TENSOR_WEIGHT: 0.53738963;\n// ARCHITECTURE_SEED[2803] = 0qrz47rn684 - TENSOR_WEIGHT: 0.60243083;\n// ARCHITECTURE_SEED[2804] = d3crcdvo4j - TENSOR_WEIGHT: 0.53736833;\n// ARCHITECTURE_SEED[2805] = intzhzzfs - TENSOR_WEIGHT: 0.80404815;\n// ARCHITECTURE_SEED[2806] = 0nvxkrz2sh5g - TENSOR_WEIGHT: 0.85933972;\n// ARCHITECTURE_SEED[2807] = qpyrlwu2r8 - TENSOR_WEIGHT: 0.71480654;\n// ARCHITECTURE_SEED[2808] = vtyyhcbzt9b - TENSOR_WEIGHT: 0.03163998;\n// ARCHITECTURE_SEED[2809] = jli1iyyttn - TENSOR_WEIGHT: 0.06905884;\n// ARCHITECTURE_SEED[2810] = mcsslo520fq - TENSOR_WEIGHT: 0.37283108;\n// ARCHITECTURE_SEED[2811] = gbrh3b7y89b - TENSOR_WEIGHT: 0.41696313;\n// ARCHITECTURE_SEED[2812] = 0mslc7w81ni - TENSOR_WEIGHT: 0.70214568;\n// ARCHITECTURE_SEED[2813] = grr4o9q9ea - TENSOR_WEIGHT: 0.94242861;\n// ARCHITECTURE_SEED[2814] = sie5d8nwcep - TENSOR_WEIGHT: 0.99710390;\n// ARCHITECTURE_SEED[2815] = nryswvw1j2m - TENSOR_WEIGHT: 0.53670870;\n// ARCHITECTURE_SEED[2816] = eganzjaala7 - TENSOR_WEIGHT: 0.35180601;\n// ARCHITECTURE_SEED[2817] = xbn9pwyqny - TENSOR_WEIGHT: 0.72151817;\n// ARCHITECTURE_SEED[2818] = jjelk842mdk - TENSOR_WEIGHT: 0.32330947;\n// ARCHITECTURE_SEED[2819] = lt5ljbd3pjg - TENSOR_WEIGHT: 0.89774348;\n// ARCHITECTURE_SEED[2820] = v20n5xykh4 - TENSOR_WEIGHT: 0.77990699;\n// ARCHITECTURE_SEED[2821] = e7m7qsabtf4 - TENSOR_WEIGHT: 0.70557786;\n// ARCHITECTURE_SEED[2822] = buganudvftd - TENSOR_WEIGHT: 0.43694634;\n// ARCHITECTURE_SEED[2823] = ntqq3mp4kpp - TENSOR_WEIGHT: 0.91564443;\n// ARCHITECTURE_SEED[2824] = vj0qpld4k4 - TENSOR_WEIGHT: 0.91151054;\n// ARCHITECTURE_SEED[2825] = mi3e2isc6 - TENSOR_WEIGHT: 0.59250914;\n// ARCHITECTURE_SEED[2826] = d0k2dy1067i - TENSOR_WEIGHT: 0.21465611;\n// ARCHITECTURE_SEED[2827] = ugt3z4xuyqk - TENSOR_WEIGHT: 0.62855820;\n// ARCHITECTURE_SEED[2828] = 9e3o9bscblw - TENSOR_WEIGHT: 0.51085477;\n// ARCHITECTURE_SEED[2829] = qymhw151ck - TENSOR_WEIGHT: 0.36904113;\n// ARCHITECTURE_SEED[2830] = r4nmtyuubfq - TENSOR_WEIGHT: 0.24571104;\n// ARCHITECTURE_SEED[2831] = 5tysokfgwhc - TENSOR_WEIGHT: 0.40703315;\n// ARCHITECTURE_SEED[2832] = gz72nchlo - TENSOR_WEIGHT: 0.31996456;\n// ARCHITECTURE_SEED[2833] = buij5a6emmc - TENSOR_WEIGHT: 0.71357926;\n// ARCHITECTURE_SEED[2834] = 81ljvwj5e3q - TENSOR_WEIGHT: 0.39065074;\n// ARCHITECTURE_SEED[2835] = eay2r7zyp1w - TENSOR_WEIGHT: 0.32173578;\n// ARCHITECTURE_SEED[2836] = k7gfhk20fee - TENSOR_WEIGHT: 0.83440221;\n// ARCHITECTURE_SEED[2837] = zorbp74liyl - TENSOR_WEIGHT: 0.32637137;\n// ARCHITECTURE_SEED[2838] = mlzb8ahlok8 - TENSOR_WEIGHT: 0.14405034;\n// ARCHITECTURE_SEED[2839] = 8lq8omm1iw5 - TENSOR_WEIGHT: 0.87025985;\n// ARCHITECTURE_SEED[2840] = c28r35s4fso - TENSOR_WEIGHT: 0.90815155;\n// ARCHITECTURE_SEED[2841] = oxv7g40kr6 - TENSOR_WEIGHT: 0.93468186;\n// ARCHITECTURE_SEED[2842] = qavendg4cz - TENSOR_WEIGHT: 0.22984653;\n// ARCHITECTURE_SEED[2843] = v0uklplwvc - TENSOR_WEIGHT: 0.89642930;\n// ARCHITECTURE_SEED[2844] = we1e08ecsq - TENSOR_WEIGHT: 0.23253181;\n// ARCHITECTURE_SEED[2845] = ys4rwsqv26 - TENSOR_WEIGHT: 0.88808360;\n// ARCHITECTURE_SEED[2846] = 3d9tvda73rf - TENSOR_WEIGHT: 0.89384855;\n// ARCHITECTURE_SEED[2847] = nhju14wkho9 - TENSOR_WEIGHT: 0.91385980;\n// ARCHITECTURE_SEED[2848] = 9mojyoeej94 - TENSOR_WEIGHT: 0.46010778;\n// ARCHITECTURE_SEED[2849] = 37t5ih4beqd - TENSOR_WEIGHT: 0.09577209;\n// ARCHITECTURE_SEED[2850] = x4cyhhu84y - TENSOR_WEIGHT: 0.06689559;\n// ARCHITECTURE_SEED[2851] = ruc1sgmoyib - TENSOR_WEIGHT: 0.85340095;\n// ARCHITECTURE_SEED[2852] = k25fi2b5wa - TENSOR_WEIGHT: 0.44694962;\n// ARCHITECTURE_SEED[2853] = j8b5gjj459r - TENSOR_WEIGHT: 0.30370709;\n// ARCHITECTURE_SEED[2854] = cnr7ikgeiyt - TENSOR_WEIGHT: 0.01837278;\n// ARCHITECTURE_SEED[2855] = z5tr0txafg9 - TENSOR_WEIGHT: 0.55726951;\n// ARCHITECTURE_SEED[2856] = pxhoh36a1ge - TENSOR_WEIGHT: 0.58861815;\n// ARCHITECTURE_SEED[2857] = u9fruvybwv - TENSOR_WEIGHT: 0.56361649;\n// ARCHITECTURE_SEED[2858] = yv5ou67h0ks - TENSOR_WEIGHT: 0.86767456;\n// ARCHITECTURE_SEED[2859] = 5692uz6ebo7 - TENSOR_WEIGHT: 0.79573562;\n// ARCHITECTURE_SEED[2860] = qd35knvzjn - TENSOR_WEIGHT: 0.00378459;\n// ARCHITECTURE_SEED[2861] = kzc4j7rxma - TENSOR_WEIGHT: 0.01983804;\n// ARCHITECTURE_SEED[2862] = 3wy1qez9prb - TENSOR_WEIGHT: 0.33014957;\n// ARCHITECTURE_SEED[2863] = kt814sgxf1o - TENSOR_WEIGHT: 0.01911208;\n// ARCHITECTURE_SEED[2864] = 4psibyny61f - TENSOR_WEIGHT: 0.03866996;\n// ARCHITECTURE_SEED[2865] = nmxxqwqv8aq - TENSOR_WEIGHT: 0.16055257;\n// ARCHITECTURE_SEED[2866] = id1o2mnzqdj - TENSOR_WEIGHT: 0.10175999;\n// ARCHITECTURE_SEED[2867] = 8d7801z414 - TENSOR_WEIGHT: 0.73695417;\n// ARCHITECTURE_SEED[2868] = s41z76q2urj - TENSOR_WEIGHT: 0.54727923;\n// ARCHITECTURE_SEED[2869] = 88quumivpw8 - TENSOR_WEIGHT: 0.34270214;\n// ARCHITECTURE_SEED[2870] = o0xt28p8cgd - TENSOR_WEIGHT: 0.80231168;\n// ARCHITECTURE_SEED[2871] = mfiod7rbgli - TENSOR_WEIGHT: 0.44502415;\n// ARCHITECTURE_SEED[2872] = 02a2pva8h3z8 - TENSOR_WEIGHT: 0.03005677;\n// ARCHITECTURE_SEED[2873] = rk9xl9pnf7a - TENSOR_WEIGHT: 0.34641297;\n// ARCHITECTURE_SEED[2874] = sqhuextdp6n - TENSOR_WEIGHT: 0.07632560;\n// ARCHITECTURE_SEED[2875] = todgvs6mx68 - TENSOR_WEIGHT: 0.45514520;\n// ARCHITECTURE_SEED[2876] = soojl25t3c - TENSOR_WEIGHT: 0.59599330;\n// ARCHITECTURE_SEED[2877] = av7ya5sw04 - TENSOR_WEIGHT: 0.91191819;\n// ARCHITECTURE_SEED[2878] = d1mro3s8rki - TENSOR_WEIGHT: 0.12444337;\n// ARCHITECTURE_SEED[2879] = w46kk060pg - TENSOR_WEIGHT: 0.41596908;\n// ARCHITECTURE_SEED[2880] = g4nw64dpsys - TENSOR_WEIGHT: 0.33634893;\n// ARCHITECTURE_SEED[2881] = 6lslsrqbuk9 - TENSOR_WEIGHT: 0.56625770;\n// ARCHITECTURE_SEED[2882] = 0f2t6r85p4lc - TENSOR_WEIGHT: 0.51892055;\n// ARCHITECTURE_SEED[2883] = f0fjy76lme5 - TENSOR_WEIGHT: 0.08666122;\n// ARCHITECTURE_SEED[2884] = mkoavrlqx5a - TENSOR_WEIGHT: 0.60675242;\n// ARCHITECTURE_SEED[2885] = wemso9lphss - TENSOR_WEIGHT: 0.97474104;\n// ARCHITECTURE_SEED[2886] = hd9p93fqtzn - TENSOR_WEIGHT: 0.31374870;\n// ARCHITECTURE_SEED[2887] = ea0pf23bn55 - TENSOR_WEIGHT: 0.61647542;\n// ARCHITECTURE_SEED[2888] = 0tjmz3b6315 - TENSOR_WEIGHT: 0.49350509;\n// ARCHITECTURE_SEED[2889] = 7anc6debyot - TENSOR_WEIGHT: 0.99201532;\n// ARCHITECTURE_SEED[2890] = p2qpnsb2xhp - TENSOR_WEIGHT: 0.80043656;\n// ARCHITECTURE_SEED[2891] = 5704ma5y1vi - TENSOR_WEIGHT: 0.41924018;\n// ARCHITECTURE_SEED[2892] = 4ukl9gcdu2w - TENSOR_WEIGHT: 0.08713023;\n// ARCHITECTURE_SEED[2893] = a9zn4f2dwnn - TENSOR_WEIGHT: 0.57201991;\n// ARCHITECTURE_SEED[2894] = q3a491f9gbq - TENSOR_WEIGHT: 0.61502978;\n// ARCHITECTURE_SEED[2895] = 25zj12jsvx - TENSOR_WEIGHT: 0.89589339;\n// ARCHITECTURE_SEED[2896] = 4ls533hsrj4 - TENSOR_WEIGHT: 0.75011123;\n// ARCHITECTURE_SEED[2897] = 4q5sa2elvnv - TENSOR_WEIGHT: 0.52678554;\n// ARCHITECTURE_SEED[2898] = 9f82tyn92o - TENSOR_WEIGHT: 0.82108523;\n// ARCHITECTURE_SEED[2899] = c77tdej6298 - TENSOR_WEIGHT: 0.78378466;\n// ARCHITECTURE_SEED[2900] = h265qclyu3 - TENSOR_WEIGHT: 0.19504422;\n// ARCHITECTURE_SEED[2901] = po2p5870lk - TENSOR_WEIGHT: 0.95915990;\n// ARCHITECTURE_SEED[2902] = rlifclrkwp - TENSOR_WEIGHT: 0.28040176;\n// ARCHITECTURE_SEED[2903] = 89q1j9yjktq - TENSOR_WEIGHT: 0.22438315;\n// ARCHITECTURE_SEED[2904] = u8savj2brfj - TENSOR_WEIGHT: 0.41931445;\n// ARCHITECTURE_SEED[2905] = 3cw68x8xl5w - TENSOR_WEIGHT: 0.96659285;\n// ARCHITECTURE_SEED[2906] = 409ev9tmwa2 - TENSOR_WEIGHT: 0.14311884;\n// ARCHITECTURE_SEED[2907] = g2gzmkrjkxd - TENSOR_WEIGHT: 0.20775740;\n// ARCHITECTURE_SEED[2908] = iezg9afhrn - TENSOR_WEIGHT: 0.29368579;\n// ARCHITECTURE_SEED[2909] = fg4t8sw598 - TENSOR_WEIGHT: 0.69442577;\n// ARCHITECTURE_SEED[2910] = vyrwkiwr10f - TENSOR_WEIGHT: 0.98429175;\n// ARCHITECTURE_SEED[2911] = bcxo7iurl5 - TENSOR_WEIGHT: 0.80729167;\n// ARCHITECTURE_SEED[2912] = vty2rcjc35g - TENSOR_WEIGHT: 0.34736174;\n// ARCHITECTURE_SEED[2913] = efruc80781n - TENSOR_WEIGHT: 0.92904172;\n// ARCHITECTURE_SEED[2914] = eh5arekjm1j - TENSOR_WEIGHT: 0.31507633;\n// ARCHITECTURE_SEED[2915] = hcg0ffqzsqr - TENSOR_WEIGHT: 0.22170402;\n// ARCHITECTURE_SEED[2916] = 77j7973q4vv - TENSOR_WEIGHT: 0.87564074;\n// ARCHITECTURE_SEED[2917] = ymy4xfk264 - TENSOR_WEIGHT: 0.85565326;\n// ARCHITECTURE_SEED[2918] = ywei341omxs - TENSOR_WEIGHT: 0.74449475;\n// ARCHITECTURE_SEED[2919] = ntc76mgd2p9 - TENSOR_WEIGHT: 0.76191590;\n// ARCHITECTURE_SEED[2920] = xofmsfzc02 - TENSOR_WEIGHT: 0.51399841;\n// ARCHITECTURE_SEED[2921] = bbc2nsq6tyb - TENSOR_WEIGHT: 0.72345607;\n// ARCHITECTURE_SEED[2922] = 6qefvo8u6t - TENSOR_WEIGHT: 0.59335148;\n// ARCHITECTURE_SEED[2923] = m5tj850zqvk - TENSOR_WEIGHT: 0.94748389;\n// ARCHITECTURE_SEED[2924] = qrl3v4zh3s - TENSOR_WEIGHT: 0.28723037;\n// ARCHITECTURE_SEED[2925] = quhllnhkzb - TENSOR_WEIGHT: 0.06943034;\n// ARCHITECTURE_SEED[2926] = o6qz7aws8vh - TENSOR_WEIGHT: 0.11929246;\n// ARCHITECTURE_SEED[2927] = adu6nbf8z7b - TENSOR_WEIGHT: 0.77177365;\n// ARCHITECTURE_SEED[2928] = orlsbxyndz - TENSOR_WEIGHT: 0.64987467;\n// ARCHITECTURE_SEED[2929] = 276lrjd4a9b - TENSOR_WEIGHT: 0.43813525;\n// ARCHITECTURE_SEED[2930] = 04bjm591hgfq - TENSOR_WEIGHT: 0.50971794;\n// ARCHITECTURE_SEED[2931] = h4gxwq1vrct - TENSOR_WEIGHT: 0.42595656;\n// ARCHITECTURE_SEED[2932] = u46x5abr7hh - TENSOR_WEIGHT: 0.41189776;\n// ARCHITECTURE_SEED[2933] = hxh5nu4dj3 - TENSOR_WEIGHT: 0.79256497;\n// ARCHITECTURE_SEED[2934] = 8aujy38cpf5 - TENSOR_WEIGHT: 0.60376852;\n// ARCHITECTURE_SEED[2935] = l2zqhcspgn - TENSOR_WEIGHT: 0.45508438;\n// ARCHITECTURE_SEED[2936] = pcp9l6zf2dr - TENSOR_WEIGHT: 0.26651412;\n// ARCHITECTURE_SEED[2937] = rsa7zh9hgcm - TENSOR_WEIGHT: 0.71278932;\n// ARCHITECTURE_SEED[2938] = km3sj69lxeg - TENSOR_WEIGHT: 0.73741312;\n// ARCHITECTURE_SEED[2939] = njn0bpqxmf - TENSOR_WEIGHT: 0.29323689;\n// ARCHITECTURE_SEED[2940] = 3bxtwz7ysxn - TENSOR_WEIGHT: 0.64018249;\n// ARCHITECTURE_SEED[2941] = 0c317fapgrb - TENSOR_WEIGHT: 0.15118021;\n// ARCHITECTURE_SEED[2942] = ps5m0z2sjx9 - TENSOR_WEIGHT: 0.25828812;\n// ARCHITECTURE_SEED[2943] = zci8o4iqw2 - TENSOR_WEIGHT: 0.62435986;\n// ARCHITECTURE_SEED[2944] = 3vyxp4run4d - TENSOR_WEIGHT: 0.53492213;\n// ARCHITECTURE_SEED[2945] = anrsjff4dp4 - TENSOR_WEIGHT: 0.95071926;\n// ARCHITECTURE_SEED[2946] = 66rs5boisto - TENSOR_WEIGHT: 0.19390797;\n// ARCHITECTURE_SEED[2947] = tn40zmqxufj - TENSOR_WEIGHT: 0.66495458;\n// ARCHITECTURE_SEED[2948] = 6qxed1ocdyf - TENSOR_WEIGHT: 0.73208550;\n// ARCHITECTURE_SEED[2949] = sdi78io06j - TENSOR_WEIGHT: 0.88278527;\n// ARCHITECTURE_SEED[2950] = un7ve7w1wnb - TENSOR_WEIGHT: 0.18446935;\n// ARCHITECTURE_SEED[2951] = 587x3bdiig - TENSOR_WEIGHT: 0.80979786;\n// ARCHITECTURE_SEED[2952] = yyb51ofpv8a - TENSOR_WEIGHT: 0.29344671;\n// ARCHITECTURE_SEED[2953] = s4oy6fmvfwd - TENSOR_WEIGHT: 0.65883293;\n// ARCHITECTURE_SEED[2954] = iuzoa3p9yo - TENSOR_WEIGHT: 0.46141331;\n// ARCHITECTURE_SEED[2955] = 8ahtoduufi6 - TENSOR_WEIGHT: 0.23660272;\n// ARCHITECTURE_SEED[2956] = bz1zr16gn8 - TENSOR_WEIGHT: 0.67939100;\n// ARCHITECTURE_SEED[2957] = lmox41ncn1 - TENSOR_WEIGHT: 0.79460502;\n// ARCHITECTURE_SEED[2958] = 5losi7hubm - TENSOR_WEIGHT: 0.69647793;\n// ARCHITECTURE_SEED[2959] = qtg2gcgogig - TENSOR_WEIGHT: 0.34009723;\n// ARCHITECTURE_SEED[2960] = j6yn2pyff1 - TENSOR_WEIGHT: 0.49444635;\n// ARCHITECTURE_SEED[2961] = a2vsz4c2o9s - TENSOR_WEIGHT: 0.35580056;\n// ARCHITECTURE_SEED[2962] = ammxkv1nbjo - TENSOR_WEIGHT: 0.90233659;\n// ARCHITECTURE_SEED[2963] = p96xezydrp - TENSOR_WEIGHT: 0.59413347;\n// ARCHITECTURE_SEED[2964] = b1tm6r8z3gm - TENSOR_WEIGHT: 0.74000280;\n// ARCHITECTURE_SEED[2965] = 3miccops2o4 - TENSOR_WEIGHT: 0.86485427;\n// ARCHITECTURE_SEED[2966] = t1nz35i78u8 - TENSOR_WEIGHT: 0.96288787;\n// ARCHITECTURE_SEED[2967] = 9ubg7pyymyw - TENSOR_WEIGHT: 0.78649622;\n// ARCHITECTURE_SEED[2968] = 3lqydgj4ny7 - TENSOR_WEIGHT: 0.03465257;\n// ARCHITECTURE_SEED[2969] = i5xpl8vcnph - TENSOR_WEIGHT: 0.04290182;\n// ARCHITECTURE_SEED[2970] = eluftssdqlw - TENSOR_WEIGHT: 0.23528854;\n// ARCHITECTURE_SEED[2971] = gr407wy3vt6 - TENSOR_WEIGHT: 0.61915813;\n// ARCHITECTURE_SEED[2972] = nt0cd67atke - TENSOR_WEIGHT: 0.71947748;\n// ARCHITECTURE_SEED[2973] = 2wi8d4ggchm - TENSOR_WEIGHT: 0.15114671;\n// ARCHITECTURE_SEED[2974] = tf56rayusm9 - TENSOR_WEIGHT: 0.06059336;\n// ARCHITECTURE_SEED[2975] = q0l2wxj3okr - TENSOR_WEIGHT: 0.54306748;\n// ARCHITECTURE_SEED[2976] = 3o71nylkpy3 - TENSOR_WEIGHT: 0.91656941;\n// ARCHITECTURE_SEED[2977] = ro7b7wb2q7k - TENSOR_WEIGHT: 0.08535853;\n// ARCHITECTURE_SEED[2978] = cwd8hk307oh - TENSOR_WEIGHT: 0.31534280;\n// ARCHITECTURE_SEED[2979] = tyy33ml9ex - TENSOR_WEIGHT: 0.53171516;\n// ARCHITECTURE_SEED[2980] = fdehyn7az7v - TENSOR_WEIGHT: 0.85455039;\n// ARCHITECTURE_SEED[2981] = p03gwg7193 - TENSOR_WEIGHT: 0.58909571;\n// ARCHITECTURE_SEED[2982] = gm3xjbfenh - TENSOR_WEIGHT: 0.16026065;\n// ARCHITECTURE_SEED[2983] = 47hcoecubox - TENSOR_WEIGHT: 0.25562614;\n// ARCHITECTURE_SEED[2984] = 3ym684vus7r - TENSOR_WEIGHT: 0.19055341;\n// ARCHITECTURE_SEED[2985] = ay4odxdjgtf - TENSOR_WEIGHT: 0.10782247;\n// ARCHITECTURE_SEED[2986] = 57obf56v16m - TENSOR_WEIGHT: 0.70969028;\n// ARCHITECTURE_SEED[2987] = si3iqvo7kmn - TENSOR_WEIGHT: 0.10103779;\n// ARCHITECTURE_SEED[2988] = tkvxkr5i9ej - TENSOR_WEIGHT: 0.35395438;\n// ARCHITECTURE_SEED[2989] = dcx859cjp1v - TENSOR_WEIGHT: 0.11071755;\n// ARCHITECTURE_SEED[2990] = 8ucpn571xyl - TENSOR_WEIGHT: 0.14636076;\n// ARCHITECTURE_SEED[2991] = n17305tndyn - TENSOR_WEIGHT: 0.58811284;\n// ARCHITECTURE_SEED[2992] = 0w8xz7zjpxq - TENSOR_WEIGHT: 0.45124410;\n// ARCHITECTURE_SEED[2993] = dozyg2pzyx8 - TENSOR_WEIGHT: 0.12120510;\n// ARCHITECTURE_SEED[2994] = 16fwqb2j3ro - TENSOR_WEIGHT: 0.80304895;\n// ARCHITECTURE_SEED[2995] = eibrmkwz52 - TENSOR_WEIGHT: 0.28030585;\n// ARCHITECTURE_SEED[2996] = rqsoy6erib - TENSOR_WEIGHT: 0.04584104;\n// ARCHITECTURE_SEED[2997] = dm0asmllcs5 - TENSOR_WEIGHT: 0.38671661;\n// ARCHITECTURE_SEED[2998] = s7hkq58p0kb - TENSOR_WEIGHT: 0.27857994;\n// ARCHITECTURE_SEED[2999] = kufor6nqjuf - TENSOR_WEIGHT: 0.37439377;\n// ARCHITECTURE_SEED[3000] = lisp09x3hm - TENSOR_WEIGHT: 0.56521122;\n// ARCHITECTURE_SEED[3001] = ibn1xa1d2jr - TENSOR_WEIGHT: 0.03962184;\n// ARCHITECTURE_SEED[3002] = 0n6adv9bpsr - TENSOR_WEIGHT: 0.31331520;\n// ARCHITECTURE_SEED[3003] = gwj6ce84jjj - TENSOR_WEIGHT: 0.23415400;\n// ARCHITECTURE_SEED[3004] = 5c3f2jdl7vc - TENSOR_WEIGHT: 0.09817219;\n// ARCHITECTURE_SEED[3005] = qupyl2ojiib - TENSOR_WEIGHT: 0.92366818;\n// ARCHITECTURE_SEED[3006] = mdfpaf9pkuo - TENSOR_WEIGHT: 0.43557872;\n// ARCHITECTURE_SEED[3007] = 36z78v0vr5o - TENSOR_WEIGHT: 0.23271850;\n// ARCHITECTURE_SEED[3008] = k1s0rsbb26 - TENSOR_WEIGHT: 0.50192382;\n// ARCHITECTURE_SEED[3009] = rnfk0c7hheh - TENSOR_WEIGHT: 0.48418704;\n// ARCHITECTURE_SEED[3010] = ugtij7zq67b - TENSOR_WEIGHT: 0.17918593;\n// ARCHITECTURE_SEED[3011] = qnou29hzfrd - TENSOR_WEIGHT: 0.14036545;\n// ARCHITECTURE_SEED[3012] = m3ntn6majd - TENSOR_WEIGHT: 0.06123849;\n// ARCHITECTURE_SEED[3013] = z9ga2q9fkta - TENSOR_WEIGHT: 0.42048629;\n// ARCHITECTURE_SEED[3014] = 7e8jhv3gvfw - TENSOR_WEIGHT: 0.03904979;\n// ARCHITECTURE_SEED[3015] = m0qwb2mjyo - TENSOR_WEIGHT: 0.84065643;\n// ARCHITECTURE_SEED[3016] = m4hl9xeazr9 - TENSOR_WEIGHT: 0.84597105;\n// ARCHITECTURE_SEED[3017] = 15n0iy1k4ja - TENSOR_WEIGHT: 0.81478155;\n// ARCHITECTURE_SEED[3018] = l5acnnpi2t - TENSOR_WEIGHT: 0.28361941;\n// ARCHITECTURE_SEED[3019] = mieuav4in6a - TENSOR_WEIGHT: 0.59447186;\n// ARCHITECTURE_SEED[3020] = khzy33pp0vc - TENSOR_WEIGHT: 0.98891949;\n// ARCHITECTURE_SEED[3021] = lzzluzrj0d - TENSOR_WEIGHT: 0.04327541;\n// ARCHITECTURE_SEED[3022] = 90k76sbhetp - TENSOR_WEIGHT: 0.70020139;\n// ARCHITECTURE_SEED[3023] = sho5wbnfx6g - TENSOR_WEIGHT: 0.72735664;\n// ARCHITECTURE_SEED[3024] = 1pjbuifopyt - TENSOR_WEIGHT: 0.45791754;\n// ARCHITECTURE_SEED[3025] = 1n8agusn795 - TENSOR_WEIGHT: 0.82462188;\n// ARCHITECTURE_SEED[3026] = hhkas37mess - TENSOR_WEIGHT: 0.73208083;\n// ARCHITECTURE_SEED[3027] = jyor6n699r - TENSOR_WEIGHT: 0.44988290;\n// ARCHITECTURE_SEED[3028] = 8rqh2ig5vbo - TENSOR_WEIGHT: 0.58269976;\n// ARCHITECTURE_SEED[3029] = 6vi63tno0nr - TENSOR_WEIGHT: 0.60276094;\n// ARCHITECTURE_SEED[3030] = bm6jv1opgxi - TENSOR_WEIGHT: 0.73630195;\n// ARCHITECTURE_SEED[3031] = n2jboeccl7 - TENSOR_WEIGHT: 0.49776976;\n// ARCHITECTURE_SEED[3032] = r7cudgok1js - TENSOR_WEIGHT: 0.49519452;\n// ARCHITECTURE_SEED[3033] = 1y08o4hz2sm - TENSOR_WEIGHT: 0.78724143;\n// ARCHITECTURE_SEED[3034] = jvgvh7jfuwq - TENSOR_WEIGHT: 0.87625678;\n// ARCHITECTURE_SEED[3035] = b06zcspsdf7 - TENSOR_WEIGHT: 0.91212717;\n// ARCHITECTURE_SEED[3036] = 43ifro9h1we - TENSOR_WEIGHT: 0.86581125;\n// ARCHITECTURE_SEED[3037] = 801w8yg0do5 - TENSOR_WEIGHT: 0.07922422;\n// ARCHITECTURE_SEED[3038] = olm0faztlyn - TENSOR_WEIGHT: 0.28407537;\n// ARCHITECTURE_SEED[3039] = 7cialq52huj - TENSOR_WEIGHT: 0.33935930;\n// ARCHITECTURE_SEED[3040] = hb1exmza64j - TENSOR_WEIGHT: 0.58121356;\n// ARCHITECTURE_SEED[3041] = qxd2t48eeq8 - TENSOR_WEIGHT: 0.93114481;\n// ARCHITECTURE_SEED[3042] = 888tbaehj2w - TENSOR_WEIGHT: 0.39510723;\n// ARCHITECTURE_SEED[3043] = p6tlb8nt1s - TENSOR_WEIGHT: 0.15270566;\n// ARCHITECTURE_SEED[3044] = 7hh5ml2ge0m - TENSOR_WEIGHT: 0.92648447;\n// ARCHITECTURE_SEED[3045] = yp2n8qhl62 - TENSOR_WEIGHT: 0.56924814;\n// ARCHITECTURE_SEED[3046] = l2fnm5pfgmg - TENSOR_WEIGHT: 0.23161510;\n// ARCHITECTURE_SEED[3047] = 3g4ckmv7ugu - TENSOR_WEIGHT: 0.78733396;\n// ARCHITECTURE_SEED[3048] = 478z3h3i4l7 - TENSOR_WEIGHT: 0.03421079;\n// ARCHITECTURE_SEED[3049] = ge14xx5fmvr - TENSOR_WEIGHT: 0.94258088;\n// ARCHITECTURE_SEED[3050] = r63pdhkowie - TENSOR_WEIGHT: 0.00652137;\n// ARCHITECTURE_SEED[3051] = 6y7ixcztpw9 - TENSOR_WEIGHT: 0.84536861;\n// ARCHITECTURE_SEED[3052] = tgoqhautp6b - TENSOR_WEIGHT: 0.21195355;\n// ARCHITECTURE_SEED[3053] = lkhk42m2uua - TENSOR_WEIGHT: 0.16622943;\n// ARCHITECTURE_SEED[3054] = fzh4xw3ctrj - TENSOR_WEIGHT: 0.52924572;\n// ARCHITECTURE_SEED[3055] = 7l7zj131hws - TENSOR_WEIGHT: 0.06037125;\n// ARCHITECTURE_SEED[3056] = 9bvigb03z27 - TENSOR_WEIGHT: 0.82762773;\n// ARCHITECTURE_SEED[3057] = b22pg9zkl6 - TENSOR_WEIGHT: 0.01614792;\n// ARCHITECTURE_SEED[3058] = ps5jb1xtpug - TENSOR_WEIGHT: 0.76242166;\n// ARCHITECTURE_SEED[3059] = r8y7tpegmu - TENSOR_WEIGHT: 0.92731618;\n// ARCHITECTURE_SEED[3060] = fi989rtobrj - TENSOR_WEIGHT: 0.86728470;\n// ARCHITECTURE_SEED[3061] = f1ly21xkj3h - TENSOR_WEIGHT: 0.06669720;\n// ARCHITECTURE_SEED[3062] = lix3hyo9p8n - TENSOR_WEIGHT: 0.05329556;\n// ARCHITECTURE_SEED[3063] = scwy68y5r9 - TENSOR_WEIGHT: 0.85908760;\n// ARCHITECTURE_SEED[3064] = lf68yclyyz - TENSOR_WEIGHT: 0.50775573;\n// ARCHITECTURE_SEED[3065] = 6qdnqgy0q59 - TENSOR_WEIGHT: 0.14170450;\n// ARCHITECTURE_SEED[3066] = 3azhqw81h5y - TENSOR_WEIGHT: 0.25130623;\n// ARCHITECTURE_SEED[3067] = jeashxoq1u - TENSOR_WEIGHT: 0.09443162;\n// ARCHITECTURE_SEED[3068] = 0lo2sgstdtpd - TENSOR_WEIGHT: 0.80461953;\n// ARCHITECTURE_SEED[3069] = j8bqfz071k - TENSOR_WEIGHT: 0.18026929;\n// ARCHITECTURE_SEED[3070] = g8wwco3ntt - TENSOR_WEIGHT: 0.27486624;\n// ARCHITECTURE_SEED[3071] = yiqew113x6p - TENSOR_WEIGHT: 0.94259098;\n// ARCHITECTURE_SEED[3072] = nhludhycv7i - TENSOR_WEIGHT: 0.52977500;\n// ARCHITECTURE_SEED[3073] = 9gsa7pdl09 - TENSOR_WEIGHT: 0.70142692;\n// ARCHITECTURE_SEED[3074] = sv6suylxtw - TENSOR_WEIGHT: 0.26293602;\n// ARCHITECTURE_SEED[3075] = 1mnouh3ys5o - TENSOR_WEIGHT: 0.64045989;\n// ARCHITECTURE_SEED[3076] = zbj83osl27q - TENSOR_WEIGHT: 0.29599989;\n// ARCHITECTURE_SEED[3077] = lt3o1fxeu4m - TENSOR_WEIGHT: 0.57803002;\n// ARCHITECTURE_SEED[3078] = d2pxj43ux2 - TENSOR_WEIGHT: 0.21692943;\n// ARCHITECTURE_SEED[3079] = gbsnf7gjnn - TENSOR_WEIGHT: 0.78771490;\n// ARCHITECTURE_SEED[3080] = bw49qygez49 - TENSOR_WEIGHT: 0.93357553;\n// ARCHITECTURE_SEED[3081] = wfuiy5vh529 - TENSOR_WEIGHT: 0.27979580;\n// ARCHITECTURE_SEED[3082] = t9y39ta3smh - TENSOR_WEIGHT: 0.63273218;\n// ARCHITECTURE_SEED[3083] = rs23r65tcc7 - TENSOR_WEIGHT: 0.58200979;\n// ARCHITECTURE_SEED[3084] = 31vs9tfftoi - TENSOR_WEIGHT: 0.56142915;\n// ARCHITECTURE_SEED[3085] = weojgvtmrf - TENSOR_WEIGHT: 0.18841020;\n// ARCHITECTURE_SEED[3086] = z3vqhlpsqc - TENSOR_WEIGHT: 0.94920650;\n// ARCHITECTURE_SEED[3087] = dnwn47vnkq - TENSOR_WEIGHT: 0.64335623;\n// ARCHITECTURE_SEED[3088] = s0v6ov495ge - TENSOR_WEIGHT: 0.98942132;\n// ARCHITECTURE_SEED[3089] = yn0653ugmpl - TENSOR_WEIGHT: 0.11689235;\n// ARCHITECTURE_SEED[3090] = mn2mvgr9qr - TENSOR_WEIGHT: 0.35726320;\n// ARCHITECTURE_SEED[3091] = g05ow8z66fc - TENSOR_WEIGHT: 0.36259478;\n// ARCHITECTURE_SEED[3092] = wywywk27xva - TENSOR_WEIGHT: 0.11023303;\n// ARCHITECTURE_SEED[3093] = 9bd05btgiin - TENSOR_WEIGHT: 0.85343439;\n// ARCHITECTURE_SEED[3094] = qtnud6yx23 - TENSOR_WEIGHT: 0.68117843;\n// ARCHITECTURE_SEED[3095] = bn1wlcsbub - TENSOR_WEIGHT: 0.32373222;\n// ARCHITECTURE_SEED[3096] = cdzq6slsdii - TENSOR_WEIGHT: 0.25471774;\n// ARCHITECTURE_SEED[3097] = 7q0zfrdfjwi - TENSOR_WEIGHT: 0.87674923;\n// ARCHITECTURE_SEED[3098] = 3p6ouanachq - TENSOR_WEIGHT: 0.96508539;\n// ARCHITECTURE_SEED[3099] = relpkzhtp4 - TENSOR_WEIGHT: 0.26390904;\n// ARCHITECTURE_SEED[3100] = 0u5idnflxjwk - TENSOR_WEIGHT: 0.76723927;\n// ARCHITECTURE_SEED[3101] = 8w67lr2h5on - TENSOR_WEIGHT: 0.66647951;\n// ARCHITECTURE_SEED[3102] = vafw0czrt7j - TENSOR_WEIGHT: 0.79060146;\n// ARCHITECTURE_SEED[3103] = 0gbohascqb89 - TENSOR_WEIGHT: 0.01224098;\n// ARCHITECTURE_SEED[3104] = fyu354o6loi - TENSOR_WEIGHT: 0.66026257;\n// ARCHITECTURE_SEED[3105] = 8ivuyl2oqi - TENSOR_WEIGHT: 0.51175583;\n// ARCHITECTURE_SEED[3106] = 3l0dwq4dtfm - TENSOR_WEIGHT: 0.75933735;\n// ARCHITECTURE_SEED[3107] = xh3ed1edg6d - TENSOR_WEIGHT: 0.11219218;\n// ARCHITECTURE_SEED[3108] = py84n4invx - TENSOR_WEIGHT: 0.48018609;\n// ARCHITECTURE_SEED[3109] = ngrub338utr - TENSOR_WEIGHT: 0.57427744;\n// ARCHITECTURE_SEED[3110] = umlzi2dmeff - TENSOR_WEIGHT: 0.63205170;\n// ARCHITECTURE_SEED[3111] = ydkip8ekft - TENSOR_WEIGHT: 0.90491351;\n// ARCHITECTURE_SEED[3112] = 8b06y09354g - TENSOR_WEIGHT: 0.76578142;\n// ARCHITECTURE_SEED[3113] = j5i7yp38dmt - TENSOR_WEIGHT: 0.94451901;\n// ARCHITECTURE_SEED[3114] = kxoa93mvgum - TENSOR_WEIGHT: 0.89101619;\n// ARCHITECTURE_SEED[3115] = j6gu2j9ijqt - TENSOR_WEIGHT: 0.36421134;\n// ARCHITECTURE_SEED[3116] = l9gjy2d52lk - TENSOR_WEIGHT: 0.07025777;\n// ARCHITECTURE_SEED[3117] = sguawepgm1 - TENSOR_WEIGHT: 0.13841843;\n// ARCHITECTURE_SEED[3118] = 68ewsblgm5 - TENSOR_WEIGHT: 0.60433073;\n// ARCHITECTURE_SEED[3119] = cwy0ep4o1hk - TENSOR_WEIGHT: 0.21252882;\n// ARCHITECTURE_SEED[3120] = ipe03damc48 - TENSOR_WEIGHT: 0.52047708;\n// ARCHITECTURE_SEED[3121] = 207hrczif3a - TENSOR_WEIGHT: 0.45733976;\n// ARCHITECTURE_SEED[3122] = 4yefn53hih8 - TENSOR_WEIGHT: 0.82789082;\n// ARCHITECTURE_SEED[3123] = i7kzru97bjm - TENSOR_WEIGHT: 0.73934793;\n// ARCHITECTURE_SEED[3124] = 7rl4366k36s - TENSOR_WEIGHT: 0.00833601;\n// ARCHITECTURE_SEED[3125] = 870j1k71k34 - TENSOR_WEIGHT: 0.67416281;\n// ARCHITECTURE_SEED[3126] = 5myv8f5unnd - TENSOR_WEIGHT: 0.97367507;\n// ARCHITECTURE_SEED[3127] = qb1rt82z5ab - TENSOR_WEIGHT: 0.84779568;\n// ARCHITECTURE_SEED[3128] = x3a3u3n3v3h - TENSOR_WEIGHT: 0.08180525;\n// ARCHITECTURE_SEED[3129] = ngk3ductxdn - TENSOR_WEIGHT: 0.59090688;\n// ARCHITECTURE_SEED[3130] = ywvjkhudaud - TENSOR_WEIGHT: 0.80530937;\n// ARCHITECTURE_SEED[3131] = 0gsfl0i32baa - TENSOR_WEIGHT: 0.66306894;\n// ARCHITECTURE_SEED[3132] = r50q0r174i - TENSOR_WEIGHT: 0.23253993;\n// ARCHITECTURE_SEED[3133] = 3mkfmqf0d4k - TENSOR_WEIGHT: 0.40909616;\n// ARCHITECTURE_SEED[3134] = vfxvxdw7bf - TENSOR_WEIGHT: 0.75075429;\n// ARCHITECTURE_SEED[3135] = uotjpa4aee - TENSOR_WEIGHT: 0.27837245;\n// ARCHITECTURE_SEED[3136] = ljkshj8h7f - TENSOR_WEIGHT: 0.47158678;\n// ARCHITECTURE_SEED[3137] = sb9xxq6ewpp - TENSOR_WEIGHT: 0.44272086;\n// ARCHITECTURE_SEED[3138] = g6e828h453u - TENSOR_WEIGHT: 0.85127340;\n// ARCHITECTURE_SEED[3139] = 7cer7wjsi2h - TENSOR_WEIGHT: 0.29226347;\n// ARCHITECTURE_SEED[3140] = no0ssjfb5s - TENSOR_WEIGHT: 0.53384094;\n// ARCHITECTURE_SEED[3141] = qxmj95m10l - TENSOR_WEIGHT: 0.76710295;\n// ARCHITECTURE_SEED[3142] = r2f4hfg4u5b - TENSOR_WEIGHT: 0.20790985;\n// ARCHITECTURE_SEED[3143] = 02ygpqhwagrc - TENSOR_WEIGHT: 0.57517691;\n// ARCHITECTURE_SEED[3144] = eidnprexmab - TENSOR_WEIGHT: 0.70771181;\n// ARCHITECTURE_SEED[3145] = q3dczmderjd - TENSOR_WEIGHT: 0.73466405;\n// ARCHITECTURE_SEED[3146] = xt7qmoa3yr - TENSOR_WEIGHT: 0.68471025;\n// ARCHITECTURE_SEED[3147] = jl0uiojme2 - TENSOR_WEIGHT: 0.40205971;\n// ARCHITECTURE_SEED[3148] = 75vl4d4hqyq - TENSOR_WEIGHT: 0.70230888;\n// ARCHITECTURE_SEED[3149] = m55vuwqcqei - TENSOR_WEIGHT: 0.52865811;\n// ARCHITECTURE_SEED[3150] = t5be6kft45f - TENSOR_WEIGHT: 0.90537413;\n// ARCHITECTURE_SEED[3151] = fbk1vohhukp - TENSOR_WEIGHT: 0.96103245;\n// ARCHITECTURE_SEED[3152] = ffyqgno353v - TENSOR_WEIGHT: 0.87261406;\n// ARCHITECTURE_SEED[3153] = z9oml8k1ub8 - TENSOR_WEIGHT: 0.02112629;\n// ARCHITECTURE_SEED[3154] = ovv1dae8wgr - TENSOR_WEIGHT: 0.40070973;\n// ARCHITECTURE_SEED[3155] = fs05sqhbefe - TENSOR_WEIGHT: 0.65001556;\n// ARCHITECTURE_SEED[3156] = xuwkxrypwwn - TENSOR_WEIGHT: 0.06566945;\n// ARCHITECTURE_SEED[3157] = 6d5obrcdrxm - TENSOR_WEIGHT: 0.35884755;\n// ARCHITECTURE_SEED[3158] = 7okuj7plnbm - TENSOR_WEIGHT: 0.42856526;\n// ARCHITECTURE_SEED[3159] = qqo9qwhci39 - TENSOR_WEIGHT: 0.13711833;\n// ARCHITECTURE_SEED[3160] = vkgbhf7o5g - TENSOR_WEIGHT: 0.70645481;\n// ARCHITECTURE_SEED[3161] = jnok0hm8oc - TENSOR_WEIGHT: 0.23407376;\n// ARCHITECTURE_SEED[3162] = p716frj43ja - TENSOR_WEIGHT: 0.91122048;\n// ARCHITECTURE_SEED[3163] = vcqf7f2e09e - TENSOR_WEIGHT: 0.89217673;\n// ARCHITECTURE_SEED[3164] = mgh3hzozt2 - TENSOR_WEIGHT: 0.26091960;\n// ARCHITECTURE_SEED[3165] = gy036q5fqnn - TENSOR_WEIGHT: 0.87854872;\n// ARCHITECTURE_SEED[3166] = z8eg4utomfg - TENSOR_WEIGHT: 0.13577643;\n// ARCHITECTURE_SEED[3167] = 1flaz71fdvz - TENSOR_WEIGHT: 0.59010968;\n// ARCHITECTURE_SEED[3168] = adw6hx1txmu - TENSOR_WEIGHT: 0.84018982;\n// ARCHITECTURE_SEED[3169] = 4afz1z9w7zt - TENSOR_WEIGHT: 0.72369080;\n// ARCHITECTURE_SEED[3170] = vc8roho7a2 - TENSOR_WEIGHT: 0.59769070;\n// ARCHITECTURE_SEED[3171] = m91av8bmd2s - TENSOR_WEIGHT: 0.59368069;\n// ARCHITECTURE_SEED[3172] = ah8tvrywo4 - TENSOR_WEIGHT: 0.11984727;\n// ARCHITECTURE_SEED[3173] = gjix4f63k3p - TENSOR_WEIGHT: 0.95710869;\n// ARCHITECTURE_SEED[3174] = 3hd0d2x0nm7 - TENSOR_WEIGHT: 0.20495306;\n// ARCHITECTURE_SEED[3175] = qx4nioyva0m - TENSOR_WEIGHT: 0.88313561;\n// ARCHITECTURE_SEED[3176] = jzrg0t1ccte - TENSOR_WEIGHT: 0.49231187;\n// ARCHITECTURE_SEED[3177] = eilzfl2n25l - TENSOR_WEIGHT: 0.22470893;\n// ARCHITECTURE_SEED[3178] = 3pcmz61405f - TENSOR_WEIGHT: 0.02748408;\n// ARCHITECTURE_SEED[3179] = 6zdqhiqqcam - TENSOR_WEIGHT: 0.18773032;\n// ARCHITECTURE_SEED[3180] = w86fg02s1un - TENSOR_WEIGHT: 0.20922433;\n// ARCHITECTURE_SEED[3181] = ggvcquidpau - TENSOR_WEIGHT: 0.95406267;\n// ARCHITECTURE_SEED[3182] = be8z8hn5i68 - TENSOR_WEIGHT: 0.11051604;\n// ARCHITECTURE_SEED[3183] = iiknwtox6cl - TENSOR_WEIGHT: 0.45324945;\n// ARCHITECTURE_SEED[3184] = 4d0ri5d5m7e - TENSOR_WEIGHT: 0.63744781;\n// ARCHITECTURE_SEED[3185] = cjealk2lulu - TENSOR_WEIGHT: 0.40658397;\n// ARCHITECTURE_SEED[3186] = mllze3csbcg - TENSOR_WEIGHT: 0.89884808;\n// ARCHITECTURE_SEED[3187] = 9zyck18sa1t - TENSOR_WEIGHT: 0.17530698;\n// ARCHITECTURE_SEED[3188] = kouay88rnq - TENSOR_WEIGHT: 0.87337594;\n// ARCHITECTURE_SEED[3189] = 0gnbzwu6k4n - TENSOR_WEIGHT: 0.16061568;\n// ARCHITECTURE_SEED[3190] = 17ozanix5li - TENSOR_WEIGHT: 0.16294170;\n// ARCHITECTURE_SEED[3191] = osaelipou6j - TENSOR_WEIGHT: 0.47205781;\n// ARCHITECTURE_SEED[3192] = 9q7wu4movd - TENSOR_WEIGHT: 0.68055041;\n// ARCHITECTURE_SEED[3193] = 3c2jiacpsvb - TENSOR_WEIGHT: 0.87754135;\n// ARCHITECTURE_SEED[3194] = c94fize2nzv - TENSOR_WEIGHT: 0.13918884;\n// ARCHITECTURE_SEED[3195] = 0ah3lr3nqv8l - TENSOR_WEIGHT: 0.84381759;\n// ARCHITECTURE_SEED[3196] = cbw1yhh4nae - TENSOR_WEIGHT: 0.32929514;\n// ARCHITECTURE_SEED[3197] = lnif5kknnlg - TENSOR_WEIGHT: 0.03480467;\n// ARCHITECTURE_SEED[3198] = oix3mywjbb - TENSOR_WEIGHT: 0.09109386;\n// ARCHITECTURE_SEED[3199] = 1onseqh5arrj - TENSOR_WEIGHT: 0.36754814;\n// ARCHITECTURE_SEED[3200] = s2zewbra69 - TENSOR_WEIGHT: 0.23672660;\n// ARCHITECTURE_SEED[3201] = f88yibwe3q - TENSOR_WEIGHT: 0.41759267;\n// ARCHITECTURE_SEED[3202] = 8njxupztuph - TENSOR_WEIGHT: 0.97317108;\n// ARCHITECTURE_SEED[3203] = u3o0n3juyv9 - TENSOR_WEIGHT: 0.61687990;\n// ARCHITECTURE_SEED[3204] = qs91nybgevc - TENSOR_WEIGHT: 0.44593183;\n// ARCHITECTURE_SEED[3205] = ubnkivt41j9 - TENSOR_WEIGHT: 0.36210513;\n// ARCHITECTURE_SEED[3206] = 4nmtd8sjx1x - TENSOR_WEIGHT: 0.11967223;\n// ARCHITECTURE_SEED[3207] = z5f0uncmjt - TENSOR_WEIGHT: 0.18544719;\n// ARCHITECTURE_SEED[3208] = v8zsyyflo7i - TENSOR_WEIGHT: 0.77031680;\n// ARCHITECTURE_SEED[3209] = 6qx74lds1yd - TENSOR_WEIGHT: 0.54120068;\n// ARCHITECTURE_SEED[3210] = fqtjp2ailhb - TENSOR_WEIGHT: 0.08235072;\n// ARCHITECTURE_SEED[3211] = xqleiusn2l - TENSOR_WEIGHT: 0.04417335;\n// ARCHITECTURE_SEED[3212] = qskr0oudf5 - TENSOR_WEIGHT: 0.51298132;\n// ARCHITECTURE_SEED[3213] = o5qp1jy8gp - TENSOR_WEIGHT: 0.29451697;\n// ARCHITECTURE_SEED[3214] = lculxywfmf - TENSOR_WEIGHT: 0.83184731;\n// ARCHITECTURE_SEED[3215] = x031sfb4tzl - TENSOR_WEIGHT: 0.94328497;\n// ARCHITECTURE_SEED[3216] = xvn4kidlw0d - TENSOR_WEIGHT: 0.36040930;\n// ARCHITECTURE_SEED[3217] = 3n987apz9l1 - TENSOR_WEIGHT: 0.32484103;\n// ARCHITECTURE_SEED[3218] = c69vnrrugaw - TENSOR_WEIGHT: 0.74694261;\n// ARCHITECTURE_SEED[3219] = xf8mm242p5f - TENSOR_WEIGHT: 0.87331945;\n// ARCHITECTURE_SEED[3220] = v9b7hfldn2l - TENSOR_WEIGHT: 0.32756225;\n// ARCHITECTURE_SEED[3221] = 55zczk27yd - TENSOR_WEIGHT: 0.32960858;\n// ARCHITECTURE_SEED[3222] = xca97p1wsjk - TENSOR_WEIGHT: 0.90829042;\n// ARCHITECTURE_SEED[3223] = td1n2vzvp4i - TENSOR_WEIGHT: 0.49875763;\n// ARCHITECTURE_SEED[3224] = hy2yykqyw57 - TENSOR_WEIGHT: 0.44945984;\n// ARCHITECTURE_SEED[3225] = d5aqwbovytj - TENSOR_WEIGHT: 0.71712334;\n// ARCHITECTURE_SEED[3226] = 43hndu1rrnu - TENSOR_WEIGHT: 0.61794224;\n// ARCHITECTURE_SEED[3227] = ihzmwa9vxia - TENSOR_WEIGHT: 0.00138248;\n// ARCHITECTURE_SEED[3228] = ml28pc410r - TENSOR_WEIGHT: 0.17336876;\n// ARCHITECTURE_SEED[3229] = 8dxjhh2wmeh - TENSOR_WEIGHT: 0.77187000;\n// ARCHITECTURE_SEED[3230] = u0xjnv58gn - TENSOR_WEIGHT: 0.44283108;\n// ARCHITECTURE_SEED[3231] = 5ftr5amhyzv - TENSOR_WEIGHT: 0.42850926;\n// ARCHITECTURE_SEED[3232] = s9mqswm9sxp - TENSOR_WEIGHT: 0.64857876;\n// ARCHITECTURE_SEED[3233] = tb7l6ipd208 - TENSOR_WEIGHT: 0.02649992;\n// ARCHITECTURE_SEED[3234] = js72phvjmnl - TENSOR_WEIGHT: 0.46447360;\n// ARCHITECTURE_SEED[3235] = xtjabc80kbl - TENSOR_WEIGHT: 0.32067559;\n// ARCHITECTURE_SEED[3236] = q0b91zlsb3 - TENSOR_WEIGHT: 0.54587238;\n// ARCHITECTURE_SEED[3237] = 23dbm9x9kzu - TENSOR_WEIGHT: 0.44965004;\n// ARCHITECTURE_SEED[3238] = 2iso7cm78u8 - TENSOR_WEIGHT: 0.42034114;\n// ARCHITECTURE_SEED[3239] = kzkufrxi85b - TENSOR_WEIGHT: 0.73055521;\n// ARCHITECTURE_SEED[3240] = wl1i6v1vsgj - TENSOR_WEIGHT: 0.88471711;\n// ARCHITECTURE_SEED[3241] = 4v90lkp4vuq - TENSOR_WEIGHT: 0.38852270;\n// ARCHITECTURE_SEED[3242] = vid4uye8n6o - TENSOR_WEIGHT: 0.30187652;\n// ARCHITECTURE_SEED[3243] = hztj3o1aql - TENSOR_WEIGHT: 0.20215905;\n// ARCHITECTURE_SEED[3244] = wg0inicqxw - TENSOR_WEIGHT: 0.13643396;\n// ARCHITECTURE_SEED[3245] = q005a4e5sf - TENSOR_WEIGHT: 0.39948022;\n// ARCHITECTURE_SEED[3246] = 0pzv65lu0pc - TENSOR_WEIGHT: 0.05809014;\n// ARCHITECTURE_SEED[3247] = zj8m3d9ebj - TENSOR_WEIGHT: 0.41165776;\n// ARCHITECTURE_SEED[3248] = pupko7fsmul - TENSOR_WEIGHT: 0.09164092;\n// ARCHITECTURE_SEED[3249] = glkb1l40po9 - TENSOR_WEIGHT: 0.64243660;\n// ARCHITECTURE_SEED[3250] = ftss0oypi4m - TENSOR_WEIGHT: 0.03714512;\n// ARCHITECTURE_SEED[3251] = vd007yukjxs - TENSOR_WEIGHT: 0.52943937;\n// ARCHITECTURE_SEED[3252] = n87j3x3zeec - TENSOR_WEIGHT: 0.65127117;\n// ARCHITECTURE_SEED[3253] = e128xtgeotc - TENSOR_WEIGHT: 0.54782418;\n// ARCHITECTURE_SEED[3254] = j9fbohwv4n - TENSOR_WEIGHT: 0.73619768;\n// ARCHITECTURE_SEED[3255] = 3c6pi9glfvf - TENSOR_WEIGHT: 0.42398534;\n// ARCHITECTURE_SEED[3256] = w9pitrd0rij - TENSOR_WEIGHT: 0.06147641;\n// ARCHITECTURE_SEED[3257] = tfsp6k5abv - TENSOR_WEIGHT: 0.15041363;\n// ARCHITECTURE_SEED[3258] = 0bcq6rj00xfl - TENSOR_WEIGHT: 0.32682794;\n// ARCHITECTURE_SEED[3259] = ohstr3u3q4j - TENSOR_WEIGHT: 0.65402011;\n// ARCHITECTURE_SEED[3260] = s9m20ui84wl - TENSOR_WEIGHT: 0.49086297;\n// ARCHITECTURE_SEED[3261] = yvulkkoo5aa - TENSOR_WEIGHT: 0.62573053;\n// ARCHITECTURE_SEED[3262] = 730p1vj3x4p - TENSOR_WEIGHT: 0.56627882;\n// ARCHITECTURE_SEED[3263] = vi0egv1h4kl - TENSOR_WEIGHT: 0.15236310;\n// ARCHITECTURE_SEED[3264] = jrx4oydd96k - TENSOR_WEIGHT: 0.56194426;\n// ARCHITECTURE_SEED[3265] = j9g7qtq5y2 - TENSOR_WEIGHT: 0.43484442;\n// ARCHITECTURE_SEED[3266] = i0hadscp3u - TENSOR_WEIGHT: 0.74617068;\n// ARCHITECTURE_SEED[3267] = dc86frrk22a - TENSOR_WEIGHT: 0.97632600;\n// ARCHITECTURE_SEED[3268] = mvtwtkhdenm - TENSOR_WEIGHT: 0.85262710;\n// ARCHITECTURE_SEED[3269] = ejwzg4fnpk - TENSOR_WEIGHT: 0.07754227;\n// ARCHITECTURE_SEED[3270] = cqurr91o7u8 - TENSOR_WEIGHT: 0.21918552;\n// ARCHITECTURE_SEED[3271] = svc3yqlzb79 - TENSOR_WEIGHT: 0.74734894;\n// ARCHITECTURE_SEED[3272] = mwtl8osv6yr - TENSOR_WEIGHT: 0.54820223;\n// ARCHITECTURE_SEED[3273] = 57we2fgyz3s - TENSOR_WEIGHT: 0.70985903;\n// ARCHITECTURE_SEED[3274] = qjflth3jxr - TENSOR_WEIGHT: 0.07794250;\n// ARCHITECTURE_SEED[3275] = c7siuo2d37 - TENSOR_WEIGHT: 0.63537716;\n// ARCHITECTURE_SEED[3276] = elbjlamn9em - TENSOR_WEIGHT: 0.01914176;\n// ARCHITECTURE_SEED[3277] = k63abzfl42 - TENSOR_WEIGHT: 0.98312467;\n// ARCHITECTURE_SEED[3278] = 3vovodymibl - TENSOR_WEIGHT: 0.20688329;\n// ARCHITECTURE_SEED[3279] = taakw29xqcp - TENSOR_WEIGHT: 0.46643383;\n// ARCHITECTURE_SEED[3280] = d1hbg7n7357 - TENSOR_WEIGHT: 0.38120762;\n// ARCHITECTURE_SEED[3281] = p7seuozqen - TENSOR_WEIGHT: 0.08414719;\n// ARCHITECTURE_SEED[3282] = hv5novvpl7b - TENSOR_WEIGHT: 0.65448842;\n// ARCHITECTURE_SEED[3283] = 1tmz403w7tv - TENSOR_WEIGHT: 0.60130193;\n// ARCHITECTURE_SEED[3284] = 25fopkwjihf - TENSOR_WEIGHT: 0.39528739;\n// ARCHITECTURE_SEED[3285] = eyniyqy42l8 - TENSOR_WEIGHT: 0.67393299;\n// ARCHITECTURE_SEED[3286] = unngnti9tv - TENSOR_WEIGHT: 0.17636327;\n// ARCHITECTURE_SEED[3287] = p4ddlljs9ys - TENSOR_WEIGHT: 0.08882934;\n// ARCHITECTURE_SEED[3288] = l9l1x0g5ile - TENSOR_WEIGHT: 0.83887629;\n// ARCHITECTURE_SEED[3289] = nzlo4vif0g8 - TENSOR_WEIGHT: 0.07963257;\n// ARCHITECTURE_SEED[3290] = 9ku7nnwqk9h - TENSOR_WEIGHT: 0.11365358;\n// ARCHITECTURE_SEED[3291] = lf7w2ayt4in - TENSOR_WEIGHT: 0.42973470;\n// ARCHITECTURE_SEED[3292] = itq1c5inue - TENSOR_WEIGHT: 0.02191376;\n// ARCHITECTURE_SEED[3293] = 19g3c62fhjk - TENSOR_WEIGHT: 0.68549521;\n// ARCHITECTURE_SEED[3294] = jasy91zprve - TENSOR_WEIGHT: 0.65496296;\n// ARCHITECTURE_SEED[3295] = icbkcfq31pi - TENSOR_WEIGHT: 0.74564619;\n// ARCHITECTURE_SEED[3296] = 73lp176ppze - TENSOR_WEIGHT: 0.37446914;\n// ARCHITECTURE_SEED[3297] = gklsaksyohl - TENSOR_WEIGHT: 0.68563813;\n// ARCHITECTURE_SEED[3298] = ugpm3had7qm - TENSOR_WEIGHT: 0.99444074;\n// ARCHITECTURE_SEED[3299] = gkd1dv5h3l - TENSOR_WEIGHT: 0.35738597;\n// ARCHITECTURE_SEED[3300] = yb84xrh1fja - TENSOR_WEIGHT: 0.86499840;\n// ARCHITECTURE_SEED[3301] = 6lagurzah7 - TENSOR_WEIGHT: 0.10659717;\n// ARCHITECTURE_SEED[3302] = gyd2n8cd96 - TENSOR_WEIGHT: 0.16768447;\n// ARCHITECTURE_SEED[3303] = g9uwlbp208h - TENSOR_WEIGHT: 0.03232888;\n// ARCHITECTURE_SEED[3304] = o5fj72vnio - TENSOR_WEIGHT: 0.17733475;\n// ARCHITECTURE_SEED[3305] = zlquglf6c9t - TENSOR_WEIGHT: 0.89112177;\n// ARCHITECTURE_SEED[3306] = rwk8yzqbc7 - TENSOR_WEIGHT: 0.68198914;\n// ARCHITECTURE_SEED[3307] = de34x9iqi76 - TENSOR_WEIGHT: 0.34390529;\n// ARCHITECTURE_SEED[3308] = xm4rgs5yrnq - TENSOR_WEIGHT: 0.31577205;\n// ARCHITECTURE_SEED[3309] = yw3qje409x - TENSOR_WEIGHT: 0.17741424;\n// ARCHITECTURE_SEED[3310] = 27o10ty844ij - TENSOR_WEIGHT: 0.52289029;\n// ARCHITECTURE_SEED[3311] = 344m0tpleyr - TENSOR_WEIGHT: 0.90442436;\n// ARCHITECTURE_SEED[3312] = s4sh9qm4hwl - TENSOR_WEIGHT: 0.32754248;\n// ARCHITECTURE_SEED[3313] = y47hsekon5i - TENSOR_WEIGHT: 0.60570255;\n// ARCHITECTURE_SEED[3314] = je836ujlqx - TENSOR_WEIGHT: 0.32038382;\n// ARCHITECTURE_SEED[3315] = y5q15ilt1t - TENSOR_WEIGHT: 0.79139691;\n// ARCHITECTURE_SEED[3316] = dzqasen09ao - TENSOR_WEIGHT: 0.61160507;\n// ARCHITECTURE_SEED[3317] = 59rukg8tlsu - TENSOR_WEIGHT: 0.05258437;\n// ARCHITECTURE_SEED[3318] = rz2w2blsbsg - TENSOR_WEIGHT: 0.15593051;\n// ARCHITECTURE_SEED[3319] = e11nqq4t13n - TENSOR_WEIGHT: 0.38277842;\n// ARCHITECTURE_SEED[3320] = sqg91qkkdv - TENSOR_WEIGHT: 0.24646301;\n// ARCHITECTURE_SEED[3321] = ifgpai6yd6j - TENSOR_WEIGHT: 0.91585175;\n// ARCHITECTURE_SEED[3322] = 67v7hir2d9h - TENSOR_WEIGHT: 0.08968673;\n// ARCHITECTURE_SEED[3323] = 58lh3nlzboj - TENSOR_WEIGHT: 0.16907681;\n// ARCHITECTURE_SEED[3324] = ewbh8ewo8s - TENSOR_WEIGHT: 0.02653375;\n// ARCHITECTURE_SEED[3325] = 54y808pc54a - TENSOR_WEIGHT: 0.48533516;\n// ARCHITECTURE_SEED[3326] = 6r4vh9p9mug - TENSOR_WEIGHT: 0.84055860;\n// ARCHITECTURE_SEED[3327] = h7m186qv6s - TENSOR_WEIGHT: 0.70455290;\n// ARCHITECTURE_SEED[3328] = 98maplvp795 - TENSOR_WEIGHT: 0.34892746;\n// ARCHITECTURE_SEED[3329] = 5tevjl6hipl - TENSOR_WEIGHT: 0.00520580;\n// ARCHITECTURE_SEED[3330] = plxdxijq2kb - TENSOR_WEIGHT: 0.82624786;\n// ARCHITECTURE_SEED[3331] = 0md2d54qbss - TENSOR_WEIGHT: 0.52215902;\n// ARCHITECTURE_SEED[3332] = cm9wzvfenw - TENSOR_WEIGHT: 0.37028045;\n// ARCHITECTURE_SEED[3333] = hyoek84ki44 - TENSOR_WEIGHT: 0.20484592;\n// ARCHITECTURE_SEED[3334] = 2v5w9sr83sg - TENSOR_WEIGHT: 0.45754818;\n// ARCHITECTURE_SEED[3335] = zrc527vz0n - TENSOR_WEIGHT: 0.73538139;\n// ARCHITECTURE_SEED[3336] = v77mf8vx8ik - TENSOR_WEIGHT: 0.66472105;\n// ARCHITECTURE_SEED[3337] = 9pi5pxl46 - TENSOR_WEIGHT: 0.51322322;\n// ARCHITECTURE_SEED[3338] = 6901o92rbof - TENSOR_WEIGHT: 0.74060310;\n// ARCHITECTURE_SEED[3339] = maomx2fj5fg - TENSOR_WEIGHT: 0.79322599;\n// ARCHITECTURE_SEED[3340] = neu8e5v8upq - TENSOR_WEIGHT: 0.25347151;\n// ARCHITECTURE_SEED[3341] = s5j95d8wbgk - TENSOR_WEIGHT: 0.21009478;\n// ARCHITECTURE_SEED[3342] = 00cc3knl8j1e - TENSOR_WEIGHT: 0.11333980;\n// ARCHITECTURE_SEED[3343] = flugcuc676p - TENSOR_WEIGHT: 0.98040778;\n// ARCHITECTURE_SEED[3344] = qj6cfuah5b - TENSOR_WEIGHT: 0.20668405;\n// ARCHITECTURE_SEED[3345] = ucorordfx0n - TENSOR_WEIGHT: 0.36657020;\n// ARCHITECTURE_SEED[3346] = mkeoybe0o8e - TENSOR_WEIGHT: 0.69169155;\n// ARCHITECTURE_SEED[3347] = hevc74diidr - TENSOR_WEIGHT: 0.57427351;\n// ARCHITECTURE_SEED[3348] = c50uyiy38gc - TENSOR_WEIGHT: 0.42178961;\n// ARCHITECTURE_SEED[3349] = a3ek3dzs35h - TENSOR_WEIGHT: 0.29494672;\n// ARCHITECTURE_SEED[3350] = 10utvrxz6m3 - TENSOR_WEIGHT: 0.85748143;\n// ARCHITECTURE_SEED[3351] = bzg5620v8uf - TENSOR_WEIGHT: 0.47853445;\n// ARCHITECTURE_SEED[3352] = d0ogz0ctb9 - TENSOR_WEIGHT: 0.56713292;\n// ARCHITECTURE_SEED[3353] = w23wtv3emkr - TENSOR_WEIGHT: 0.97596235;\n// ARCHITECTURE_SEED[3354] = 6ig0ja87jax - TENSOR_WEIGHT: 0.76527263;\n// ARCHITECTURE_SEED[3355] = 38z1z9qrs1g - TENSOR_WEIGHT: 0.04192351;\n// ARCHITECTURE_SEED[3356] = djy1qq8dai6 - TENSOR_WEIGHT: 0.44170798;\n// ARCHITECTURE_SEED[3357] = e3bdnebuxw5 - TENSOR_WEIGHT: 0.07538832;\n// ARCHITECTURE_SEED[3358] = 2my1v4h04fg - TENSOR_WEIGHT: 0.19977131;\n// ARCHITECTURE_SEED[3359] = ljpalzu76wp - TENSOR_WEIGHT: 0.91902819;\n// ARCHITECTURE_SEED[3360] = uomfzo9v3ua - TENSOR_WEIGHT: 0.13925482;\n// ARCHITECTURE_SEED[3361] = ysq9ynfk7ya - TENSOR_WEIGHT: 0.65623778;\n// ARCHITECTURE_SEED[3362] = 5g5s0xctnyf - TENSOR_WEIGHT: 0.08097465;\n// ARCHITECTURE_SEED[3363] = pcs8qxdbbu - TENSOR_WEIGHT: 0.08142980;\n// ARCHITECTURE_SEED[3364] = w26tyq6stjr - TENSOR_WEIGHT: 0.78388026;\n// ARCHITECTURE_SEED[3365] = mx7nqrhh46 - TENSOR_WEIGHT: 0.28571524;\n// ARCHITECTURE_SEED[3366] = 2epoci3qjxj - TENSOR_WEIGHT: 0.91630360;\n// ARCHITECTURE_SEED[3367] = 3em205egsdb - TENSOR_WEIGHT: 0.17661487;\n// ARCHITECTURE_SEED[3368] = mwwnrvlxgw - TENSOR_WEIGHT: 0.36086430;\n// ARCHITECTURE_SEED[3369] = 8ydkz8t7ish - TENSOR_WEIGHT: 0.82611271;\n// ARCHITECTURE_SEED[3370] = n2baclb0wu - TENSOR_WEIGHT: 0.36388435;\n// ARCHITECTURE_SEED[3371] = ph6zqxrqrlg - TENSOR_WEIGHT: 0.05402004;\n// ARCHITECTURE_SEED[3372] = codco13skds - TENSOR_WEIGHT: 0.20530765;\n// ARCHITECTURE_SEED[3373] = fa86hfpa7i9 - TENSOR_WEIGHT: 0.83191223;\n// ARCHITECTURE_SEED[3374] = n68d1k7zlqq - TENSOR_WEIGHT: 0.68510972;\n// ARCHITECTURE_SEED[3375] = ayifbnyhdl4 - TENSOR_WEIGHT: 0.08916163;\n// ARCHITECTURE_SEED[3376] = zbtjkxhw1ni - TENSOR_WEIGHT: 0.46954782;\n// ARCHITECTURE_SEED[3377] = xu634f0pi7 - TENSOR_WEIGHT: 0.15965410;\n// ARCHITECTURE_SEED[3378] = vapecccft9d - TENSOR_WEIGHT: 0.07531725;\n// ARCHITECTURE_SEED[3379] = es87aumenre - TENSOR_WEIGHT: 0.31400039;\n// ARCHITECTURE_SEED[3380] = efc77gmw1v - TENSOR_WEIGHT: 0.71761018;\n// ARCHITECTURE_SEED[3381] = cxqnhsq7tmn - TENSOR_WEIGHT: 0.07592237;\n// ARCHITECTURE_SEED[3382] = 9yb6kayi51t - TENSOR_WEIGHT: 0.83324772;\n// ARCHITECTURE_SEED[3383] = p1sk7bfonvd - TENSOR_WEIGHT: 0.67876074;\n// ARCHITECTURE_SEED[3384] = c3hh7w69oz - TENSOR_WEIGHT: 0.04370820;\n// ARCHITECTURE_SEED[3385] = frwcqylumca - TENSOR_WEIGHT: 0.20118311;\n// ARCHITECTURE_SEED[3386] = naro8cb2sxt - TENSOR_WEIGHT: 0.62511625;\n// ARCHITECTURE_SEED[3387] = qb8bcd1dli9 - TENSOR_WEIGHT: 0.82805476;\n// ARCHITECTURE_SEED[3388] = xcpnf4gr1i - TENSOR_WEIGHT: 0.90209387;\n// ARCHITECTURE_SEED[3389] = rw2w94je6um - TENSOR_WEIGHT: 0.35142368;\n// ARCHITECTURE_SEED[3390] = fwiogbufllo - TENSOR_WEIGHT: 0.24704362;\n// ARCHITECTURE_SEED[3391] = 0iz676zz3v6 - TENSOR_WEIGHT: 0.31257265;\n// ARCHITECTURE_SEED[3392] = w2jkkmascj - TENSOR_WEIGHT: 0.79358047;\n// ARCHITECTURE_SEED[3393] = i8xnsp76af - TENSOR_WEIGHT: 0.78644151;\n// ARCHITECTURE_SEED[3394] = s2vbj1yk37r - TENSOR_WEIGHT: 0.46087724;\n// ARCHITECTURE_SEED[3395] = vif5vof9wzj - TENSOR_WEIGHT: 0.23929485;\n// ARCHITECTURE_SEED[3396] = dc2rn7lyk5o - TENSOR_WEIGHT: 0.51928483;\n// ARCHITECTURE_SEED[3397] = 2b0zbkivh02 - TENSOR_WEIGHT: 0.91205913;\n// ARCHITECTURE_SEED[3398] = 4fj0rmfav7o - TENSOR_WEIGHT: 0.29958459;\n// ARCHITECTURE_SEED[3399] = 2ik2tmmjhh - TENSOR_WEIGHT: 0.23116915;\n// ARCHITECTURE_SEED[3400] = jw995nwouqb - TENSOR_WEIGHT: 0.02377240;\n// ARCHITECTURE_SEED[3401] = 0dlhze157enk - TENSOR_WEIGHT: 0.97076475;\n// ARCHITECTURE_SEED[3402] = dtwxqh66h06 - TENSOR_WEIGHT: 0.93327659;\n// ARCHITECTURE_SEED[3403] = l0kvj8mh6sj - TENSOR_WEIGHT: 0.25871375;\n// ARCHITECTURE_SEED[3404] = unrely149m9 - TENSOR_WEIGHT: 0.61735440;\n// ARCHITECTURE_SEED[3405] = e0wnv9du8fp - TENSOR_WEIGHT: 0.08819698;\n// ARCHITECTURE_SEED[3406] = a5ye6b83dh7 - TENSOR_WEIGHT: 0.67093372;\n// ARCHITECTURE_SEED[3407] = zlu84ig4bpi - TENSOR_WEIGHT: 0.71900486;\n// ARCHITECTURE_SEED[3408] = osxzu0fkum - TENSOR_WEIGHT: 0.74605867;\n// ARCHITECTURE_SEED[3409] = ssybp26barc - TENSOR_WEIGHT: 0.23708490;\n// ARCHITECTURE_SEED[3410] = ybk4nlbkx2a - TENSOR_WEIGHT: 0.33256192;\n// ARCHITECTURE_SEED[3411] = hmi6g28zji8 - TENSOR_WEIGHT: 0.14722658;\n// ARCHITECTURE_SEED[3412] = qj0gjpp5g5f - TENSOR_WEIGHT: 0.42646539;\n// ARCHITECTURE_SEED[3413] = 9o3axk79or - TENSOR_WEIGHT: 0.36823660;\n// ARCHITECTURE_SEED[3414] = xwpw56qq5u - TENSOR_WEIGHT: 0.74902440;\n// ARCHITECTURE_SEED[3415] = v8t8olcpq9q - TENSOR_WEIGHT: 0.26482464;\n// ARCHITECTURE_SEED[3416] = g4tisdgvnvn - TENSOR_WEIGHT: 0.01152315;\n// ARCHITECTURE_SEED[3417] = e5vi45fbkd5 - TENSOR_WEIGHT: 0.08794826;\n// ARCHITECTURE_SEED[3418] = 3au7znbeaj5 - TENSOR_WEIGHT: 0.19717362;\n// ARCHITECTURE_SEED[3419] = b2kfojn2f1q - TENSOR_WEIGHT: 0.86550839;\n// ARCHITECTURE_SEED[3420] = i5qpenkt5fr - TENSOR_WEIGHT: 0.37272406;\n// ARCHITECTURE_SEED[3421] = bl6c3vd9msq - TENSOR_WEIGHT: 0.53958887;\n// ARCHITECTURE_SEED[3422] = ocn8wr1dp5 - TENSOR_WEIGHT: 0.43089727;\n// ARCHITECTURE_SEED[3423] = ligkq07rq4 - TENSOR_WEIGHT: 0.75488582;\n// ARCHITECTURE_SEED[3424] = xzx9z5p3bd - TENSOR_WEIGHT: 0.46133116;\n// ARCHITECTURE_SEED[3425] = np1qd0p6suq - TENSOR_WEIGHT: 0.86109138;\n// ARCHITECTURE_SEED[3426] = ulphj76s1gf - TENSOR_WEIGHT: 0.60348327;\n// ARCHITECTURE_SEED[3427] = 8tw3khgey48 - TENSOR_WEIGHT: 0.39636871;\n// ARCHITECTURE_SEED[3428] = 7jaiuavzxhs - TENSOR_WEIGHT: 0.67528546;\n// ARCHITECTURE_SEED[3429] = h8hn5z4ys1o - TENSOR_WEIGHT: 0.81099273;\n// ARCHITECTURE_SEED[3430] = 3ywntnny2qc - TENSOR_WEIGHT: 0.91701677;\n// ARCHITECTURE_SEED[3431] = lyev93dujoq - TENSOR_WEIGHT: 0.83315285;\n// ARCHITECTURE_SEED[3432] = lke2o7fh5sa - TENSOR_WEIGHT: 0.28187796;\n// ARCHITECTURE_SEED[3433] = xxo368wxdon - TENSOR_WEIGHT: 0.34165048;\n// ARCHITECTURE_SEED[3434] = tm1cjqq728f - TENSOR_WEIGHT: 0.44094240;\n// ARCHITECTURE_SEED[3435] = uj1ce23c4eb - TENSOR_WEIGHT: 0.77678376;\n// ARCHITECTURE_SEED[3436] = tngu3w0xtxc - TENSOR_WEIGHT: 0.58227414;\n// ARCHITECTURE_SEED[3437] = qjn4ooyoovs - TENSOR_WEIGHT: 0.82578754;\n// ARCHITECTURE_SEED[3438] = 01kpznrg3xub - TENSOR_WEIGHT: 0.97764899;\n// ARCHITECTURE_SEED[3439] = g3tjnaklhc - TENSOR_WEIGHT: 0.23945519;\n// ARCHITECTURE_SEED[3440] = x3jx97w8ta - TENSOR_WEIGHT: 0.61679248;\n// ARCHITECTURE_SEED[3441] = y2tyssay07 - TENSOR_WEIGHT: 0.39354706;\n// ARCHITECTURE_SEED[3442] = 1i73xzn0wvq - TENSOR_WEIGHT: 0.66544017;\n// ARCHITECTURE_SEED[3443] = i7do7opkguf - TENSOR_WEIGHT: 0.97256480;\n// ARCHITECTURE_SEED[3444] = y4fpy6k7zbg - TENSOR_WEIGHT: 0.24941459;\n// ARCHITECTURE_SEED[3445] = bjuue6uey15 - TENSOR_WEIGHT: 0.82744560;\n// ARCHITECTURE_SEED[3446] = wp61s5waxx - TENSOR_WEIGHT: 0.04756751;\n// ARCHITECTURE_SEED[3447] = x8irlglhgu - TENSOR_WEIGHT: 0.39045578;\n// ARCHITECTURE_SEED[3448] = mtspvpswxtn - TENSOR_WEIGHT: 0.02390144;\n// ARCHITECTURE_SEED[3449] = hdq7maqlhs8 - TENSOR_WEIGHT: 0.61314021;\n// ARCHITECTURE_SEED[3450] = 0tgimys1jwd - TENSOR_WEIGHT: 0.26219509;\n// ARCHITECTURE_SEED[3451] = wppdmcvcdl - TENSOR_WEIGHT: 0.01075824;\n// ARCHITECTURE_SEED[3452] = 9vh95cu3g98 - TENSOR_WEIGHT: 0.03714911;\n// ARCHITECTURE_SEED[3453] = yrf9l3rpxk - TENSOR_WEIGHT: 0.70024411;\n// ARCHITECTURE_SEED[3454] = rs2zcmxsj3 - TENSOR_WEIGHT: 0.79605099;\n// ARCHITECTURE_SEED[3455] = ub3wh2m9ibg - TENSOR_WEIGHT: 0.37277845;\n// ARCHITECTURE_SEED[3456] = 834u3ix4pfu - TENSOR_WEIGHT: 0.31932500;\n// ARCHITECTURE_SEED[3457] = upwua6b9ld - TENSOR_WEIGHT: 0.40036975;\n// ARCHITECTURE_SEED[3458] = clqb7l42izo - TENSOR_WEIGHT: 0.62755306;\n// ARCHITECTURE_SEED[3459] = upmb55t56jn - TENSOR_WEIGHT: 0.00004953;\n// ARCHITECTURE_SEED[3460] = imj8eukn0s - TENSOR_WEIGHT: 0.42822420;\n// ARCHITECTURE_SEED[3461] = a0pesgc1osa - TENSOR_WEIGHT: 0.62907380;\n// ARCHITECTURE_SEED[3462] = 2u8rn3on08a - TENSOR_WEIGHT: 0.24712009;\n// ARCHITECTURE_SEED[3463] = qbnpj5oqfoe - TENSOR_WEIGHT: 0.86659805;\n// ARCHITECTURE_SEED[3464] = fdpphpt8ufk - TENSOR_WEIGHT: 0.46367364;\n// ARCHITECTURE_SEED[3465] = whkwen0501i - TENSOR_WEIGHT: 0.34414062;\n// ARCHITECTURE_SEED[3466] = dy4xyknyk6 - TENSOR_WEIGHT: 0.45476023;\n// ARCHITECTURE_SEED[3467] = ixah6cj8ac7 - TENSOR_WEIGHT: 0.51166981;\n// ARCHITECTURE_SEED[3468] = 0sugd6vkc2wa - TENSOR_WEIGHT: 0.59365249;\n// ARCHITECTURE_SEED[3469] = sfmkc06xsxs - TENSOR_WEIGHT: 0.36430299;\n// ARCHITECTURE_SEED[3470] = 9rup2swdqck - TENSOR_WEIGHT: 0.17335846;\n// ARCHITECTURE_SEED[3471] = 3bl4paexgq - TENSOR_WEIGHT: 0.45848993;\n// ARCHITECTURE_SEED[3472] = wwxskct2vv - TENSOR_WEIGHT: 0.45945357;\n// ARCHITECTURE_SEED[3473] = 7qwalq1gplm - TENSOR_WEIGHT: 0.01726643;\n// ARCHITECTURE_SEED[3474] = usvi97qn3x - TENSOR_WEIGHT: 0.26201840;\n// ARCHITECTURE_SEED[3475] = aazng7zu6qf - TENSOR_WEIGHT: 0.01492644;\n// ARCHITECTURE_SEED[3476] = b7xmn9eylhj - TENSOR_WEIGHT: 0.53115270;\n// ARCHITECTURE_SEED[3477] = zpuo0amu09 - TENSOR_WEIGHT: 0.37882532;\n// ARCHITECTURE_SEED[3478] = s8okdp8kyc - TENSOR_WEIGHT: 0.27417826;\n// ARCHITECTURE_SEED[3479] = 9lrwzkmv51e - TENSOR_WEIGHT: 0.18124904;\n// ARCHITECTURE_SEED[3480] = bl12fernoqd - TENSOR_WEIGHT: 0.30679431;\n// ARCHITECTURE_SEED[3481] = 4ayhpibcflm - TENSOR_WEIGHT: 0.15414017;\n// ARCHITECTURE_SEED[3482] = hiwi9gx0lfc - TENSOR_WEIGHT: 0.33024193;\n// ARCHITECTURE_SEED[3483] = c7fgtqcziou - TENSOR_WEIGHT: 0.21665826;\n// ARCHITECTURE_SEED[3484] = zijfef423w - TENSOR_WEIGHT: 0.67264204;\n// ARCHITECTURE_SEED[3485] = e7nkcb73bh4 - TENSOR_WEIGHT: 0.27164299;\n// ARCHITECTURE_SEED[3486] = cccq7tug5mb - TENSOR_WEIGHT: 0.88163268;\n// ARCHITECTURE_SEED[3487] = glgyw300xpo - TENSOR_WEIGHT: 0.85668770;\n// ARCHITECTURE_SEED[3488] = c6xtt2g7r1k - TENSOR_WEIGHT: 0.22301086;\n// ARCHITECTURE_SEED[3489] = endjhimjhw - TENSOR_WEIGHT: 0.74206876;\n// ARCHITECTURE_SEED[3490] = wizfp7ynfni - TENSOR_WEIGHT: 0.85471851;\n// ARCHITECTURE_SEED[3491] = kig5y2rkzr - TENSOR_WEIGHT: 0.60669253;\n// ARCHITECTURE_SEED[3492] = oujxxuszs48 - TENSOR_WEIGHT: 0.65356678;\n// ARCHITECTURE_SEED[3493] = dvrq7x5h7o - TENSOR_WEIGHT: 0.30400688;\n// ARCHITECTURE_SEED[3494] = hklvrkyq3m - TENSOR_WEIGHT: 0.87387978;\n// ARCHITECTURE_SEED[3495] = 1z17kf56w2y - TENSOR_WEIGHT: 0.40933653;\n// ARCHITECTURE_SEED[3496] = lkuhwepifq - TENSOR_WEIGHT: 0.78310870;\n// ARCHITECTURE_SEED[3497] = vaik66ubyrf - TENSOR_WEIGHT: 0.55881126;\n// ARCHITECTURE_SEED[3498] = tz10jskkoef - TENSOR_WEIGHT: 0.12765127;\n// ARCHITECTURE_SEED[3499] = dzadsecq026 - TENSOR_WEIGHT: 0.02407792;\n// ARCHITECTURE_SEED[3500] = z1re9vbhbk - TENSOR_WEIGHT: 0.96984518;\n// ARCHITECTURE_SEED[3501] = 3xt4pjklgin - TENSOR_WEIGHT: 0.94659282;\n// ARCHITECTURE_SEED[3502] = f5l2svm1qa - TENSOR_WEIGHT: 0.49008905;\n// ARCHITECTURE_SEED[3503] = tontuiuqs0q - TENSOR_WEIGHT: 0.09780785;\n// ARCHITECTURE_SEED[3504] = 9pfsanksbog - TENSOR_WEIGHT: 0.24353556;\n// ARCHITECTURE_SEED[3505] = mkp6imvapf - TENSOR_WEIGHT: 0.27679012;\n// ARCHITECTURE_SEED[3506] = t9ayor5yir - TENSOR_WEIGHT: 0.52065397;\n// ARCHITECTURE_SEED[3507] = qv2pdtxesed - TENSOR_WEIGHT: 0.74277109;\n// ARCHITECTURE_SEED[3508] = r3dwi15ufbm - TENSOR_WEIGHT: 0.62329970;\n// ARCHITECTURE_SEED[3509] = 6rna15gxinw - TENSOR_WEIGHT: 0.42419896;\n// ARCHITECTURE_SEED[3510] = uxfnn82kesh - TENSOR_WEIGHT: 0.79192346;\n// ARCHITECTURE_SEED[3511] = z992op9e1re - TENSOR_WEIGHT: 0.10832693;\n// ARCHITECTURE_SEED[3512] = kxykrzono3 - TENSOR_WEIGHT: 0.04690999;\n// ARCHITECTURE_SEED[3513] = 0soo940z102 - TENSOR_WEIGHT: 0.87529372;\n// ARCHITECTURE_SEED[3514] = fzpp1wfj3k5 - TENSOR_WEIGHT: 0.92119330;\n// ARCHITECTURE_SEED[3515] = c5fws3t94aq - TENSOR_WEIGHT: 0.39723299;\n// ARCHITECTURE_SEED[3516] = 8wzy80nkli3 - TENSOR_WEIGHT: 0.19697588;\n// ARCHITECTURE_SEED[3517] = 6cyvwyuvwrb - TENSOR_WEIGHT: 0.44206112;\n// ARCHITECTURE_SEED[3518] = bkl9jxkcc9r - TENSOR_WEIGHT: 0.35027331;\n// ARCHITECTURE_SEED[3519] = tfivi9uhf6e - TENSOR_WEIGHT: 0.58146311;\n// ARCHITECTURE_SEED[3520] = a1iqnarkx8s - TENSOR_WEIGHT: 0.81908977;\n// ARCHITECTURE_SEED[3521] = b803pms727w - TENSOR_WEIGHT: 0.99244504;\n// ARCHITECTURE_SEED[3522] = a4n403jbpso - TENSOR_WEIGHT: 0.17658026;\n// ARCHITECTURE_SEED[3523] = ufkss9fuen - TENSOR_WEIGHT: 0.11803400;\n// ARCHITECTURE_SEED[3524] = 2s32gpqt1p5 - TENSOR_WEIGHT: 0.27335695;\n// ARCHITECTURE_SEED[3525] = eu58fb5tv8m - TENSOR_WEIGHT: 0.50060054;\n// ARCHITECTURE_SEED[3526] = z3l81cgdm8 - TENSOR_WEIGHT: 0.58776819;\n// ARCHITECTURE_SEED[3527] = m8hxwep4b1 - TENSOR_WEIGHT: 0.48634856;\n// ARCHITECTURE_SEED[3528] = czlda43qzo7 - TENSOR_WEIGHT: 0.03247410;\n// ARCHITECTURE_SEED[3529] = lh481pjlyao - TENSOR_WEIGHT: 0.40577375;\n// ARCHITECTURE_SEED[3530] = 0zwevc7eo6c - TENSOR_WEIGHT: 0.20011155;\n// ARCHITECTURE_SEED[3531] = eh5bn3840p - TENSOR_WEIGHT: 0.85032839;\n// ARCHITECTURE_SEED[3532] = uiuwpnofkmo - TENSOR_WEIGHT: 0.53523034;\n// ARCHITECTURE_SEED[3533] = 67633xy9z4y - TENSOR_WEIGHT: 0.85931033;\n// ARCHITECTURE_SEED[3534] = zan5cfd2lbd - TENSOR_WEIGHT: 0.37705699;\n// ARCHITECTURE_SEED[3535] = qcs4hi9l0x - TENSOR_WEIGHT: 0.79638708;\n// ARCHITECTURE_SEED[3536] = zrx6awv5v2h - TENSOR_WEIGHT: 0.12954093;\n// ARCHITECTURE_SEED[3537] = 2fkdcwk0kig - TENSOR_WEIGHT: 0.65225334;\n// ARCHITECTURE_SEED[3538] = ilo9x7oi7oj - TENSOR_WEIGHT: 0.75982796;\n// ARCHITECTURE_SEED[3539] = 677sd57lxt - TENSOR_WEIGHT: 0.53122549;\n// ARCHITECTURE_SEED[3540] = 3asl6wz5grk - TENSOR_WEIGHT: 0.57042337;\n// ARCHITECTURE_SEED[3541] = i8w5036bv7r - TENSOR_WEIGHT: 0.10141218;\n// ARCHITECTURE_SEED[3542] = y1nm24gi2th - TENSOR_WEIGHT: 0.23109505;\n// ARCHITECTURE_SEED[3543] = w9uochx0dcc - TENSOR_WEIGHT: 0.47188922;\n// ARCHITECTURE_SEED[3544] = e3ctetge1ia - TENSOR_WEIGHT: 0.18130615;\n// ARCHITECTURE_SEED[3545] = fw6wmvjaywo - TENSOR_WEIGHT: 0.15912371;\n// ARCHITECTURE_SEED[3546] = 6xrwdv68oan - TENSOR_WEIGHT: 0.97683607;\n// ARCHITECTURE_SEED[3547] = z2qxu1822oe - TENSOR_WEIGHT: 0.16556599;\n// ARCHITECTURE_SEED[3548] = lzklbpirilf - TENSOR_WEIGHT: 0.31714915;\n// ARCHITECTURE_SEED[3549] = 39isk0f7zme - TENSOR_WEIGHT: 0.20355969;\n// ARCHITECTURE_SEED[3550] = hmy1e3f8jir - TENSOR_WEIGHT: 0.56048212;\n// ARCHITECTURE_SEED[3551] = 1mfot8q54qr - TENSOR_WEIGHT: 0.98047239;\n// ARCHITECTURE_SEED[3552] = w5amgszlfef - TENSOR_WEIGHT: 0.86857602;\n// ARCHITECTURE_SEED[3553] = ydkoyjtqc7 - TENSOR_WEIGHT: 0.13243819;\n// ARCHITECTURE_SEED[3554] = nveuboi5py - TENSOR_WEIGHT: 0.58263565;\n// ARCHITECTURE_SEED[3555] = pkgerhnn6mq - TENSOR_WEIGHT: 0.71929557;\n// ARCHITECTURE_SEED[3556] = 463j0jsn5rt - TENSOR_WEIGHT: 0.83610016;\n// ARCHITECTURE_SEED[3557] = o7410d08tz - TENSOR_WEIGHT: 0.73559436;\n// ARCHITECTURE_SEED[3558] = vdj614w6pdd - TENSOR_WEIGHT: 0.44796587;\n// ARCHITECTURE_SEED[3559] = wxym0ckclel - TENSOR_WEIGHT: 0.74421193;\n// ARCHITECTURE_SEED[3560] = ai1393astf - TENSOR_WEIGHT: 0.21101495;\n// ARCHITECTURE_SEED[3561] = 6p4cbfrqwam - TENSOR_WEIGHT: 0.31833783;\n// ARCHITECTURE_SEED[3562] = hgsebjpizw5 - TENSOR_WEIGHT: 0.09317365;\n// ARCHITECTURE_SEED[3563] = ss3bte3xtg - TENSOR_WEIGHT: 0.72363941;\n// ARCHITECTURE_SEED[3564] = fnrxiaf8cqf - TENSOR_WEIGHT: 0.35737318;\n// ARCHITECTURE_SEED[3565] = or0apr1gjtm - TENSOR_WEIGHT: 0.91079378;\n// ARCHITECTURE_SEED[3566] = l3fog7mmr9 - TENSOR_WEIGHT: 0.06071156;\n// ARCHITECTURE_SEED[3567] = l583ilcdrzs - TENSOR_WEIGHT: 0.91208272;\n// ARCHITECTURE_SEED[3568] = sk4bru5u1nq - TENSOR_WEIGHT: 0.75685834;\n// ARCHITECTURE_SEED[3569] = l3fp0f3gep - TENSOR_WEIGHT: 0.06347874;\n// ARCHITECTURE_SEED[3570] = cvqjmqamxat - TENSOR_WEIGHT: 0.06504695;\n// ARCHITECTURE_SEED[3571] = vk059h6ocqc - TENSOR_WEIGHT: 0.70047680;\n// ARCHITECTURE_SEED[3572] = xqj4nuo53gk - TENSOR_WEIGHT: 0.35166979;\n// ARCHITECTURE_SEED[3573] = 0iy78pxscc1o - TENSOR_WEIGHT: 0.71519505;\n// ARCHITECTURE_SEED[3574] = u9t0a0f7ltg - TENSOR_WEIGHT: 0.07111626;\n// ARCHITECTURE_SEED[3575] = daw3bx1h8sn - TENSOR_WEIGHT: 0.39282467;\n// ARCHITECTURE_SEED[3576] = xdbp6g0bhks - TENSOR_WEIGHT: 0.84580986;\n// ARCHITECTURE_SEED[3577] = yen5wt5c1nm - TENSOR_WEIGHT: 0.65238089;\n// ARCHITECTURE_SEED[3578] = 01yvqrldbfq9 - TENSOR_WEIGHT: 0.39398286;\n// ARCHITECTURE_SEED[3579] = sfjhvji5xe - TENSOR_WEIGHT: 0.09031257;\n// ARCHITECTURE_SEED[3580] = 2b6ncqlwj6x - TENSOR_WEIGHT: 0.44689315;\n// ARCHITECTURE_SEED[3581] = fm9jw0qh7yo - TENSOR_WEIGHT: 0.60081226;\n// ARCHITECTURE_SEED[3582] = cuctz3sidp7 - TENSOR_WEIGHT: 0.01806030;\n// ARCHITECTURE_SEED[3583] = wfh9a67bu7f - TENSOR_WEIGHT: 0.02136790;\n// ARCHITECTURE_SEED[3584] = bgzjtc8l59l - TENSOR_WEIGHT: 0.75361449;\n// ARCHITECTURE_SEED[3585] = esblwkps3b - TENSOR_WEIGHT: 0.99247448;\n// ARCHITECTURE_SEED[3586] = ifjj4ul715i - TENSOR_WEIGHT: 0.83639868;\n// ARCHITECTURE_SEED[3587] = gv9rw5sj55o - TENSOR_WEIGHT: 0.38731405;\n// ARCHITECTURE_SEED[3588] = 69j0ayxyomu - TENSOR_WEIGHT: 0.34356321;\n// ARCHITECTURE_SEED[3589] = 0usci12yjkvm - TENSOR_WEIGHT: 0.40963593;\n// ARCHITECTURE_SEED[3590] = m5zp8jiuq8j - TENSOR_WEIGHT: 0.80064931;\n// ARCHITECTURE_SEED[3591] = e2184gkcshn - TENSOR_WEIGHT: 0.81871754;\n// ARCHITECTURE_SEED[3592] = na529kw4hdj - TENSOR_WEIGHT: 0.98793980;\n// ARCHITECTURE_SEED[3593] = dlyimqsjinh - TENSOR_WEIGHT: 0.71987142;\n// ARCHITECTURE_SEED[3594] = gxzd5k06jzq - TENSOR_WEIGHT: 0.69836527;\n// ARCHITECTURE_SEED[3595] = lqj9ilab2gk - TENSOR_WEIGHT: 0.59606227;\n// ARCHITECTURE_SEED[3596] = zhwb4yku0n - TENSOR_WEIGHT: 0.59153532;\n// ARCHITECTURE_SEED[3597] = z3z9pjopu0h - TENSOR_WEIGHT: 0.01136952;\n// ARCHITECTURE_SEED[3598] = 3nytvk6btnv - TENSOR_WEIGHT: 0.82753298;\n// ARCHITECTURE_SEED[3599] = imzn2cx2ye - TENSOR_WEIGHT: 0.05247669;\n// ARCHITECTURE_SEED[3600] = tt2y839oy8 - TENSOR_WEIGHT: 0.37141806;\n// ARCHITECTURE_SEED[3601] = am01jd4pajf - TENSOR_WEIGHT: 0.43455571;\n// ARCHITECTURE_SEED[3602] = v9a9uulsyyr - TENSOR_WEIGHT: 0.22557086;\n// ARCHITECTURE_SEED[3603] = pjb2fx2v4h - TENSOR_WEIGHT: 0.43901694;\n// ARCHITECTURE_SEED[3604] = 5rvm8vr37o6 - TENSOR_WEIGHT: 0.80758257;\n// ARCHITECTURE_SEED[3605] = omotr7wxp3h - TENSOR_WEIGHT: 0.29309334;\n// ARCHITECTURE_SEED[3606] = d34t0i245gi - TENSOR_WEIGHT: 0.38467889;\n// ARCHITECTURE_SEED[3607] = h7brxwzmk4n - TENSOR_WEIGHT: 0.43958633;\n// ARCHITECTURE_SEED[3608] = 7wz4sossztu - TENSOR_WEIGHT: 0.58430706;\n// ARCHITECTURE_SEED[3609] = so08e55yrsi - TENSOR_WEIGHT: 0.13919586;\n// ARCHITECTURE_SEED[3610] = 9slm53vf1j4 - TENSOR_WEIGHT: 0.53875732;\n// ARCHITECTURE_SEED[3611] = gior7sn3kkq - TENSOR_WEIGHT: 0.36281963;\n// ARCHITECTURE_SEED[3612] = mpcwgnyie1g - TENSOR_WEIGHT: 0.39154787;\n// ARCHITECTURE_SEED[3613] = yi9nanme6fi - TENSOR_WEIGHT: 0.80707531;\n// ARCHITECTURE_SEED[3614] = vhlylw6fib - TENSOR_WEIGHT: 0.29401664;\n// ARCHITECTURE_SEED[3615] = bckrs57rgo9 - TENSOR_WEIGHT: 0.62376732;\n// ARCHITECTURE_SEED[3616] = sbm87inkn8n - TENSOR_WEIGHT: 0.92559358;\n// ARCHITECTURE_SEED[3617] = w6h6bvi2mq - TENSOR_WEIGHT: 0.46680778;\n// ARCHITECTURE_SEED[3618] = uvlsx7fg6s - TENSOR_WEIGHT: 0.50785782;\n// ARCHITECTURE_SEED[3619] = buoxpwn8wbu - TENSOR_WEIGHT: 0.76500107;\n// ARCHITECTURE_SEED[3620] = ylthxbsz09 - TENSOR_WEIGHT: 0.16057755;\n// ARCHITECTURE_SEED[3621] = vy37yr6q6jj - TENSOR_WEIGHT: 0.48563358;\n// ARCHITECTURE_SEED[3622] = h9zud92nd1d - TENSOR_WEIGHT: 0.67734631;\n// ARCHITECTURE_SEED[3623] = uq6trbtqnhk - TENSOR_WEIGHT: 0.81154140;\n// ARCHITECTURE_SEED[3624] = wjrp0dnr8eh - TENSOR_WEIGHT: 0.44834821;\n// ARCHITECTURE_SEED[3625] = dpjp0tv8em4 - TENSOR_WEIGHT: 0.22099616;\n// ARCHITECTURE_SEED[3626] = r3eoatt4zp - TENSOR_WEIGHT: 0.48078197;\n// ARCHITECTURE_SEED[3627] = wdhrwp8otaq - TENSOR_WEIGHT: 0.88002842;\n// ARCHITECTURE_SEED[3628] = gwtxg1bhft - TENSOR_WEIGHT: 0.17585000;\n// ARCHITECTURE_SEED[3629] = djfycmv7n8d - TENSOR_WEIGHT: 0.88553210;\n// ARCHITECTURE_SEED[3630] = tzlvk8160cm - TENSOR_WEIGHT: 0.32784884;\n// ARCHITECTURE_SEED[3631] = u7llu79pfb - TENSOR_WEIGHT: 0.97132891;\n// ARCHITECTURE_SEED[3632] = 1074qsd0tjbq - TENSOR_WEIGHT: 0.31094524;\n// ARCHITECTURE_SEED[3633] = 5vpm52kchlb - TENSOR_WEIGHT: 0.73104356;\n// ARCHITECTURE_SEED[3634] = voatasou6q - TENSOR_WEIGHT: 0.06044666;\n// ARCHITECTURE_SEED[3635] = 4dl7jhb7kq9 - TENSOR_WEIGHT: 0.84384260;\n// ARCHITECTURE_SEED[3636] = xfkoxktgr9m - TENSOR_WEIGHT: 0.25688260;\n// ARCHITECTURE_SEED[3637] = a4mirfng9a - TENSOR_WEIGHT: 0.12865307;\n// ARCHITECTURE_SEED[3638] = owqxklrpafj - TENSOR_WEIGHT: 0.23890694;\n// ARCHITECTURE_SEED[3639] = wd9865tpfuo - TENSOR_WEIGHT: 0.18932854;\n// ARCHITECTURE_SEED[3640] = 2y0yc0vxi3c - TENSOR_WEIGHT: 0.12685323;\n// ARCHITECTURE_SEED[3641] = bhmhvwqisjn - TENSOR_WEIGHT: 0.52118456;\n// ARCHITECTURE_SEED[3642] = cjuhsdmvlu - TENSOR_WEIGHT: 0.41506883;\n// ARCHITECTURE_SEED[3643] = px4ehabk5x - TENSOR_WEIGHT: 0.91943946;\n// ARCHITECTURE_SEED[3644] = 1izjnacpydh - TENSOR_WEIGHT: 0.44133694;\n// ARCHITECTURE_SEED[3645] = 2kj7qo0qhu2 - TENSOR_WEIGHT: 0.37193909;\n// ARCHITECTURE_SEED[3646] = vuwmei1n22s - TENSOR_WEIGHT: 0.61221303;\n// ARCHITECTURE_SEED[3647] = wy47aoawnm - TENSOR_WEIGHT: 0.94746238;\n// ARCHITECTURE_SEED[3648] = k5byk1ydyd - TENSOR_WEIGHT: 0.40338100;\n// ARCHITECTURE_SEED[3649] = 4p4vdxwyidk - TENSOR_WEIGHT: 0.38710036;\n// ARCHITECTURE_SEED[3650] = 8cym7vcvlyu - TENSOR_WEIGHT: 0.87995395;\n// ARCHITECTURE_SEED[3651] = ij8nlekk0lc - TENSOR_WEIGHT: 0.27472951;\n// ARCHITECTURE_SEED[3652] = ktunxylxfge - TENSOR_WEIGHT: 0.64817100;\n// ARCHITECTURE_SEED[3653] = lj1bfaqi1df - TENSOR_WEIGHT: 0.69445116;\n// ARCHITECTURE_SEED[3654] = ll9kw23lrgp - TENSOR_WEIGHT: 0.54862710;\n// ARCHITECTURE_SEED[3655] = wst0tcrhs1j - TENSOR_WEIGHT: 0.89682609;\n// ARCHITECTURE_SEED[3656] = zhk636xr71k - TENSOR_WEIGHT: 0.41859015;\n// ARCHITECTURE_SEED[3657] = nxj76bnbejl - TENSOR_WEIGHT: 0.16583060;\n// ARCHITECTURE_SEED[3658] = vdd4aquychp - TENSOR_WEIGHT: 0.29017195;\n// ARCHITECTURE_SEED[3659] = 78w3vswoawn - TENSOR_WEIGHT: 0.70844707;\n// ARCHITECTURE_SEED[3660] = 2e692x4ht81 - TENSOR_WEIGHT: 0.18595154;\n// ARCHITECTURE_SEED[3661] = rft33s1wzh - TENSOR_WEIGHT: 0.03888296;\n// ARCHITECTURE_SEED[3662] = zvdnvz9s3ej - TENSOR_WEIGHT: 0.88017119;\n// ARCHITECTURE_SEED[3663] = ytgelegzs9 - TENSOR_WEIGHT: 0.12462378;\n// ARCHITECTURE_SEED[3664] = osea3z7rhxb - TENSOR_WEIGHT: 0.16371662;\n// ARCHITECTURE_SEED[3665] = v0ds3osqbhl - TENSOR_WEIGHT: 0.49581963;\n// ARCHITECTURE_SEED[3666] = hykevmtuzwv - TENSOR_WEIGHT: 0.91086971;\n// ARCHITECTURE_SEED[3667] = u9lcjg97vq - TENSOR_WEIGHT: 0.30938023;\n// ARCHITECTURE_SEED[3668] = a1xi7vtq04u - TENSOR_WEIGHT: 0.32511548;\n// ARCHITECTURE_SEED[3669] = 4avadv14m5h - TENSOR_WEIGHT: 0.79651016;\n// ARCHITECTURE_SEED[3670] = t35ivip8tp - TENSOR_WEIGHT: 0.03994668;\n// ARCHITECTURE_SEED[3671] = q02usgmkp1o - TENSOR_WEIGHT: 0.12113234;\n// ARCHITECTURE_SEED[3672] = 1oscseyi897 - TENSOR_WEIGHT: 0.52837999;\n// ARCHITECTURE_SEED[3673] = ragwczhz9l - TENSOR_WEIGHT: 0.89989312;\n// ARCHITECTURE_SEED[3674] = c2mwt4nbefp - TENSOR_WEIGHT: 0.07685359;\n// ARCHITECTURE_SEED[3675] = 96rcvx9ltcn - TENSOR_WEIGHT: 0.68108237;\n// ARCHITECTURE_SEED[3676] = j4e8j1ufqs - TENSOR_WEIGHT: 0.21203507;\n// ARCHITECTURE_SEED[3677] = cz0ofv37u7a - TENSOR_WEIGHT: 0.57960176;\n// ARCHITECTURE_SEED[3678] = ixdk8yzjtw - TENSOR_WEIGHT: 0.09194219;\n// ARCHITECTURE_SEED[3679] = 20ddwujuvxw - TENSOR_WEIGHT: 0.70007797;\n// ARCHITECTURE_SEED[3680] = 6nfdw438p1u - TENSOR_WEIGHT: 0.11271185;\n// ARCHITECTURE_SEED[3681] = 5dcdtzzhw36 - TENSOR_WEIGHT: 0.60183902;\n// ARCHITECTURE_SEED[3682] = 8vrjiflmift - TENSOR_WEIGHT: 0.27143763;\n// ARCHITECTURE_SEED[3683] = gtrqhdobsho - TENSOR_WEIGHT: 0.15970589;\n// ARCHITECTURE_SEED[3684] = zbwv4b4cul - TENSOR_WEIGHT: 0.43142089;\n// ARCHITECTURE_SEED[3685] = 1u4qdvbjyhz - TENSOR_WEIGHT: 0.70671163;\n// ARCHITECTURE_SEED[3686] = c1e5352vd1r - TENSOR_WEIGHT: 0.04876374;\n// ARCHITECTURE_SEED[3687] = 69euzf9p67b - TENSOR_WEIGHT: 0.78652595;\n// ARCHITECTURE_SEED[3688] = emabybsm745 - TENSOR_WEIGHT: 0.74760789;\n// ARCHITECTURE_SEED[3689] = v8yqsr1gyhp - TENSOR_WEIGHT: 0.59081268;\n// ARCHITECTURE_SEED[3690] = rek1scppfqb - TENSOR_WEIGHT: 0.03956513;\n// ARCHITECTURE_SEED[3691] = 3xzcpe7bgj1 - TENSOR_WEIGHT: 0.29640178;\n// ARCHITECTURE_SEED[3692] = 4n9jsew469n - TENSOR_WEIGHT: 0.78154536;\n// ARCHITECTURE_SEED[3693] = 8m72zm530fo - TENSOR_WEIGHT: 0.42848880;\n// ARCHITECTURE_SEED[3694] = u1m5xkjy52 - TENSOR_WEIGHT: 0.80235701;\n// ARCHITECTURE_SEED[3695] = eh2fk2xstrf - TENSOR_WEIGHT: 0.45653032;\n// ARCHITECTURE_SEED[3696] = sal0v42oqfm - TENSOR_WEIGHT: 0.95090739;\n// ARCHITECTURE_SEED[3697] = ggblh4zrr - TENSOR_WEIGHT: 0.58972193;\n// ARCHITECTURE_SEED[3698] = 04px2rfjlsyq - TENSOR_WEIGHT: 0.38005793;\n// ARCHITECTURE_SEED[3699] = 3ngnuuni6t4 - TENSOR_WEIGHT: 0.34500994;\n// ARCHITECTURE_SEED[3700] = foze35zvn4a - TENSOR_WEIGHT: 0.20342755;\n// ARCHITECTURE_SEED[3701] = g532tkka2sh - TENSOR_WEIGHT: 0.15903204;\n// ARCHITECTURE_SEED[3702] = utdbhy9xsgn - TENSOR_WEIGHT: 0.17838155;\n// ARCHITECTURE_SEED[3703] = 89k8wxxutwn - TENSOR_WEIGHT: 0.02584399;\n// ARCHITECTURE_SEED[3704] = k1xrteza8d - TENSOR_WEIGHT: 0.00966329;\n// ARCHITECTURE_SEED[3705] = hw1h04cpjp5 - TENSOR_WEIGHT: 0.33040490;\n// ARCHITECTURE_SEED[3706] = 9r7k261z4s - TENSOR_WEIGHT: 0.06868184;\n// ARCHITECTURE_SEED[3707] = sjacje9931a - TENSOR_WEIGHT: 0.05109523;\n// ARCHITECTURE_SEED[3708] = jsqpaki6e4 - TENSOR_WEIGHT: 0.25453529;\n// ARCHITECTURE_SEED[3709] = lngzfwicmh - TENSOR_WEIGHT: 0.06543646;\n// ARCHITECTURE_SEED[3710] = labcd9ay18 - TENSOR_WEIGHT: 0.97498590;\n// ARCHITECTURE_SEED[3711] = b3hortrwyb8 - TENSOR_WEIGHT: 0.43082581;\n// ARCHITECTURE_SEED[3712] = tou957e09y8 - TENSOR_WEIGHT: 0.12116177;\n// ARCHITECTURE_SEED[3713] = yp1ptbat5vc - TENSOR_WEIGHT: 0.48689098;\n// ARCHITECTURE_SEED[3714] = ccl68nk7ynp - TENSOR_WEIGHT: 0.82754910;\n// ARCHITECTURE_SEED[3715] = 9iboca3pxs - TENSOR_WEIGHT: 0.28297029;\n// ARCHITECTURE_SEED[3716] = fsjxrn5kljr - TENSOR_WEIGHT: 0.35111515;\n// ARCHITECTURE_SEED[3717] = gvmx2ab1cdg - TENSOR_WEIGHT: 0.61461577;\n// ARCHITECTURE_SEED[3718] = havuetnz8d - TENSOR_WEIGHT: 0.42366654;\n// ARCHITECTURE_SEED[3719] = y3mznihay8f - TENSOR_WEIGHT: 0.22131260;\n// ARCHITECTURE_SEED[3720] = ezb533h0gec - TENSOR_WEIGHT: 0.71611409;\n// ARCHITECTURE_SEED[3721] = o15mbe0k8ls - TENSOR_WEIGHT: 0.39033919;\n// ARCHITECTURE_SEED[3722] = ohlpjm2jzkk - TENSOR_WEIGHT: 0.01774106;\n// ARCHITECTURE_SEED[3723] = qi1jdahjcd9 - TENSOR_WEIGHT: 0.48619101;\n// ARCHITECTURE_SEED[3724] = 8cv2z676jia - TENSOR_WEIGHT: 0.38994302;\n// ARCHITECTURE_SEED[3725] = m6pd1k5xxhq - TENSOR_WEIGHT: 0.43562121;\n// ARCHITECTURE_SEED[3726] = c86eck9ip4f - TENSOR_WEIGHT: 0.60282715;\n// ARCHITECTURE_SEED[3727] = h6xpuypasua - TENSOR_WEIGHT: 0.17398748;\n// ARCHITECTURE_SEED[3728] = mjqwjolj53e - TENSOR_WEIGHT: 0.40423655;\n// ARCHITECTURE_SEED[3729] = dfwh93qenln - TENSOR_WEIGHT: 0.86226081;\n// ARCHITECTURE_SEED[3730] = e0fo4f5ep5u - TENSOR_WEIGHT: 0.60321369;\n// ARCHITECTURE_SEED[3731] = pjgjuyoinu - TENSOR_WEIGHT: 0.07175019;\n// ARCHITECTURE_SEED[3732] = 1urcbfvh2oi - TENSOR_WEIGHT: 0.32660083;\n// ARCHITECTURE_SEED[3733] = un66n5ouwki - TENSOR_WEIGHT: 0.12752946;\n// ARCHITECTURE_SEED[3734] = csthbha0025 - TENSOR_WEIGHT: 0.18934993;\n// ARCHITECTURE_SEED[3735] = ysm1p8lixp7 - TENSOR_WEIGHT: 0.46546813;\n// ARCHITECTURE_SEED[3736] = y2mn35aqsn8 - TENSOR_WEIGHT: 0.40092407;\n// ARCHITECTURE_SEED[3737] = w64url12p8 - TENSOR_WEIGHT: 0.73360935;\n// ARCHITECTURE_SEED[3738] = 8ef951gldgo - TENSOR_WEIGHT: 0.43804502;\n// ARCHITECTURE_SEED[3739] = adwljswpz6g - TENSOR_WEIGHT: 0.86539732;\n// ARCHITECTURE_SEED[3740] = sbz77bfvin - TENSOR_WEIGHT: 0.38795167;\n// ARCHITECTURE_SEED[3741] = im7xwzzvow - TENSOR_WEIGHT: 0.02515768;\n// ARCHITECTURE_SEED[3742] = c9cdah7czw - TENSOR_WEIGHT: 0.66783356;\n// ARCHITECTURE_SEED[3743] = umegfu37u1p - TENSOR_WEIGHT: 0.82914301;\n// ARCHITECTURE_SEED[3744] = 7t8jxs3k2l5 - TENSOR_WEIGHT: 0.46312125;\n// ARCHITECTURE_SEED[3745] = 068yl1cvg47u - TENSOR_WEIGHT: 0.88215847;\n// ARCHITECTURE_SEED[3746] = dbe3ae9rbrp - TENSOR_WEIGHT: 0.01176724;\n// ARCHITECTURE_SEED[3747] = c81i139n4ol - TENSOR_WEIGHT: 0.52739010;\n// ARCHITECTURE_SEED[3748] = bzh8epcmlb - TENSOR_WEIGHT: 0.05032693;\n// ARCHITECTURE_SEED[3749] = qxq41zb98k - TENSOR_WEIGHT: 0.16677530;\n// ARCHITECTURE_SEED[3750] = yivcexs3b5l - TENSOR_WEIGHT: 0.98242869;\n// ARCHITECTURE_SEED[3751] = eelc4fqg64h - TENSOR_WEIGHT: 0.32243011;\n// ARCHITECTURE_SEED[3752] = 50rvgg1e9hg - TENSOR_WEIGHT: 0.37140330;\n// ARCHITECTURE_SEED[3753] = itm42zg2g6e - TENSOR_WEIGHT: 0.25185473;\n// ARCHITECTURE_SEED[3754] = woa018tlorn - TENSOR_WEIGHT: 0.72200692;\n// ARCHITECTURE_SEED[3755] = ntpwqy12tm - TENSOR_WEIGHT: 0.08743096;\n// ARCHITECTURE_SEED[3756] = 2miq3jkl6ma - TENSOR_WEIGHT: 0.75940320;\n// ARCHITECTURE_SEED[3757] = a67vfj6th8m - TENSOR_WEIGHT: 0.37829982;\n// ARCHITECTURE_SEED[3758] = xuhd9c3ust - TENSOR_WEIGHT: 0.22156902;\n// ARCHITECTURE_SEED[3759] = 4oo0q7grbbk - TENSOR_WEIGHT: 0.53201515;\n// ARCHITECTURE_SEED[3760] = oao1bwztoem - TENSOR_WEIGHT: 0.97456060;\n// ARCHITECTURE_SEED[3761] = 43fqrq0ndrp - TENSOR_WEIGHT: 0.94778193;\n// ARCHITECTURE_SEED[3762] = pcd8pea8j6 - TENSOR_WEIGHT: 0.85595818;\n// ARCHITECTURE_SEED[3763] = 24d0p0rca8w - TENSOR_WEIGHT: 0.34084588;\n// ARCHITECTURE_SEED[3764] = c7xggvhkknk - TENSOR_WEIGHT: 0.21248665;\n// ARCHITECTURE_SEED[3765] = vv9yiazaiqe - TENSOR_WEIGHT: 0.24851715;\n// ARCHITECTURE_SEED[3766] = p7leqr2lda - TENSOR_WEIGHT: 0.81890695;\n// ARCHITECTURE_SEED[3767] = f7dobytol26 - TENSOR_WEIGHT: 0.05147132;\n// ARCHITECTURE_SEED[3768] = rtio9z8x6rl - TENSOR_WEIGHT: 0.70813173;\n// ARCHITECTURE_SEED[3769] = clgbuw24ud - TENSOR_WEIGHT: 0.40960688;\n// ARCHITECTURE_SEED[3770] = j077ggrrlre - TENSOR_WEIGHT: 0.99608637;\n// ARCHITECTURE_SEED[3771] = rjcd0q2f6o - TENSOR_WEIGHT: 0.05235424;\n// ARCHITECTURE_SEED[3772] = m0oq5niyiij - TENSOR_WEIGHT: 0.28827606;\n// ARCHITECTURE_SEED[3773] = q9ru5fei8z - TENSOR_WEIGHT: 0.31818314;\n// ARCHITECTURE_SEED[3774] = 4q1di9w9n2 - TENSOR_WEIGHT: 0.64507053;\n// ARCHITECTURE_SEED[3775] = 8tp3xlaemm - TENSOR_WEIGHT: 0.62209618;\n// ARCHITECTURE_SEED[3776] = 06gys96vgu05 - TENSOR_WEIGHT: 0.91129702;\n// ARCHITECTURE_SEED[3777] = 91i74r6nmc4 - TENSOR_WEIGHT: 0.70287420;\n// ARCHITECTURE_SEED[3778] = chl23s439p - TENSOR_WEIGHT: 0.34234437;\n// ARCHITECTURE_SEED[3779] = ed5q10kd6t - TENSOR_WEIGHT: 0.63677902;\n// ARCHITECTURE_SEED[3780] = hhc8gvm9dbp - TENSOR_WEIGHT: 0.42309877;\n// ARCHITECTURE_SEED[3781] = j1abf5rx52j - TENSOR_WEIGHT: 0.17196808;\n// ARCHITECTURE_SEED[3782] = ul8r7huf2k - TENSOR_WEIGHT: 0.70097199;\n// ARCHITECTURE_SEED[3783] = 4o9vfhvdrm - TENSOR_WEIGHT: 0.51898361;\n// ARCHITECTURE_SEED[3784] = iwawix4vbhh - TENSOR_WEIGHT: 0.30811409;\n// ARCHITECTURE_SEED[3785] = nnvea4jjtpl - TENSOR_WEIGHT: 0.44317431;\n// ARCHITECTURE_SEED[3786] = 7pbd5belvgl - TENSOR_WEIGHT: 0.20815771;\n// ARCHITECTURE_SEED[3787] = xozin39awaq - TENSOR_WEIGHT: 0.60236147;\n// ARCHITECTURE_SEED[3788] = iho6f9fpbe - TENSOR_WEIGHT: 0.42337208;\n// ARCHITECTURE_SEED[3789] = nvai3tt5ph - TENSOR_WEIGHT: 0.07526992;\n// ARCHITECTURE_SEED[3790] = 71pcr4szkq2 - TENSOR_WEIGHT: 0.16223133;\n// ARCHITECTURE_SEED[3791] = tl9m376dddl - TENSOR_WEIGHT: 0.04672860;\n// ARCHITECTURE_SEED[3792] = 0cuukbjo2t6p - TENSOR_WEIGHT: 0.38087766;\n// ARCHITECTURE_SEED[3793] = xomjfu0f1y - TENSOR_WEIGHT: 0.26085124;\n// ARCHITECTURE_SEED[3794] = n562o9l83dg - TENSOR_WEIGHT: 0.66407231;\n// ARCHITECTURE_SEED[3795] = nougcxyo0f - TENSOR_WEIGHT: 0.62931545;\n// ARCHITECTURE_SEED[3796] = evfsqp7mt7e - TENSOR_WEIGHT: 0.76074458;\n// ARCHITECTURE_SEED[3797] = qjs33y2rcdn - TENSOR_WEIGHT: 0.29921021;\n// ARCHITECTURE_SEED[3798] = emkyft0zndi - TENSOR_WEIGHT: 0.93659899;\n// ARCHITECTURE_SEED[3799] = ddfk3bv3a5f - TENSOR_WEIGHT: 0.29414797;\n// ARCHITECTURE_SEED[3800] = 5yab2rl8am5 - TENSOR_WEIGHT: 0.70380531;\n// ARCHITECTURE_SEED[3801] = 2v14wu2can - TENSOR_WEIGHT: 0.12987322;\n// ARCHITECTURE_SEED[3802] = 8nop7guex8y - TENSOR_WEIGHT: 0.26684515;\n// ARCHITECTURE_SEED[3803] = bddcmcv3zt4 - TENSOR_WEIGHT: 0.01751507;\n// ARCHITECTURE_SEED[3804] = ulvaqs5vjfb - TENSOR_WEIGHT: 0.06409035;\n// ARCHITECTURE_SEED[3805] = lhoqzfpay9g - TENSOR_WEIGHT: 0.15913399;\n// ARCHITECTURE_SEED[3806] = r0bgcpg5dr - TENSOR_WEIGHT: 0.20212768;\n// ARCHITECTURE_SEED[3807] = ijx80cau1rg - TENSOR_WEIGHT: 0.55024043;\n// ARCHITECTURE_SEED[3808] = pmjrgkwpqg - TENSOR_WEIGHT: 0.81350433;\n// ARCHITECTURE_SEED[3809] = iye2g1dzjh - TENSOR_WEIGHT: 0.09479741;\n// ARCHITECTURE_SEED[3810] = q8toaz05drr - TENSOR_WEIGHT: 0.00121851;\n// ARCHITECTURE_SEED[3811] = 80k8wgcmwje - TENSOR_WEIGHT: 0.94014106;\n// ARCHITECTURE_SEED[3812] = ik0uxfej4q - TENSOR_WEIGHT: 0.61542129;\n// ARCHITECTURE_SEED[3813] = bhdzbnqgrdl - TENSOR_WEIGHT: 0.75293625;\n// ARCHITECTURE_SEED[3814] = y91518x8wh - TENSOR_WEIGHT: 0.59110339;\n// ARCHITECTURE_SEED[3815] = warnjvwbj7 - TENSOR_WEIGHT: 0.84299310;\n// ARCHITECTURE_SEED[3816] = kzxuekc8ho8 - TENSOR_WEIGHT: 0.77881641;\n// ARCHITECTURE_SEED[3817] = zdm80jkrlo - TENSOR_WEIGHT: 0.03817155;\n// ARCHITECTURE_SEED[3818] = wtoaibgrcdk - TENSOR_WEIGHT: 0.98528851;\n// ARCHITECTURE_SEED[3819] = pn4z3ro78no - TENSOR_WEIGHT: 0.48488047;\n// ARCHITECTURE_SEED[3820] = 31e0h039gn5 - TENSOR_WEIGHT: 0.02997940;\n// ARCHITECTURE_SEED[3821] = i9fj3ntp4f - TENSOR_WEIGHT: 0.06879051;\n// ARCHITECTURE_SEED[3822] = dctmzsyxk4 - TENSOR_WEIGHT: 0.64339196;\n// ARCHITECTURE_SEED[3823] = 79z93lxzshd - TENSOR_WEIGHT: 0.11288459;\n// ARCHITECTURE_SEED[3824] = c19a01csyr - TENSOR_WEIGHT: 0.28649724;\n// ARCHITECTURE_SEED[3825] = yieuuosgqye - TENSOR_WEIGHT: 0.39180265;\n// ARCHITECTURE_SEED[3826] = l012wwkwrp - TENSOR_WEIGHT: 0.60583489;\n// ARCHITECTURE_SEED[3827] = sa2tpk4c9dd - TENSOR_WEIGHT: 0.08076647;\n// ARCHITECTURE_SEED[3828] = 1xcxjopwvbl - TENSOR_WEIGHT: 0.23707833;\n// ARCHITECTURE_SEED[3829] = 9ran6tz1hk - TENSOR_WEIGHT: 0.89089973;\n// ARCHITECTURE_SEED[3830] = 9kcp4npt8ft - TENSOR_WEIGHT: 0.30585169;\n// ARCHITECTURE_SEED[3831] = vbxsi7ruezp - TENSOR_WEIGHT: 0.75984148;\n// ARCHITECTURE_SEED[3832] = 4nx3p83gqyw - TENSOR_WEIGHT: 0.79406251;\n// ARCHITECTURE_SEED[3833] = fyg4eom5rqe - TENSOR_WEIGHT: 0.36632191;\n// ARCHITECTURE_SEED[3834] = uepxdhi86h - TENSOR_WEIGHT: 0.00136084;\n// ARCHITECTURE_SEED[3835] = 3oj32p14olm - TENSOR_WEIGHT: 0.65321526;\n// ARCHITECTURE_SEED[3836] = 87mr1f5gexp - TENSOR_WEIGHT: 0.45470368;\n// ARCHITECTURE_SEED[3837] = sjglz1i0qea - TENSOR_WEIGHT: 0.52704456;\n// ARCHITECTURE_SEED[3838] = pk48k2d7rq - TENSOR_WEIGHT: 0.17599787;\n// ARCHITECTURE_SEED[3839] = at18mmdh4j - TENSOR_WEIGHT: 0.16828517;\n// ARCHITECTURE_SEED[3840] = 29r571t3724 - TENSOR_WEIGHT: 0.77726257;\n// ARCHITECTURE_SEED[3841] = ari5cgvwysq - TENSOR_WEIGHT: 0.01536102;\n// ARCHITECTURE_SEED[3842] = r3qtdwryme - TENSOR_WEIGHT: 0.41478463;\n// ARCHITECTURE_SEED[3843] = x66mto5msv - TENSOR_WEIGHT: 0.47394538;\n// ARCHITECTURE_SEED[3844] = 9j832byi3y - TENSOR_WEIGHT: 0.69205064;\n// ARCHITECTURE_SEED[3845] = 6g6mrj157jo - TENSOR_WEIGHT: 0.96648782;\n// ARCHITECTURE_SEED[3846] = w01p0vv5qa - TENSOR_WEIGHT: 0.97945832;\n// ARCHITECTURE_SEED[3847] = mgzrfmfvcpg - TENSOR_WEIGHT: 0.56266009;\n// ARCHITECTURE_SEED[3848] = vfxrhqhi6y - TENSOR_WEIGHT: 0.05886527;\n// ARCHITECTURE_SEED[3849] = bjr4tk2w877 - TENSOR_WEIGHT: 0.09552971;\n// ARCHITECTURE_SEED[3850] = 3a0n6kzsvgf - TENSOR_WEIGHT: 0.26199642;\n// ARCHITECTURE_SEED[3851] = f8jd221dlgr - TENSOR_WEIGHT: 0.25037306;\n// ARCHITECTURE_SEED[3852] = abr3haq6heq - TENSOR_WEIGHT: 0.03935540;\n// ARCHITECTURE_SEED[3853] = paxvqihf3u - TENSOR_WEIGHT: 0.47926685;\n// ARCHITECTURE_SEED[3854] = 88qdxlup7og - TENSOR_WEIGHT: 0.09322230;\n// ARCHITECTURE_SEED[3855] = 7jifp2jaue2 - TENSOR_WEIGHT: 0.06517246;\n// ARCHITECTURE_SEED[3856] = w6r1xj6a77g - TENSOR_WEIGHT: 0.47488768;\n// ARCHITECTURE_SEED[3857] = c2o8j46sqnw - TENSOR_WEIGHT: 0.96548115;\n// ARCHITECTURE_SEED[3858] = 0i7vr9f0le4m - TENSOR_WEIGHT: 0.06871461;\n// ARCHITECTURE_SEED[3859] = grdu29mnnsk - TENSOR_WEIGHT: 0.40941895;\n// ARCHITECTURE_SEED[3860] = h4de8xx5zns - TENSOR_WEIGHT: 0.51751871;\n// ARCHITECTURE_SEED[3861] = oxphv5ywgzr - TENSOR_WEIGHT: 0.34040813;\n// ARCHITECTURE_SEED[3862] = t3pl3ltfari - TENSOR_WEIGHT: 0.60393143;\n// ARCHITECTURE_SEED[3863] = 3siyfcarad6 - TENSOR_WEIGHT: 0.23156807;\n// ARCHITECTURE_SEED[3864] = r7yzttay8ks - TENSOR_WEIGHT: 0.98163176;\n// ARCHITECTURE_SEED[3865] = 8r87s50m6pi - TENSOR_WEIGHT: 0.93274476;\n// ARCHITECTURE_SEED[3866] = a3983ltzyvc - TENSOR_WEIGHT: 0.54878439;\n// ARCHITECTURE_SEED[3867] = v9j2mwabsz - TENSOR_WEIGHT: 0.64199471;\n// ARCHITECTURE_SEED[3868] = dez3enuptm8 - TENSOR_WEIGHT: 0.34607525;\n// ARCHITECTURE_SEED[3869] = 5bfl8zt1d27 - TENSOR_WEIGHT: 0.39913942;\n// ARCHITECTURE_SEED[3870] = kkc0qbbj4zp - TENSOR_WEIGHT: 0.90868451;\n// ARCHITECTURE_SEED[3871] = 55sb8qp1dno - TENSOR_WEIGHT: 0.49074277;\n// ARCHITECTURE_SEED[3872] = 06ra5alxtnk2 - TENSOR_WEIGHT: 0.21113137;\n// ARCHITECTURE_SEED[3873] = ba18sjsm95m - TENSOR_WEIGHT: 0.56872069;\n// ARCHITECTURE_SEED[3874] = jog8md0gapi - TENSOR_WEIGHT: 0.67411050;\n// ARCHITECTURE_SEED[3875] = adkfc9b7ibg - TENSOR_WEIGHT: 0.17667506;\n// ARCHITECTURE_SEED[3876] = 1m85zyktd9l - TENSOR_WEIGHT: 0.16667605;\n// ARCHITECTURE_SEED[3877] = 9xpdjqkdzhj - TENSOR_WEIGHT: 0.55057643;\n// ARCHITECTURE_SEED[3878] = 68qg2wt1yib - TENSOR_WEIGHT: 0.90143588;\n// ARCHITECTURE_SEED[3879] = gp8adroy1jk - TENSOR_WEIGHT: 0.76218478;\n// ARCHITECTURE_SEED[3880] = 5ylllnsfwfs - TENSOR_WEIGHT: 0.09542203;\n// ARCHITECTURE_SEED[3881] = ymg44d1waub - TENSOR_WEIGHT: 0.93105698;\n// ARCHITECTURE_SEED[3882] = rhbcoj4wht - TENSOR_WEIGHT: 0.43268267;\n// ARCHITECTURE_SEED[3883] = m2q4pmlz4h - TENSOR_WEIGHT: 0.30012461;\n// ARCHITECTURE_SEED[3884] = ssxgj58vdeq - TENSOR_WEIGHT: 0.89610450;\n// ARCHITECTURE_SEED[3885] = sfwogb9ci6 - TENSOR_WEIGHT: 0.10799589;\n// ARCHITECTURE_SEED[3886] = 978y3wdxpd - TENSOR_WEIGHT: 0.07747320;\n// ARCHITECTURE_SEED[3887] = i92cm6klqkd - TENSOR_WEIGHT: 0.59087849;\n// ARCHITECTURE_SEED[3888] = gckp7pbry6b - TENSOR_WEIGHT: 0.02861212;\n// ARCHITECTURE_SEED[3889] = 3pbnrk66p1u - TENSOR_WEIGHT: 0.75483440;\n// ARCHITECTURE_SEED[3890] = f92cizcse5l - TENSOR_WEIGHT: 0.31243144;\n// ARCHITECTURE_SEED[3891] = exqwaq0s6vk - TENSOR_WEIGHT: 0.59498188;\n// ARCHITECTURE_SEED[3892] = wuj7kc0twl - TENSOR_WEIGHT: 0.91213293;\n// ARCHITECTURE_SEED[3893] = rpbydruura - TENSOR_WEIGHT: 0.96623538;\n// ARCHITECTURE_SEED[3894] = skbg46s8no - TENSOR_WEIGHT: 0.42145161;\n// ARCHITECTURE_SEED[3895] = hijf1s8oln - TENSOR_WEIGHT: 0.16825822;\n// ARCHITECTURE_SEED[3896] = cck0f4kna1p - TENSOR_WEIGHT: 0.63215528;\n// ARCHITECTURE_SEED[3897] = nvm9eitie2 - TENSOR_WEIGHT: 0.71899410;\n// ARCHITECTURE_SEED[3898] = 93ymgctz37j - TENSOR_WEIGHT: 0.55763274;\n// ARCHITECTURE_SEED[3899] = ea3qm411y35 - TENSOR_WEIGHT: 0.64173416;\n// ARCHITECTURE_SEED[3900] = 9weph833zco - TENSOR_WEIGHT: 0.28637215;\n// ARCHITECTURE_SEED[3901] = 4bc6vk28plf - TENSOR_WEIGHT: 0.17526287;\n// ARCHITECTURE_SEED[3902] = ox9bg8vquc - TENSOR_WEIGHT: 0.02831371;\n// ARCHITECTURE_SEED[3903] = 5emllt4fgj - TENSOR_WEIGHT: 0.70919044;\n// ARCHITECTURE_SEED[3904] = xjf7f6fs7j - TENSOR_WEIGHT: 0.96423563;\n// ARCHITECTURE_SEED[3905] = jp20rhctxf - TENSOR_WEIGHT: 0.95908887;\n// ARCHITECTURE_SEED[3906] = 59ojjag11sc - TENSOR_WEIGHT: 0.18036807;\n// ARCHITECTURE_SEED[3907] = j33huxtflul - TENSOR_WEIGHT: 0.35113692;\n// ARCHITECTURE_SEED[3908] = ppao7p4oor - TENSOR_WEIGHT: 0.70961599;\n// ARCHITECTURE_SEED[3909] = yzco86i74s - TENSOR_WEIGHT: 0.09842328;\n// ARCHITECTURE_SEED[3910] = ye52uc4b2b - TENSOR_WEIGHT: 0.40613348;\n// ARCHITECTURE_SEED[3911] = 4ikd60ljgbo - TENSOR_WEIGHT: 0.46609428;\n// ARCHITECTURE_SEED[3912] = hcjfu0f037c - TENSOR_WEIGHT: 0.09754309;\n// ARCHITECTURE_SEED[3913] = 7fkte806p3k - TENSOR_WEIGHT: 0.06224670;\n// ARCHITECTURE_SEED[3914] = j6kdk5vh4vi - TENSOR_WEIGHT: 0.66502025;\n// ARCHITECTURE_SEED[3915] = qm6jq4tykod - TENSOR_WEIGHT: 0.67253312;\n// ARCHITECTURE_SEED[3916] = ql8xdd6kfy7 - TENSOR_WEIGHT: 0.99095975;\n// ARCHITECTURE_SEED[3917] = imb9rp7e1n - TENSOR_WEIGHT: 0.32472338;\n// ARCHITECTURE_SEED[3918] = kux1ouyi4ua - TENSOR_WEIGHT: 0.44213435;\n// ARCHITECTURE_SEED[3919] = 716c8qzu8h5 - TENSOR_WEIGHT: 0.87390239;\n// ARCHITECTURE_SEED[3920] = 62epeq5jxq4 - TENSOR_WEIGHT: 0.02541696;\n// ARCHITECTURE_SEED[3921] = u2rvwzmgkc8 - TENSOR_WEIGHT: 0.21006380;\n// ARCHITECTURE_SEED[3922] = rvg4zy7dq2 - TENSOR_WEIGHT: 0.74516670;\n// ARCHITECTURE_SEED[3923] = w7afadrk32 - TENSOR_WEIGHT: 0.41450598;\n// ARCHITECTURE_SEED[3924] = cxtfgok8pl4 - TENSOR_WEIGHT: 0.80171621;\n// ARCHITECTURE_SEED[3925] = 2aygynbu3zs - TENSOR_WEIGHT: 0.65706831;\n// ARCHITECTURE_SEED[3926] = up7d6ojwclj - TENSOR_WEIGHT: 0.53833175;\n// ARCHITECTURE_SEED[3927] = mznnzy37gqr - TENSOR_WEIGHT: 0.19226409;\n// ARCHITECTURE_SEED[3928] = 90p4du77f5n - TENSOR_WEIGHT: 0.64308820;\n// ARCHITECTURE_SEED[3929] = 0wqambwag6rd - TENSOR_WEIGHT: 0.61383322;\n// ARCHITECTURE_SEED[3930] = phwpd9zelbc - TENSOR_WEIGHT: 0.37694279;\n// ARCHITECTURE_SEED[3931] = rf4pxpbkden - TENSOR_WEIGHT: 0.50333060;\n// ARCHITECTURE_SEED[3932] = espfazzimf - TENSOR_WEIGHT: 0.57880145;\n// ARCHITECTURE_SEED[3933] = hwxitdpk76d - TENSOR_WEIGHT: 0.75342788;\n// ARCHITECTURE_SEED[3934] = 78gxg369ar9 - TENSOR_WEIGHT: 0.89639176;\n// ARCHITECTURE_SEED[3935] = qpqwp4h1iof - TENSOR_WEIGHT: 0.30829443;\n// ARCHITECTURE_SEED[3936] = 3o5kk14rhcx - TENSOR_WEIGHT: 0.42462220;\n// ARCHITECTURE_SEED[3937] = va52ue8nsi - TENSOR_WEIGHT: 0.38741968;\n// ARCHITECTURE_SEED[3938] = ytanu4t847h - TENSOR_WEIGHT: 0.95006065;\n// ARCHITECTURE_SEED[3939] = rpluzcu3mt - TENSOR_WEIGHT: 0.33274965;\n// ARCHITECTURE_SEED[3940] = wulqjgpc9bo - TENSOR_WEIGHT: 0.23814160;\n// ARCHITECTURE_SEED[3941] = zm7i9sj2rlq - TENSOR_WEIGHT: 0.29225392;\n// ARCHITECTURE_SEED[3942] = okzr8me1xmf - TENSOR_WEIGHT: 0.53488522;\n// ARCHITECTURE_SEED[3943] = gpnhwz7kdnb - TENSOR_WEIGHT: 0.80594733;\n// ARCHITECTURE_SEED[3944] = nf5uxjc6o3 - TENSOR_WEIGHT: 0.12928375;\n// ARCHITECTURE_SEED[3945] = 2wr68ki40wb - TENSOR_WEIGHT: 0.42591683;\n// ARCHITECTURE_SEED[3946] = gb94m68syfj - TENSOR_WEIGHT: 0.23273064;\n// ARCHITECTURE_SEED[3947] = k3t1k5rpig - TENSOR_WEIGHT: 0.28454733;\n// ARCHITECTURE_SEED[3948] = 8mljlur2v1b - TENSOR_WEIGHT: 0.52483093;\n// ARCHITECTURE_SEED[3949] = nlwey274hz - TENSOR_WEIGHT: 0.36787504;\n// ARCHITECTURE_SEED[3950] = remg7zq63k9 - TENSOR_WEIGHT: 0.14168390;\n// ARCHITECTURE_SEED[3951] = rua1vydykq - TENSOR_WEIGHT: 0.41690761;\n// ARCHITECTURE_SEED[3952] = p2xfgizvng - TENSOR_WEIGHT: 0.16985523;\n// ARCHITECTURE_SEED[3953] = xxa92g3bhis - TENSOR_WEIGHT: 0.66820400;\n// ARCHITECTURE_SEED[3954] = zz5ti5exc3m - TENSOR_WEIGHT: 0.14478951;\n// ARCHITECTURE_SEED[3955] = oh68brr5dud - TENSOR_WEIGHT: 0.12621768;\n// ARCHITECTURE_SEED[3956] = kw0anhwhy9 - TENSOR_WEIGHT: 0.14357943;\n// ARCHITECTURE_SEED[3957] = p8rcd1wgw6g - TENSOR_WEIGHT: 0.04831238;\n// ARCHITECTURE_SEED[3958] = 520vlbhof1j - TENSOR_WEIGHT: 0.93820630;\n// ARCHITECTURE_SEED[3959] = wd5s6uzbwnn - TENSOR_WEIGHT: 0.35988251;\n// ARCHITECTURE_SEED[3960] = pycvdn5icx - TENSOR_WEIGHT: 0.68180886;\n// ARCHITECTURE_SEED[3961] = jykvhnjg6z - TENSOR_WEIGHT: 0.79942333;\n// ARCHITECTURE_SEED[3962] = v93cayv6e8 - TENSOR_WEIGHT: 0.68472931;\n// ARCHITECTURE_SEED[3963] = ts4dh6wxzbj - TENSOR_WEIGHT: 0.60591768;\n// ARCHITECTURE_SEED[3964] = pv63bddkj1 - TENSOR_WEIGHT: 0.66520673;\n// ARCHITECTURE_SEED[3965] = j9yvicyrftf - TENSOR_WEIGHT: 0.29952841;\n// ARCHITECTURE_SEED[3966] = 3vphzlyjisx - TENSOR_WEIGHT: 0.19673769;\n// ARCHITECTURE_SEED[3967] = sh7nykp65hf - TENSOR_WEIGHT: 0.60242932;\n// ARCHITECTURE_SEED[3968] = zy8w6a40vx - TENSOR_WEIGHT: 0.77075572;\n// ARCHITECTURE_SEED[3969] = sngfapf5nug - TENSOR_WEIGHT: 0.35762326;\n// ARCHITECTURE_SEED[3970] = 1rgavfqmzlg - TENSOR_WEIGHT: 0.36583281;\n// ARCHITECTURE_SEED[3971] = nxnoi7ktiug - TENSOR_WEIGHT: 0.30586943;\n// ARCHITECTURE_SEED[3972] = 4th84ss80qi - TENSOR_WEIGHT: 0.36896517;\n// ARCHITECTURE_SEED[3973] = qr7t42zp4uh - TENSOR_WEIGHT: 0.29362508;\n// ARCHITECTURE_SEED[3974] = 0bj58zdcsc1 - TENSOR_WEIGHT: 0.13472431;\n// ARCHITECTURE_SEED[3975] = 05kzsbw7xze - TENSOR_WEIGHT: 0.85667324;\n// ARCHITECTURE_SEED[3976] = stlr1ayhyd - TENSOR_WEIGHT: 0.57274279;\n// ARCHITECTURE_SEED[3977] = y7c47qpg6ld - TENSOR_WEIGHT: 0.17016879;\n// ARCHITECTURE_SEED[3978] = ui35pfbbzca - TENSOR_WEIGHT: 0.34637781;\n// ARCHITECTURE_SEED[3979] = 6uioa530c9w - TENSOR_WEIGHT: 0.19803075;\n// ARCHITECTURE_SEED[3980] = cve60wzbv1a - TENSOR_WEIGHT: 0.53292726;\n// ARCHITECTURE_SEED[3981] = js4vf8497r - TENSOR_WEIGHT: 0.71858176;\n// ARCHITECTURE_SEED[3982] = zxgl8p6kyyl - TENSOR_WEIGHT: 0.83329768;\n// ARCHITECTURE_SEED[3983] = 6bcvc8xmc8k - TENSOR_WEIGHT: 0.96812702;\n// ARCHITECTURE_SEED[3984] = m0ck1z0kble - TENSOR_WEIGHT: 0.98351080;\n// ARCHITECTURE_SEED[3985] = gwxi45ndwdl - TENSOR_WEIGHT: 0.66967465;\n// ARCHITECTURE_SEED[3986] = fmuloichtlk - TENSOR_WEIGHT: 0.36686106;\n// ARCHITECTURE_SEED[3987] = kxosf1hr3im - TENSOR_WEIGHT: 0.34213932;\n// ARCHITECTURE_SEED[3988] = 0j90hm96r9qf - TENSOR_WEIGHT: 0.87312025;\n// ARCHITECTURE_SEED[3989] = 8ek0fobctk4 - TENSOR_WEIGHT: 0.61344951;\n// ARCHITECTURE_SEED[3990] = iqbaahijlgs - TENSOR_WEIGHT: 0.72834905;\n// ARCHITECTURE_SEED[3991] = 2i6c1rpxr62 - TENSOR_WEIGHT: 0.53949584;\n// ARCHITECTURE_SEED[3992] = e6abp741444 - TENSOR_WEIGHT: 0.28255721;\n// ARCHITECTURE_SEED[3993] = iwfjjfrxr5 - TENSOR_WEIGHT: 0.65055482;\n// ARCHITECTURE_SEED[3994] = ar7rhlpp3du - TENSOR_WEIGHT: 0.77604141;\n// ARCHITECTURE_SEED[3995] = hlgc4py5t1 - TENSOR_WEIGHT: 0.49639699;\n// ARCHITECTURE_SEED[3996] = qaftzd0s7h8 - TENSOR_WEIGHT: 0.46441849;\n// ARCHITECTURE_SEED[3997] = a4d9473fjg4 - TENSOR_WEIGHT: 0.93558811;\n// ARCHITECTURE_SEED[3998] = hi9r90wh1o9 - TENSOR_WEIGHT: 0.39673268;\n// ARCHITECTURE_SEED[3999] = um07dsnehjo - TENSOR_WEIGHT: 0.47581861;\n// ARCHITECTURE_SEED[4000] = jvxgbut0y1 - TENSOR_WEIGHT: 0.28326842;\n// ARCHITECTURE_SEED[4001] = zrtqaqdrof - TENSOR_WEIGHT: 0.21704859;\n// ARCHITECTURE_SEED[4002] = nnllhfgnv5 - TENSOR_WEIGHT: 0.47555481;\n// ARCHITECTURE_SEED[4003] = nckxlfchpg - TENSOR_WEIGHT: 0.96188690;\n// ARCHITECTURE_SEED[4004] = 6yns2nvtkx5 - TENSOR_WEIGHT: 0.34218342;\n// ARCHITECTURE_SEED[4005] = 69dhw876paw - TENSOR_WEIGHT: 0.73379299;\n// ARCHITECTURE_SEED[4006] = 2axlxjx4wyr - TENSOR_WEIGHT: 0.61264041;\n// ARCHITECTURE_SEED[4007] = vg7o93wzcdh - TENSOR_WEIGHT: 0.19398194;\n// ARCHITECTURE_SEED[4008] = 6r9vu3i9kwy - TENSOR_WEIGHT: 0.32350202;\n// ARCHITECTURE_SEED[4009] = 7zbr9hxrd2q - TENSOR_WEIGHT: 0.10912924;\n// ARCHITECTURE_SEED[4010] = 6ebgvh7dgmf - TENSOR_WEIGHT: 0.02226856;\n// ARCHITECTURE_SEED[4011] = sxlmilhsk0o - TENSOR_WEIGHT: 0.81172538;\n// ARCHITECTURE_SEED[4012] = hg66bc5eaea - TENSOR_WEIGHT: 0.89391033;\n// ARCHITECTURE_SEED[4013] = vjv0ey0ir6f - TENSOR_WEIGHT: 0.75177250;\n// ARCHITECTURE_SEED[4014] = 0opcjf4z859h - TENSOR_WEIGHT: 0.90256609;\n// ARCHITECTURE_SEED[4015] = coi68bleidr - TENSOR_WEIGHT: 0.37566124;\n// ARCHITECTURE_SEED[4016] = kym8drynji - TENSOR_WEIGHT: 0.15610550;\n// ARCHITECTURE_SEED[4017] = dlc7ufvqvil - TENSOR_WEIGHT: 0.41528537;\n// ARCHITECTURE_SEED[4018] = x17shigm61 - TENSOR_WEIGHT: 0.42447661;\n// ARCHITECTURE_SEED[4019] = 2amvb2lc91v - TENSOR_WEIGHT: 0.68930552;\n// ARCHITECTURE_SEED[4020] = 8t94nujxe0s - TENSOR_WEIGHT: 0.09318824;\n// ARCHITECTURE_SEED[4021] = dnjlym1hcgn - TENSOR_WEIGHT: 0.23795215;\n// ARCHITECTURE_SEED[4022] = oitatoh2yd - TENSOR_WEIGHT: 0.06404275;\n// ARCHITECTURE_SEED[4023] = bkdqmddk7qj - TENSOR_WEIGHT: 0.06428210;\n// ARCHITECTURE_SEED[4024] = s5xhec3ork8 - TENSOR_WEIGHT: 0.52294640;\n// ARCHITECTURE_SEED[4025] = hvva78r7onl - TENSOR_WEIGHT: 0.65286069;\n// ARCHITECTURE_SEED[4026] = ov2tn5u4ssb - TENSOR_WEIGHT: 0.67513284;\n// ARCHITECTURE_SEED[4027] = lxijk9fijo - TENSOR_WEIGHT: 0.96167466;\n// ARCHITECTURE_SEED[4028] = kycefvnpmkb - TENSOR_WEIGHT: 0.43417466;\n// ARCHITECTURE_SEED[4029] = mxfh82e8m9 - TENSOR_WEIGHT: 0.60252158;\n// ARCHITECTURE_SEED[4030] = r73p6ci8ez - TENSOR_WEIGHT: 0.21735828;\n// ARCHITECTURE_SEED[4031] = g6ujgxvy5bd - TENSOR_WEIGHT: 0.12242763;\n// ARCHITECTURE_SEED[4032] = 5mt4pe94e67 - TENSOR_WEIGHT: 0.92659746;\n// ARCHITECTURE_SEED[4033] = 0ye280r4rbl - TENSOR_WEIGHT: 0.36121425;\n// ARCHITECTURE_SEED[4034] = ilt720j9ev - TENSOR_WEIGHT: 0.09033058;\n// ARCHITECTURE_SEED[4035] = 9dg985n3b5e - TENSOR_WEIGHT: 0.15620201;\n// ARCHITECTURE_SEED[4036] = pwv2d4z07un - TENSOR_WEIGHT: 0.77741794;\n// ARCHITECTURE_SEED[4037] = jjvsh5uu19 - TENSOR_WEIGHT: 0.80926436;\n// ARCHITECTURE_SEED[4038] = 38fx9sjg1jn - TENSOR_WEIGHT: 0.88159445;\n// ARCHITECTURE_SEED[4039] = ls1fqkm7az - TENSOR_WEIGHT: 0.88361855;\n// ARCHITECTURE_SEED[4040] = fu3yzj7131c - TENSOR_WEIGHT: 0.14524238;\n// ARCHITECTURE_SEED[4041] = mkaqcn6yiim - TENSOR_WEIGHT: 0.09758527;\n// ARCHITECTURE_SEED[4042] = sh2soaqvaoq - TENSOR_WEIGHT: 0.38683506;\n// ARCHITECTURE_SEED[4043] = f07akyvpsuk - TENSOR_WEIGHT: 0.77768586;\n// ARCHITECTURE_SEED[4044] = ntxe9e9tfnn - TENSOR_WEIGHT: 0.90084082;\n// ARCHITECTURE_SEED[4045] = 4h86xlww5bp - TENSOR_WEIGHT: 0.06673609;\n// ARCHITECTURE_SEED[4046] = rl0la1czsye - TENSOR_WEIGHT: 0.65572637;\n// ARCHITECTURE_SEED[4047] = kjy06q9tap - TENSOR_WEIGHT: 0.44669214;\n// ARCHITECTURE_SEED[4048] = vdws2kzsqnm - TENSOR_WEIGHT: 0.56713882;\n// ARCHITECTURE_SEED[4049] = 7vpiearnlee - TENSOR_WEIGHT: 0.49680124;\n// ARCHITECTURE_SEED[4050] = gwokz7wpj5b - TENSOR_WEIGHT: 0.45458990;\n// ARCHITECTURE_SEED[4051] = ctelpund0hh - TENSOR_WEIGHT: 0.09176603;\n// ARCHITECTURE_SEED[4052] = nhragab2pls - TENSOR_WEIGHT: 0.35470175;\n// ARCHITECTURE_SEED[4053] = wpgwr9sts4 - TENSOR_WEIGHT: 0.34588253;\n// ARCHITECTURE_SEED[4054] = be94gdlqip6 - TENSOR_WEIGHT: 0.77957890;\n// ARCHITECTURE_SEED[4055] = a0j5ri561sq - TENSOR_WEIGHT: 0.42102443;\n// ARCHITECTURE_SEED[4056] = p4y7bc2i8ba - TENSOR_WEIGHT: 0.24365603;\n// ARCHITECTURE_SEED[4057] = voibstbvg2 - TENSOR_WEIGHT: 0.18048786;\n// ARCHITECTURE_SEED[4058] = qr0q5uiz9d - TENSOR_WEIGHT: 0.16635856;\n// ARCHITECTURE_SEED[4059] = mno7c00k0x - TENSOR_WEIGHT: 0.14951583;\n// ARCHITECTURE_SEED[4060] = tl1k9qxw5n - TENSOR_WEIGHT: 0.17715428;\n// ARCHITECTURE_SEED[4061] = v2z5v7ddbkm - TENSOR_WEIGHT: 0.56401627;\n// ARCHITECTURE_SEED[4062] = wwyfm5k474 - TENSOR_WEIGHT: 0.53806674;\n// ARCHITECTURE_SEED[4063] = k8jqivfbyj - TENSOR_WEIGHT: 0.95096623;\n// ARCHITECTURE_SEED[4064] = c389tiu4o94 - TENSOR_WEIGHT: 0.15767629;\n// ARCHITECTURE_SEED[4065] = 55ch7254okc - TENSOR_WEIGHT: 0.17692114;\n// ARCHITECTURE_SEED[4066] = 6zqj7r0aj1f - TENSOR_WEIGHT: 0.03427757;\n// ARCHITECTURE_SEED[4067] = 9miz0xt6jb9 - TENSOR_WEIGHT: 0.29715204;\n// ARCHITECTURE_SEED[4068] = qlfu248g8o - TENSOR_WEIGHT: 0.32764240;\n// ARCHITECTURE_SEED[4069] = mknyra67rno - TENSOR_WEIGHT: 0.98291064;\n// ARCHITECTURE_SEED[4070] = krttvn8xon - TENSOR_WEIGHT: 0.24127380;\n// ARCHITECTURE_SEED[4071] = w19ntqakh8p - TENSOR_WEIGHT: 0.99867357;\n// ARCHITECTURE_SEED[4072] = uypy8mtyg6 - TENSOR_WEIGHT: 0.17471773;\n// ARCHITECTURE_SEED[4073] = rd2wyk61r2 - TENSOR_WEIGHT: 0.56248216;\n// ARCHITECTURE_SEED[4074] = vuhas2u32ws - TENSOR_WEIGHT: 0.78926881;\n// ARCHITECTURE_SEED[4075] = 1xxqnpmwnk1 - TENSOR_WEIGHT: 0.96964219;\n// ARCHITECTURE_SEED[4076] = ldh2u7mrto9 - TENSOR_WEIGHT: 0.28088536;\n// ARCHITECTURE_SEED[4077] = e5b9tgstqaq - TENSOR_WEIGHT: 0.49419920;\n// ARCHITECTURE_SEED[4078] = slx5fewcws8 - TENSOR_WEIGHT: 0.30277085;\n// ARCHITECTURE_SEED[4079] = ijrghp95hbo - TENSOR_WEIGHT: 0.88001790;\n// ARCHITECTURE_SEED[4080] = wm30hubsjwg - TENSOR_WEIGHT: 0.92203127;\n// ARCHITECTURE_SEED[4081] = 5j20su2cz9j - TENSOR_WEIGHT: 0.17351090;\n// ARCHITECTURE_SEED[4082] = 6n0hln0zlre - TENSOR_WEIGHT: 0.01008487;\n// ARCHITECTURE_SEED[4083] = uh2e7dczaa9 - TENSOR_WEIGHT: 0.45673533;\n// ARCHITECTURE_SEED[4084] = y8mz219cp1a - TENSOR_WEIGHT: 0.00043053;\n// ARCHITECTURE_SEED[4085] = 9hzr1etun3k - TENSOR_WEIGHT: 0.53972444;\n// ARCHITECTURE_SEED[4086] = 3qfigsj910p - TENSOR_WEIGHT: 0.27460478;\n// ARCHITECTURE_SEED[4087] = ymxvf75ieaj - TENSOR_WEIGHT: 0.80346995;\n// ARCHITECTURE_SEED[4088] = mgmi49p4w1a - TENSOR_WEIGHT: 0.13579255;\n// ARCHITECTURE_SEED[4089] = y6h4hddnwcn - TENSOR_WEIGHT: 0.74883061;\n// ARCHITECTURE_SEED[4090] = 9sgit13gm09 - TENSOR_WEIGHT: 0.79542460;\n// ARCHITECTURE_SEED[4091] = b3hgaefq81o - TENSOR_WEIGHT: 0.59116555;\n// ARCHITECTURE_SEED[4092] = cbakhhqb4wp - TENSOR_WEIGHT: 0.95743957;\n// ARCHITECTURE_SEED[4093] = slaq8iycoul - TENSOR_WEIGHT: 0.97604809;\n// ARCHITECTURE_SEED[4094] = eucu5laj7xk - TENSOR_WEIGHT: 0.72976961;\n// ARCHITECTURE_SEED[4095] = 5lsa5a89a5q - TENSOR_WEIGHT: 0.20757290;\n// ARCHITECTURE_SEED[4096] = huuaqsjaj4g - TENSOR_WEIGHT: 0.84918267;\n// ARCHITECTURE_SEED[4097] = ijvb9th2of - TENSOR_WEIGHT: 0.56768367;\n// ARCHITECTURE_SEED[4098] = a3ri6vgdjgr - TENSOR_WEIGHT: 0.62652891;\n// ARCHITECTURE_SEED[4099] = d33wdm7uefq - TENSOR_WEIGHT: 0.26427385;\n// ARCHITECTURE_SEED[4100] = bxdmaja253n - TENSOR_WEIGHT: 0.13464274;\n// ARCHITECTURE_SEED[4101] = rrb8nvwvkrc - TENSOR_WEIGHT: 0.55469208;\n// ARCHITECTURE_SEED[4102] = c1xubr9nn0m - TENSOR_WEIGHT: 0.37144679;\n// ARCHITECTURE_SEED[4103] = h7tlhzovpun - TENSOR_WEIGHT: 0.22269274;\n// ARCHITECTURE_SEED[4104] = mjlzvne0ln - TENSOR_WEIGHT: 0.17070347;\n// ARCHITECTURE_SEED[4105] = ey2panidhvs - TENSOR_WEIGHT: 0.98597869;\n// ARCHITECTURE_SEED[4106] = jo36nmrkkne - TENSOR_WEIGHT: 0.34953775;\n// ARCHITECTURE_SEED[4107] = dfil2vbz8lo - TENSOR_WEIGHT: 0.60582741;\n// ARCHITECTURE_SEED[4108] = twnszyq3zt - TENSOR_WEIGHT: 0.92034371;\n// ARCHITECTURE_SEED[4109] = svpek1gzgoh - TENSOR_WEIGHT: 0.58271452;\n// ARCHITECTURE_SEED[4110] = 9vrfnfv3wgl - TENSOR_WEIGHT: 0.11777208;\n// ARCHITECTURE_SEED[4111] = mpjums111d - TENSOR_WEIGHT: 0.83874624;\n// ARCHITECTURE_SEED[4112] = cnv2dt4u6d - TENSOR_WEIGHT: 0.24082657;\n// ARCHITECTURE_SEED[4113] = 2e9jdzngqdg - TENSOR_WEIGHT: 0.44659512;\n// ARCHITECTURE_SEED[4114] = nzw1bvylnw - TENSOR_WEIGHT: 0.95946064;\n// ARCHITECTURE_SEED[4115] = jrp72s8bed - TENSOR_WEIGHT: 0.42259909;\n// ARCHITECTURE_SEED[4116] = h2vkwj6ca0s - TENSOR_WEIGHT: 0.50587554;\n// ARCHITECTURE_SEED[4117] = 3klmk0160ie - TENSOR_WEIGHT: 0.71524074;\n// ARCHITECTURE_SEED[4118] = z9nsrkidg5i - TENSOR_WEIGHT: 0.76261122;\n// ARCHITECTURE_SEED[4119] = 744bl4jozd8 - TENSOR_WEIGHT: 0.32430847;\n// ARCHITECTURE_SEED[4120] = jpvou5u3bcp - TENSOR_WEIGHT: 0.21961354;\n// ARCHITECTURE_SEED[4121] = xfgs7l8j2y9 - TENSOR_WEIGHT: 0.86731434;\n// ARCHITECTURE_SEED[4122] = hwkd1fr3ctc - TENSOR_WEIGHT: 0.32060825;\n// ARCHITECTURE_SEED[4123] = q9a39f9kxrf - TENSOR_WEIGHT: 0.10000932;\n// ARCHITECTURE_SEED[4124] = vgxgxld5zwe - TENSOR_WEIGHT: 0.00434777;\n// ARCHITECTURE_SEED[4125] = jkuj5w389ak - TENSOR_WEIGHT: 0.51655579;\n// ARCHITECTURE_SEED[4126] = hitrsdbggze - TENSOR_WEIGHT: 0.23233125;\n// ARCHITECTURE_SEED[4127] = 954g3el3o38 - TENSOR_WEIGHT: 0.30425110;\n// ARCHITECTURE_SEED[4128] = g0kwpa0vyzf - TENSOR_WEIGHT: 0.59102448;\n// ARCHITECTURE_SEED[4129] = oznpxat2grm - TENSOR_WEIGHT: 0.48987059;\n// ARCHITECTURE_SEED[4130] = bwyhc77gs8 - TENSOR_WEIGHT: 0.65968090;\n// ARCHITECTURE_SEED[4131] = ad9w62ddivi - TENSOR_WEIGHT: 0.27814730;\n// ARCHITECTURE_SEED[4132] = f5zys4tfwsg - TENSOR_WEIGHT: 0.87099718;\n// ARCHITECTURE_SEED[4133] = 1uvm3nkz4i7 - TENSOR_WEIGHT: 0.04722260;\n// ARCHITECTURE_SEED[4134] = xjsr9ecw01 - TENSOR_WEIGHT: 0.42668969;\n// ARCHITECTURE_SEED[4135] = qjwnq59h1o - TENSOR_WEIGHT: 0.47896953;\n// ARCHITECTURE_SEED[4136] = gyz8b0db2ne - TENSOR_WEIGHT: 0.11553757;\n// ARCHITECTURE_SEED[4137] = trc8cm6ze7m - TENSOR_WEIGHT: 0.10926185;\n// ARCHITECTURE_SEED[4138] = id7s6dgor8q - TENSOR_WEIGHT: 0.48651730;\n// ARCHITECTURE_SEED[4139] = muzjnmkipg - TENSOR_WEIGHT: 0.81975449;\n// ARCHITECTURE_SEED[4140] = pinpzg7lq1 - TENSOR_WEIGHT: 0.60360348;\n// ARCHITECTURE_SEED[4141] = c5wie1v0lc - TENSOR_WEIGHT: 0.28864759;\n// ARCHITECTURE_SEED[4142] = qs16oidfx5 - TENSOR_WEIGHT: 0.02128744;\n// ARCHITECTURE_SEED[4143] = sxhc20c7dw - TENSOR_WEIGHT: 0.98947885;\n// ARCHITECTURE_SEED[4144] = p6tdmdwtd - TENSOR_WEIGHT: 0.53513453;\n// ARCHITECTURE_SEED[4145] = qlmdacs8egk - TENSOR_WEIGHT: 0.16149916;\n// ARCHITECTURE_SEED[4146] = xycr11916p - TENSOR_WEIGHT: 0.06743476;\n// ARCHITECTURE_SEED[4147] = wfq4awcl9g - TENSOR_WEIGHT: 0.31439944;\n// ARCHITECTURE_SEED[4148] = mtw4761wrwc - TENSOR_WEIGHT: 0.10905420;\n// ARCHITECTURE_SEED[4149] = slzxv8amyld - TENSOR_WEIGHT: 0.50707284;\n// ARCHITECTURE_SEED[4150] = ygrdsz1xsi8 - TENSOR_WEIGHT: 0.45954120;\n// ARCHITECTURE_SEED[4151] = 5ukl4ptamx8 - TENSOR_WEIGHT: 0.27756454;\n// ARCHITECTURE_SEED[4152] = ndw7z8jepu - TENSOR_WEIGHT: 0.14120099;\n// ARCHITECTURE_SEED[4153] = otzcecc64p - TENSOR_WEIGHT: 0.49064659;\n// ARCHITECTURE_SEED[4154] = 4o8nwn35b7g - TENSOR_WEIGHT: 0.32369757;\n// ARCHITECTURE_SEED[4155] = v2fsl95nzki - TENSOR_WEIGHT: 0.02530212;\n// ARCHITECTURE_SEED[4156] = zq7bwpy7rwj - TENSOR_WEIGHT: 0.76495328;\n// ARCHITECTURE_SEED[4157] = 8xc3pi1r8dg - TENSOR_WEIGHT: 0.84396686;\n// ARCHITECTURE_SEED[4158] = 2hrw0oorjy7 - TENSOR_WEIGHT: 0.39543231;\n// ARCHITECTURE_SEED[4159] = dnz15bt42rb - TENSOR_WEIGHT: 0.08389271;\n// ARCHITECTURE_SEED[4160] = mkcl0056b89 - TENSOR_WEIGHT: 0.11718376;\n// ARCHITECTURE_SEED[4161] = 0z22shgp5v9 - TENSOR_WEIGHT: 0.02173640;\n// ARCHITECTURE_SEED[4162] = rlwsdsoby8 - TENSOR_WEIGHT: 0.76858223;\n// ARCHITECTURE_SEED[4163] = lla7aopk73j - TENSOR_WEIGHT: 0.42952874;\n// ARCHITECTURE_SEED[4164] = idjwi4fohg - TENSOR_WEIGHT: 0.14063833;\n// ARCHITECTURE_SEED[4165] = bxi3lt6jdy5 - TENSOR_WEIGHT: 0.57478295;\n// ARCHITECTURE_SEED[4166] = dxoc1jiln6d - TENSOR_WEIGHT: 0.13825140;\n// ARCHITECTURE_SEED[4167] = rju7whutvya - TENSOR_WEIGHT: 0.98701395;\n// ARCHITECTURE_SEED[4168] = kluuztr9pss - TENSOR_WEIGHT: 0.66575981;\n// ARCHITECTURE_SEED[4169] = pflko0h3m98 - TENSOR_WEIGHT: 0.33461622;\n// ARCHITECTURE_SEED[4170] = fk8pmtox9o - TENSOR_WEIGHT: 0.10288586;\n// ARCHITECTURE_SEED[4171] = schd0klu4rp - TENSOR_WEIGHT: 0.88434710;\n// ARCHITECTURE_SEED[4172] = cf0h3oktud4 - TENSOR_WEIGHT: 0.67222930;\n// ARCHITECTURE_SEED[4173] = edqaamdhy3g - TENSOR_WEIGHT: 0.50908986;\n// ARCHITECTURE_SEED[4174] = 0fexpnzmcn2b - TENSOR_WEIGHT: 0.68632951;\n// ARCHITECTURE_SEED[4175] = iac0cag54mb - TENSOR_WEIGHT: 0.02362551;\n// ARCHITECTURE_SEED[4176] = 7bs7bf8anqq - TENSOR_WEIGHT: 0.48721734;\n// ARCHITECTURE_SEED[4177] = cpsxss9qoxs - TENSOR_WEIGHT: 0.21491707;\n// ARCHITECTURE_SEED[4178] = 8aj58o5gkl4 - TENSOR_WEIGHT: 0.29601959;\n// ARCHITECTURE_SEED[4179] = kxjd1p9r07o - TENSOR_WEIGHT: 0.98009195;\n// ARCHITECTURE_SEED[4180] = 2ibwc6tktun - TENSOR_WEIGHT: 0.15921995;\n// ARCHITECTURE_SEED[4181] = ksgbd9vagdc - TENSOR_WEIGHT: 0.83987718;\n// ARCHITECTURE_SEED[4182] = g998xh1udx - TENSOR_WEIGHT: 0.38670549;\n// ARCHITECTURE_SEED[4183] = us7iuxzcmze - TENSOR_WEIGHT: 0.55570831;\n// ARCHITECTURE_SEED[4184] = wysfww929t - TENSOR_WEIGHT: 0.61534333;\n// ARCHITECTURE_SEED[4185] = epqok8k4t3k - TENSOR_WEIGHT: 0.32866831;\n// ARCHITECTURE_SEED[4186] = lofbi0heq5h - TENSOR_WEIGHT: 0.37324519;\n// ARCHITECTURE_SEED[4187] = 6igybf0s7d - TENSOR_WEIGHT: 0.83042212;\n// ARCHITECTURE_SEED[4188] = ualqloldrdr - TENSOR_WEIGHT: 0.98521757;\n// ARCHITECTURE_SEED[4189] = rw63lw64ou - TENSOR_WEIGHT: 0.29412716;\n// ARCHITECTURE_SEED[4190] = nh31x2tgq7d - TENSOR_WEIGHT: 0.68469086;\n// ARCHITECTURE_SEED[4191] = ae6w7soyxz - TENSOR_WEIGHT: 0.00857352;\n// ARCHITECTURE_SEED[4192] = fm5kqvihvaw - TENSOR_WEIGHT: 0.88450665;\n// ARCHITECTURE_SEED[4193] = r70ubq3qs9 - TENSOR_WEIGHT: 0.00088979;\n// ARCHITECTURE_SEED[4194] = 84f88jhez9 - TENSOR_WEIGHT: 0.67263491;\n// ARCHITECTURE_SEED[4195] = o6h9gb69mg - TENSOR_WEIGHT: 0.96641385;\n// ARCHITECTURE_SEED[4196] = 5pwq9v6wwjb - TENSOR_WEIGHT: 0.06716344;\n// ARCHITECTURE_SEED[4197] = rly7a75lkad - TENSOR_WEIGHT: 0.91261890;\n// ARCHITECTURE_SEED[4198] = voxqwf2t8dj - TENSOR_WEIGHT: 0.91718601;\n// ARCHITECTURE_SEED[4199] = f1yrok8kosq - TENSOR_WEIGHT: 0.03631467;\n// ARCHITECTURE_SEED[4200] = 5e3cdxmfq2k - TENSOR_WEIGHT: 0.05942709;\n// ARCHITECTURE_SEED[4201] = siy9wi7fkmo - TENSOR_WEIGHT: 0.22876692;\n// ARCHITECTURE_SEED[4202] = ey81nnfenef - TENSOR_WEIGHT: 0.17690176;\n// ARCHITECTURE_SEED[4203] = 6eb0j05f94d - TENSOR_WEIGHT: 0.99489784;\n// ARCHITECTURE_SEED[4204] = s5d5vxqfgbi - TENSOR_WEIGHT: 0.19102228;\n// ARCHITECTURE_SEED[4205] = pypjxx58rg - TENSOR_WEIGHT: 0.97492986;\n// ARCHITECTURE_SEED[4206] = mndq8oloo1r - TENSOR_WEIGHT: 0.58043001;\n// ARCHITECTURE_SEED[4207] = mrdots75u2a - TENSOR_WEIGHT: 0.19716490;\n// ARCHITECTURE_SEED[4208] = 500yorhck0k - TENSOR_WEIGHT: 0.53698201;\n// ARCHITECTURE_SEED[4209] = 4y5x4vuqusf - TENSOR_WEIGHT: 0.14546437;\n// ARCHITECTURE_SEED[4210] = p22wjcw5qsb - TENSOR_WEIGHT: 0.88516813;\n// ARCHITECTURE_SEED[4211] = uemhy8lyag - TENSOR_WEIGHT: 0.03283324;\n// ARCHITECTURE_SEED[4212] = hbybl0y6mws - TENSOR_WEIGHT: 0.69507226;\n// ARCHITECTURE_SEED[4213] = e6m4ikw7gwe - TENSOR_WEIGHT: 0.53961508;\n// ARCHITECTURE_SEED[4214] = c3b48z7ktr8 - TENSOR_WEIGHT: 0.00821100;\n// ARCHITECTURE_SEED[4215] = zc3s08sjb9 - TENSOR_WEIGHT: 0.74003568;\n// ARCHITECTURE_SEED[4216] = av3rp4cm06e - TENSOR_WEIGHT: 0.74370662;\n// ARCHITECTURE_SEED[4217] = fby6bnbf7ut - TENSOR_WEIGHT: 0.25768680;\n// ARCHITECTURE_SEED[4218] = iuby2heodxn - TENSOR_WEIGHT: 0.56341545;\n// ARCHITECTURE_SEED[4219] = 4oyqme6cu5s - TENSOR_WEIGHT: 0.52259936;\n// ARCHITECTURE_SEED[4220] = mihox6yjv3 - TENSOR_WEIGHT: 0.96915482;\n// ARCHITECTURE_SEED[4221] = xq3e0p9qlm - TENSOR_WEIGHT: 0.04618288;\n// ARCHITECTURE_SEED[4222] = a2k8am87qr9 - TENSOR_WEIGHT: 0.65107452;\n// ARCHITECTURE_SEED[4223] = u2u2up4rt0c - TENSOR_WEIGHT: 0.18592112;\n// ARCHITECTURE_SEED[4224] = pkggx5rj2oa - TENSOR_WEIGHT: 0.71861877;\n// ARCHITECTURE_SEED[4225] = sapjmvic4fb - TENSOR_WEIGHT: 0.57797181;\n// ARCHITECTURE_SEED[4226] = zh8d3hiuhv - TENSOR_WEIGHT: 0.99250347;\n// ARCHITECTURE_SEED[4227] = 8d0i8u5maj6 - TENSOR_WEIGHT: 0.08339093;\n// ARCHITECTURE_SEED[4228] = g0k6g6vqwmr - TENSOR_WEIGHT: 0.31218435;\n// ARCHITECTURE_SEED[4229] = n2jhqvba7b - TENSOR_WEIGHT: 0.66186395;\n// ARCHITECTURE_SEED[4230] = 7p99irwotch - TENSOR_WEIGHT: 0.87187615;\n// ARCHITECTURE_SEED[4231] = nlk5hisl628 - TENSOR_WEIGHT: 0.20546273;\n// ARCHITECTURE_SEED[4232] = i8uofttqb8 - TENSOR_WEIGHT: 0.41164788;\n// ARCHITECTURE_SEED[4233] = xfeb8t194bk - TENSOR_WEIGHT: 0.54694319;\n// ARCHITECTURE_SEED[4234] = 2xp2la4nmke - TENSOR_WEIGHT: 0.26684950;\n// ARCHITECTURE_SEED[4235] = xlmdoqbrh7r - TENSOR_WEIGHT: 0.43572411;\n// ARCHITECTURE_SEED[4236] = ama0y1wwtsp - TENSOR_WEIGHT: 0.66082043;\n// ARCHITECTURE_SEED[4237] = 6t7i6xymw9 - TENSOR_WEIGHT: 0.82915906;\n// ARCHITECTURE_SEED[4238] = vg49ankked - TENSOR_WEIGHT: 0.52860505;\n// ARCHITECTURE_SEED[4239] = 6lpw68hh4rb - TENSOR_WEIGHT: 0.12134203;\n// ARCHITECTURE_SEED[4240] = k0q52035lqg - TENSOR_WEIGHT: 0.62838736;\n// ARCHITECTURE_SEED[4241] = 0z65ubmlt75n - TENSOR_WEIGHT: 0.39398095;\n// ARCHITECTURE_SEED[4242] = ne74f1q7n7i - TENSOR_WEIGHT: 0.72333234;\n// ARCHITECTURE_SEED[4243] = v21c0p3g4k - TENSOR_WEIGHT: 0.94229955;\n// ARCHITECTURE_SEED[4244] = 5fpao86qdlm - TENSOR_WEIGHT: 0.28028090;\n// ARCHITECTURE_SEED[4245] = u9mrae6pi8a - TENSOR_WEIGHT: 0.40749609;\n// ARCHITECTURE_SEED[4246] = 3j32ozyd15l - TENSOR_WEIGHT: 0.43519129;\n// ARCHITECTURE_SEED[4247] = 2m9pobpzz4n - TENSOR_WEIGHT: 0.09054594;\n// ARCHITECTURE_SEED[4248] = 6ilskagunei - TENSOR_WEIGHT: 0.65129347;\n// ARCHITECTURE_SEED[4249] = m244e8jzh7r - TENSOR_WEIGHT: 0.06931283;\n// ARCHITECTURE_SEED[4250] = uc4l2bnqcgj - TENSOR_WEIGHT: 0.90354587;\n// ARCHITECTURE_SEED[4251] = i053qu5ct7 - TENSOR_WEIGHT: 0.31600478;\n// ARCHITECTURE_SEED[4252] = kn3ag6j7js - TENSOR_WEIGHT: 0.71353381;\n// ARCHITECTURE_SEED[4253] = 5u9xz6ykn4b - TENSOR_WEIGHT: 0.02106996;\n// ARCHITECTURE_SEED[4254] = yu4nkftkm4 - TENSOR_WEIGHT: 0.63197235;\n// ARCHITECTURE_SEED[4255] = nvfngk466q - TENSOR_WEIGHT: 0.86307273;\n// ARCHITECTURE_SEED[4256] = x83y3v3kedf - TENSOR_WEIGHT: 0.74106819;\n// ARCHITECTURE_SEED[4257] = qr9n81g28hc - TENSOR_WEIGHT: 0.26775411;\n// ARCHITECTURE_SEED[4258] = y0rc2o4379 - TENSOR_WEIGHT: 0.70860279;\n// ARCHITECTURE_SEED[4259] = dbtted8va6f - TENSOR_WEIGHT: 0.79992260;\n// ARCHITECTURE_SEED[4260] = 9p58x9t5pzd - TENSOR_WEIGHT: 0.55476690;\n// ARCHITECTURE_SEED[4261] = 3pyvzm8l5md - TENSOR_WEIGHT: 0.85155586;\n// ARCHITECTURE_SEED[4262] = m5psbg8egnc - TENSOR_WEIGHT: 0.33217204;\n// ARCHITECTURE_SEED[4263] = ypnxpw8okfi - TENSOR_WEIGHT: 0.69412244;\n// ARCHITECTURE_SEED[4264] = 681m5c0qs1l - TENSOR_WEIGHT: 0.34525697;\n// ARCHITECTURE_SEED[4265] = 6j96js9fik3 - TENSOR_WEIGHT: 0.71877060;\n// ARCHITECTURE_SEED[4266] = d9lav61cji8 - TENSOR_WEIGHT: 0.10999000;\n// ARCHITECTURE_SEED[4267] = 3v03gc0993m - TENSOR_WEIGHT: 0.11474015;\n// ARCHITECTURE_SEED[4268] = 2z6ihflfkq9 - TENSOR_WEIGHT: 0.65023252;\n// ARCHITECTURE_SEED[4269] = 1o4itxvad3v - TENSOR_WEIGHT: 0.87130743;\n// ARCHITECTURE_SEED[4270] = eiu6l679n3u - TENSOR_WEIGHT: 0.71204699;\n// ARCHITECTURE_SEED[4271] = wqt7qwpxl1 - TENSOR_WEIGHT: 0.17631786;\n// ARCHITECTURE_SEED[4272] = 2l2h0cepe1i - TENSOR_WEIGHT: 0.27410489;\n// ARCHITECTURE_SEED[4273] = u6ojc2ystz8 - TENSOR_WEIGHT: 0.63825109;\n// ARCHITECTURE_SEED[4274] = sx0etir3sx - TENSOR_WEIGHT: 0.19043712;\n// ARCHITECTURE_SEED[4275] = m7dl5bxp0h - TENSOR_WEIGHT: 0.12555165;\n// ARCHITECTURE_SEED[4276] = 6lcv9m4unti - TENSOR_WEIGHT: 0.38428240;\n// ARCHITECTURE_SEED[4277] = r8mubxsx9k - TENSOR_WEIGHT: 0.02148922;\n// ARCHITECTURE_SEED[4278] = qvhpb12em2c - TENSOR_WEIGHT: 0.15705664;\n// ARCHITECTURE_SEED[4279] = eu82w1grdfu - TENSOR_WEIGHT: 0.74638653;\n// ARCHITECTURE_SEED[4280] = 35ekbfdf0qt - TENSOR_WEIGHT: 0.17163521;\n// ARCHITECTURE_SEED[4281] = p70nq4swyhq - TENSOR_WEIGHT: 0.99158423;\n// ARCHITECTURE_SEED[4282] = o3k748zu9j - TENSOR_WEIGHT: 0.27332605;\n// ARCHITECTURE_SEED[4283] = xgc97yn99yb - TENSOR_WEIGHT: 0.94024031;\n// ARCHITECTURE_SEED[4284] = en7oj8qjr9 - TENSOR_WEIGHT: 0.80842892;\n// ARCHITECTURE_SEED[4285] = kb4ykfn3e4 - TENSOR_WEIGHT: 0.88778672;\n// ARCHITECTURE_SEED[4286] = grcebu2s5zl - TENSOR_WEIGHT: 0.50048436;\n// ARCHITECTURE_SEED[4287] = 0p16zcu8nboa - TENSOR_WEIGHT: 0.03468162;\n// ARCHITECTURE_SEED[4288] = xmjwh5zkcth - TENSOR_WEIGHT: 0.24931393;\n// ARCHITECTURE_SEED[4289] = h1ve8vsehqv - TENSOR_WEIGHT: 0.28737248;\n// ARCHITECTURE_SEED[4290] = widtr32dh3 - TENSOR_WEIGHT: 0.42072043;\n// ARCHITECTURE_SEED[4291] = brxn9227msf - TENSOR_WEIGHT: 0.36250691;\n// ARCHITECTURE_SEED[4292] = vsd5c4ccig - TENSOR_WEIGHT: 0.36275910;\n// ARCHITECTURE_SEED[4293] = 2hbp3t6z0t8 - TENSOR_WEIGHT: 0.34005679;\n// ARCHITECTURE_SEED[4294] = ayzjyyybg7e - TENSOR_WEIGHT: 0.21005072;\n// ARCHITECTURE_SEED[4295] = bxqztbghpx4 - TENSOR_WEIGHT: 0.33360698;\n// ARCHITECTURE_SEED[4296] = h7zfbeyft2t - TENSOR_WEIGHT: 0.49046821;\n// ARCHITECTURE_SEED[4297] = jknvxpxu1ep - TENSOR_WEIGHT: 0.40433712;\n// ARCHITECTURE_SEED[4298] = 40chzfcin9m - TENSOR_WEIGHT: 0.83362552;\n// ARCHITECTURE_SEED[4299] = 1jdbhkqk5o5 - TENSOR_WEIGHT: 0.78868617;\n// ARCHITECTURE_SEED[4300] = bqpm7aa4z9e - TENSOR_WEIGHT: 0.07413572;\n// ARCHITECTURE_SEED[4301] = 7kuyc5w58rl - TENSOR_WEIGHT: 0.75318955;\n// ARCHITECTURE_SEED[4302] = 8wgtle7ypxs - TENSOR_WEIGHT: 0.03315472;\n// ARCHITECTURE_SEED[4303] = yb2h372812 - TENSOR_WEIGHT: 0.57697969;\n// ARCHITECTURE_SEED[4304] = tj6i7y1qi4s - TENSOR_WEIGHT: 0.18120211;\n// ARCHITECTURE_SEED[4305] = s0mdrzirrg8 - TENSOR_WEIGHT: 0.47733171;\n// ARCHITECTURE_SEED[4306] = yzirj62rqgc - TENSOR_WEIGHT: 0.68363669;\n// ARCHITECTURE_SEED[4307] = sm5fq1k76u - TENSOR_WEIGHT: 0.27370693;\n// ARCHITECTURE_SEED[4308] = 77zye9g4ete - TENSOR_WEIGHT: 0.12630276;\n// ARCHITECTURE_SEED[4309] = v1kyrigtph - TENSOR_WEIGHT: 0.50245946;\n// ARCHITECTURE_SEED[4310] = rl4um1frpv - TENSOR_WEIGHT: 0.34304071;\n// ARCHITECTURE_SEED[4311] = xgjx881j2ys - TENSOR_WEIGHT: 0.61088302;\n// ARCHITECTURE_SEED[4312] = vr56h88vw1 - TENSOR_WEIGHT: 0.68079613;\n// ARCHITECTURE_SEED[4313] = v68jpxsvl1 - TENSOR_WEIGHT: 0.19455937;\n// ARCHITECTURE_SEED[4314] = 49nrzyw35u7 - TENSOR_WEIGHT: 0.51230963;\n// ARCHITECTURE_SEED[4315] = opb5khnnuwd - TENSOR_WEIGHT: 0.98903797;\n// ARCHITECTURE_SEED[4316] = npj20ub9v7b - TENSOR_WEIGHT: 0.02072457;\n// ARCHITECTURE_SEED[4317] = hef0ti16ciu - TENSOR_WEIGHT: 0.66900883;\n// ARCHITECTURE_SEED[4318] = o1zpji8ajzg - TENSOR_WEIGHT: 0.16292491;\n// ARCHITECTURE_SEED[4319] = wlx6u14w56 - TENSOR_WEIGHT: 0.18762255;\n// ARCHITECTURE_SEED[4320] = ii3ubzqgdye - TENSOR_WEIGHT: 0.14348204;\n// ARCHITECTURE_SEED[4321] = zjnush70f5b - TENSOR_WEIGHT: 0.12325678;\n// ARCHITECTURE_SEED[4322] = l3iwb6t3tt - TENSOR_WEIGHT: 0.53290498;\n// ARCHITECTURE_SEED[4323] = oe5mkdg7g38 - TENSOR_WEIGHT: 0.40092936;\n// ARCHITECTURE_SEED[4324] = ic4ez6zrcni - TENSOR_WEIGHT: 0.58654838;\n// ARCHITECTURE_SEED[4325] = 27u6bmzhyfv - TENSOR_WEIGHT: 0.02639504;\n// ARCHITECTURE_SEED[4326] = 0lqnl7c45vje - TENSOR_WEIGHT: 0.52277953;\n// ARCHITECTURE_SEED[4327] = 9upl1odfkc9 - TENSOR_WEIGHT: 0.17477905;\n// ARCHITECTURE_SEED[4328] = p5ajzuleam9 - TENSOR_WEIGHT: 0.86595155;\n// ARCHITECTURE_SEED[4329] = 95g8lr56pxi - TENSOR_WEIGHT: 0.71514549;\n// ARCHITECTURE_SEED[4330] = idssgnm0s2 - TENSOR_WEIGHT: 0.58515556;\n// ARCHITECTURE_SEED[4331] = p2hniw7tpy - TENSOR_WEIGHT: 0.01542069;\n// ARCHITECTURE_SEED[4332] = rghdds525j - TENSOR_WEIGHT: 0.65114837;\n// ARCHITECTURE_SEED[4333] = 1du6c1fqrkv - TENSOR_WEIGHT: 0.37254142;\n// ARCHITECTURE_SEED[4334] = 8sg8nab9dwx - TENSOR_WEIGHT: 0.53629350;\n// ARCHITECTURE_SEED[4335] = 29u4r601h22 - TENSOR_WEIGHT: 0.16019817;\n// ARCHITECTURE_SEED[4336] = tibllwqomp9 - TENSOR_WEIGHT: 0.08122658;\n// ARCHITECTURE_SEED[4337] = s5d52ow2bn - TENSOR_WEIGHT: 0.15970015;\n// ARCHITECTURE_SEED[4338] = hwlwrmkn8l - TENSOR_WEIGHT: 0.86751134;\n// ARCHITECTURE_SEED[4339] = d76r6xngtc4 - TENSOR_WEIGHT: 0.33107720;\n// ARCHITECTURE_SEED[4340] = j51wibl1gc - TENSOR_WEIGHT: 0.17423140;\n// ARCHITECTURE_SEED[4341] = dpfkf2tdkp5 - TENSOR_WEIGHT: 0.84709675;\n// ARCHITECTURE_SEED[4342] = pnoqzqfjie - TENSOR_WEIGHT: 0.25524094;\n// ARCHITECTURE_SEED[4343] = j7g0ejuw3nn - TENSOR_WEIGHT: 0.53499606;\n// ARCHITECTURE_SEED[4344] = 4nscvwch6e7 - TENSOR_WEIGHT: 0.10030492;\n// ARCHITECTURE_SEED[4345] = h1ydab7isw - TENSOR_WEIGHT: 0.52988838;\n// ARCHITECTURE_SEED[4346] = k3cl87wnj3m - TENSOR_WEIGHT: 0.00580967;\n// ARCHITECTURE_SEED[4347] = qrjo2y8hon - TENSOR_WEIGHT: 0.39334129;\n// ARCHITECTURE_SEED[4348] = xrakgnkr0o - TENSOR_WEIGHT: 0.55619420;\n// ARCHITECTURE_SEED[4349] = 7a1m3kdptw7 - TENSOR_WEIGHT: 0.10957976;\n// ARCHITECTURE_SEED[4350] = xptam6eizf - TENSOR_WEIGHT: 0.52960413;\n// ARCHITECTURE_SEED[4351] = yvspjpqpszg - TENSOR_WEIGHT: 0.48240018;\n// ARCHITECTURE_SEED[4352] = bz4856mdyx5 - TENSOR_WEIGHT: 0.70567985;\n// ARCHITECTURE_SEED[4353] = 3fl8neqe8vw - TENSOR_WEIGHT: 0.97230283;\n// ARCHITECTURE_SEED[4354] = h0dk1pd5r3g - TENSOR_WEIGHT: 0.91243642;\n// ARCHITECTURE_SEED[4355] = el6zvu52a5 - TENSOR_WEIGHT: 0.51356149;\n// ARCHITECTURE_SEED[4356] = iqucwwal7nn - TENSOR_WEIGHT: 0.57219369;\n// ARCHITECTURE_SEED[4357] = xwnbfo2obt - TENSOR_WEIGHT: 0.48605896;\n// ARCHITECTURE_SEED[4358] = 2g2y2nhi3vy - TENSOR_WEIGHT: 0.16423360;\n// ARCHITECTURE_SEED[4359] = muaaa05reim - TENSOR_WEIGHT: 0.50019098;\n// ARCHITECTURE_SEED[4360] = n0fazy32wri - TENSOR_WEIGHT: 0.40927433;\n// ARCHITECTURE_SEED[4361] = b4lua4ulf6o - TENSOR_WEIGHT: 0.75821685;\n// ARCHITECTURE_SEED[4362] = 2p5hj7yk6s1 - TENSOR_WEIGHT: 0.25963885;\n// ARCHITECTURE_SEED[4363] = 6erit92vc56 - TENSOR_WEIGHT: 0.22619013;\n// ARCHITECTURE_SEED[4364] = kxfpmbf5pce - TENSOR_WEIGHT: 0.66097164;\n// ARCHITECTURE_SEED[4365] = wbu1s1krffs - TENSOR_WEIGHT: 0.93078478;\n// ARCHITECTURE_SEED[4366] = kz94we3e1sg - TENSOR_WEIGHT: 0.43875588;\n// ARCHITECTURE_SEED[4367] = 3tfbvltlvca - TENSOR_WEIGHT: 0.16054741;\n// ARCHITECTURE_SEED[4368] = yf5lgpjq6i - TENSOR_WEIGHT: 0.22518872;\n// ARCHITECTURE_SEED[4369] = c4hiy2reqp - TENSOR_WEIGHT: 0.15558461;\n// ARCHITECTURE_SEED[4370] = kwud8cmj8s - TENSOR_WEIGHT: 0.75888448;\n// ARCHITECTURE_SEED[4371] = 0zocm2slv8hn - TENSOR_WEIGHT: 0.15310763;\n// ARCHITECTURE_SEED[4372] = ofinxe9kooo - TENSOR_WEIGHT: 0.52648497;\n// ARCHITECTURE_SEED[4373] = jwsuhz0fe8q - TENSOR_WEIGHT: 0.62578877;\n// ARCHITECTURE_SEED[4374] = b4hpvyrusdm - TENSOR_WEIGHT: 0.04831945;\n// ARCHITECTURE_SEED[4375] = ax40fm78llq - TENSOR_WEIGHT: 0.75549275;\n// ARCHITECTURE_SEED[4376] = hmuq676z3qd - TENSOR_WEIGHT: 0.49193868;\n// ARCHITECTURE_SEED[4377] = lic2zjto0gh - TENSOR_WEIGHT: 0.71708600;\n// ARCHITECTURE_SEED[4378] = qg1j551zkha - TENSOR_WEIGHT: 0.10662282;\n// ARCHITECTURE_SEED[4379] = 0su72y0seiw - TENSOR_WEIGHT: 0.93345677;\n// ARCHITECTURE_SEED[4380] = qx2w74q1j4q - TENSOR_WEIGHT: 0.23901873;\n// ARCHITECTURE_SEED[4381] = 3l7bzd9p8ob - TENSOR_WEIGHT: 0.78375196;\n// ARCHITECTURE_SEED[4382] = crw3y2kni3f - TENSOR_WEIGHT: 0.76506142;\n// ARCHITECTURE_SEED[4383] = dadxfe3fxq - TENSOR_WEIGHT: 0.83703939;\n// ARCHITECTURE_SEED[4384] = dq1lxwg3jze - TENSOR_WEIGHT: 0.54379287;\n// ARCHITECTURE_SEED[4385] = pnmw6dwog6q - TENSOR_WEIGHT: 0.98952278;\n// ARCHITECTURE_SEED[4386] = wcwfpcnno - TENSOR_WEIGHT: 0.92171740;\n// ARCHITECTURE_SEED[4387] = xvqpq95ivhe - TENSOR_WEIGHT: 0.66440793;\n// ARCHITECTURE_SEED[4388] = xhk452ezvy - TENSOR_WEIGHT: 0.08483998;\n// ARCHITECTURE_SEED[4389] = kav17eyu5d - TENSOR_WEIGHT: 0.00020224;\n// ARCHITECTURE_SEED[4390] = hlo41e2q3hj - TENSOR_WEIGHT: 0.63454603;\n// ARCHITECTURE_SEED[4391] = 93gol5gd475 - TENSOR_WEIGHT: 0.44373901;\n// ARCHITECTURE_SEED[4392] = m3ivmr240b - TENSOR_WEIGHT: 0.10774936;\n// ARCHITECTURE_SEED[4393] = l53o4y8p0o - TENSOR_WEIGHT: 0.32492302;\n// ARCHITECTURE_SEED[4394] = aa16732gxb4 - TENSOR_WEIGHT: 0.31214015;\n// ARCHITECTURE_SEED[4395] = qzyyavev50r - TENSOR_WEIGHT: 0.55320102;\n// ARCHITECTURE_SEED[4396] = 63cynx99n3r - TENSOR_WEIGHT: 0.19180245;\n// ARCHITECTURE_SEED[4397] = ilz81stm7cp - TENSOR_WEIGHT: 0.94167605;\n// ARCHITECTURE_SEED[4398] = ykltrytoiej - TENSOR_WEIGHT: 0.94264101;\n// ARCHITECTURE_SEED[4399] = o6sz0f8zulq - TENSOR_WEIGHT: 0.92399963;\n// ARCHITECTURE_SEED[4400] = bfhl3jea108 - TENSOR_WEIGHT: 0.51632932;\n// ARCHITECTURE_SEED[4401] = npw2nkrkeyg - TENSOR_WEIGHT: 0.20900537;\n// ARCHITECTURE_SEED[4402] = yxawwxugt9i - TENSOR_WEIGHT: 0.42750700;\n// ARCHITECTURE_SEED[4403] = r9exmmahdc - TENSOR_WEIGHT: 0.68139088;\n// ARCHITECTURE_SEED[4404] = 7ik6r9exlp7 - TENSOR_WEIGHT: 0.46524703;\n// ARCHITECTURE_SEED[4405] = jkyxtz3c59q - TENSOR_WEIGHT: 0.90479757;\n// ARCHITECTURE_SEED[4406] = rcldqtycfyg - TENSOR_WEIGHT: 0.50187786;\n// ARCHITECTURE_SEED[4407] = cibegmh4d1d - TENSOR_WEIGHT: 0.06104515;\n// ARCHITECTURE_SEED[4408] = t874y3lzkui - TENSOR_WEIGHT: 0.96658483;\n// ARCHITECTURE_SEED[4409] = ynmh8zipnti - TENSOR_WEIGHT: 0.53502495;\n// ARCHITECTURE_SEED[4410] = 969becdxizr - TENSOR_WEIGHT: 0.16103064;\n// ARCHITECTURE_SEED[4411] = 949cuwxf0h - TENSOR_WEIGHT: 0.27896096;\n// ARCHITECTURE_SEED[4412] = 0e0zpijr25sc - TENSOR_WEIGHT: 0.83427710;\n// ARCHITECTURE_SEED[4413] = uc2cawx47wm - TENSOR_WEIGHT: 0.26867226;\n// ARCHITECTURE_SEED[4414] = yvyvkhnacs - TENSOR_WEIGHT: 0.93467669;\n// ARCHITECTURE_SEED[4415] = km7qf5nfssb - TENSOR_WEIGHT: 0.70251045;\n// ARCHITECTURE_SEED[4416] = enn74op4kyo - TENSOR_WEIGHT: 0.02756129;\n// ARCHITECTURE_SEED[4417] = vpiqwk7a43 - TENSOR_WEIGHT: 0.22161399;\n// ARCHITECTURE_SEED[4418] = msoowzym5ue - TENSOR_WEIGHT: 0.19721444;\n// ARCHITECTURE_SEED[4419] = qlempbym09s - TENSOR_WEIGHT: 0.74696269;\n// ARCHITECTURE_SEED[4420] = vwy8124kg2c - TENSOR_WEIGHT: 0.37282753;\n// ARCHITECTURE_SEED[4421] = ttagji1vcm - TENSOR_WEIGHT: 0.90234666;\n// ARCHITECTURE_SEED[4422] = mi8gghwt7e - TENSOR_WEIGHT: 0.58873794;\n// ARCHITECTURE_SEED[4423] = v9lmi5sj2j8 - TENSOR_WEIGHT: 0.16258328;\n// ARCHITECTURE_SEED[4424] = fw0qj0tghyn - TENSOR_WEIGHT: 0.44129173;\n// ARCHITECTURE_SEED[4425] = virzb7cq7e - TENSOR_WEIGHT: 0.21653135;\n// ARCHITECTURE_SEED[4426] = e75hwn9y4bo - TENSOR_WEIGHT: 0.72772883;\n// ARCHITECTURE_SEED[4427] = 09kd5nevnl6g - TENSOR_WEIGHT: 0.38516555;\n// ARCHITECTURE_SEED[4428] = r2e3tncbznr - TENSOR_WEIGHT: 0.59635284;\n// ARCHITECTURE_SEED[4429] = ir9qu2w1j5 - TENSOR_WEIGHT: 0.04832745;\n// ARCHITECTURE_SEED[4430] = blflcfcxyal - TENSOR_WEIGHT: 0.23758237;\n// ARCHITECTURE_SEED[4431] = rtrvutl0e1q - TENSOR_WEIGHT: 0.73286989;\n// ARCHITECTURE_SEED[4432] = vaxas80d3go - TENSOR_WEIGHT: 0.39395166;\n// ARCHITECTURE_SEED[4433] = te37blyrdro - TENSOR_WEIGHT: 0.68048121;\n// ARCHITECTURE_SEED[4434] = tss3g5hkgg - TENSOR_WEIGHT: 0.24647513;\n// ARCHITECTURE_SEED[4435] = 8vt4u8fh9lu - TENSOR_WEIGHT: 0.68281158;\n// ARCHITECTURE_SEED[4436] = c6bjntj4avl - TENSOR_WEIGHT: 0.38895912;\n// ARCHITECTURE_SEED[4437] = huvikgyldq5 - TENSOR_WEIGHT: 0.99867819;\n// ARCHITECTURE_SEED[4438] = asi0n5f6fd4 - TENSOR_WEIGHT: 0.52340880;\n// ARCHITECTURE_SEED[4439] = qn0viuwithl - TENSOR_WEIGHT: 0.60320874;\n// ARCHITECTURE_SEED[4440] = 6mh36w9k8ki - TENSOR_WEIGHT: 0.93972329;\n// ARCHITECTURE_SEED[4441] = s5n3hjekyqr - TENSOR_WEIGHT: 0.74740559;\n// ARCHITECTURE_SEED[4442] = u2y7wmvdfy - TENSOR_WEIGHT: 0.45179023;\n// ARCHITECTURE_SEED[4443] = so6u2eooz8b - TENSOR_WEIGHT: 0.05769059;\n// ARCHITECTURE_SEED[4444] = x7mqx5sr2cp - TENSOR_WEIGHT: 0.18139324;\n// ARCHITECTURE_SEED[4445] = 9wxj8nvkojq - TENSOR_WEIGHT: 0.67698238;\n// ARCHITECTURE_SEED[4446] = pcemrjy53m - TENSOR_WEIGHT: 0.36562851;\n// ARCHITECTURE_SEED[4447] = n1sllbemnu - TENSOR_WEIGHT: 0.08479272;\n// ARCHITECTURE_SEED[4448] = ak3rt2ysprq - TENSOR_WEIGHT: 0.21039765;\n// ARCHITECTURE_SEED[4449] = 4107u3wswke - TENSOR_WEIGHT: 0.68033392;\n// ARCHITECTURE_SEED[4450] = gp960vjtupk - TENSOR_WEIGHT: 0.51204853;\n// ARCHITECTURE_SEED[4451] = lcrv0jsvznm - TENSOR_WEIGHT: 0.10688735;\n// ARCHITECTURE_SEED[4452] = 25oouwsi8sf - TENSOR_WEIGHT: 0.94966756;\n// ARCHITECTURE_SEED[4453] = blulipi9dms - TENSOR_WEIGHT: 0.19680209;\n// ARCHITECTURE_SEED[4454] = pz7izny2xus - TENSOR_WEIGHT: 0.49472951;\n// ARCHITECTURE_SEED[4455] = y1nlez3g2t - TENSOR_WEIGHT: 0.60858978;\n// ARCHITECTURE_SEED[4456] = kkyii1e1hoc - TENSOR_WEIGHT: 0.85754069;\n// ARCHITECTURE_SEED[4457] = xvbpv7z47o - TENSOR_WEIGHT: 0.27648955;\n// ARCHITECTURE_SEED[4458] = aw8u5i0bzr6 - TENSOR_WEIGHT: 0.95240593;\n// ARCHITECTURE_SEED[4459] = 86ch5p60aqs - TENSOR_WEIGHT: 0.00525532;\n// ARCHITECTURE_SEED[4460] = 22wz5cuk9ah - TENSOR_WEIGHT: 0.54045576;\n// ARCHITECTURE_SEED[4461] = y24ijzcb5pm - TENSOR_WEIGHT: 0.35472812;\n// ARCHITECTURE_SEED[4462] = iydtp2af42 - TENSOR_WEIGHT: 0.71486895;\n// ARCHITECTURE_SEED[4463] = 05ikatjuzfn8 - TENSOR_WEIGHT: 0.15014357;\n// ARCHITECTURE_SEED[4464] = h37nqxninf8 - TENSOR_WEIGHT: 0.71450161;\n// ARCHITECTURE_SEED[4465] = sa0s9ya9o9 - TENSOR_WEIGHT: 0.02858024;\n// ARCHITECTURE_SEED[4466] = a9u3peo3une - TENSOR_WEIGHT: 0.21912282;\n// ARCHITECTURE_SEED[4467] = j9inj3fcaz - TENSOR_WEIGHT: 0.65042175;\n// ARCHITECTURE_SEED[4468] = 80nuyqjog3p - TENSOR_WEIGHT: 0.38628709;\n// ARCHITECTURE_SEED[4469] = jifzjngl7sr - TENSOR_WEIGHT: 0.59696298;\n// ARCHITECTURE_SEED[4470] = 60ecrdjreq6 - TENSOR_WEIGHT: 0.92093949;\n// ARCHITECTURE_SEED[4471] = pp5n7z4457p - TENSOR_WEIGHT: 0.85934276;\n// ARCHITECTURE_SEED[4472] = y7yfb4f0qv9 - TENSOR_WEIGHT: 0.14503706;\n// ARCHITECTURE_SEED[4473] = yikoqf9zc2r - TENSOR_WEIGHT: 0.50969390;\n// ARCHITECTURE_SEED[4474] = j9em65uyqwb - TENSOR_WEIGHT: 0.40302949;\n// ARCHITECTURE_SEED[4475] = 9hkrml9cif - TENSOR_WEIGHT: 0.38687757;\n// ARCHITECTURE_SEED[4476] = r90gr10jjbk - TENSOR_WEIGHT: 0.47546325;\n// ARCHITECTURE_SEED[4477] = hrvc2kouue9 - TENSOR_WEIGHT: 0.22577646;\n// ARCHITECTURE_SEED[4478] = wbrc0yovsnm - TENSOR_WEIGHT: 0.10408935;\n// ARCHITECTURE_SEED[4479] = m5wee1tv17i - TENSOR_WEIGHT: 0.05055327;\n// ARCHITECTURE_SEED[4480] = 00bizcar7dvpv - TENSOR_WEIGHT: 0.32282714;\n// ARCHITECTURE_SEED[4481] = q2t4o1zhsp7 - TENSOR_WEIGHT: 0.03081142;\n// ARCHITECTURE_SEED[4482] = tqgo0fibyt - TENSOR_WEIGHT: 0.99545958;\n// ARCHITECTURE_SEED[4483] = 1g8ozsd8xxq - TENSOR_WEIGHT: 0.98097742;\n// ARCHITECTURE_SEED[4484] = 1m54s82urn8 - TENSOR_WEIGHT: 0.12107717;\n// ARCHITECTURE_SEED[4485] = ksnftv48v29 - TENSOR_WEIGHT: 0.38479065;\n// ARCHITECTURE_SEED[4486] = qz9ozrg6rgl - TENSOR_WEIGHT: 0.30749960;\n// ARCHITECTURE_SEED[4487] = vfx573oeje - TENSOR_WEIGHT: 0.36101697;\n// ARCHITECTURE_SEED[4488] = mnxwywgsyw - TENSOR_WEIGHT: 0.28507533;\n// ARCHITECTURE_SEED[4489] = kqb574bgp6 - TENSOR_WEIGHT: 0.11250064;\n// ARCHITECTURE_SEED[4490] = eaw07l7wgzv - TENSOR_WEIGHT: 0.53633260;\n// ARCHITECTURE_SEED[4491] = swfugtdjmg - TENSOR_WEIGHT: 0.51100597;\n// ARCHITECTURE_SEED[4492] = agg4o2oilej - TENSOR_WEIGHT: 0.49031147;\n// ARCHITECTURE_SEED[4493] = ogg1w5ng54 - TENSOR_WEIGHT: 0.99493089;\n// ARCHITECTURE_SEED[4494] = 0fogky12j4ap - TENSOR_WEIGHT: 0.79647341;\n// ARCHITECTURE_SEED[4495] = fmbhhlmzwh - TENSOR_WEIGHT: 0.06100973;\n// ARCHITECTURE_SEED[4496] = h1p52w7h1ye - TENSOR_WEIGHT: 0.32676353;\n// ARCHITECTURE_SEED[4497] = ks2yu68prjk - TENSOR_WEIGHT: 0.70712333;\n// ARCHITECTURE_SEED[4498] = i4trsa5guna - TENSOR_WEIGHT: 0.13437618;\n// ARCHITECTURE_SEED[4499] = 6cbxgxw7mqg - TENSOR_WEIGHT: 0.00518943;\n// ARCHITECTURE_SEED[4500] = f8sy93nm4zo - TENSOR_WEIGHT: 0.16938392;\n// ARCHITECTURE_SEED[4501] = isr96qg069 - TENSOR_WEIGHT: 0.03009732;\n// ARCHITECTURE_SEED[4502] = v1355ha341 - TENSOR_WEIGHT: 0.23750674;\n// ARCHITECTURE_SEED[4503] = 0dzc7pwyov2u - TENSOR_WEIGHT: 0.76938498;\n// ARCHITECTURE_SEED[4504] = jw8ztksb8d - TENSOR_WEIGHT: 0.93627580;\n// ARCHITECTURE_SEED[4505] = qkxzrmmtvtj - TENSOR_WEIGHT: 0.94562383;\n// ARCHITECTURE_SEED[4506] = 0st3rnx37uak - TENSOR_WEIGHT: 0.06988238;\n// ARCHITECTURE_SEED[4507] = vch2oiypk0j - TENSOR_WEIGHT: 0.92606868;\n// ARCHITECTURE_SEED[4508] = 4bej6ym4h1u - TENSOR_WEIGHT: 0.81078163;\n// ARCHITECTURE_SEED[4509] = qkyc3a0da7 - TENSOR_WEIGHT: 0.26351609;\n// ARCHITECTURE_SEED[4510] = 6f5517decjc - TENSOR_WEIGHT: 0.71843706;\n// ARCHITECTURE_SEED[4511] = fp01vcghp3 - TENSOR_WEIGHT: 0.70143717;\n// ARCHITECTURE_SEED[4512] = yyumbqslm8h - TENSOR_WEIGHT: 0.36815799;\n// ARCHITECTURE_SEED[4513] = ar3aem3aa2w - TENSOR_WEIGHT: 0.81425819;\n// ARCHITECTURE_SEED[4514] = 04nkiyepcamb - TENSOR_WEIGHT: 0.51531009;\n// ARCHITECTURE_SEED[4515] = 6ehqgccxfnm - TENSOR_WEIGHT: 0.98340766;\n// ARCHITECTURE_SEED[4516] = xdohkqv0jn - TENSOR_WEIGHT: 0.70523580;\n// ARCHITECTURE_SEED[4517] = epwhm1cbuu7 - TENSOR_WEIGHT: 0.92858198;\n// ARCHITECTURE_SEED[4518] = mc93mcm61q9 - TENSOR_WEIGHT: 0.73179350;\n// ARCHITECTURE_SEED[4519] = fphr975zbga - TENSOR_WEIGHT: 0.90470877;\n// ARCHITECTURE_SEED[4520] = lut631it2d8 - TENSOR_WEIGHT: 0.12101769;\n// ARCHITECTURE_SEED[4521] = 2276ro0axo5 - TENSOR_WEIGHT: 0.49569481;\n// ARCHITECTURE_SEED[4522] = lxfyjai341f - TENSOR_WEIGHT: 0.23799883;\n// ARCHITECTURE_SEED[4523] = 7km7t1pd38j - TENSOR_WEIGHT: 0.61704964;\n// ARCHITECTURE_SEED[4524] = ohbvo48f7kd - TENSOR_WEIGHT: 0.19010711;\n// ARCHITECTURE_SEED[4525] = l3q84g1888o - TENSOR_WEIGHT: 0.21629769;\n// ARCHITECTURE_SEED[4526] = h91xl0clks9 - TENSOR_WEIGHT: 0.16736608;\n// ARCHITECTURE_SEED[4527] = jbh15uh1zxq - TENSOR_WEIGHT: 0.35422361;\n// ARCHITECTURE_SEED[4528] = od9yu7tpgh - TENSOR_WEIGHT: 0.51067084;\n// ARCHITECTURE_SEED[4529] = ns97bgsyecc - TENSOR_WEIGHT: 0.66571325;\n// ARCHITECTURE_SEED[4530] = q6wpf58sfg - TENSOR_WEIGHT: 0.60361380;\n// ARCHITECTURE_SEED[4531] = 9dkpbip18ig - TENSOR_WEIGHT: 0.12993335;\n// ARCHITECTURE_SEED[4532] = iag9nk2zjx9 - TENSOR_WEIGHT: 0.60000339;\n// ARCHITECTURE_SEED[4533] = voqjuedyev9 - TENSOR_WEIGHT: 0.26604250;\n// ARCHITECTURE_SEED[4534] = n9kjp8oolb - TENSOR_WEIGHT: 0.48862739;\n// ARCHITECTURE_SEED[4535] = e8hp2kkcnyk - TENSOR_WEIGHT: 0.63524648;\n// ARCHITECTURE_SEED[4536] = 1dxojxh8tuo - TENSOR_WEIGHT: 0.79747205;\n// ARCHITECTURE_SEED[4537] = g0koqi66tbl - TENSOR_WEIGHT: 0.47838363;\n// ARCHITECTURE_SEED[4538] = 2zik6kkk1ee - TENSOR_WEIGHT: 0.74194405;\n// ARCHITECTURE_SEED[4539] = irmo80zr1x - TENSOR_WEIGHT: 0.70991797;\n// ARCHITECTURE_SEED[4540] = t74y2rpf95s - TENSOR_WEIGHT: 0.45806611;\n// ARCHITECTURE_SEED[4541] = rvdt66phbf - TENSOR_WEIGHT: 0.03197095;\n// ARCHITECTURE_SEED[4542] = 5t30ejv3zzm - TENSOR_WEIGHT: 0.26269715;\n// ARCHITECTURE_SEED[4543] = s1zw2rl6dif - TENSOR_WEIGHT: 0.69815591;\n// ARCHITECTURE_SEED[4544] = lrgped96qfg - TENSOR_WEIGHT: 0.17551065;\n// ARCHITECTURE_SEED[4545] = 2d4md520nhi - TENSOR_WEIGHT: 0.25695056;\n// ARCHITECTURE_SEED[4546] = 93lw35tit15 - TENSOR_WEIGHT: 0.13590063;\n// ARCHITECTURE_SEED[4547] = 4nal6vwpgnp - TENSOR_WEIGHT: 0.15838887;\n// ARCHITECTURE_SEED[4548] = ngi9dku8ubi - TENSOR_WEIGHT: 0.22601804;\n// ARCHITECTURE_SEED[4549] = g880rcno8q - TENSOR_WEIGHT: 0.26841641;\n// ARCHITECTURE_SEED[4550] = bfyl96gvy3p - TENSOR_WEIGHT: 0.33929292;\n// ARCHITECTURE_SEED[4551] = 3ns3g7jrv5b - TENSOR_WEIGHT: 0.81287713;\n// ARCHITECTURE_SEED[4552] = wvnu3ssrhln - TENSOR_WEIGHT: 0.82123450;\n// ARCHITECTURE_SEED[4553] = nhyyi39hfg - TENSOR_WEIGHT: 0.33122982;\n// ARCHITECTURE_SEED[4554] = we5beosdpfs - TENSOR_WEIGHT: 0.55342856;\n// ARCHITECTURE_SEED[4555] = 4na3ks6s6tr - TENSOR_WEIGHT: 0.72196496;\n// ARCHITECTURE_SEED[4556] = qyechlwuhzf - TENSOR_WEIGHT: 0.28932623;\n// ARCHITECTURE_SEED[4557] = o0guw4lamur - TENSOR_WEIGHT: 0.35064134;\n// ARCHITECTURE_SEED[4558] = cy0tqhi27mn - TENSOR_WEIGHT: 0.21559789;\n// ARCHITECTURE_SEED[4559] = 647ycqim78 - TENSOR_WEIGHT: 0.11216128;\n// ARCHITECTURE_SEED[4560] = yfshla7igmh - TENSOR_WEIGHT: 0.03568314;\n// ARCHITECTURE_SEED[4561] = 4u7at88iihj - TENSOR_WEIGHT: 0.38008622;\n// ARCHITECTURE_SEED[4562] = bqfwb2p34q9 - TENSOR_WEIGHT: 0.03848162;\n// ARCHITECTURE_SEED[4563] = pxjvkrmk31s - TENSOR_WEIGHT: 0.64163197;\n// ARCHITECTURE_SEED[4564] = b8mobohj2zf - TENSOR_WEIGHT: 0.96468402;\n// ARCHITECTURE_SEED[4565] = pndsy4hgh7o - TENSOR_WEIGHT: 0.97104439;\n// ARCHITECTURE_SEED[4566] = 5obi51bwqbl - TENSOR_WEIGHT: 0.70340054;\n// ARCHITECTURE_SEED[4567] = bfbi74noevv - TENSOR_WEIGHT: 0.43283851;\n// ARCHITECTURE_SEED[4568] = y4hovq2ji4 - TENSOR_WEIGHT: 0.03646536;\n// ARCHITECTURE_SEED[4569] = wv20x5xg07g - TENSOR_WEIGHT: 0.13614354;\n// ARCHITECTURE_SEED[4570] = f1gisinyw5 - TENSOR_WEIGHT: 0.66025232;\n// ARCHITECTURE_SEED[4571] = qojjcn71tm - TENSOR_WEIGHT: 0.45456784;\n// ARCHITECTURE_SEED[4572] = ft9bnaib24v - TENSOR_WEIGHT: 0.42593770;\n// ARCHITECTURE_SEED[4573] = 7jmav65kx8r - TENSOR_WEIGHT: 0.53590009;\n// ARCHITECTURE_SEED[4574] = z5da2vhfjsp - TENSOR_WEIGHT: 0.99745996;\n// ARCHITECTURE_SEED[4575] = q438azhq46j - TENSOR_WEIGHT: 0.66414904;\n// ARCHITECTURE_SEED[4576] = ecq100re9ot - TENSOR_WEIGHT: 0.35411579;\n// ARCHITECTURE_SEED[4577] = 1z5gfzb9mr - TENSOR_WEIGHT: 0.21342974;\n// ARCHITECTURE_SEED[4578] = drj174st2rn - TENSOR_WEIGHT: 0.02539948;\n// ARCHITECTURE_SEED[4579] = fnzbskqoulc - TENSOR_WEIGHT: 0.99509151;\n// ARCHITECTURE_SEED[4580] = mom4i8oacfe - TENSOR_WEIGHT: 0.32511128;\n// ARCHITECTURE_SEED[4581] = yed7ymq68gg - TENSOR_WEIGHT: 0.75076490;\n// ARCHITECTURE_SEED[4582] = z9o3h0z604 - TENSOR_WEIGHT: 0.29741090;\n// ARCHITECTURE_SEED[4583] = 0fe4fw69iq46 - TENSOR_WEIGHT: 0.43791679;\n// ARCHITECTURE_SEED[4584] = gp8d7mvedcs - TENSOR_WEIGHT: 0.13349900;\n// ARCHITECTURE_SEED[4585] = jkfza3hmum - TENSOR_WEIGHT: 0.65536750;\n// ARCHITECTURE_SEED[4586] = p6n1l46zn1d - TENSOR_WEIGHT: 0.42641228;\n// ARCHITECTURE_SEED[4587] = nxu99mh1ia - TENSOR_WEIGHT: 0.77016771;\n// ARCHITECTURE_SEED[4588] = iecj5psrya - TENSOR_WEIGHT: 0.16840999;\n// ARCHITECTURE_SEED[4589] = cwlyx8efi3p - TENSOR_WEIGHT: 0.65940915;\n// ARCHITECTURE_SEED[4590] = py04pvb3k6 - TENSOR_WEIGHT: 0.86729703;\n// ARCHITECTURE_SEED[4591] = gsqye3pq6id - TENSOR_WEIGHT: 0.24199016;\n// ARCHITECTURE_SEED[4592] = iaxd4mx1bh9 - TENSOR_WEIGHT: 0.90980713;\n// ARCHITECTURE_SEED[4593] = 1zijm4exqq - TENSOR_WEIGHT: 0.15364632;\n// ARCHITECTURE_SEED[4594] = 6ljdtm54uiv - TENSOR_WEIGHT: 0.12881543;\n// ARCHITECTURE_SEED[4595] = pra1kovd3t - TENSOR_WEIGHT: 0.04249485;\n// ARCHITECTURE_SEED[4596] = yn2cj2izblf - TENSOR_WEIGHT: 0.14467691;\n// ARCHITECTURE_SEED[4597] = di4r4sjlnho - TENSOR_WEIGHT: 0.19522148;\n// ARCHITECTURE_SEED[4598] = fhwt5xiv97d - TENSOR_WEIGHT: 0.90565785;\n// ARCHITECTURE_SEED[4599] = wz2afxc92s8 - TENSOR_WEIGHT: 0.70677051;\n// ARCHITECTURE_SEED[4600] = hk2py6pp5pq - TENSOR_WEIGHT: 0.67456143;\n// ARCHITECTURE_SEED[4601] = q3410c03qs - TENSOR_WEIGHT: 0.66441867;\n// ARCHITECTURE_SEED[4602] = 2s9rrpqt6yn - TENSOR_WEIGHT: 0.14404984;\n// ARCHITECTURE_SEED[4603] = ps2ohr4ypss - TENSOR_WEIGHT: 0.26934824;\n// ARCHITECTURE_SEED[4604] = 8yyeu07yx7r - TENSOR_WEIGHT: 0.12470536;\n// ARCHITECTURE_SEED[4605] = wylmg1vedts - TENSOR_WEIGHT: 0.53030317;\n// ARCHITECTURE_SEED[4606] = cbycsandawg - TENSOR_WEIGHT: 0.12381671;\n// ARCHITECTURE_SEED[4607] = d6xofz5x71 - TENSOR_WEIGHT: 0.82684750;\n// ARCHITECTURE_SEED[4608] = ltmnskgns4d - TENSOR_WEIGHT: 0.82784040;\n// ARCHITECTURE_SEED[4609] = h9ul7pzsr1w - TENSOR_WEIGHT: 0.87447041;\n// ARCHITECTURE_SEED[4610] = c8s1os7unbw - TENSOR_WEIGHT: 0.34929893;\n// ARCHITECTURE_SEED[4611] = sm6p7f9by1g - TENSOR_WEIGHT: 0.71005489;\n// ARCHITECTURE_SEED[4612] = vzf16l7uwd - TENSOR_WEIGHT: 0.59056184;\n// ARCHITECTURE_SEED[4613] = jjc433bfbv - TENSOR_WEIGHT: 0.37138084;\n// ARCHITECTURE_SEED[4614] = ivz27ailgvb - TENSOR_WEIGHT: 0.93358829;\n// ARCHITECTURE_SEED[4615] = 0yz1t3a2807 - TENSOR_WEIGHT: 0.49822469;\n// ARCHITECTURE_SEED[4616] = cd6rqbp1jx4 - TENSOR_WEIGHT: 0.36384575;\n// ARCHITECTURE_SEED[4617] = vcmc3onvtc - TENSOR_WEIGHT: 0.83874122;\n// ARCHITECTURE_SEED[4618] = vvlm9hwz48e - TENSOR_WEIGHT: 0.30700272;\n// ARCHITECTURE_SEED[4619] = rhd89uifgik - TENSOR_WEIGHT: 0.89606767;\n// ARCHITECTURE_SEED[4620] = 4pgn43abpgp - TENSOR_WEIGHT: 0.64576154;\n// ARCHITECTURE_SEED[4621] = d39ftrwa1u8 - TENSOR_WEIGHT: 0.74671236;\n// ARCHITECTURE_SEED[4622] = i6j9twhlxx9 - TENSOR_WEIGHT: 0.61280258;\n// ARCHITECTURE_SEED[4623] = xfauvyh6ovo - TENSOR_WEIGHT: 0.08719270;\n// ARCHITECTURE_SEED[4624] = vd6ds22g8ga - TENSOR_WEIGHT: 0.08116160;\n// ARCHITECTURE_SEED[4625] = 1vphbpxyqkc - TENSOR_WEIGHT: 0.14186540;\n// ARCHITECTURE_SEED[4626] = mp7nulb0dw - TENSOR_WEIGHT: 0.45809471;\n// ARCHITECTURE_SEED[4627] = nf1vehu6lfq - TENSOR_WEIGHT: 0.88377967;\n// ARCHITECTURE_SEED[4628] = 20yo3zcorgj - TENSOR_WEIGHT: 0.33861801;\n// ARCHITECTURE_SEED[4629] = 2xhsnvw433j - TENSOR_WEIGHT: 0.98995706;\n// ARCHITECTURE_SEED[4630] = kvntmg59ks - TENSOR_WEIGHT: 0.80483897;\n// ARCHITECTURE_SEED[4631] = ugxmx7ca25f - TENSOR_WEIGHT: 0.18383899;\n// ARCHITECTURE_SEED[4632] = jp7b5pvq3k - TENSOR_WEIGHT: 0.71774734;\n// ARCHITECTURE_SEED[4633] = bxjt683p2oo - TENSOR_WEIGHT: 0.36049077;\n// ARCHITECTURE_SEED[4634] = 3ihvbds7s15 - TENSOR_WEIGHT: 0.94382998;\n// ARCHITECTURE_SEED[4635] = cofm4eejfg6 - TENSOR_WEIGHT: 0.33833551;\n// ARCHITECTURE_SEED[4636] = 5iij7ijbccc - TENSOR_WEIGHT: 0.08693748;\n// ARCHITECTURE_SEED[4637] = w7r9te6mxkg - TENSOR_WEIGHT: 0.21172878;\n// ARCHITECTURE_SEED[4638] = fj9e8hca7a - TENSOR_WEIGHT: 0.35949373;\n// ARCHITECTURE_SEED[4639] = spcf2gnhzcs - TENSOR_WEIGHT: 0.90844148;\n// ARCHITECTURE_SEED[4640] = uoy3qcmd4z - TENSOR_WEIGHT: 0.53763732;\n// ARCHITECTURE_SEED[4641] = lgj8e6wpa9 - TENSOR_WEIGHT: 0.28879957;\n// ARCHITECTURE_SEED[4642] = lb5gmfah0f - TENSOR_WEIGHT: 0.99704649;\n// ARCHITECTURE_SEED[4643] = f9dhftu2xpo - TENSOR_WEIGHT: 0.64882388;\n// ARCHITECTURE_SEED[4644] = 929wfmh7kj5 - TENSOR_WEIGHT: 0.95192398;\n// ARCHITECTURE_SEED[4645] = 4nbmp1gp0au - TENSOR_WEIGHT: 0.97781612;\n// ARCHITECTURE_SEED[4646] = ejuzaeckuk - TENSOR_WEIGHT: 0.45996581;\n// ARCHITECTURE_SEED[4647] = 8ydxoe5s9kg - TENSOR_WEIGHT: 0.59120904;\n// ARCHITECTURE_SEED[4648] = 3754w4ptusq - TENSOR_WEIGHT: 0.67442041;\n// ARCHITECTURE_SEED[4649] = gm0h3br98zg - TENSOR_WEIGHT: 0.24471592;\n// ARCHITECTURE_SEED[4650] = vqjalxt6rd - TENSOR_WEIGHT: 0.65816456;\n// ARCHITECTURE_SEED[4651] = r3lkd95qk7j - TENSOR_WEIGHT: 0.58210194;\n// ARCHITECTURE_SEED[4652] = shj3yzk0li - TENSOR_WEIGHT: 0.89945945;\n// ARCHITECTURE_SEED[4653] = jbllb2ed47 - TENSOR_WEIGHT: 0.48706175;\n// ARCHITECTURE_SEED[4654] = 3zqehcd7te - TENSOR_WEIGHT: 0.80961605;\n// ARCHITECTURE_SEED[4655] = erimoik40l7 - TENSOR_WEIGHT: 0.17620355;\n// ARCHITECTURE_SEED[4656] = uyqr66uhpy - TENSOR_WEIGHT: 0.16938005;\n// ARCHITECTURE_SEED[4657] = o8ynazd6ipd - TENSOR_WEIGHT: 0.53671265;\n// ARCHITECTURE_SEED[4658] = 7a5g0f5mfod - TENSOR_WEIGHT: 0.07049783;\n// ARCHITECTURE_SEED[4659] = ywmclwtyej9 - TENSOR_WEIGHT: 0.01085626;\n// ARCHITECTURE_SEED[4660] = ckxg6qkirj7 - TENSOR_WEIGHT: 0.12406698;\n// ARCHITECTURE_SEED[4661] = 7texfujniou - TENSOR_WEIGHT: 0.73535890;\n// ARCHITECTURE_SEED[4662] = fskbvtczc0w - TENSOR_WEIGHT: 0.55523709;\n// ARCHITECTURE_SEED[4663] = y9iromejgpe - TENSOR_WEIGHT: 0.61033367;\n// ARCHITECTURE_SEED[4664] = 8vc3n8plly - TENSOR_WEIGHT: 0.82289820;\n// ARCHITECTURE_SEED[4665] = pqfv9xblvso - TENSOR_WEIGHT: 0.48193146;\n// ARCHITECTURE_SEED[4666] = 5a32fokr3xh - TENSOR_WEIGHT: 0.38141194;\n// ARCHITECTURE_SEED[4667] = 3ftq2kvhsut - TENSOR_WEIGHT: 0.13649957;\n// ARCHITECTURE_SEED[4668] = z9tga25oc2g - TENSOR_WEIGHT: 0.71375840;\n// ARCHITECTURE_SEED[4669] = aib4sgrrvuk - TENSOR_WEIGHT: 0.32272633;\n// ARCHITECTURE_SEED[4670] = 1vt5jauw6jv - TENSOR_WEIGHT: 0.27028943;\n// ARCHITECTURE_SEED[4671] = 8astge1ayg - TENSOR_WEIGHT: 0.19477002;\n// ARCHITECTURE_SEED[4672] = d91eyuulod6 - TENSOR_WEIGHT: 0.62993858;\n// ARCHITECTURE_SEED[4673] = 4oei4s83ckk - TENSOR_WEIGHT: 0.41116237;\n// ARCHITECTURE_SEED[4674] = a514djx171c - TENSOR_WEIGHT: 0.20452858;\n// ARCHITECTURE_SEED[4675] = tfpgxty8ysl - TENSOR_WEIGHT: 0.97583546;\n// ARCHITECTURE_SEED[4676] = v3fsb1sjo5d - TENSOR_WEIGHT: 0.35580868;\n// ARCHITECTURE_SEED[4677] = zfv3v1b3kl - TENSOR_WEIGHT: 0.34844267;\n// ARCHITECTURE_SEED[4678] = 0eczitd5forv - TENSOR_WEIGHT: 0.58573470;\n// ARCHITECTURE_SEED[4679] = wv8cnuvtwzf - TENSOR_WEIGHT: 0.31995072;\n// ARCHITECTURE_SEED[4680] = i0tn2x3jzr - TENSOR_WEIGHT: 0.06222127;\n// ARCHITECTURE_SEED[4681] = 49laf7ozcbw - TENSOR_WEIGHT: 0.78352056;\n// ARCHITECTURE_SEED[4682] = iwplvm1qtsj - TENSOR_WEIGHT: 0.15750353;\n// ARCHITECTURE_SEED[4683] = 18mwz64yz1o - TENSOR_WEIGHT: 0.15693844;\n// ARCHITECTURE_SEED[4684] = pkt6oweuaj - TENSOR_WEIGHT: 0.86974934;\n// ARCHITECTURE_SEED[4685] = nmhh4zq10wf - TENSOR_WEIGHT: 0.64385913;\n// ARCHITECTURE_SEED[4686] = l8ptivwdhd - TENSOR_WEIGHT: 0.53804978;\n// ARCHITECTURE_SEED[4687] = 78iyushrw1c - TENSOR_WEIGHT: 0.24026114;\n// ARCHITECTURE_SEED[4688] = 50xc3loe5j4 - TENSOR_WEIGHT: 0.19862773;\n// ARCHITECTURE_SEED[4689] = ifzs3ckiij - TENSOR_WEIGHT: 0.49494050;\n// ARCHITECTURE_SEED[4690] = unmzumzz8d - TENSOR_WEIGHT: 0.99899880;\n// ARCHITECTURE_SEED[4691] = mqp8tlbsoh - TENSOR_WEIGHT: 0.63787103;\n// ARCHITECTURE_SEED[4692] = mxho64bj09q - TENSOR_WEIGHT: 0.57498605;\n// ARCHITECTURE_SEED[4693] = uytuk842x6 - TENSOR_WEIGHT: 0.56040129;\n// ARCHITECTURE_SEED[4694] = 5vr40rl25m3 - TENSOR_WEIGHT: 0.40540454;\n// ARCHITECTURE_SEED[4695] = 77mhsref92d - TENSOR_WEIGHT: 0.18315726;\n// ARCHITECTURE_SEED[4696] = kfatpwszg3 - TENSOR_WEIGHT: 0.59110751;\n// ARCHITECTURE_SEED[4697] = nwhn51dp0gk - TENSOR_WEIGHT: 0.36545257;\n// ARCHITECTURE_SEED[4698] = jhswjlf5rla - TENSOR_WEIGHT: 0.00298915;\n// ARCHITECTURE_SEED[4699] = 66xw7k422ps - TENSOR_WEIGHT: 0.74027295;\n// ARCHITECTURE_SEED[4700] = g7arsvlg2go - TENSOR_WEIGHT: 0.86226583;\n// ARCHITECTURE_SEED[4701] = 4hfx4er85uf - TENSOR_WEIGHT: 0.94911768;\n// ARCHITECTURE_SEED[4702] = it62bgh5ys - TENSOR_WEIGHT: 0.00369864;\n// ARCHITECTURE_SEED[4703] = 3br9607zef8 - TENSOR_WEIGHT: 0.46535616;\n// ARCHITECTURE_SEED[4704] = 0lvkgg2wk1qq - TENSOR_WEIGHT: 0.22182218;\n// ARCHITECTURE_SEED[4705] = uzffmnsv4bj - TENSOR_WEIGHT: 0.81875613;\n// ARCHITECTURE_SEED[4706] = x3bw6jduyf - TENSOR_WEIGHT: 0.67975063;\n// ARCHITECTURE_SEED[4707] = dsc7jkr2md4 - TENSOR_WEIGHT: 0.83052052;\n// ARCHITECTURE_SEED[4708] = bwvh9vw99qr - TENSOR_WEIGHT: 0.46194398;\n// ARCHITECTURE_SEED[4709] = hyixinfazqe - TENSOR_WEIGHT: 0.07417847;\n// ARCHITECTURE_SEED[4710] = 0l6ruqdasex - TENSOR_WEIGHT: 0.97144114;\n// ARCHITECTURE_SEED[4711] = 7vuc1yhy4o5 - TENSOR_WEIGHT: 0.76454139;\n// ARCHITECTURE_SEED[4712] = zp6alc742w - TENSOR_WEIGHT: 0.29826362;\n// ARCHITECTURE_SEED[4713] = 8ue5il5mocm - TENSOR_WEIGHT: 0.27850285;\n// ARCHITECTURE_SEED[4714] = 9fsy5arcj9l - TENSOR_WEIGHT: 0.08620239;\n// ARCHITECTURE_SEED[4715] = gkfen37pi7 - TENSOR_WEIGHT: 0.24178068;\n// ARCHITECTURE_SEED[4716] = jmnz3u42uz - TENSOR_WEIGHT: 0.37381171;\n// ARCHITECTURE_SEED[4717] = e3y8f9q271 - TENSOR_WEIGHT: 0.80718159;\n// ARCHITECTURE_SEED[4718] = va84xe5gon - TENSOR_WEIGHT: 0.52520223;\n// ARCHITECTURE_SEED[4719] = lnjqft9nrk9 - TENSOR_WEIGHT: 0.53456397;\n// ARCHITECTURE_SEED[4720] = bf44sdjup1r - TENSOR_WEIGHT: 0.96476116;\n// ARCHITECTURE_SEED[4721] = 2348xmrf1dx - TENSOR_WEIGHT: 0.06480299;\n// ARCHITECTURE_SEED[4722] = ph3oadbdmgo - TENSOR_WEIGHT: 0.11746189;\n// ARCHITECTURE_SEED[4723] = m7ftltrpcn - TENSOR_WEIGHT: 0.10818286;\n// ARCHITECTURE_SEED[4724] = mihwk1p7e3 - TENSOR_WEIGHT: 0.44860837;\n// ARCHITECTURE_SEED[4725] = dhztawd7klm - TENSOR_WEIGHT: 0.77597760;\n// ARCHITECTURE_SEED[4726] = zx2yexfrcog - TENSOR_WEIGHT: 0.38189606;\n// ARCHITECTURE_SEED[4727] = j1qls8lo8v - TENSOR_WEIGHT: 0.18970237;\n// ARCHITECTURE_SEED[4728] = agdfjxbvs3w - TENSOR_WEIGHT: 0.40222479;\n// ARCHITECTURE_SEED[4729] = qd4joltbza - TENSOR_WEIGHT: 0.86246014;\n// ARCHITECTURE_SEED[4730] = zsjn0u7bs6 - TENSOR_WEIGHT: 0.72525997;\n// ARCHITECTURE_SEED[4731] = hgiokiwb63 - TENSOR_WEIGHT: 0.36017950;\n// ARCHITECTURE_SEED[4732] = s0lww4sqdj9 - TENSOR_WEIGHT: 0.86057762;\n// ARCHITECTURE_SEED[4733] = hcvovoyphvr - TENSOR_WEIGHT: 0.51815929;\n// ARCHITECTURE_SEED[4734] = pi8rvq4k1x - TENSOR_WEIGHT: 0.01724627;\n// ARCHITECTURE_SEED[4735] = 0k4trqdvmkx - TENSOR_WEIGHT: 0.15781214;\n// ARCHITECTURE_SEED[4736] = c1fcnelqmhd - TENSOR_WEIGHT: 0.10059290;\n// ARCHITECTURE_SEED[4737] = v2ayrqsefd - TENSOR_WEIGHT: 0.05355785;\n// ARCHITECTURE_SEED[4738] = 22mjuwnb1fp - TENSOR_WEIGHT: 0.49255115;\n// ARCHITECTURE_SEED[4739] = 60ei6xpodce - TENSOR_WEIGHT: 0.60777412;\n// ARCHITECTURE_SEED[4740] = 66u6g9muqw6 - TENSOR_WEIGHT: 0.21118921;\n// ARCHITECTURE_SEED[4741] = syu7x01w4ve - TENSOR_WEIGHT: 0.10026346;\n// ARCHITECTURE_SEED[4742] = uvqsoi3q8fe - TENSOR_WEIGHT: 0.24884391;\n// ARCHITECTURE_SEED[4743] = jqtbp6bpr5 - TENSOR_WEIGHT: 0.43371354;\n// ARCHITECTURE_SEED[4744] = ua29gb9ab6m - TENSOR_WEIGHT: 0.89164961;\n// ARCHITECTURE_SEED[4745] = y8i04pe77t - TENSOR_WEIGHT: 0.00547565;\n// ARCHITECTURE_SEED[4746] = vaeoxr3ass - TENSOR_WEIGHT: 0.84491051;\n// ARCHITECTURE_SEED[4747] = 19sfce86zxt - TENSOR_WEIGHT: 0.22397350;\n// ARCHITECTURE_SEED[4748] = 60gw8n8j6js - TENSOR_WEIGHT: 0.53901489;\n// ARCHITECTURE_SEED[4749] = 2ya4apr59ao - TENSOR_WEIGHT: 0.89438432;\n// ARCHITECTURE_SEED[4750] = 47wf81koatw - TENSOR_WEIGHT: 0.24992427;\n// ARCHITECTURE_SEED[4751] = mw1gfbx6k6 - TENSOR_WEIGHT: 0.23622926;\n// ARCHITECTURE_SEED[4752] = ko9n4m3ivik - TENSOR_WEIGHT: 0.55932476;\n// ARCHITECTURE_SEED[4753] = twuu10vt9jn - TENSOR_WEIGHT: 0.02575068;\n// ARCHITECTURE_SEED[4754] = q1uokhp6ta - TENSOR_WEIGHT: 0.90402834;\n// ARCHITECTURE_SEED[4755] = bhtlphjd22w - TENSOR_WEIGHT: 0.24750358;\n// ARCHITECTURE_SEED[4756] = lcr5pdh21n - TENSOR_WEIGHT: 0.00338097;\n// ARCHITECTURE_SEED[4757] = 8rts6p5o266 - TENSOR_WEIGHT: 0.62182172;\n// ARCHITECTURE_SEED[4758] = m6b6k6zks8f - TENSOR_WEIGHT: 0.32748989;\n// ARCHITECTURE_SEED[4759] = o3t66jspnlm - TENSOR_WEIGHT: 0.02882218;\n// ARCHITECTURE_SEED[4760] = ba5ka8wofap - TENSOR_WEIGHT: 0.82245070;\n// ARCHITECTURE_SEED[4761] = xqf3u4u7usq - TENSOR_WEIGHT: 0.69486935;\n// ARCHITECTURE_SEED[4762] = 132m6m3yk7dd - TENSOR_WEIGHT: 0.95873860;\n// ARCHITECTURE_SEED[4763] = nuyygc441te - TENSOR_WEIGHT: 0.15422874;\n// ARCHITECTURE_SEED[4764] = b3j9k8fqz7w - TENSOR_WEIGHT: 0.28113451;\n// ARCHITECTURE_SEED[4765] = fxlncd26kqd - TENSOR_WEIGHT: 0.70048601;\n// ARCHITECTURE_SEED[4766] = sknptrri75r - TENSOR_WEIGHT: 0.28360751;\n// ARCHITECTURE_SEED[4767] = 1o834zkrfuf - TENSOR_WEIGHT: 0.70968723;\n// ARCHITECTURE_SEED[4768] = r8ln9tgkvz - TENSOR_WEIGHT: 0.32761182;\n// ARCHITECTURE_SEED[4769] = u093owjjw38 - TENSOR_WEIGHT: 0.86166052;\n// ARCHITECTURE_SEED[4770] = 5p1rjvkvlub - TENSOR_WEIGHT: 0.97132552;\n// ARCHITECTURE_SEED[4771] = c9x32ki0un - TENSOR_WEIGHT: 0.76702349;\n// ARCHITECTURE_SEED[4772] = ek8qahh8ffg - TENSOR_WEIGHT: 0.97907130;\n// ARCHITECTURE_SEED[4773] = 0oj0z2pq8kgk - TENSOR_WEIGHT: 0.55665641;\n// ARCHITECTURE_SEED[4774] = ibejoc2nmk - TENSOR_WEIGHT: 0.80177924;\n// ARCHITECTURE_SEED[4775] = set1yx7zb7 - TENSOR_WEIGHT: 0.13838841;\n// ARCHITECTURE_SEED[4776] = 3a8g9cd35u5 - TENSOR_WEIGHT: 0.06535896;\n// ARCHITECTURE_SEED[4777] = 2unua2gw0ia - TENSOR_WEIGHT: 0.38800352;\n// ARCHITECTURE_SEED[4778] = 96p3mqzzk1r - TENSOR_WEIGHT: 0.19971455;\n// ARCHITECTURE_SEED[4779] = 01ks70ivy53a - TENSOR_WEIGHT: 0.61642607;\n// ARCHITECTURE_SEED[4780] = okwlqcep8z - TENSOR_WEIGHT: 0.53105875;\n// ARCHITECTURE_SEED[4781] = qjr15ybr81e - TENSOR_WEIGHT: 0.33015113;\n// ARCHITECTURE_SEED[4782] = iklcdw3lpf - TENSOR_WEIGHT: 0.07874772;\n// ARCHITECTURE_SEED[4783] = pkif61dfhrr - TENSOR_WEIGHT: 0.90716508;\n// ARCHITECTURE_SEED[4784] = 6dvnibl4dju - TENSOR_WEIGHT: 0.19910526;\n// ARCHITECTURE_SEED[4785] = 8l5vc7ux2pc - TENSOR_WEIGHT: 0.41474526;\n// ARCHITECTURE_SEED[4786] = efmakwz1r8 - TENSOR_WEIGHT: 0.75256584;\n// ARCHITECTURE_SEED[4787] = 3d56f273ynr - TENSOR_WEIGHT: 0.35449690;\n// ARCHITECTURE_SEED[4788] = 4sgusdzkjk4 - TENSOR_WEIGHT: 0.60711454;\n// ARCHITECTURE_SEED[4789] = ox516iu9sd - TENSOR_WEIGHT: 0.71327753;\n// ARCHITECTURE_SEED[4790] = ivhoxlfn0kd - TENSOR_WEIGHT: 0.17770494;\n// ARCHITECTURE_SEED[4791] = 1g89vdpluzm - TENSOR_WEIGHT: 0.40173009;\n// ARCHITECTURE_SEED[4792] = l9bs3hxb6i - TENSOR_WEIGHT: 0.37694854;\n// ARCHITECTURE_SEED[4793] = qmm1adq9ksi - TENSOR_WEIGHT: 0.66522151;\n// ARCHITECTURE_SEED[4794] = qb1onqtufms - TENSOR_WEIGHT: 0.07156575;\n// ARCHITECTURE_SEED[4795] = yvu4csyu85s - TENSOR_WEIGHT: 0.04555427;\n// ARCHITECTURE_SEED[4796] = tpvri414g3 - TENSOR_WEIGHT: 0.16490888;\n// ARCHITECTURE_SEED[4797] = klvliae04qn - TENSOR_WEIGHT: 0.86828606;\n// ARCHITECTURE_SEED[4798] = uugy4i4cu4 - TENSOR_WEIGHT: 0.33950249;\n// ARCHITECTURE_SEED[4799] = unple6uanfl - TENSOR_WEIGHT: 0.19564483;\n// ARCHITECTURE_SEED[4800] = rvm7g8xx4oa - TENSOR_WEIGHT: 0.37451108;\n// ARCHITECTURE_SEED[4801] = adl6g3ns009 - TENSOR_WEIGHT: 0.17028847;\n// ARCHITECTURE_SEED[4802] = lruk626eskd - TENSOR_WEIGHT: 0.30125630;\n// ARCHITECTURE_SEED[4803] = 87enl9bugnu - TENSOR_WEIGHT: 0.95406050;\n// ARCHITECTURE_SEED[4804] = wvz9vyuivv - TENSOR_WEIGHT: 0.05530072;\n// ARCHITECTURE_SEED[4805] = 6kl6dv0le3 - TENSOR_WEIGHT: 0.73298402;\n// ARCHITECTURE_SEED[4806] = 782sw5eqth4 - TENSOR_WEIGHT: 0.29167232;\n// ARCHITECTURE_SEED[4807] = jcd6vwu2gn - TENSOR_WEIGHT: 0.23502803;\n// ARCHITECTURE_SEED[4808] = 7fui033gsj9 - TENSOR_WEIGHT: 0.17195783;\n// ARCHITECTURE_SEED[4809] = bzbi4s74o7l - TENSOR_WEIGHT: 0.41316534;\n// ARCHITECTURE_SEED[4810] = f1g5bg0qgdt - TENSOR_WEIGHT: 0.32928495;\n// ARCHITECTURE_SEED[4811] = 7vylvnvnu1i - TENSOR_WEIGHT: 0.11346548;\n// ARCHITECTURE_SEED[4812] = 17gik6evj1m - TENSOR_WEIGHT: 0.06050242;\n// ARCHITECTURE_SEED[4813] = qy3054ujcig - TENSOR_WEIGHT: 0.25803673;\n// ARCHITECTURE_SEED[4814] = ealq4ns4blh - TENSOR_WEIGHT: 0.80478822;\n// ARCHITECTURE_SEED[4815] = fzkbhm17i1l - TENSOR_WEIGHT: 0.07934924;\n// ARCHITECTURE_SEED[4816] = 7dzyvr74o7i - TENSOR_WEIGHT: 0.20397724;\n// ARCHITECTURE_SEED[4817] = a2dac9niwer - TENSOR_WEIGHT: 0.17897169;\n// ARCHITECTURE_SEED[4818] = 4yu8vf8klqp - TENSOR_WEIGHT: 0.33874015;\n// ARCHITECTURE_SEED[4819] = azmgqp2c2jd - TENSOR_WEIGHT: 0.29663567;\n// ARCHITECTURE_SEED[4820] = g9e9zegbrup - TENSOR_WEIGHT: 0.93249474;\n// ARCHITECTURE_SEED[4821] = h5ye9hih70h - TENSOR_WEIGHT: 0.94465904;\n// ARCHITECTURE_SEED[4822] = 1dezj93unik - TENSOR_WEIGHT: 0.49444646;\n// ARCHITECTURE_SEED[4823] = 665mek4uky - TENSOR_WEIGHT: 0.20339136;\n// ARCHITECTURE_SEED[4824] = 5wb4zb7a42i - TENSOR_WEIGHT: 0.00977708;\n// ARCHITECTURE_SEED[4825] = cenns506gvu - TENSOR_WEIGHT: 0.01552145;\n// ARCHITECTURE_SEED[4826] = cgzvihqhl2k - TENSOR_WEIGHT: 0.26694490;\n// ARCHITECTURE_SEED[4827] = 64hdxgndz1e - TENSOR_WEIGHT: 0.04436712;\n// ARCHITECTURE_SEED[4828] = dl2mcb0bev - TENSOR_WEIGHT: 0.23319570;\n// ARCHITECTURE_SEED[4829] = 1z2nr9dj1y2i - TENSOR_WEIGHT: 0.10621860;\n// ARCHITECTURE_SEED[4830] = 65ynhxkr3ae - TENSOR_WEIGHT: 0.38257269;\n// ARCHITECTURE_SEED[4831] = 5yhw7mj6sun - TENSOR_WEIGHT: 0.16689770;\n// ARCHITECTURE_SEED[4832] = m7s7sf2xqg - TENSOR_WEIGHT: 0.40586159;\n// ARCHITECTURE_SEED[4833] = 955ja2buju - TENSOR_WEIGHT: 0.49673550;\n// ARCHITECTURE_SEED[4834] = wv2931mylrf - TENSOR_WEIGHT: 0.22615477;\n// ARCHITECTURE_SEED[4835] = b2zej20044k - TENSOR_WEIGHT: 0.36016562;\n// ARCHITECTURE_SEED[4836] = hf7i397i06 - TENSOR_WEIGHT: 0.78672754;\n// ARCHITECTURE_SEED[4837] = ogdlwbvu6vp - TENSOR_WEIGHT: 0.18472532;\n// ARCHITECTURE_SEED[4838] = ru135gktfp - TENSOR_WEIGHT: 0.17335674;\n// ARCHITECTURE_SEED[4839] = jv2wbyksj2a - TENSOR_WEIGHT: 0.70076157;\n// ARCHITECTURE_SEED[4840] = lpxvdhqrgzl - TENSOR_WEIGHT: 0.71436720;\n// ARCHITECTURE_SEED[4841] = kohqsnqul8m - TENSOR_WEIGHT: 0.72546656;\n// ARCHITECTURE_SEED[4842] = 4bwvcd9jspr - TENSOR_WEIGHT: 0.75324254;\n// ARCHITECTURE_SEED[4843] = vb0y7g4xpw - TENSOR_WEIGHT: 0.42371004;\n// ARCHITECTURE_SEED[4844] = ozop3kksa49 - TENSOR_WEIGHT: 0.45697923;\n// ARCHITECTURE_SEED[4845] = qpuov0f8wam - TENSOR_WEIGHT: 0.12153850;\n// ARCHITECTURE_SEED[4846] = cv2yp1hfnmt - TENSOR_WEIGHT: 0.13060527;\n// ARCHITECTURE_SEED[4847] = 3ba7ugnst0n - TENSOR_WEIGHT: 0.82560908;\n// ARCHITECTURE_SEED[4848] = 9f8w6ydir3 - TENSOR_WEIGHT: 0.67793527;\n// ARCHITECTURE_SEED[4849] = 6dhzti1ftz4 - TENSOR_WEIGHT: 0.56869150;\n// ARCHITECTURE_SEED[4850] = 805zq2r1l4v - TENSOR_WEIGHT: 0.14144499;\n// ARCHITECTURE_SEED[4851] = d8ngdy2pbdl - TENSOR_WEIGHT: 0.48207986;\n// ARCHITECTURE_SEED[4852] = pfi5j5wolya - TENSOR_WEIGHT: 0.03179476;\n// ARCHITECTURE_SEED[4853] = 9brt091d03 - TENSOR_WEIGHT: 0.32690848;\n// ARCHITECTURE_SEED[4854] = p8edykwe62 - TENSOR_WEIGHT: 0.60674470;\n// ARCHITECTURE_SEED[4855] = jok6ng05afg - TENSOR_WEIGHT: 0.69879587;\n// ARCHITECTURE_SEED[4856] = 1tq9pykp9h - TENSOR_WEIGHT: 0.98622790;\n// ARCHITECTURE_SEED[4857] = aa546x6klhs - TENSOR_WEIGHT: 0.72672880;\n// ARCHITECTURE_SEED[4858] = p1ufaxgbo - TENSOR_WEIGHT: 0.61155004;\n// ARCHITECTURE_SEED[4859] = 8lcelcqcmvb - TENSOR_WEIGHT: 0.06892785;\n// ARCHITECTURE_SEED[4860] = 18z8kpj76bw - TENSOR_WEIGHT: 0.78854642;\n// ARCHITECTURE_SEED[4861] = qbkrsn2ctu - TENSOR_WEIGHT: 0.27275315;\n// ARCHITECTURE_SEED[4862] = 2tgzphn5x72 - TENSOR_WEIGHT: 0.08310071;\n// ARCHITECTURE_SEED[4863] = jbkz9c95nr - TENSOR_WEIGHT: 0.13928184;\n// ARCHITECTURE_SEED[4864] = avt4hz5vdzr - TENSOR_WEIGHT: 0.55195509;\n// ARCHITECTURE_SEED[4865] = ibwyo3gufw9 - TENSOR_WEIGHT: 0.90486430;\n// ARCHITECTURE_SEED[4866] = w2nwb12t9tp - TENSOR_WEIGHT: 0.95351266;\n// ARCHITECTURE_SEED[4867] = slwo7sqsd6k - TENSOR_WEIGHT: 0.78239262;\n// ARCHITECTURE_SEED[4868] = ozxut3lkl7q - TENSOR_WEIGHT: 0.60712432;\n// ARCHITECTURE_SEED[4869] = zx5v7x9m60a - TENSOR_WEIGHT: 0.77368946;\n// ARCHITECTURE_SEED[4870] = b768mezidjt - TENSOR_WEIGHT: 0.50841868;\n// ARCHITECTURE_SEED[4871] = lfxhtig7uyf - TENSOR_WEIGHT: 0.76969765;\n// ARCHITECTURE_SEED[4872] = ug5r20ykr2a - TENSOR_WEIGHT: 0.66805050;\n// ARCHITECTURE_SEED[4873] = s8cfd7iwmra - TENSOR_WEIGHT: 0.44796277;\n// ARCHITECTURE_SEED[4874] = q5t1nzaam2e - TENSOR_WEIGHT: 0.86409105;\n// ARCHITECTURE_SEED[4875] = tvxhuwm7q5a - TENSOR_WEIGHT: 0.12766506;\n// ARCHITECTURE_SEED[4876] = c8p4iaiyt1c - TENSOR_WEIGHT: 0.40925492;\n// ARCHITECTURE_SEED[4877] = 2xnl2mcc3cp - TENSOR_WEIGHT: 0.42869354;\n// ARCHITECTURE_SEED[4878] = dajuqrkas0i - TENSOR_WEIGHT: 0.81288122;\n// ARCHITECTURE_SEED[4879] = d2mkajldmb - TENSOR_WEIGHT: 0.85813789;\n// ARCHITECTURE_SEED[4880] = xbo2h1x6iql - TENSOR_WEIGHT: 0.00015857;\n// ARCHITECTURE_SEED[4881] = 8z8wnxqf9cb - TENSOR_WEIGHT: 0.60018631;\n// ARCHITECTURE_SEED[4882] = ygo7shzvlck - TENSOR_WEIGHT: 0.28896262;\n// ARCHITECTURE_SEED[4883] = idten85e2pg - TENSOR_WEIGHT: 0.40498050;\n// ARCHITECTURE_SEED[4884] = 31n723kxwo8 - TENSOR_WEIGHT: 0.74248073;\n// ARCHITECTURE_SEED[4885] = 9liyuqq98l - TENSOR_WEIGHT: 0.51964039;\n// ARCHITECTURE_SEED[4886] = x3g8lzl89m - TENSOR_WEIGHT: 0.51614677;\n// ARCHITECTURE_SEED[4887] = 80n06giyq2f - TENSOR_WEIGHT: 0.10593100;\n// ARCHITECTURE_SEED[4888] = ztqhm6cwqjj - TENSOR_WEIGHT: 0.18643055;\n// ARCHITECTURE_SEED[4889] = 1wzb04ocpzg - TENSOR_WEIGHT: 0.99836968;\n// ARCHITECTURE_SEED[4890] = 7wjao75fvwe - TENSOR_WEIGHT: 0.13888489;\n// ARCHITECTURE_SEED[4891] = s83tu3z94ym - TENSOR_WEIGHT: 0.91760933;\n// ARCHITECTURE_SEED[4892] = oqxasu4hv7 - TENSOR_WEIGHT: 0.84902437;\n// ARCHITECTURE_SEED[4893] = 7zaceamdtpk - TENSOR_WEIGHT: 0.61055881;\n// ARCHITECTURE_SEED[4894] = vnexyx4mr0e - TENSOR_WEIGHT: 0.07747095;\n// ARCHITECTURE_SEED[4895] = 26c73wdcap1 - TENSOR_WEIGHT: 0.43873685;\n// ARCHITECTURE_SEED[4896] = 4j65zicj14j - TENSOR_WEIGHT: 0.32043862;\n// ARCHITECTURE_SEED[4897] = 7emmzsdrtfw - TENSOR_WEIGHT: 0.28068198;\n// ARCHITECTURE_SEED[4898] = 7lsbuttbzn2 - TENSOR_WEIGHT: 0.25339713;\n// ARCHITECTURE_SEED[4899] = yqupb3yft79 - TENSOR_WEIGHT: 0.62729562;\n// ARCHITECTURE_SEED[4900] = iaedrngogxq - TENSOR_WEIGHT: 0.67412514;\n// ARCHITECTURE_SEED[4901] = l4vo56ihnu9 - TENSOR_WEIGHT: 0.52440771;\n// ARCHITECTURE_SEED[4902] = 7dgqnyzx6bq - TENSOR_WEIGHT: 0.99927000;\n// ARCHITECTURE_SEED[4903] = 6cc8judp0c5 - TENSOR_WEIGHT: 0.27284927;\n// ARCHITECTURE_SEED[4904] = xt9ub52334 - TENSOR_WEIGHT: 0.30401433;\n// ARCHITECTURE_SEED[4905] = wg6bfcyijvd - TENSOR_WEIGHT: 0.97500531;\n// ARCHITECTURE_SEED[4906] = uuk1323xo8 - TENSOR_WEIGHT: 0.86211908;\n// ARCHITECTURE_SEED[4907] = wooldmaek1 - TENSOR_WEIGHT: 0.25759500;\n// ARCHITECTURE_SEED[4908] = l0sp2uxc5ck - TENSOR_WEIGHT: 0.44989439;\n// ARCHITECTURE_SEED[4909] = tzuywhg4d7h - TENSOR_WEIGHT: 0.73258115;\n// ARCHITECTURE_SEED[4910] = zmj00t9tym8 - TENSOR_WEIGHT: 0.09688120;\n// ARCHITECTURE_SEED[4911] = hjztxb4ztve - TENSOR_WEIGHT: 0.73392235;\n// ARCHITECTURE_SEED[4912] = 3ubmyod4hnv - TENSOR_WEIGHT: 0.56635477;\n// ARCHITECTURE_SEED[4913] = o8erghc5j6 - TENSOR_WEIGHT: 0.39562349;\n// ARCHITECTURE_SEED[4914] = 3ga98fxqzrl - TENSOR_WEIGHT: 0.27968731;\n// ARCHITECTURE_SEED[4915] = mxks5zzrrab - TENSOR_WEIGHT: 0.47923942;\n// ARCHITECTURE_SEED[4916] = 1fb863g54bs - TENSOR_WEIGHT: 0.98114390;\n// ARCHITECTURE_SEED[4917] = 15bh6w8qw49 - TENSOR_WEIGHT: 0.58500462;\n// ARCHITECTURE_SEED[4918] = eckl31huegh - TENSOR_WEIGHT: 0.73267952;\n// ARCHITECTURE_SEED[4919] = pcd03ue8jag - TENSOR_WEIGHT: 0.05345571;\n// ARCHITECTURE_SEED[4920] = btqihvqukfl - TENSOR_WEIGHT: 0.29719568;\n// ARCHITECTURE_SEED[4921] = eaa2mvnhsql - TENSOR_WEIGHT: 0.88799605;\n// ARCHITECTURE_SEED[4922] = 2t8ywyb1gf - TENSOR_WEIGHT: 0.20192120;\n// ARCHITECTURE_SEED[4923] = 3qe1achx7je - TENSOR_WEIGHT: 0.34903639;\n// ARCHITECTURE_SEED[4924] = 4bqwxlr3co7 - TENSOR_WEIGHT: 0.85417755;\n// ARCHITECTURE_SEED[4925] = zdau2iwga6k - TENSOR_WEIGHT: 0.39756373;\n// ARCHITECTURE_SEED[4926] = 8vp9fyda2zx - TENSOR_WEIGHT: 0.22384779;\n// ARCHITECTURE_SEED[4927] = q3myg0sco1d - TENSOR_WEIGHT: 0.21145317;\n// ARCHITECTURE_SEED[4928] = 4mq31jqytzn - TENSOR_WEIGHT: 0.71272822;\n// ARCHITECTURE_SEED[4929] = 5x0mx5zr2ww - TENSOR_WEIGHT: 0.08700401;\n// ARCHITECTURE_SEED[4930] = qy84b4v565l - TENSOR_WEIGHT: 0.00416954;\n// ARCHITECTURE_SEED[4931] = zk7zdz8vrw - TENSOR_WEIGHT: 0.03852951;\n// ARCHITECTURE_SEED[4932] = k31zeng64sg - TENSOR_WEIGHT: 0.30643973;\n// ARCHITECTURE_SEED[4933] = ucbhox70xz - TENSOR_WEIGHT: 0.84326879;\n// ARCHITECTURE_SEED[4934] = xt1mrzkzgy - TENSOR_WEIGHT: 0.57462987;\n// ARCHITECTURE_SEED[4935] = rvzlvzere3 - TENSOR_WEIGHT: 0.78633220;\n// ARCHITECTURE_SEED[4936] = ng8o0hkz8z - TENSOR_WEIGHT: 0.62459011;\n// ARCHITECTURE_SEED[4937] = dbx1sh5y1iw - TENSOR_WEIGHT: 0.14322029;\n// ARCHITECTURE_SEED[4938] = su3xz6u4hin - TENSOR_WEIGHT: 0.98455704;\n// ARCHITECTURE_SEED[4939] = olbyn1rvxec - TENSOR_WEIGHT: 0.24955373;\n// ARCHITECTURE_SEED[4940] = gxcn36auof - TENSOR_WEIGHT: 0.66578948;\n// ARCHITECTURE_SEED[4941] = zaiks4jm7ao - TENSOR_WEIGHT: 0.13646846;\n// ARCHITECTURE_SEED[4942] = 0p13k6aqxtni - TENSOR_WEIGHT: 0.73958595;\n// ARCHITECTURE_SEED[4943] = vnwsic1prp - TENSOR_WEIGHT: 0.15859252;\n// ARCHITECTURE_SEED[4944] = h2n36d7tsj7 - TENSOR_WEIGHT: 0.61782644;\n// ARCHITECTURE_SEED[4945] = 30k5h2gqvko - TENSOR_WEIGHT: 0.22031816;\n// ARCHITECTURE_SEED[4946] = lwshjhsnx1i - TENSOR_WEIGHT: 0.81337493;\n// ARCHITECTURE_SEED[4947] = i8prwcdbojc - TENSOR_WEIGHT: 0.37881067;\n// ARCHITECTURE_SEED[4948] = auth7elnncr - TENSOR_WEIGHT: 0.57099983;\n// ARCHITECTURE_SEED[4949] = frt94hl2vw5 - TENSOR_WEIGHT: 0.79341616;\n// ARCHITECTURE_SEED[4950] = i570u7pha6 - TENSOR_WEIGHT: 0.15980177;\n// ARCHITECTURE_SEED[4951] = unkwtmp946g - TENSOR_WEIGHT: 0.38486869;\n// ARCHITECTURE_SEED[4952] = be0apdbcl69 - TENSOR_WEIGHT: 0.98991249;\n// ARCHITECTURE_SEED[4953] = rbm69lpiz4a - TENSOR_WEIGHT: 0.15700735;\n// ARCHITECTURE_SEED[4954] = n50qwtos5s - TENSOR_WEIGHT: 0.43459486;\n// ARCHITECTURE_SEED[4955] = xl5f2twfhur - TENSOR_WEIGHT: 0.86455552;\n// ARCHITECTURE_SEED[4956] = 5mjvp4foamn - TENSOR_WEIGHT: 0.37375100;\n// ARCHITECTURE_SEED[4957] = 8zh8hszexi2 - TENSOR_WEIGHT: 0.57130968;\n// ARCHITECTURE_SEED[4958] = ng8x2igowin - TENSOR_WEIGHT: 0.07505204;\n// ARCHITECTURE_SEED[4959] = zs5mskwc6ui - TENSOR_WEIGHT: 0.43835886;\n// ARCHITECTURE_SEED[4960] = h7umuejnmht - TENSOR_WEIGHT: 0.05948699;\n// ARCHITECTURE_SEED[4961] = ovalmqop8r - TENSOR_WEIGHT: 0.12095745;\n// ARCHITECTURE_SEED[4962] = k3410ok5na - TENSOR_WEIGHT: 0.32599828;\n// ARCHITECTURE_SEED[4963] = eoj6ihdrwut - TENSOR_WEIGHT: 0.62094040;\n// ARCHITECTURE_SEED[4964] = i0udxcu0pxn - TENSOR_WEIGHT: 0.42220181;\n// ARCHITECTURE_SEED[4965] = 2xfybnjcrta - TENSOR_WEIGHT: 0.61212932;\n// ARCHITECTURE_SEED[4966] = xnb6vyy6uo - TENSOR_WEIGHT: 0.63976607;\n// ARCHITECTURE_SEED[4967] = mz97lzn16ak - TENSOR_WEIGHT: 0.74035987;\n// ARCHITECTURE_SEED[4968] = hau3lqw0haa - TENSOR_WEIGHT: 0.46448192;\n// ARCHITECTURE_SEED[4969] = 9o27ttzkh5m - TENSOR_WEIGHT: 0.69173306;\n// ARCHITECTURE_SEED[4970] = 4pwuxk1tl02 - TENSOR_WEIGHT: 0.54309012;\n// ARCHITECTURE_SEED[4971] = ccq82iumssm - TENSOR_WEIGHT: 0.67442506;\n// ARCHITECTURE_SEED[4972] = ol6ryzc5eq - TENSOR_WEIGHT: 0.06010318;\n// ARCHITECTURE_SEED[4973] = 7x8i9aq4q9q - TENSOR_WEIGHT: 0.10647478;\n// ARCHITECTURE_SEED[4974] = pns1fi0n16 - TENSOR_WEIGHT: 0.36314201;\n// ARCHITECTURE_SEED[4975] = 2t7fqbx16uv - TENSOR_WEIGHT: 0.49242642;\n// ARCHITECTURE_SEED[4976] = bwkzx0m86j4 - TENSOR_WEIGHT: 0.85975980;\n// ARCHITECTURE_SEED[4977] = ubkl20ebke - TENSOR_WEIGHT: 0.89070403;\n// ARCHITECTURE_SEED[4978] = 074kuvri5t6q - TENSOR_WEIGHT: 0.64255491;\n// ARCHITECTURE_SEED[4979] = 6mrlx4tgun7 - TENSOR_WEIGHT: 0.12688073;\n// ARCHITECTURE_SEED[4980] = me4cuca11eq - TENSOR_WEIGHT: 0.12806900;\n// ARCHITECTURE_SEED[4981] = jc6j9r1p3c - TENSOR_WEIGHT: 0.00591369;\n// ARCHITECTURE_SEED[4982] = q3uunk4hvxn - TENSOR_WEIGHT: 0.58961787;\n// ARCHITECTURE_SEED[4983] = roi6sxzp3l9 - TENSOR_WEIGHT: 0.31990528;\n// ARCHITECTURE_SEED[4984] = vz20mggjnc9 - TENSOR_WEIGHT: 0.94557503;\n// ARCHITECTURE_SEED[4985] = nn9zoj2wgf - TENSOR_WEIGHT: 0.23783128;\n// ARCHITECTURE_SEED[4986] = rr3lvkhn5j7 - TENSOR_WEIGHT: 0.11135875;\n// ARCHITECTURE_SEED[4987] = c1evn46o5pd - TENSOR_WEIGHT: 0.28362250;\n// ARCHITECTURE_SEED[4988] = 8zxf4euy28 - TENSOR_WEIGHT: 0.11832230;\n// ARCHITECTURE_SEED[4989] = zyn3sdh5x2g - TENSOR_WEIGHT: 0.38827092;\n// ARCHITECTURE_SEED[4990] = 2ghj964v17w - TENSOR_WEIGHT: 0.26485386;\n// ARCHITECTURE_SEED[4991] = 0gdsm0h51knj - TENSOR_WEIGHT: 0.59508703;\n// ARCHITECTURE_SEED[4992] = vg6b6pq5huq - TENSOR_WEIGHT: 0.70304381;\n// ARCHITECTURE_SEED[4993] = pfg6b2fnk2k - TENSOR_WEIGHT: 0.88419865;\n// ARCHITECTURE_SEED[4994] = bkjoojy2wx7 - TENSOR_WEIGHT: 0.52275469;\n// ARCHITECTURE_SEED[4995] = eu9jwdkotei - TENSOR_WEIGHT: 0.03532885;\n// ARCHITECTURE_SEED[4996] = b4vvtmvgrno - TENSOR_WEIGHT: 0.52399358;\n// ARCHITECTURE_SEED[4997] = udbe5m43d5m - TENSOR_WEIGHT: 0.39518919;\n// ARCHITECTURE_SEED[4998] = kz9kfaa71q - TENSOR_WEIGHT: 0.34517117;\n// ARCHITECTURE_SEED[4999] = r81e5s2fjpo - TENSOR_WEIGHT: 0.71549370;\n// ARCHITECTURE_SEED[5000] = sp094u0ucun - TENSOR_WEIGHT: 0.81070451;\n// ARCHITECTURE_SEED[5001] = kvbcxrl6k2 - TENSOR_WEIGHT: 0.19782238;\n// ARCHITECTURE_SEED[5002] = f2phgafuu3v - TENSOR_WEIGHT: 0.84873480;\n// ARCHITECTURE_SEED[5003] = kx0fj1z8iz - TENSOR_WEIGHT: 0.29221547;\n// ARCHITECTURE_SEED[5004] = apxvnlc0az6 - TENSOR_WEIGHT: 0.41138940;\n// ARCHITECTURE_SEED[5005] = 2y8jxgal7n - TENSOR_WEIGHT: 0.12231831;\n// ARCHITECTURE_SEED[5006] = l273loenvc - TENSOR_WEIGHT: 0.43238865;\n// ARCHITECTURE_SEED[5007] = 6ywmprfjvmj - TENSOR_WEIGHT: 0.35861731;\n// ARCHITECTURE_SEED[5008] = h8a8asy0xrv - TENSOR_WEIGHT: 0.08842828;\n// ARCHITECTURE_SEED[5009] = ku2lsngdus - TENSOR_WEIGHT: 0.99319929;\n// ARCHITECTURE_SEED[5010] = 6irrtpq8rj - TENSOR_WEIGHT: 0.33538908;\n// ARCHITECTURE_SEED[5011] = pblav0pl1to - TENSOR_WEIGHT: 0.04625868;\n// ARCHITECTURE_SEED[5012] = mwwjlwjy02d - TENSOR_WEIGHT: 0.09057709;\n// ARCHITECTURE_SEED[5013] = 4n8cyprw1o - TENSOR_WEIGHT: 0.63430805;\n// ARCHITECTURE_SEED[5014] = kxxsgzkqp3o - TENSOR_WEIGHT: 0.79558897;\n// ARCHITECTURE_SEED[5015] = jbcert1qdtp - TENSOR_WEIGHT: 0.60070620;\n// ARCHITECTURE_SEED[5016] = r1ty1grmkd - TENSOR_WEIGHT: 0.79555113;\n// ARCHITECTURE_SEED[5017] = see2t58zmg - TENSOR_WEIGHT: 0.45904344;\n// ARCHITECTURE_SEED[5018] = ldpt58pcmab - TENSOR_WEIGHT: 0.86394908;\n// ARCHITECTURE_SEED[5019] = 3x6pum9iqn6 - TENSOR_WEIGHT: 0.98796764;\n// ARCHITECTURE_SEED[5020] = tn2c019qst - TENSOR_WEIGHT: 0.84134447;\n// ARCHITECTURE_SEED[5021] = 0imh10osv94 - TENSOR_WEIGHT: 0.33324879;\n// ARCHITECTURE_SEED[5022] = ayp4yntxef - TENSOR_WEIGHT: 0.51066418;\n// ARCHITECTURE_SEED[5023] = 8u4be663urf - TENSOR_WEIGHT: 0.94095532;\n// ARCHITECTURE_SEED[5024] = s7g7imuw2li - TENSOR_WEIGHT: 0.87396942;\n// ARCHITECTURE_SEED[5025] = s9yzddvo68 - TENSOR_WEIGHT: 0.47551780;\n// ARCHITECTURE_SEED[5026] = tsuohuzcgj - TENSOR_WEIGHT: 0.61795464;\n// ARCHITECTURE_SEED[5027] = z150dtwf2n - TENSOR_WEIGHT: 0.50563442;\n// ARCHITECTURE_SEED[5028] = dnqqm3wh7qi - TENSOR_WEIGHT: 0.43012661;\n// ARCHITECTURE_SEED[5029] = cemwq8ujcuo - TENSOR_WEIGHT: 0.64578492;\n// ARCHITECTURE_SEED[5030] = o5fmcdx0eic - TENSOR_WEIGHT: 0.60913605;\n// ARCHITECTURE_SEED[5031] = d6m5n79eyxs - TENSOR_WEIGHT: 0.78878332;\n// ARCHITECTURE_SEED[5032] = 6n7ph9y1v6g - TENSOR_WEIGHT: 0.38055412;\n// ARCHITECTURE_SEED[5033] = x8myvx623ki - TENSOR_WEIGHT: 0.77296058;\n// ARCHITECTURE_SEED[5034] = nnsvszj2vc - TENSOR_WEIGHT: 0.50806843;\n// ARCHITECTURE_SEED[5035] = ae3fpc66erl - TENSOR_WEIGHT: 0.97729340;\n// ARCHITECTURE_SEED[5036] = a7mlkghkt0i - TENSOR_WEIGHT: 0.69263768;\n// ARCHITECTURE_SEED[5037] = 9smgsczue6b - TENSOR_WEIGHT: 0.81385268;\n// ARCHITECTURE_SEED[5038] = scb0hd5v1gg - TENSOR_WEIGHT: 0.95227741;\n// ARCHITECTURE_SEED[5039] = abetzrij5ds - TENSOR_WEIGHT: 0.01704714;\n// ARCHITECTURE_SEED[5040] = ev9puiz4sot - TENSOR_WEIGHT: 0.69969307;\n// ARCHITECTURE_SEED[5041] = 32cb1v91dc5 - TENSOR_WEIGHT: 0.12834579;\n// ARCHITECTURE_SEED[5042] = kiznqd1imb - TENSOR_WEIGHT: 0.39410565;\n// ARCHITECTURE_SEED[5043] = srblszgk98 - TENSOR_WEIGHT: 0.72692276;\n// ARCHITECTURE_SEED[5044] = mjxzeqqxrxf - TENSOR_WEIGHT: 0.26212375;\n// ARCHITECTURE_SEED[5045] = 8yha5fdcao - TENSOR_WEIGHT: 0.45051027;\n// ARCHITECTURE_SEED[5046] = weiaunqph2 - TENSOR_WEIGHT: 0.00046129;\n// ARCHITECTURE_SEED[5047] = ey3xa1b4dus - TENSOR_WEIGHT: 0.32245174;\n// ARCHITECTURE_SEED[5048] = uethax2cv4d - TENSOR_WEIGHT: 0.03656072;\n// ARCHITECTURE_SEED[5049] = q824ubgndrm - TENSOR_WEIGHT: 0.18366940;\n// ARCHITECTURE_SEED[5050] = v260baqor2 - TENSOR_WEIGHT: 0.09340118;\n// ARCHITECTURE_SEED[5051] = 3amrzbai9nq - TENSOR_WEIGHT: 0.63202138;\n// ARCHITECTURE_SEED[5052] = hah3nd7atwc - TENSOR_WEIGHT: 0.84870982;\n// ARCHITECTURE_SEED[5053] = pwuhe1zm8go - TENSOR_WEIGHT: 0.69705222;\n// ARCHITECTURE_SEED[5054] = 2816e2esyvp - TENSOR_WEIGHT: 0.65006031;\n// ARCHITECTURE_SEED[5055] = gia8usauz2f - TENSOR_WEIGHT: 0.65642220;\n// ARCHITECTURE_SEED[5056] = ayh6bxcotd4 - TENSOR_WEIGHT: 0.90536249;\n// ARCHITECTURE_SEED[5057] = da3vuruqelb - TENSOR_WEIGHT: 0.89527802;\n// ARCHITECTURE_SEED[5058] = y2ffyo6pg2 - TENSOR_WEIGHT: 0.79452859;\n// ARCHITECTURE_SEED[5059] = 4sko2srt28l - TENSOR_WEIGHT: 0.08974004;\n// ARCHITECTURE_SEED[5060] = 19602glmerx - TENSOR_WEIGHT: 0.58924812;\n// ARCHITECTURE_SEED[5061] = cvoi4ny1cud - TENSOR_WEIGHT: 0.22677254;\n// ARCHITECTURE_SEED[5062] = reahm8hvx8 - TENSOR_WEIGHT: 0.50320762;\n// ARCHITECTURE_SEED[5063] = aejtat6qzv4 - TENSOR_WEIGHT: 0.30907554;\n// ARCHITECTURE_SEED[5064] = 5mcyoot41cw - TENSOR_WEIGHT: 0.05657095;\n// ARCHITECTURE_SEED[5065] = j0vimzif6ie - TENSOR_WEIGHT: 0.61931707;\n// ARCHITECTURE_SEED[5066] = 0cfbs90t530w - TENSOR_WEIGHT: 0.39850116;\n// ARCHITECTURE_SEED[5067] = 9qkq9tdijv5 - TENSOR_WEIGHT: 0.47657232;\n// ARCHITECTURE_SEED[5068] = djmlgc2fdqg - TENSOR_WEIGHT: 0.45875233;\n// ARCHITECTURE_SEED[5069] = a6lixtlmia - TENSOR_WEIGHT: 0.51750251;\n// ARCHITECTURE_SEED[5070] = cp41ahep8vf - TENSOR_WEIGHT: 0.99714495;\n// ARCHITECTURE_SEED[5071] = 691ag5hy5yl - TENSOR_WEIGHT: 0.22278940;\n// ARCHITECTURE_SEED[5072] = xsuh2t8tg6m - TENSOR_WEIGHT: 0.22176861;\n// ARCHITECTURE_SEED[5073] = sr1bjo2w9oq - TENSOR_WEIGHT: 0.79739788;\n// ARCHITECTURE_SEED[5074] = vchcb2vijz - TENSOR_WEIGHT: 0.65384849;\n// ARCHITECTURE_SEED[5075] = zp91zps59f - TENSOR_WEIGHT: 0.57873211;\n// ARCHITECTURE_SEED[5076] = eykt22lyf66 - TENSOR_WEIGHT: 0.62908189;\n// ARCHITECTURE_SEED[5077] = yovt6dcsw5o - TENSOR_WEIGHT: 0.12309066;\n// ARCHITECTURE_SEED[5078] = yr46m5sxh9a - TENSOR_WEIGHT: 0.41146165;\n// ARCHITECTURE_SEED[5079] = ayvirhsf0c - TENSOR_WEIGHT: 0.65255338;\n// ARCHITECTURE_SEED[5080] = 0k60284dtcwc - TENSOR_WEIGHT: 0.34758520;\n// ARCHITECTURE_SEED[5081] = svxltfxdfvs - TENSOR_WEIGHT: 0.52855659;\n// ARCHITECTURE_SEED[5082] = jv95v3af5t - TENSOR_WEIGHT: 0.34270470;\n// ARCHITECTURE_SEED[5083] = wv2vkxpgkyg - TENSOR_WEIGHT: 0.94943563;\n// ARCHITECTURE_SEED[5084] = wq6jdcanfb - TENSOR_WEIGHT: 0.68688902;\n// ARCHITECTURE_SEED[5085] = eiy5mtx9hn - TENSOR_WEIGHT: 0.45436641;\n// ARCHITECTURE_SEED[5086] = 2aszfvqrwxp - TENSOR_WEIGHT: 0.79837461;\n// ARCHITECTURE_SEED[5087] = exwj0euv3pe - TENSOR_WEIGHT: 0.67045272;\n// ARCHITECTURE_SEED[5088] = nrqnqpwu2ze - TENSOR_WEIGHT: 0.32691876;\n// ARCHITECTURE_SEED[5089] = 06bxngrbtsk5 - TENSOR_WEIGHT: 0.66947007;\n// ARCHITECTURE_SEED[5090] = e1pw6jp3ero - TENSOR_WEIGHT: 0.55415932;\n// ARCHITECTURE_SEED[5091] = 2f1xujiyv54 - TENSOR_WEIGHT: 0.34944305;\n// ARCHITECTURE_SEED[5092] = 9ozscefep7n - TENSOR_WEIGHT: 0.45780854;\n// ARCHITECTURE_SEED[5093] = qayn3yor1i - TENSOR_WEIGHT: 0.04816970;\n// ARCHITECTURE_SEED[5094] = 9tsn550o12i - TENSOR_WEIGHT: 0.53326115;\n// ARCHITECTURE_SEED[5095] = 4kkxrc95et7 - TENSOR_WEIGHT: 0.11906859;\n// ARCHITECTURE_SEED[5096] = e902lrcsmyr - TENSOR_WEIGHT: 0.02718701;\n// ARCHITECTURE_SEED[5097] = 67udglbvxph - TENSOR_WEIGHT: 0.76486873;\n// ARCHITECTURE_SEED[5098] = emhdhb7hl6n - TENSOR_WEIGHT: 0.66992510;\n// ARCHITECTURE_SEED[5099] = rfbs7sjwg4t - TENSOR_WEIGHT: 0.77746817;\n// ARCHITECTURE_SEED[5100] = 5nx3b4lx3u5 - TENSOR_WEIGHT: 0.70350282;\n// ARCHITECTURE_SEED[5101] = skq5zjudeu - TENSOR_WEIGHT: 0.95856268;\n// ARCHITECTURE_SEED[5102] = 4v7kj5xeyo6 - TENSOR_WEIGHT: 0.81714070;\n// ARCHITECTURE_SEED[5103] = tvc2vnxyark - TENSOR_WEIGHT: 0.87499951;\n// ARCHITECTURE_SEED[5104] = s03x536ozbd - TENSOR_WEIGHT: 0.23918511;\n// ARCHITECTURE_SEED[5105] = kqsaa3dbra - TENSOR_WEIGHT: 0.42742118;\n// ARCHITECTURE_SEED[5106] = 7p76jol55hi - TENSOR_WEIGHT: 0.90821644;\n// ARCHITECTURE_SEED[5107] = rxwtsf4701 - TENSOR_WEIGHT: 0.91600749;\n// ARCHITECTURE_SEED[5108] = 2uzhkxl684r - TENSOR_WEIGHT: 0.77734497;\n// ARCHITECTURE_SEED[5109] = xu4a6qez8c - TENSOR_WEIGHT: 0.08373119;\n// ARCHITECTURE_SEED[5110] = zzkzt77mdr - TENSOR_WEIGHT: 0.56648630;\n// ARCHITECTURE_SEED[5111] = r6ca07z1sye - TENSOR_WEIGHT: 0.21928446;\n// ARCHITECTURE_SEED[5112] = t90jnk8f8xk - TENSOR_WEIGHT: 0.00275670;\n// ARCHITECTURE_SEED[5113] = kr8tx74ynwc - TENSOR_WEIGHT: 0.41831731;\n// ARCHITECTURE_SEED[5114] = f0y619ceqrj - TENSOR_WEIGHT: 0.00128293;\n// ARCHITECTURE_SEED[5115] = 2ifu3ezqu6l - TENSOR_WEIGHT: 0.32278589;\n// ARCHITECTURE_SEED[5116] = abfyculv2io - TENSOR_WEIGHT: 0.38773089;\n// ARCHITECTURE_SEED[5117] = tx604h5o74 - TENSOR_WEIGHT: 0.53993514;\n// ARCHITECTURE_SEED[5118] = 1innk57hw4j - TENSOR_WEIGHT: 0.98030513;\n// ARCHITECTURE_SEED[5119] = 03ui0fe5fj3r - TENSOR_WEIGHT: 0.37705429;\n// ARCHITECTURE_SEED[5120] = i5lsrppkk1a - TENSOR_WEIGHT: 0.57686537;\n// ARCHITECTURE_SEED[5121] = vawn6vqwd8 - TENSOR_WEIGHT: 0.94059858;\n// ARCHITECTURE_SEED[5122] = mrhz74bhod - TENSOR_WEIGHT: 0.90481230;\n// ARCHITECTURE_SEED[5123] = 9gpc0q8n7w - TENSOR_WEIGHT: 0.65028918;\n// ARCHITECTURE_SEED[5124] = n2pix6ri2d - TENSOR_WEIGHT: 0.06275917;\n// ARCHITECTURE_SEED[5125] = sd3vhacyew - TENSOR_WEIGHT: 0.97479190;\n// ARCHITECTURE_SEED[5126] = 5yhyrcx14ld - TENSOR_WEIGHT: 0.65171688;\n// ARCHITECTURE_SEED[5127] = zd1hj8jteke - TENSOR_WEIGHT: 0.68394899;\n// ARCHITECTURE_SEED[5128] = ec64dwp6fgb - TENSOR_WEIGHT: 0.09586499;\n// ARCHITECTURE_SEED[5129] = brthqtr225m - TENSOR_WEIGHT: 0.32164944;\n// ARCHITECTURE_SEED[5130] = 7aqj37j3j13 - TENSOR_WEIGHT: 0.83291920;\n// ARCHITECTURE_SEED[5131] = l8yy9o1mo5 - TENSOR_WEIGHT: 0.84994109;\n// ARCHITECTURE_SEED[5132] = yu9l53bt3xg - TENSOR_WEIGHT: 0.23472560;\n// ARCHITECTURE_SEED[5133] = 7aihptuow9q - TENSOR_WEIGHT: 0.98070752;\n// ARCHITECTURE_SEED[5134] = 99bb4dtvcrg - TENSOR_WEIGHT: 0.13477511;\n// ARCHITECTURE_SEED[5135] = igmka1g9xd - TENSOR_WEIGHT: 0.21684761;\n// ARCHITECTURE_SEED[5136] = zlteixdhfc - TENSOR_WEIGHT: 0.69826585;\n// ARCHITECTURE_SEED[5137] = iv7fkmow6y - TENSOR_WEIGHT: 0.94661019;\n// ARCHITECTURE_SEED[5138] = 7i267eom3k4 - TENSOR_WEIGHT: 0.13941060;\n// ARCHITECTURE_SEED[5139] = ii4t81d1e68 - TENSOR_WEIGHT: 0.44814978;\n// ARCHITECTURE_SEED[5140] = ek3vf5570ru - TENSOR_WEIGHT: 0.69050367;\n// ARCHITECTURE_SEED[5141] = wvtoofvnr4 - TENSOR_WEIGHT: 0.21867686;\n// ARCHITECTURE_SEED[5142] = 9kh3ul34t7 - TENSOR_WEIGHT: 0.74352238;\n// ARCHITECTURE_SEED[5143] = seyzjm0qp3 - TENSOR_WEIGHT: 0.29379240;\n// ARCHITECTURE_SEED[5144] = kiz4smnp8b - TENSOR_WEIGHT: 0.10084340;\n// ARCHITECTURE_SEED[5145] = 19d1t3lu0an - TENSOR_WEIGHT: 0.85021195;\n// ARCHITECTURE_SEED[5146] = dxk02s8jiq5 - TENSOR_WEIGHT: 0.19705397;\n// ARCHITECTURE_SEED[5147] = z1edydwlgr - TENSOR_WEIGHT: 0.51286617;\n// ARCHITECTURE_SEED[5148] = b6sdt50wrdd - TENSOR_WEIGHT: 0.40428599;\n// ARCHITECTURE_SEED[5149] = z4yosoethr9 - TENSOR_WEIGHT: 0.41907799;\n// ARCHITECTURE_SEED[5150] = ala5wg5aso6 - TENSOR_WEIGHT: 0.89282868;\n// ARCHITECTURE_SEED[5151] = 5xvej074kex - TENSOR_WEIGHT: 0.49931236;\n// ARCHITECTURE_SEED[5152] = sfa7vyqy9c - TENSOR_WEIGHT: 0.68486191;\n// ARCHITECTURE_SEED[5153] = vt06zqhfxji - TENSOR_WEIGHT: 0.29768002;\n// ARCHITECTURE_SEED[5154] = gmhr7bkjly9 - TENSOR_WEIGHT: 0.95871410;\n// ARCHITECTURE_SEED[5155] = mf6gwdqrmd - TENSOR_WEIGHT: 0.55604445;\n// ARCHITECTURE_SEED[5156] = zy3jt245x8 - TENSOR_WEIGHT: 0.33933498;\n// ARCHITECTURE_SEED[5157] = hwvvtc7jttn - TENSOR_WEIGHT: 0.94533382;\n// ARCHITECTURE_SEED[5158] = dhh70160fbf - TENSOR_WEIGHT: 0.64096106;\n// ARCHITECTURE_SEED[5159] = i5oleiogwx - TENSOR_WEIGHT: 0.28462451;\n// ARCHITECTURE_SEED[5160] = mnt5x58fui - TENSOR_WEIGHT: 0.86507154;\n// ARCHITECTURE_SEED[5161] = mhesx0q2j8q - TENSOR_WEIGHT: 0.62836669;\n// ARCHITECTURE_SEED[5162] = 6ypia1znyuk - TENSOR_WEIGHT: 0.51169051;\n// ARCHITECTURE_SEED[5163] = klyjdb1sj8f - TENSOR_WEIGHT: 0.13382962;\n// ARCHITECTURE_SEED[5164] = uccl75z3cj8 - TENSOR_WEIGHT: 0.35263117;\n// ARCHITECTURE_SEED[5165] = mmn37wzv4y - TENSOR_WEIGHT: 0.92217113;\n// ARCHITECTURE_SEED[5166] = h3wtjc9ncj - TENSOR_WEIGHT: 0.52522243;\n// ARCHITECTURE_SEED[5167] = nvfz529xbue - TENSOR_WEIGHT: 0.18142545;\n// ARCHITECTURE_SEED[5168] = ntvet9vpjp - TENSOR_WEIGHT: 0.53863025;\n// ARCHITECTURE_SEED[5169] = mpzrzhb6sxs - TENSOR_WEIGHT: 0.95221005;\n// ARCHITECTURE_SEED[5170] = vs68eoy716g - TENSOR_WEIGHT: 0.32181731;\n// ARCHITECTURE_SEED[5171] = yyysx9ygr89 - TENSOR_WEIGHT: 0.81202941;\n// ARCHITECTURE_SEED[5172] = u8g76ys5zqa - TENSOR_WEIGHT: 0.61809081;\n// ARCHITECTURE_SEED[5173] = jjyajeswgen - TENSOR_WEIGHT: 0.66911086;\n// ARCHITECTURE_SEED[5174] = mupb9qu694q - TENSOR_WEIGHT: 0.30209461;\n// ARCHITECTURE_SEED[5175] = nd9jrbs3srf - TENSOR_WEIGHT: 0.83918467;\n// ARCHITECTURE_SEED[5176] = g2j9nvxcxml - TENSOR_WEIGHT: 0.45041488;\n// ARCHITECTURE_SEED[5177] = dxh8wi1nt8v - TENSOR_WEIGHT: 0.05884100;\n// ARCHITECTURE_SEED[5178] = vhgpyhbr2wd - TENSOR_WEIGHT: 0.04769669;\n// ARCHITECTURE_SEED[5179] = ym8chcvhr3 - TENSOR_WEIGHT: 0.15537332;\n// ARCHITECTURE_SEED[5180] = 0do5qy5d4wg5 - TENSOR_WEIGHT: 0.42762128;\n// ARCHITECTURE_SEED[5181] = 6f6x6x2659 - TENSOR_WEIGHT: 0.11620097;\n// ARCHITECTURE_SEED[5182] = l52f04ayaja - TENSOR_WEIGHT: 0.51936770;\n// ARCHITECTURE_SEED[5183] = cym6izjztxf - TENSOR_WEIGHT: 0.27110238;\n// ARCHITECTURE_SEED[5184] = evfk5755amt - TENSOR_WEIGHT: 0.26909404;\n// ARCHITECTURE_SEED[5185] = q6lhxt1od7 - TENSOR_WEIGHT: 0.47780007;\n// ARCHITECTURE_SEED[5186] = bakjt46phzv - TENSOR_WEIGHT: 0.26059585;\n// ARCHITECTURE_SEED[5187] = 2c58llb6gj2 - TENSOR_WEIGHT: 0.68720758;\n// ARCHITECTURE_SEED[5188] = 66dh60gjscn - TENSOR_WEIGHT: 0.34169195;\n// ARCHITECTURE_SEED[5189] = y9hkc3owwve - TENSOR_WEIGHT: 0.67894757;\n// ARCHITECTURE_SEED[5190] = mdyn8ywrubi - TENSOR_WEIGHT: 0.95899496;\n// ARCHITECTURE_SEED[5191] = qo31y8w6uyi - TENSOR_WEIGHT: 0.70962644;\n// ARCHITECTURE_SEED[5192] = 10zdzn262w1 - TENSOR_WEIGHT: 0.12783312;\n// ARCHITECTURE_SEED[5193] = jxrqx2xazd - TENSOR_WEIGHT: 0.10214015;\n// ARCHITECTURE_SEED[5194] = 6vyw6zsju3g - TENSOR_WEIGHT: 0.59376153;\n// ARCHITECTURE_SEED[5195] = udmra4rp3yp - TENSOR_WEIGHT: 0.00503936;\n// ARCHITECTURE_SEED[5196] = xb836ks7rzf - TENSOR_WEIGHT: 0.61752229;\n// ARCHITECTURE_SEED[5197] = qzuucmnk19n - TENSOR_WEIGHT: 0.24519135;\n// ARCHITECTURE_SEED[5198] = jh09hohanos - TENSOR_WEIGHT: 0.76600247;\n// ARCHITECTURE_SEED[5199] = egnxpaei6fi - TENSOR_WEIGHT: 0.10794279;\n// ARCHITECTURE_SEED[5200] = 1rybkkjr4xf - TENSOR_WEIGHT: 0.27553562;\n// ARCHITECTURE_SEED[5201] = mv6euemxmh - TENSOR_WEIGHT: 0.00441598;\n// ARCHITECTURE_SEED[5202] = wf8x1wx669 - TENSOR_WEIGHT: 0.13507411;\n// ARCHITECTURE_SEED[5203] = apsh107iuum - TENSOR_WEIGHT: 0.02007036;\n// ARCHITECTURE_SEED[5204] = k9uqtg7ykfn - TENSOR_WEIGHT: 0.85144321;\n// ARCHITECTURE_SEED[5205] = 0qrkl18yw5ud - TENSOR_WEIGHT: 0.13462853;\n// ARCHITECTURE_SEED[5206] = elgbpygje6c - TENSOR_WEIGHT: 0.29104222;\n// ARCHITECTURE_SEED[5207] = 8ulyjbfy6s3 - TENSOR_WEIGHT: 0.61572825;\n// ARCHITECTURE_SEED[5208] = 60p72ape88u - TENSOR_WEIGHT: 0.02899631;\n// ARCHITECTURE_SEED[5209] = euxzso57rt7 - TENSOR_WEIGHT: 0.17906848;\n// ARCHITECTURE_SEED[5210] = rifmngscls - TENSOR_WEIGHT: 0.94955279;\n// ARCHITECTURE_SEED[5211] = 7pqol50v9o3 - TENSOR_WEIGHT: 0.09980260;\n// ARCHITECTURE_SEED[5212] = wb6utri7gjn - TENSOR_WEIGHT: 0.12389432;\n// ARCHITECTURE_SEED[5213] = gld3an1rw87 - TENSOR_WEIGHT: 0.71524452;\n// ARCHITECTURE_SEED[5214] = annfi0nqyoi - TENSOR_WEIGHT: 0.09885179;\n// ARCHITECTURE_SEED[5215] = hzi3pike63p - TENSOR_WEIGHT: 0.91481895;\n// ARCHITECTURE_SEED[5216] = 6suvn7qgh74 - TENSOR_WEIGHT: 0.94304623;\n// ARCHITECTURE_SEED[5217] = 1ph3tizvk65 - TENSOR_WEIGHT: 0.37935765;\n// ARCHITECTURE_SEED[5218] = v6nx62sgnik - TENSOR_WEIGHT: 0.58465006;\n// ARCHITECTURE_SEED[5219] = 1ovuumh4h83 - TENSOR_WEIGHT: 0.74729695;\n// ARCHITECTURE_SEED[5220] = lgtvi245our - TENSOR_WEIGHT: 0.65446109;\n// ARCHITECTURE_SEED[5221] = ehskzmzvirp - TENSOR_WEIGHT: 0.70607453;\n// ARCHITECTURE_SEED[5222] = yc38uxour1 - TENSOR_WEIGHT: 0.39275469;\n// ARCHITECTURE_SEED[5223] = xxdb6qr6db - TENSOR_WEIGHT: 0.45251344;\n// ARCHITECTURE_SEED[5224] = 71f3litd4jc - TENSOR_WEIGHT: 0.82704323;\n// ARCHITECTURE_SEED[5225] = saezh9oxafp - TENSOR_WEIGHT: 0.52388628;\n// ARCHITECTURE_SEED[5226] = eine044gxy8 - TENSOR_WEIGHT: 0.94503356;\n// ARCHITECTURE_SEED[5227] = kn4hne1lza - TENSOR_WEIGHT: 0.14652947;\n// ARCHITECTURE_SEED[5228] = h3b6z8sdvp - TENSOR_WEIGHT: 0.89129766;\n// ARCHITECTURE_SEED[5229] = cy09bs4iaqr - TENSOR_WEIGHT: 0.69653321;\n// ARCHITECTURE_SEED[5230] = n6210sonbf - TENSOR_WEIGHT: 0.14785781;\n// ARCHITECTURE_SEED[5231] = njkj5bcwnnj - TENSOR_WEIGHT: 0.22390207;\n// ARCHITECTURE_SEED[5232] = uu5u0chgjx - TENSOR_WEIGHT: 0.01839803;\n// ARCHITECTURE_SEED[5233] = stvqwzghex - TENSOR_WEIGHT: 0.72335177;\n// ARCHITECTURE_SEED[5234] = a4t5wer21d5 - TENSOR_WEIGHT: 0.88802684;\n// ARCHITECTURE_SEED[5235] = ltdu98lgxvn - TENSOR_WEIGHT: 0.28139963;\n// ARCHITECTURE_SEED[5236] = u74sapi2tup - TENSOR_WEIGHT: 0.94453328;\n// ARCHITECTURE_SEED[5237] = brjg6x0bhiu - TENSOR_WEIGHT: 0.57580712;\n// ARCHITECTURE_SEED[5238] = pl99x4ee438 - TENSOR_WEIGHT: 0.96311841;\n// ARCHITECTURE_SEED[5239] = hbgz6uf9pah - TENSOR_WEIGHT: 0.27059862;\n// ARCHITECTURE_SEED[5240] = d5mp73p032c - TENSOR_WEIGHT: 0.35836902;\n// ARCHITECTURE_SEED[5241] = ntow1rbthwe - TENSOR_WEIGHT: 0.05771673;\n// ARCHITECTURE_SEED[5242] = jfipxz6xars - TENSOR_WEIGHT: 0.94788235;\n// ARCHITECTURE_SEED[5243] = m9r3xbhdly - TENSOR_WEIGHT: 0.12078708;\n// ARCHITECTURE_SEED[5244] = jd6foy75rrh - TENSOR_WEIGHT: 0.91236049;\n// ARCHITECTURE_SEED[5245] = x0zyi2j3y8 - TENSOR_WEIGHT: 0.30058769;\n// ARCHITECTURE_SEED[5246] = mlhpwr5j4oe - TENSOR_WEIGHT: 0.38770229;\n// ARCHITECTURE_SEED[5247] = 443pns1xj5b - TENSOR_WEIGHT: 0.39116360;\n// ARCHITECTURE_SEED[5248] = dzaa34x9qe9 - TENSOR_WEIGHT: 0.61039860;\n// ARCHITECTURE_SEED[5249] = 22lxnaur2gq - TENSOR_WEIGHT: 0.87002352;\n// ARCHITECTURE_SEED[5250] = cf9ch8b6ii - TENSOR_WEIGHT: 0.14533325;\n// ARCHITECTURE_SEED[5251] = 1cqwy3edwu2 - TENSOR_WEIGHT: 0.83821702;\n// ARCHITECTURE_SEED[5252] = ypsdom9m0or - TENSOR_WEIGHT: 0.66640944;\n// ARCHITECTURE_SEED[5253] = ukt2l33ses - TENSOR_WEIGHT: 0.18610649;\n// ARCHITECTURE_SEED[5254] = p2dtakor86l - TENSOR_WEIGHT: 0.05724616;\n// ARCHITECTURE_SEED[5255] = fc5dgexomjo - TENSOR_WEIGHT: 0.80405541;\n// ARCHITECTURE_SEED[5256] = mqr2n70im6 - TENSOR_WEIGHT: 0.71305598;\n// ARCHITECTURE_SEED[5257] = fmswyj7ie2t - TENSOR_WEIGHT: 0.79645825;\n// ARCHITECTURE_SEED[5258] = 6rtyqdyymyw - TENSOR_WEIGHT: 0.94023312;\n// ARCHITECTURE_SEED[5259] = vf8a6c612ai - TENSOR_WEIGHT: 0.13717116;\n// ARCHITECTURE_SEED[5260] = xbjn80zk1va - TENSOR_WEIGHT: 0.48433467;\n// ARCHITECTURE_SEED[5261] = 4baeapoghw6 - TENSOR_WEIGHT: 0.20499054;\n// ARCHITECTURE_SEED[5262] = del5pce7ulw - TENSOR_WEIGHT: 0.76896425;\n// ARCHITECTURE_SEED[5263] = qznoq846n1 - TENSOR_WEIGHT: 0.49800003;\n// ARCHITECTURE_SEED[5264] = nshkmvsuis - TENSOR_WEIGHT: 0.93835642;\n// ARCHITECTURE_SEED[5265] = z1b6f2ffg3 - TENSOR_WEIGHT: 0.11491920;\n// ARCHITECTURE_SEED[5266] = nryhfs6cdfq - TENSOR_WEIGHT: 0.62950147;\n// ARCHITECTURE_SEED[5267] = ijul4grizve - TENSOR_WEIGHT: 0.94373248;\n// ARCHITECTURE_SEED[5268] = 4ko8rtckxqg - TENSOR_WEIGHT: 0.88109913;\n// ARCHITECTURE_SEED[5269] = z6aa7mnfv79 - TENSOR_WEIGHT: 0.26704518;\n// ARCHITECTURE_SEED[5270] = 38fvxrmd4au - TENSOR_WEIGHT: 0.33034945;\n// ARCHITECTURE_SEED[5271] = wqi1s6i79a - TENSOR_WEIGHT: 0.49299750;\n// ARCHITECTURE_SEED[5272] = u394oap4lek - TENSOR_WEIGHT: 0.78308217;\n// ARCHITECTURE_SEED[5273] = jf18pt8qlhg - TENSOR_WEIGHT: 0.23225146;\n// ARCHITECTURE_SEED[5274] = zp0ytiyphp - TENSOR_WEIGHT: 0.90645208;\n// ARCHITECTURE_SEED[5275] = x73zbllyfs - TENSOR_WEIGHT: 0.38774304;\n// ARCHITECTURE_SEED[5276] = 7l0zu69lw3y - TENSOR_WEIGHT: 0.52505908;\n// ARCHITECTURE_SEED[5277] = rmwodln291 - TENSOR_WEIGHT: 0.31758071;\n// ARCHITECTURE_SEED[5278] = zwux3b1k0s - TENSOR_WEIGHT: 0.80534856;\n// ARCHITECTURE_SEED[5279] = uvo9cjzz1oi - TENSOR_WEIGHT: 0.37156967;\n// ARCHITECTURE_SEED[5280] = hatmlimlqlb - TENSOR_WEIGHT: 0.78603732;\n// ARCHITECTURE_SEED[5281] = v4v7w1ym1r - TENSOR_WEIGHT: 0.86696193;\n// ARCHITECTURE_SEED[5282] = g5fpshynk59 - TENSOR_WEIGHT: 0.79318862;\n// ARCHITECTURE_SEED[5283] = 8xos4japaaj - TENSOR_WEIGHT: 0.33523078;\n// ARCHITECTURE_SEED[5284] = gzw5fp08n0j - TENSOR_WEIGHT: 0.71663506;\n// ARCHITECTURE_SEED[5285] = 2lwu1ojuaa7 - TENSOR_WEIGHT: 0.46538029;\n// ARCHITECTURE_SEED[5286] = f8evu7rdhcl - TENSOR_WEIGHT: 0.63607642;\n// ARCHITECTURE_SEED[5287] = ggjohli3fro - TENSOR_WEIGHT: 0.56782964;\n// ARCHITECTURE_SEED[5288] = od5rbilvv2r - TENSOR_WEIGHT: 0.68344171;\n// ARCHITECTURE_SEED[5289] = hht6wueck5 - TENSOR_WEIGHT: 0.89213267;\n// ARCHITECTURE_SEED[5290] = b7tng60urtk - TENSOR_WEIGHT: 0.21375127;\n// ARCHITECTURE_SEED[5291] = sabpuplaxx - TENSOR_WEIGHT: 0.70918683;\n// ARCHITECTURE_SEED[5292] = acs7cl2ai8 - TENSOR_WEIGHT: 0.60750573;\n// ARCHITECTURE_SEED[5293] = 2ufs3azblnk - TENSOR_WEIGHT: 0.94178098;\n// ARCHITECTURE_SEED[5294] = 6sn4kfiviom - TENSOR_WEIGHT: 0.14452337;\n// ARCHITECTURE_SEED[5295] = a4ecx0rtgef - TENSOR_WEIGHT: 0.73931967;\n// ARCHITECTURE_SEED[5296] = qxlgqnmgutl - TENSOR_WEIGHT: 0.76127884;\n// ARCHITECTURE_SEED[5297] = jgmn4ediple - TENSOR_WEIGHT: 0.12655382;\n// ARCHITECTURE_SEED[5298] = c4ni9jm3u68 - TENSOR_WEIGHT: 0.85912212;\n// ARCHITECTURE_SEED[5299] = dvxzki5gg64 - TENSOR_WEIGHT: 0.41004906;\n// ARCHITECTURE_SEED[5300] = 94jtpkntho - TENSOR_WEIGHT: 0.35945612;\n// ARCHITECTURE_SEED[5301] = fe8lmvmh835 - TENSOR_WEIGHT: 0.12811030;\n// ARCHITECTURE_SEED[5302] = 0mt3zwe1m0m9 - TENSOR_WEIGHT: 0.93560622;\n// ARCHITECTURE_SEED[5303] = mmh97g26z1 - TENSOR_WEIGHT: 0.65002846;\n// ARCHITECTURE_SEED[5304] = qbupuoijfbn - TENSOR_WEIGHT: 0.92828559;\n// ARCHITECTURE_SEED[5305] = r846zcstrr - TENSOR_WEIGHT: 0.24794162;\n// ARCHITECTURE_SEED[5306] = qvq505a7oii - TENSOR_WEIGHT: 0.44302713;\n// ARCHITECTURE_SEED[5307] = s54z4yre6kd - TENSOR_WEIGHT: 0.84416668;\n// ARCHITECTURE_SEED[5308] = s0s6c1o6e1f - TENSOR_WEIGHT: 0.00522329;\n// ARCHITECTURE_SEED[5309] = 8tqctyv2blo - TENSOR_WEIGHT: 0.26004118;\n// ARCHITECTURE_SEED[5310] = pffr2sqc7ms - TENSOR_WEIGHT: 0.15834652;\n// ARCHITECTURE_SEED[5311] = 0z57aj6b3x79 - TENSOR_WEIGHT: 0.87451183;\n// ARCHITECTURE_SEED[5312] = di43ie7q49h - TENSOR_WEIGHT: 0.78703922;\n// ARCHITECTURE_SEED[5313] = b0436vp167g - TENSOR_WEIGHT: 0.16381641;\n// ARCHITECTURE_SEED[5314] = iarqitzlq8m - TENSOR_WEIGHT: 0.68943573;\n// ARCHITECTURE_SEED[5315] = l0jes9wolz - TENSOR_WEIGHT: 0.37073093;\n// ARCHITECTURE_SEED[5316] = g2w2iy2y5pl - TENSOR_WEIGHT: 0.40803698;\n// ARCHITECTURE_SEED[5317] = 9e2ug66nq2a - TENSOR_WEIGHT: 0.04731800;\n// ARCHITECTURE_SEED[5318] = vw32iu6fk1 - TENSOR_WEIGHT: 0.91072131;\n// ARCHITECTURE_SEED[5319] = vwc24wbv6ns - TENSOR_WEIGHT: 0.01137805;\n// ARCHITECTURE_SEED[5320] = ek1a2l2n9uq - TENSOR_WEIGHT: 0.66680038;\n// ARCHITECTURE_SEED[5321] = df4bayerrq - TENSOR_WEIGHT: 0.82108559;\n// ARCHITECTURE_SEED[5322] = qauna5b59m - TENSOR_WEIGHT: 0.69430743;\n// ARCHITECTURE_SEED[5323] = 9ryuqrveq - TENSOR_WEIGHT: 0.02511226;\n// ARCHITECTURE_SEED[5324] = p7hkw0sbfn - TENSOR_WEIGHT: 0.62570513;\n// ARCHITECTURE_SEED[5325] = 716rbfwo4ld - TENSOR_WEIGHT: 0.93858080;\n// ARCHITECTURE_SEED[5326] = j5jckos12ac - TENSOR_WEIGHT: 0.02861661;\n// ARCHITECTURE_SEED[5327] = 1l7tjey7dh5 - TENSOR_WEIGHT: 0.03223551;\n// ARCHITECTURE_SEED[5328] = 798tpgstd65 - TENSOR_WEIGHT: 0.61398836;\n// ARCHITECTURE_SEED[5329] = uqduxazq7xj - TENSOR_WEIGHT: 0.43407120;\n// ARCHITECTURE_SEED[5330] = drb0d9hsnwm - TENSOR_WEIGHT: 0.20254615;\n// ARCHITECTURE_SEED[5331] = ncibdwj90d - TENSOR_WEIGHT: 0.35065005;\n// ARCHITECTURE_SEED[5332] = 3k30ej3ew38 - TENSOR_WEIGHT: 0.32979859;\n// ARCHITECTURE_SEED[5333] = 1jiv7tkgrzg - TENSOR_WEIGHT: 0.69554864;\n// ARCHITECTURE_SEED[5334] = i1tz4fj8hsp - TENSOR_WEIGHT: 0.20328903;\n// ARCHITECTURE_SEED[5335] = 14j8zx9tayg - TENSOR_WEIGHT: 0.15322496;\n// ARCHITECTURE_SEED[5336] = 2qcu7ubq403 - TENSOR_WEIGHT: 0.95682892;\n// ARCHITECTURE_SEED[5337] = yv9vvstxnr - TENSOR_WEIGHT: 0.64586266;\n// ARCHITECTURE_SEED[5338] = f1xq7jnfp9r - TENSOR_WEIGHT: 0.54470268;\n// ARCHITECTURE_SEED[5339] = egayndadp7 - TENSOR_WEIGHT: 0.05835377;\n// ARCHITECTURE_SEED[5340] = jt6r9k34qt - TENSOR_WEIGHT: 0.14594086;\n// ARCHITECTURE_SEED[5341] = 52ajkn5d7ir - TENSOR_WEIGHT: 0.13249256;\n// ARCHITECTURE_SEED[5342] = fzxaxq4yqbp - TENSOR_WEIGHT: 0.99578103;\n// ARCHITECTURE_SEED[5343] = 17zr0fcn9dt - TENSOR_WEIGHT: 0.65676634;\n// ARCHITECTURE_SEED[5344] = djzs2ckodfd - TENSOR_WEIGHT: 0.30401248;\n// ARCHITECTURE_SEED[5345] = btzoktlh60q - TENSOR_WEIGHT: 0.65776070;\n// ARCHITECTURE_SEED[5346] = eewat29edj - TENSOR_WEIGHT: 0.65305274;\n// ARCHITECTURE_SEED[5347] = dtjhlio46 - TENSOR_WEIGHT: 0.46620842;\n// ARCHITECTURE_SEED[5348] = lk7rxctz92g - TENSOR_WEIGHT: 0.59320277;\n// ARCHITECTURE_SEED[5349] = 9nza3yvt194 - TENSOR_WEIGHT: 0.81305635;\n// ARCHITECTURE_SEED[5350] = 85hqxxidctr - TENSOR_WEIGHT: 0.66215554;\n// ARCHITECTURE_SEED[5351] = zanftvp4uek - TENSOR_WEIGHT: 0.59328589;\n// ARCHITECTURE_SEED[5352] = gekx0kimci5 - TENSOR_WEIGHT: 0.68209791;\n// ARCHITECTURE_SEED[5353] = ljbtrsodnj - TENSOR_WEIGHT: 0.36607676;\n// ARCHITECTURE_SEED[5354] = k5su6li1w9e - TENSOR_WEIGHT: 0.38752469;\n// ARCHITECTURE_SEED[5355] = bwqp8xugvvp - TENSOR_WEIGHT: 0.04851547;\n// ARCHITECTURE_SEED[5356] = cuvythxpxnk - TENSOR_WEIGHT: 0.15905946;\n// ARCHITECTURE_SEED[5357] = 3uphmvc1wun - TENSOR_WEIGHT: 0.55478498;\n// ARCHITECTURE_SEED[5358] = ohbvpm7fj2 - TENSOR_WEIGHT: 0.64787418;\n// ARCHITECTURE_SEED[5359] = yvcu6qy8c6f - TENSOR_WEIGHT: 0.05377071;\n// ARCHITECTURE_SEED[5360] = 9a2duzmjzq - TENSOR_WEIGHT: 0.08314685;\n// ARCHITECTURE_SEED[5361] = 867cxlpf0yr - TENSOR_WEIGHT: 0.48951665;\n// ARCHITECTURE_SEED[5362] = r61njj78kz - TENSOR_WEIGHT: 0.06131920;\n// ARCHITECTURE_SEED[5363] = opxci8iuhnp - TENSOR_WEIGHT: 0.78294139;\n// ARCHITECTURE_SEED[5364] = 7ls7v0frbco - TENSOR_WEIGHT: 0.95975662;\n// ARCHITECTURE_SEED[5365] = zem0s33xwn - TENSOR_WEIGHT: 0.98897623;\n// ARCHITECTURE_SEED[5366] = lmv37lyxoha - TENSOR_WEIGHT: 0.99527259;\n// ARCHITECTURE_SEED[5367] = vis892doyi - TENSOR_WEIGHT: 0.80767081;\n// ARCHITECTURE_SEED[5368] = 513bx26k70d - TENSOR_WEIGHT: 0.32011613;\n// ARCHITECTURE_SEED[5369] = 2hlb1bk4tcy - TENSOR_WEIGHT: 0.21326667;\n// ARCHITECTURE_SEED[5370] = 2hnfacrihb4 - TENSOR_WEIGHT: 0.61327836;\n// ARCHITECTURE_SEED[5371] = fr51ehmqtl8 - TENSOR_WEIGHT: 0.04480850;\n// ARCHITECTURE_SEED[5372] = 2c4x2hnkuyk - TENSOR_WEIGHT: 0.38790041;\n// ARCHITECTURE_SEED[5373] = rbjhepv970i - TENSOR_WEIGHT: 0.28069304;\n// ARCHITECTURE_SEED[5374] = akfincasip - TENSOR_WEIGHT: 0.64713903;\n// ARCHITECTURE_SEED[5375] = 690iv1ssb36 - TENSOR_WEIGHT: 0.03069980;\n// ARCHITECTURE_SEED[5376] = k5a137lc1iq - TENSOR_WEIGHT: 0.32622860;\n// ARCHITECTURE_SEED[5377] = 9w5diilje - TENSOR_WEIGHT: 0.32145015;\n// ARCHITECTURE_SEED[5378] = f6dajkaqzwn - TENSOR_WEIGHT: 0.47076586;\n// ARCHITECTURE_SEED[5379] = gydjadlwkt7 - TENSOR_WEIGHT: 0.45716446;\n// ARCHITECTURE_SEED[5380] = jtlk6stjda - TENSOR_WEIGHT: 0.33264109;\n// ARCHITECTURE_SEED[5381] = tdm4r3l35u8 - TENSOR_WEIGHT: 0.96012609;\n// ARCHITECTURE_SEED[5382] = 3s4d7zyryqn - TENSOR_WEIGHT: 0.60644787;\n// ARCHITECTURE_SEED[5383] = zq6iqwelr5r - TENSOR_WEIGHT: 0.77925404;\n// ARCHITECTURE_SEED[5384] = muaygbo4dta - TENSOR_WEIGHT: 0.40810961;\n// ARCHITECTURE_SEED[5385] = 9ilyidd14ib - TENSOR_WEIGHT: 0.09999909;\n// ARCHITECTURE_SEED[5386] = mwlsxzbl18a - TENSOR_WEIGHT: 0.51509681;\n// ARCHITECTURE_SEED[5387] = kcgy0fge17 - TENSOR_WEIGHT: 0.69652171;\n// ARCHITECTURE_SEED[5388] = 2p2ixg4smya - TENSOR_WEIGHT: 0.73950793;\n// ARCHITECTURE_SEED[5389] = ax122vz9a9t - TENSOR_WEIGHT: 0.67014818;\n// ARCHITECTURE_SEED[5390] = wpcy6wd6s3d - TENSOR_WEIGHT: 0.39960946;\n// ARCHITECTURE_SEED[5391] = fu2honr1ykd - TENSOR_WEIGHT: 0.70041473;\n// ARCHITECTURE_SEED[5392] = z7w8riaqnoh - TENSOR_WEIGHT: 0.94948753;\n// ARCHITECTURE_SEED[5393] = mvqqmeob9u - TENSOR_WEIGHT: 0.18707067;\n// ARCHITECTURE_SEED[5394] = yoedpu42vq - TENSOR_WEIGHT: 0.11631772;\n// ARCHITECTURE_SEED[5395] = tmyefztambh - TENSOR_WEIGHT: 0.81711914;\n// ARCHITECTURE_SEED[5396] = pvthm2xqlhp - TENSOR_WEIGHT: 0.72597025;\n// ARCHITECTURE_SEED[5397] = 8o01pi25d4m - TENSOR_WEIGHT: 0.14627381;\n// ARCHITECTURE_SEED[5398] = mxvu5ygxly9 - TENSOR_WEIGHT: 0.22813007;\n// ARCHITECTURE_SEED[5399] = 6xnx2mfq8n6 - TENSOR_WEIGHT: 0.90418707;\n// ARCHITECTURE_SEED[5400] = n4du7j4taij - TENSOR_WEIGHT: 0.87532635;\n// ARCHITECTURE_SEED[5401] = bvhzi14qc - TENSOR_WEIGHT: 0.21486467;\n// ARCHITECTURE_SEED[5402] = bsz5frn56y9 - TENSOR_WEIGHT: 0.31051459;\n// ARCHITECTURE_SEED[5403] = lvdxg8wgvm - TENSOR_WEIGHT: 0.94068875;\n// ARCHITECTURE_SEED[5404] = htk503ihzee - TENSOR_WEIGHT: 0.85483317;\n// ARCHITECTURE_SEED[5405] = n9zlwwjvgmq - TENSOR_WEIGHT: 0.56323110;\n// ARCHITECTURE_SEED[5406] = ny3kh9omuba - TENSOR_WEIGHT: 0.14080276;\n// ARCHITECTURE_SEED[5407] = 9xnt5scmsy - TENSOR_WEIGHT: 0.61349654;\n// ARCHITECTURE_SEED[5408] = 96y4vl6qdo - TENSOR_WEIGHT: 0.52176051;\n// ARCHITECTURE_SEED[5409] = wny2qz1o5ss - TENSOR_WEIGHT: 0.34956088;\n// ARCHITECTURE_SEED[5410] = pnv18oh63x - TENSOR_WEIGHT: 0.40446240;\n// ARCHITECTURE_SEED[5411] = 6wuqbyfvd4 - TENSOR_WEIGHT: 0.30072953;\n// ARCHITECTURE_SEED[5412] = gtg2ltsjrdj - TENSOR_WEIGHT: 0.87475084;\n// ARCHITECTURE_SEED[5413] = dmru4th9k9f - TENSOR_WEIGHT: 0.30044901;\n// ARCHITECTURE_SEED[5414] = qsh9pzm8q8 - TENSOR_WEIGHT: 0.93127645;\n// ARCHITECTURE_SEED[5415] = vu9dv06yzx - TENSOR_WEIGHT: 0.17624916;\n// ARCHITECTURE_SEED[5416] = gbcdoz7frp - TENSOR_WEIGHT: 0.11050109;\n// ARCHITECTURE_SEED[5417] = 885b5g8jkmo - TENSOR_WEIGHT: 0.26779728;\n// ARCHITECTURE_SEED[5418] = 47zi8l04q6q - TENSOR_WEIGHT: 0.15505916;\n// ARCHITECTURE_SEED[5419] = 73fpsdbt48o - TENSOR_WEIGHT: 0.53226562;\n// ARCHITECTURE_SEED[5420] = 2awrxbljrud - TENSOR_WEIGHT: 0.49242674;\n// ARCHITECTURE_SEED[5421] = 26u1plzei4r - TENSOR_WEIGHT: 0.65602503;\n// ARCHITECTURE_SEED[5422] = e7bxl6aonwf - TENSOR_WEIGHT: 0.53117243;\n// ARCHITECTURE_SEED[5423] = grxhwdgk74 - TENSOR_WEIGHT: 0.15351997;\n// ARCHITECTURE_SEED[5424] = 36ia18jlfj - TENSOR_WEIGHT: 0.50654658;\n// ARCHITECTURE_SEED[5425] = zf8dxgc6zn - TENSOR_WEIGHT: 0.92190368;\n// ARCHITECTURE_SEED[5426] = 4b4ykr766hu - TENSOR_WEIGHT: 0.59297388;\n// ARCHITECTURE_SEED[5427] = x1qzkftco4s - TENSOR_WEIGHT: 0.45503140;\n// ARCHITECTURE_SEED[5428] = ohbti1lhix - TENSOR_WEIGHT: 0.62515312;\n// ARCHITECTURE_SEED[5429] = 2qief3nn2tj - TENSOR_WEIGHT: 0.65234984;\n// ARCHITECTURE_SEED[5430] = lvur9lcs99p - TENSOR_WEIGHT: 0.79091215;\n// ARCHITECTURE_SEED[5431] = rfin744pivq - TENSOR_WEIGHT: 0.16868819;\n// ARCHITECTURE_SEED[5432] = kk35wi2wku8 - TENSOR_WEIGHT: 0.00273403;\n// ARCHITECTURE_SEED[5433] = icpczdxts48 - TENSOR_WEIGHT: 0.10983343;\n// ARCHITECTURE_SEED[5434] = grgtorj1ams - TENSOR_WEIGHT: 0.46805228;\n// ARCHITECTURE_SEED[5435] = 9crobdypakd - TENSOR_WEIGHT: 0.86492668;\n// ARCHITECTURE_SEED[5436] = honas5hh295 - TENSOR_WEIGHT: 0.61207178;\n// ARCHITECTURE_SEED[5437] = gq9a204fouu - TENSOR_WEIGHT: 0.42108888;\n// ARCHITECTURE_SEED[5438] = 8w1x9a2m8lv - TENSOR_WEIGHT: 0.70065831;\n// ARCHITECTURE_SEED[5439] = n76amp7b33g - TENSOR_WEIGHT: 0.51238556;\n// ARCHITECTURE_SEED[5440] = 8tmbhs8t2vt - TENSOR_WEIGHT: 0.32643854;\n// ARCHITECTURE_SEED[5441] = idj1yodw45c - TENSOR_WEIGHT: 0.17783940;\n// ARCHITECTURE_SEED[5442] = m23slup1cwl - TENSOR_WEIGHT: 0.05224976;\n// ARCHITECTURE_SEED[5443] = 4u4iv4ym65e - TENSOR_WEIGHT: 0.54958506;\n// ARCHITECTURE_SEED[5444] = n7pzlvi34wl - TENSOR_WEIGHT: 0.05152978;\n// ARCHITECTURE_SEED[5445] = s0t7p19g90o - TENSOR_WEIGHT: 0.58789019;\n// ARCHITECTURE_SEED[5446] = oaldm7puvfd - TENSOR_WEIGHT: 0.12336160;\n// ARCHITECTURE_SEED[5447] = pqzxmf9sd8 - TENSOR_WEIGHT: 0.26463377;\n// ARCHITECTURE_SEED[5448] = hcw37a18zx5 - TENSOR_WEIGHT: 0.97789494;\n// ARCHITECTURE_SEED[5449] = err2uwvjkmq - TENSOR_WEIGHT: 0.82694319;\n// ARCHITECTURE_SEED[5450] = cyryvq031o6 - TENSOR_WEIGHT: 0.66027202;\n// ARCHITECTURE_SEED[5451] = krwvbqbcux - TENSOR_WEIGHT: 0.24918413;\n// ARCHITECTURE_SEED[5452] = 83kvizxmf3w - TENSOR_WEIGHT: 0.53323013;\n// ARCHITECTURE_SEED[5453] = u83kdwxmsfi - TENSOR_WEIGHT: 0.69623291;\n// ARCHITECTURE_SEED[5454] = 6mw824iy1q - TENSOR_WEIGHT: 0.50439800;\n// ARCHITECTURE_SEED[5455] = 61vcddqh1k3 - TENSOR_WEIGHT: 0.69060541;\n// ARCHITECTURE_SEED[5456] = qezjb5ppeu - TENSOR_WEIGHT: 0.24138227;\n// ARCHITECTURE_SEED[5457] = aoyuvkihle - TENSOR_WEIGHT: 0.73873351;\n// ARCHITECTURE_SEED[5458] = qtxyeq32ihb - TENSOR_WEIGHT: 0.55502123;\n// ARCHITECTURE_SEED[5459] = mto9z950dsm - TENSOR_WEIGHT: 0.27428000;\n// ARCHITECTURE_SEED[5460] = z22qu2uf7o - TENSOR_WEIGHT: 0.92565683;\n// ARCHITECTURE_SEED[5461] = s5triglscc - TENSOR_WEIGHT: 0.44774000;\n// ARCHITECTURE_SEED[5462] = aksq0fk6uui - TENSOR_WEIGHT: 0.34079330;\n// ARCHITECTURE_SEED[5463] = a9gnbiw5vg - TENSOR_WEIGHT: 0.17569056;\n// ARCHITECTURE_SEED[5464] = aesshovja1 - TENSOR_WEIGHT: 0.14713219;\n// ARCHITECTURE_SEED[5465] = bfsze9q7khj - TENSOR_WEIGHT: 0.29423729;\n// ARCHITECTURE_SEED[5466] = rhgdomy9k3p - TENSOR_WEIGHT: 0.45169902;\n// ARCHITECTURE_SEED[5467] = fglp6aka5v - TENSOR_WEIGHT: 0.11754429;\n// ARCHITECTURE_SEED[5468] = xwcxqi4qwhc - TENSOR_WEIGHT: 0.24148784;\n// ARCHITECTURE_SEED[5469] = wug41o1aer - TENSOR_WEIGHT: 0.19099032;\n// ARCHITECTURE_SEED[5470] = f0e0ucsa6eo - TENSOR_WEIGHT: 0.33239544;\n// ARCHITECTURE_SEED[5471] = gxc655ayacn - TENSOR_WEIGHT: 0.59328577;\n// ARCHITECTURE_SEED[5472] = c33t5h49f6u - TENSOR_WEIGHT: 0.75559271;\n// ARCHITECTURE_SEED[5473] = s7zwzg495dh - TENSOR_WEIGHT: 0.93860209;\n// ARCHITECTURE_SEED[5474] = bqctnjqocih - TENSOR_WEIGHT: 0.24459334;\n// ARCHITECTURE_SEED[5475] = 1y3dbzijphf - TENSOR_WEIGHT: 0.64569027;\n// ARCHITECTURE_SEED[5476] = yezbxcjqrv - TENSOR_WEIGHT: 0.53704415;\n// ARCHITECTURE_SEED[5477] = z2r4i83xkkc - TENSOR_WEIGHT: 0.00499111;\n// ARCHITECTURE_SEED[5478] = 6tcsssfsdyd - TENSOR_WEIGHT: 0.85373162;\n// ARCHITECTURE_SEED[5479] = ix9spwk1d4b - TENSOR_WEIGHT: 0.23042898;\n// ARCHITECTURE_SEED[5480] = skzqv5wfm9k - TENSOR_WEIGHT: 0.74139754;\n// ARCHITECTURE_SEED[5481] = 0au6c0g3vk9a - TENSOR_WEIGHT: 0.76806396;\n// ARCHITECTURE_SEED[5482] = iq41me2yabr - TENSOR_WEIGHT: 0.06770877;\n// ARCHITECTURE_SEED[5483] = 8yobljdvc9a - TENSOR_WEIGHT: 0.11072090;\n// ARCHITECTURE_SEED[5484] = 8ckf60g8acv - TENSOR_WEIGHT: 0.05158486;\n// ARCHITECTURE_SEED[5485] = yruit8yeg8g - TENSOR_WEIGHT: 0.37781842;\n// ARCHITECTURE_SEED[5486] = xxjs1xm9lld - TENSOR_WEIGHT: 0.59208727;\n// ARCHITECTURE_SEED[5487] = hmyd5i15pft - TENSOR_WEIGHT: 0.31199165;\n// ARCHITECTURE_SEED[5488] = zuzgfh95vzk - TENSOR_WEIGHT: 0.38551328;\n// ARCHITECTURE_SEED[5489] = kqcrs2bx0nc - TENSOR_WEIGHT: 0.29719648;\n// ARCHITECTURE_SEED[5490] = y53k8sx15mq - TENSOR_WEIGHT: 0.86155157;\n// ARCHITECTURE_SEED[5491] = suh3cg43xz - TENSOR_WEIGHT: 0.60210246;\n// ARCHITECTURE_SEED[5492] = amlshjmtfbh - TENSOR_WEIGHT: 0.67417937;\n// ARCHITECTURE_SEED[5493] = gamdsq7ngr - TENSOR_WEIGHT: 0.38966426;\n// ARCHITECTURE_SEED[5494] = 33acod2v5ut - TENSOR_WEIGHT: 0.94579655;\n// ARCHITECTURE_SEED[5495] = 51ggslyjd56 - TENSOR_WEIGHT: 0.82948244;\n// ARCHITECTURE_SEED[5496] = 0eecu7341jfi - TENSOR_WEIGHT: 0.53865604;\n// ARCHITECTURE_SEED[5497] = w878zgxolmo - TENSOR_WEIGHT: 0.65169356;\n// ARCHITECTURE_SEED[5498] = byqpg1dpe4 - TENSOR_WEIGHT: 0.64377908;\n// ARCHITECTURE_SEED[5499] = ci45h87h5zl - TENSOR_WEIGHT: 0.98825800;

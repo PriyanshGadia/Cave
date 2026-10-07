@@ -3,16 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#0d0f11">
-  <meta name="description" content="Priyansh Gadia. Engineer, builder, systems architect. The Monolith Engine.">
-  <title>Priyansh Gadia // The Monolith</title>
+  <meta name="theme-color" content="#030405">
+  <meta name="description" content="Priyansh Gadia. Engineer, builder, systems architect. The Forge.">
+  <title>Priyansh Gadia // The Forge</title>
   <link rel="stylesheet" href="./about.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter+Tight:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <main id="monolith-experience" aria-label="Cinematic monolith experience">
+  <main id="forge-experience" aria-label="Cinematic forge experience">
     <canvas id="webgl-canvas" aria-hidden="true"></canvas>
 
     <!-- Post-processing and overlay layers -->
@@ -21,7 +21,7 @@
     <div id="grain-layer" aria-hidden="true"></div>
     <div id="vignette-layer" aria-hidden="true"></div>
 
-    <!-- HUD -->
+    <!-- HUD (Mode C: Instrument Typography) -->
     <section id="hud" aria-hidden="true">
       <div class="hud-corner hud-top-left">
         <span class="hud-kicker">PG // ARCHITECT</span>
@@ -38,31 +38,65 @@
       </div>
     </section>
 
-    <!-- Content Overlays -->
+    <!-- Identity Layer (Mode A: Identity) -->
+    <section id="identity-layer" aria-hidden="true">
+      <div class="identity-letters">
+        <span class="identity-p">P</span>
+        <span class="identity-g">G</span>
+      </div>
+      <div class="identity-full">
+        <span>PRIYANSH GADIA</span>
+      </div>
+    </section>
+
+    <!-- Content Overlays (Mode B: Editorial) -->
     <section id="copy-layer" aria-hidden="true">
-      <article class="chapter-copy" data-chapter="void">
-        <span class="copy-index">01 / GENESIS</span>
-        <h2>THE<br><em>VOID</em></h2>
-        <p>Before architecture, there is space. We build order into the darkness, forging structure where there was none.</p>
-        <div class="copy-specs"><span>SCALE</span><span>MASS</span><span>INTENT</span></div>
+      <article class="chapter-copy" data-chapter="cave">
+        <span class="copy-index">ARCHIVE 01 // ARCHITECTURE</span>
+        <h2>CAVE</h2>
+        <p>A compact architectural vault module. Layered rings of depth.</p>
+        <div class="copy-specs"><span>SECURITY</span><span>DEPTH</span><span>CORE</span></div>
       </article>
-      <article class="chapter-copy" data-chapter="core">
-        <span class="copy-index">02 / FOUNDATION</span>
-        <h2>SYSTEM<br><em>CORE</em></h2>
-        <p>A resilient foundation is everything. Layers of logic interlocked perfectly, standing monolithic against entropy.</p>
-        <div class="copy-specs"><span>LOGIC</span><span>ROUTING</span><span>CONTROL</span></div>
+      <article class="chapter-copy" data-chapter="argus">
+        <span class="copy-index">ARCHIVE 02 // SYSTEMS</span>
+        <h2>ARGUS</h2>
+        <p>Perception, sensing and control as infrastructure.</p>
+        <div class="copy-specs"><span>OPTICS</span><span>COMPUTE</span><span>AUTONOMY</span></div>
       </article>
-      <article class="chapter-copy" data-chapter="descent">
-        <span class="copy-index">03 / COMPLEXITY</span>
-        <h2>DEEP<br><em>INTEGRATION</em></h2>
-        <p>True engineering thrives in the depths. Bridging impossible gaps with brutalist efficiency.</p>
-        <div class="copy-specs"><span>SYNC</span><span>BANDWIDTH</span><span>FLOW</span></div>
+      <article class="chapter-copy" data-chapter="chronos">
+        <span class="copy-index">ARCHIVE 03 // TEMPORAL</span>
+        <h2>CHRONOS</h2>
+        <p>A temporal data mechanism with orbital calibration markers.</p>
+        <div class="copy-specs"><span>TICK</span><span>CALIBRATE</span><span>SYNC</span></div>
       </article>
-      <article class="chapter-copy chapter-assembly-copy" data-chapter="terminus">
-        <span class="copy-index">VAULT-01 / TERMINUS</span>
-        <h1>BUILT TO<br><em>ENDURE.</em></h1>
+      <article class="chapter-copy" data-chapter="compute">
+        <span class="copy-index">ARCHIVE 04 // INTELLIGENCE</span>
+        <h2>COMPUTE / AI</h2>
+        <p>A dense computational lattice of optical channels.</p>
+        <div class="copy-specs"><span>TENSOR</span><span>LATTICE</span><span>PULSE</span></div>
+      </article>
+      <article class="chapter-copy" data-chapter="experimentation">
+        <span class="copy-index">ARCHIVE 05 // LAB</span>
+        <h2>EXPERIMENT</h2>
+        <p>A laboratory instrument for high-stress material observation.</p>
+        <div class="copy-specs"><span>FLUID</span><span>PRESSURE</span><span>GAUGE</span></div>
+      </article>
+      <article class="chapter-copy" data-chapter="builder">
+        <span class="copy-index">ARCHIVE 06 // FABRICATION</span>
+        <h2>BUILDER</h2>
+        <p>A mechanical fabrication platform converting thought to matter.</p>
+        <div class="copy-specs"><span>TOOL</span><span>RAIL</span><span>CUT</span></div>
+      </article>
+      
+      <!-- Personal Section -->
+      <article class="chapter-copy chapter-assembly-copy" data-chapter="personal">
+        <h1>I BUILD SYSTEMS<br><em>THAT BECOME PLACES.</em></h1>
         <div class="assembly-rule"></div>
-        <h1>BUILT TO<br><em>SCALE.</em></h1>
+        <div class="personal-roles">
+          <span>ENGINEER</span>
+          <span>BUILDER</span>
+          <span>SYSTEMS ARCHITECT</span>
+        </div>
       </article>
     </section>
 
@@ -73,6 +107,9 @@
 
     <!-- The physical scroll space that drives the GSAP timeline -->
     <div id="scroll-space">
+      <!-- We need enough scroll space to hit all 22 checkpoints described in the plan -->
+      <div class="scroll-block"></div>
+      <div class="scroll-block"></div>
       <div class="scroll-block"></div>
       <div class="scroll-block"></div>
       <div class="scroll-block"></div>

@@ -77,7 +77,7 @@ if (!hasSqlite) {
 
 // 4. Synchronize index.html and lab.js to dist/
 try {
-  const syncFiles = ['index.html', 'lab.js', 'realism.js', 'cave3.js', 'transition.js', 'about.html'];
+  const syncFiles = ['index.html', 'lab.js', 'realism.js', 'cave3.js', 'transition.js', 'about.html', 'about.css', 'about.js'];
   for (const f of syncFiles) {
     const src = path.join(ROOT_DIR, f);
     const dst = path.join(ROOT_DIR, 'dist', f);
