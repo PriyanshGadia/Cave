@@ -143,7 +143,36 @@ export const ContinuousCinemaEngine: React.FC = () => {
   }, [activeNode, isTraversing, triggerForwardTraversal]);
 
   // 4. Biometric Terminal Laser Scanning & Unlocking
-  const handleVerify = () => {
+  const handleVisit = () => {
+    if (isScanning) return;
+    soundFx.playClickBeep();
+    setIsScanning(true);
+    setTerminalStatus('VISITOR SESSION // EPHEMERAL CLEARANCE');
+
+    setTimeout(() => {
+      soundFx.playAccessGranted();
+      setIsScanning(false);
+      setTerminalStatus('VISITOR CLEARANCE GRANTED');
+      setTimeout(() => {
+        triggerForwardTraversal();
+      }, 1200);
+    }, 1200);
+  };
+
+  const handleEnroll = () => {
+    if (isScanning) return;
+    soundFx.playClickBeep();
+    setIsScanning(true);
+    setTerminalStatus('ENROLLING OPERATIVE (128-D)...');
+
+    setTimeout(() => {
+      soundFx.playAccessGranted();
+      setIsScanning(false);
+      setTerminalStatus('ENROLLMENT COMPLETE // READY');
+    }, 1400);
+  };
+
+  const handleScan = () => {
     if (isScanning) return;
     soundFx.playScannerSweep();
     setIsScanning(true);
@@ -158,25 +187,6 @@ export const ContinuousCinemaEngine: React.FC = () => {
         triggerForwardTraversal();
       }, 1200);
     }, 1800);
-  };
-
-  const handleRegister = () => {
-    if (isScanning) return;
-    soundFx.playClickBeep();
-    setIsScanning(true);
-    setTerminalStatus('ENROLLING OPERATIVE (128-D)...');
-
-    setTimeout(() => {
-      soundFx.playAccessGranted();
-      setIsScanning(false);
-      setTerminalStatus('ENROLLMENT COMPLETED // TIER 2');
-    }, 1400);
-  };
-
-  const handleReset = () => {
-    soundFx.playClickBeep();
-    setIsScanning(false);
-    setTerminalStatus('STANDBY // 128-D READY');
   };
 
   // 5. Dynamic Live HUD Point Cloud Canvas (60 FPS Overlay)
@@ -497,9 +507,9 @@ export const ContinuousCinemaEngine: React.FC = () => {
               {/* Tactile Control Buttons */}
               <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
                 <button
-                  onClick={handleRegister}
+                  onClick={handleVisit}
                   onMouseEnter={() => {
-                    setHoveredButton('REG');
+                    setHoveredButton('VIS');
                     soundFx.playHoverBlip();
                   }}
                   onMouseLeave={() => setHoveredButton(null)}
@@ -510,21 +520,46 @@ export const ContinuousCinemaEngine: React.FC = () => {
                     fontSize: '0.75rem',
                     letterSpacing: '0.12em',
                     fontWeight: 'bold',
-                    color: hoveredButton === 'REG' ? '#000' : '#00f3ff',
-                    background: hoveredButton === 'REG' ? '#00f3ff' : 'rgba(10, 20, 32, 0.8)',
+                    color: hoveredButton === 'VIS' ? '#000' : '#00f3ff',
+                    background: hoveredButton === 'VIS' ? '#00f3ff' : 'rgba(10, 20, 32, 0.8)',
                     border: '1px solid rgba(0, 243, 255, 0.4)',
                     borderRadius: '4px',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
                   }}
                 >
-                  REGISTER
+                  VISIT
                 </button>
 
                 <button
-                  onClick={handleVerify}
+                  onClick={handleEnroll}
                   onMouseEnter={() => {
-                    setHoveredButton('VER');
+                    setHoveredButton('ENR');
+                    soundFx.playHoverBlip();
+                  }}
+                  onMouseLeave={() => setHoveredButton(null)}
+                  style={{
+                    flex: 1,
+                    padding: '10px',
+                    fontFamily: 'var(--font-telemetry, monospace)',
+                    fontSize: '0.75rem',
+                    letterSpacing: '0.12em',
+                    fontWeight: 'bold',
+                    color: hoveredButton === 'ENR' ? '#000' : '#00f3ff',
+                    background: hoveredButton === 'ENR' ? '#00f3ff' : 'rgba(10, 20, 32, 0.8)',
+                    border: '1px solid rgba(0, 243, 255, 0.4)',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  ENROLL
+                </button>
+
+                <button
+                  onClick={handleScan}
+                  onMouseEnter={() => {
+                    setHoveredButton('SCN');
                     soundFx.playHoverBlip();
                   }}
                   onMouseLeave={() => setHoveredButton(null)}
@@ -535,8 +570,8 @@ export const ContinuousCinemaEngine: React.FC = () => {
                     fontSize: '0.8rem',
                     letterSpacing: '0.15em',
                     fontWeight: 'bold',
-                    color: hoveredButton === 'VER' ? '#000' : '#00f3ff',
-                    background: hoveredButton === 'VER' ? '#00f3ff' : 'rgba(0, 243, 255, 0.15)',
+                    color: hoveredButton === 'SCN' ? '#000' : '#00f3ff',
+                    background: hoveredButton === 'SCN' ? '#00f3ff' : 'rgba(0, 243, 255, 0.15)',
                     border: '1px solid #00f3ff',
                     borderRadius: '4px',
                     cursor: 'pointer',
@@ -544,32 +579,7 @@ export const ContinuousCinemaEngine: React.FC = () => {
                     boxShadow: '0 0 14px rgba(0, 243, 255, 0.25)',
                   }}
                 >
-                  {isScanning ? 'AUTHENTICATING...' : 'VERIFY & UNLOCK'}
-                </button>
-
-                <button
-                  onClick={handleReset}
-                  onMouseEnter={() => {
-                    setHoveredButton('RST');
-                    soundFx.playHoverBlip();
-                  }}
-                  onMouseLeave={() => setHoveredButton(null)}
-                  style={{
-                    flex: 1,
-                    padding: '10px',
-                    fontFamily: 'var(--font-telemetry, monospace)',
-                    fontSize: '0.75rem',
-                    letterSpacing: '0.12em',
-                    fontWeight: 'bold',
-                    color: hoveredButton === 'RST' ? '#000' : '#ff9e2c',
-                    background: hoveredButton === 'RST' ? '#ff9e2c' : 'rgba(32, 20, 10, 0.8)',
-                    border: '1px solid rgba(255, 158, 44, 0.4)',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  RESET
+                  {isScanning ? 'AUTHENTICATING...' : 'SCAN'}
                 </button>
               </div>
 

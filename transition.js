@@ -1,3 +1,9 @@
+/*
+ * VAULT-01
+ * Canonical interactive installation
+ * Owner: Priyansh Gadia
+ * Redistribution / derivative reproduction prohibited by owner.
+ */
 // transition.js — door-open cinematic + push-through into the dark vestibule. Zero assets.
 import * as THREE from 'three';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
@@ -53,7 +59,17 @@ export function installDoorSequence({scene,camera,composer,door,walk,look,canvas
   /* timeline */
   const TL={lock:[.55,1,1.45], panelIn:[1.5,1.9], retract:[2,3.6], rise:[3.9,8.4], push:[6.8,12.2], black:[11.2,12.8]};
   let T=-1, cam0=null, entered=false; const fired={}; const once=(k,fn)=>{ if(!fired[k]){ fired[k]=1; fn(); } };
-  function begin(){ if(T>=0) return; T=0; canvas.style.pointerEvents='none'; walk.target=1; look.ty=0; look.tp=0;
+  function begin(e){
+    if(T>=0) return;
+    const detail = e?.detail || {};
+    if (detail.accessLevel === 'VISITOR' || detail.id === 'visitor') {
+      skip();
+      if (window.VAULT?.table?.startVisitTour) {
+        window.VAULT.table.startVisitTour();
+      }
+      return;
+    }
+    T=0; canvas.style.pointerEvents='none'; walk.target=1; look.ty=0; look.tp=0;
     cam0={z:camera.position.z,pitch:camera.rotation.x,yaw:camera.rotation.y,y:camera.position.y};
     const a=A().currentTime+.05;
     TL.lock.forEach((t,i)=>clunk(a+t,.5+i*.15)); hiss(a+TL.panelIn[0],.5,.15); hiss(a+TL.retract[0],TL.retract[1]-TL.retract[0]+.3,.3);

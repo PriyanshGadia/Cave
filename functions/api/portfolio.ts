@@ -426,6 +426,19 @@ export const DEFAULT_PORTFOLIO_ITEMS: PortfolioItem[] = [
     tags: ['Visual Arts', 'Sketching', 'Illustration', 'UCEED', 'Creative Arts'],
     weight: 84,
   },
+  {
+    id: 'skill:musical-instruments',
+    kind: 'skill',
+    title: 'Musical Instruments: Basics of Guitar, Flute, and Piano',
+    summary: 'Acoustic musical proficiency and ear training across multiple instruments: basic chords and rhythm on guitar, breath control and classical ragas on Indian bansuri / flute, and foundational keyboard voicings on piano.',
+    proof_url: '/about.html',
+    proof_type: 'link',
+    issuer: 'Acoustic Arts & Instrumentation',
+    date_from: '2021',
+    date_to: 'Present',
+    tags: ['Musical Instruments', 'Guitar', 'Flute', 'Piano', 'Acoustic Arts', 'Hobby'],
+    weight: 85,
+  },
 ];
 
 
@@ -458,6 +471,14 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
           tags: typeof r.tags === 'string' ? JSON.parse(r.tags || '[]') : r.tags,
         }))
       : DEFAULT_PORTFOLIO_ITEMS;
+
+    // Ensure canonical items (including musical instruments) are always included
+    const existingIds = new Set(items.map(i => i.id));
+    for (const def of DEFAULT_PORTFOLIO_ITEMS) {
+      if (!existingIds.has(def.id)) {
+        items.push(def);
+      }
+    }
 
     const templates: ResumeTemplate[] = (rawTemplates && rawTemplates.length > 0)
       ? rawTemplates.map((t: any) => ({

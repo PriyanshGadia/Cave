@@ -1,3 +1,9 @@
+/*
+ * VAULT-01
+ * Canonical interactive installation
+ * Owner: Priyansh Gadia
+ * Redistribution / derivative reproduction prohibited by owner.
+ */
 // realism.js — drop-in realism layer for VAULT-01 index.html (v2). Zero image files.
 import * as THREE from 'three';
 

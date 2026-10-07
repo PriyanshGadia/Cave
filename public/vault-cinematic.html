@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>VAULT-01 · CINEMATIC</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 1000vh; /* Scroll space */
+      background: #000;
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      color: #fff;
+      overflow-x: hidden;
+    }
+    
+    #canvas-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Cinematic UI */
+    #ui-layer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* Opening sequence */
+    #intro-pg {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 42px;
+      letter-spacing: 2em;
+      text-align: center;
+      opacity: 1;
+      transition: opacity 1s;
+    }
+    #intro-name {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 36px;
+      letter-spacing: 0.5em;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 2s;
+    }
+    
+    /* Chapter Text */
+    #chapter-container {
+      position: absolute;
+      right: 10%;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 35%;
+      opacity: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .chapter-number {
+      font-size: 14px;
+      color: #ff3333;
+      letter-spacing: 0.2em;
+    }
+    .chapter-title {
+      font-size: 32px;
+      font-weight: bold;
+      letter-spacing: 0.1em;
+      color: #fff;
+    }
+    .chapter-desc {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #aaa;
+    }
+
+    #loading {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      letter-spacing: 0.2em;
+      color: #555;
+      z-index: 100;
+    }
+
+    /* Vault Transition Button */
+    #enter-vault {
+      position: absolute;
+      bottom: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 16px 32px;
+      border: 1px solid #fff;
+      background: transparent;
+      color: #fff;
+      font-family: inherit;
+      font-size: 14px;
+      letter-spacing: 0.2em;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s;
+    }
+    #enter-vault:hover {
+      background: #fff;
+      color: #000;
+    }
+  </style>
+</head>
+<body>
+  <div id="loading">INITIALIZING CINEMATIC...</div>
+
+  <div id="canvas-container"></div>
+  
+  <div id="ui-layer">
+    <div id="intro-pg">P &nbsp;&nbsp; G</div>
+    <div id="intro-name">Priyansh Gadia</div>
+    
+    <div id="chapter-container">
+      <div class="chapter-number" id="ch-num">01 / MOBILITY</div>
+      <div class="chapter-title" id="ch-title">BOOT SYSTEM</div>
+      <div class="chapter-desc" id="ch-desc">"Every interaction begins with a physical mechanism."</div>
+    </div>
+    
+    <button id="enter-vault" onclick="window.location.href='/index.html'">ENTER THE VAULT</button>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module" src="./vault-cinematic.js"></script>
+</body>
+</html>

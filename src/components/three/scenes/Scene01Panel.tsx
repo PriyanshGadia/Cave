@@ -43,16 +43,7 @@ export const Scene01Panel: React.FC<Scene01PanelProps> = ({ onAuth }) => {
       >
         <div style={{ width: '380px', pointerEvents: 'auto', userSelect: 'none' }}>
           <BiometricPanelTerminal
-            onRegisterClick={() => {}}
-            onVerificationSuccess={() => {
-              setTimeout(() => {
-                onAuth();
-              }, 1200);
-            }}
-            onResetClick={() => {}}
-            onProceedThroughDoor={() => {
-              onAuth();
-            }}
+            onProceedThroughDoor={onAuth}
           />
         </div>
       </Html>

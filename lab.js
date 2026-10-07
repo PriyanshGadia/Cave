@@ -1,3 +1,9 @@
+/*
+ * VAULT-01
+ * Canonical interactive installation
+ * Owner: Priyansh Gadia
+ * Redistribution / derivative reproduction prohibited by owner.
+ */
 // lab.js — VAULT-01 · Scene 2 · THE HALL  (rev C — document-aligned bench, AI entrance, lit end state)
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -11,7 +17,7 @@ export const T = { fade: [.3, 1.6], approach: [.4, 6.2], spark: [1.6, 4.2], tabl
   entity: [13.4, 16.0], greet: [16.0, 20.6], collapse: [20.6, 22.2], power: [22.2, 27.4], idle: [26.6, 28.4], ready: 28.4 };
 
 /* ── math / noise ── */
-const { clamp, lerp } = THREE.MathUtils;
+const { clamp, lerp, smoothstep } = THREE.MathUtils;
 const fract = x => x - Math.floor(x), sm = t => t * t * (3 - 2 * t), ph = (t, [a, b]) => clamp((t - a) / (b - a), 0, 1), eo = t => 1 - (1 - t) ** 3, ei = t => t * t * t;
 const hash = n => fract(Math.sin(n * 12.9898) * 43758.5453), h2 = (x, y) => fract(Math.sin(x * 127.1 + y * 311.7) * 43758.5453), h3 = (x, y, z) => fract(Math.sin(x * 127.1 + y * 311.7 + z * 74.7) * 43758.5453);
 const vn2 = (x, y) => { const xi = Math.floor(x), yi = Math.floor(y), xf = sm(x - xi), yf = sm(y - yi); return lerp(lerp(h2(xi, yi), h2(xi + 1, yi), xf), lerp(h2(xi, yi + 1), h2(xi + 1, yi + 1), xf), yf); };
@@ -73,7 +79,7 @@ const TEX = {
     g.fillStyle = '#7fb8c8'; g.fillText('■ BUSY   ■ TODAY   FREE SLOTS: EVENINGS', 14, h - 12); }),
   profile: () => cvs(320, 440, (g, w, h) => { g.fillStyle = 'rgba(6,26,38,.85)'; g.fillRect(0, 0, w, h); g.strokeStyle = '#39d6ff'; g.lineWidth = 2; g.strokeRect(2, 2, w - 4, h - 4); g.fillStyle = '#9ff3ff'; mono(g, 15); g.fillText('OPERATIVE PROFILE', 14, 26);
     g.beginPath(); for (let i = 0; i < 8; i++) { const a = i / 8 * TAU + Math.PI / 8; g.lineTo(60 + Math.cos(a) * 34, 90 + Math.sin(a) * 34); } g.closePath(); g.strokeStyle = '#5fe8ff'; g.stroke(); mono(g, 10, '');
-    ['BLOG','LINKEDIN','GITHUB','YOUTUBE','SPOTIFY','CONTACT'].forEach((t, i) => { g.fillStyle = i ? '#3f7a88' : '#9ff3ff'; g.fillText(t, 14 + (i % 3) * 100, 156 + Math.floor(i / 3) * 20); }); g.fillStyle = '#2a6a78'; for (let i = 0; i < 9; i++) g.fillRect(14, 210 + i * 22, 120 + hash(i) * 160, 8); }),
+    ['ABOUT','LINKEDIN','GITHUB','YOUTUBE','SPOTIFY','CONTACT'].forEach((t, i) => { g.fillStyle = i ? '#3f7a88' : '#9ff3ff'; g.fillText(t, 14 + (i % 3) * 100, 156 + Math.floor(i / 3) * 20); }); g.fillStyle = '#2a6a78'; for (let i = 0; i < 9; i++) g.fillRect(14, 210 + i * 22, 120 + hash(i) * 160, 8); }),
   monitors: () => cvs(768, 256, (g, w, h) => { const cw = w / 3; g.fillStyle = '#000'; g.fillRect(0, 0, w, h); for (let i = 0; i < 3; i++) { const x = i * cw; g.fillStyle = '#020604'; g.fillRect(x + 4, 4, cw - 8, h - 8); g.fillStyle = '#35ff7a'; mono(g, 10, '');
       for (let r = 0; r < 12; r++) { let l = ''; for (let c = 0; c < 6; c++) l += Math.floor(hash(i * 90 + r * 8 + c) * 65535).toString(16).padStart(4, '0') + ' '; g.fillText(l, x + 10, 22 + r * 13); } for (let b = 0; b < 16; b++) { const bh = 10 + hash(i * 3 + b) * 40; g.fillRect(x + 10 + b * 15, h - 12 - bh, 10, bh); } g.fillStyle = '#e8ffe8'; g.fillText('TELEMETRY · NODE ' + i, x + cw - 120, 16); } }),
   ledGrid: () => cvs(64, 128, (g, w, h) => { g.fillStyle = '#000'; g.fillRect(0, 0, w, h); for (let y = 0; y < h; y += 8) for (let x = 0; x < w; x += 8) if (hash(x * 7 + y) > .55) { g.fillStyle = hash(x + y * 3) > .85 ? '#ffb15c' : '#35ff7a'; g.fillRect(x + 2, y + 2, 3, 3); } }),
@@ -383,20 +389,259 @@ const TEX = {
 };
 
 /* WebAudio synthesis */
-function makeSfx() { let ac, master; const ctx = () => { if (!ac) { ac = new (window.AudioContext || window.webkitAudioContext)(); master = ac.createGain(); master.gain.value = .55; master.connect(ac.destination); } if (ac.state === 'suspended') ac.resume(); return ac; };
-  const noise = d => { const a = ctx(), b = a.createBuffer(1, Math.ceil(a.sampleRate * d), a.sampleRate), x = b.getChannelData(0); for (let i = 0; i < x.length; i++) x[i] = Math.random() * 2 - 1; const s = a.createBufferSource(); s.buffer = b; return s; };
-  const env = (g, t0, att, peak, dec) => { g.gain.setValueAtTime(.0001, t0); g.gain.linearRampToValueAtTime(peak, t0 + att); g.gain.exponentialRampToValueAtTime(.0001, t0 + att + dec); }; const W = f => (...a) => { try { f(...a); } catch {} };
-  const s = {
-    spark: W(() => { const a = ctx(), n = noise(.08), f = a.createBiquadFilter(), g = a.createGain(); f.type = 'bandpass'; const maxF = Math.min(3600, (a.sampleRate || 44100) * .45); f.frequency.value = Math.min(3400 + Math.random() * 3000, maxF); f.Q.value = 9; n.connect(f).connect(g).connect(master); env(g, a.currentTime, .004, .08, .07); n.start(); }),
-    hum: W((v, r = 2) => { const a = ctx(); if (!s._h) { const o = a.createOscillator(), o2 = a.createOscillator(), f = a.createBiquadFilter(), g = a.createGain(); o.type = 'sawtooth'; o.frequency.value = 54; o2.type = 'sine'; o2.frequency.value = 108.7; f.type = 'lowpass'; f.frequency.value = 210; g.gain.value = .0001; o.connect(f); o2.connect(f); f.connect(g).connect(master); o.start(); o2.start(); s._h = g; } s._h.gain.linearRampToValueAtTime(Math.max(v, .0001), a.currentTime + r); }),
-    sweep: W((d = 4.5) => { const a = ctx(), o = a.createOscillator(), g = a.createGain(), t0 = a.currentTime; o.type = 'sine'; o.frequency.setValueAtTime(160, t0); const maxF = Math.min(3600, (a.sampleRate || 44100) * .45); o.frequency.exponentialRampToValueAtTime(Math.min(1500, maxF), t0 + d); o.connect(g).connect(master); env(g, t0, .3, .06, d); o.start(); o.stop(t0 + d + .5); }),
-    beam: W(() => { const a = ctx(), n = noise(.6), f = a.createBiquadFilter(), g = a.createGain(), t0 = a.currentTime; f.type = 'highpass'; f.frequency.setValueAtTime(400, t0); const maxF = Math.min(3600, (a.sampleRate || 44100) * .45); f.frequency.exponentialRampToValueAtTime(maxF, t0 + .5); n.connect(f).connect(g).connect(master); env(g, t0, .05, .22, .5); n.start(); }),
-    thud: W(() => { const a = ctx(), o = a.createOscillator(), g = a.createGain(), t0 = a.currentTime; o.type = 'sine'; o.frequency.setValueAtTime(52, t0); o.frequency.exponentialRampToValueAtTime(24, t0 + .7); o.connect(g).connect(master); env(g, t0, .01, .9, 1.4); o.start(); o.stop(t0 + 2); const n = noise(.3), f = a.createBiquadFilter(), g2 = a.createGain(); f.type = 'lowpass'; f.frequency.value = 140; n.connect(f).connect(g2).connect(master); env(g2, t0, .01, .5, .3); n.start(); }),
-    relay: W(() => { const a = ctx(), n = noise(.04), f = a.createBiquadFilter(), g = a.createGain(); f.type = 'bandpass'; f.frequency.value = 1800; f.Q.value = 3; n.connect(f).connect(g).connect(master); env(g, a.currentTime, .002, .16, .05); n.start(); }),
-    blip: W((fr = 880, d = .08, v = .05) => { const a = ctx(), o = a.createOscillator(), g = a.createGain(), t0 = a.currentTime; o.type = 'sine'; o.frequency.value = fr; o.connect(g).connect(master); env(g, t0, .005, v, d); o.start(); o.stop(t0 + d + .1); }),
-    servo: W((d = 1.2, up = false) => { const a = ctx(), o = a.createOscillator(), f = a.createBiquadFilter(), g = a.createGain(), t0 = a.currentTime; o.type = 'sawtooth'; o.frequency.setValueAtTime(up ? 90 : 260, t0); o.frequency.exponentialRampToValueAtTime(up ? 260 : 90, t0 + d); f.type = 'lowpass'; f.frequency.value = 900; o.connect(f).connect(g).connect(master); env(g, t0, .05, .05, d); o.start(); o.stop(t0 + d + .3); })
+function makeSfx() {
+  let ac, master, compressor;
+  const lastTimes = new Map();
+  const throttled = (key, minIntervalMs, fn) => {
+    const now = performance.now();
+    const last = lastTimes.get(key) || 0;
+    if (now - last < minIntervalMs) return;
+    lastTimes.set(key, now);
+    fn();
   };
-  return s; }
+
+  const ctx = () => {
+    if (!ac) {
+      ac = new (window.AudioContext || window.webkitAudioContext)();
+      compressor = ac.createDynamicsCompressor();
+      compressor.threshold.setValueAtTime(-18, ac.currentTime);
+      compressor.knee.setValueAtTime(12, ac.currentTime);
+      compressor.ratio.setValueAtTime(8, ac.currentTime);
+      compressor.attack.setValueAtTime(0.003, ac.currentTime);
+      compressor.release.setValueAtTime(0.15, ac.currentTime);
+
+      master = ac.createGain();
+      master.gain.value = 0.55;
+      compressor.connect(master);
+      master.connect(ac.destination);
+    }
+    if (ac.state === 'suspended') ac.resume();
+    return ac;
+  };
+
+  const noise = d => {
+    const a = ctx(), b = a.createBuffer(1, Math.ceil(a.sampleRate * d), a.sampleRate), x = b.getChannelData(0);
+    for (let i = 0; i < x.length; i++) x[i] = Math.random() * 2 - 1;
+    const s = a.createBufferSource(); s.buffer = b; return s;
+  };
+
+  const env = (g, t0, att, peak, dec) => {
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.linearRampToValueAtTime(peak, t0 + att);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + att + dec);
+  };
+  const W = f => (...a) => { try { f(...a); } catch {} };
+
+  const s = {
+    // ── Classic baseline hooks (preserved for existing calls) ──
+    spark: W(() => {
+      const a = ctx(), n = noise(0.08), f = a.createBiquadFilter(), g = a.createGain();
+      f.type = 'bandpass'; const maxF = Math.min(3600, (a.sampleRate || 44100) * 0.45);
+      f.frequency.value = Math.min(3400 + Math.random() * 3000, maxF); f.Q.value = 9;
+      n.connect(f).connect(g).connect(compressor);
+      env(g, a.currentTime, 0.004, 0.08, 0.07); n.start();
+    }),
+    hum: W((v, r = 2) => {
+      const a = ctx();
+      if (!s._h) {
+        const o = a.createOscillator(), o2 = a.createOscillator(), f = a.createBiquadFilter(), g = a.createGain();
+        o.type = 'sawtooth'; o.frequency.value = 54;
+        o2.type = 'sine'; o2.frequency.value = 108.7;
+        f.type = 'lowpass'; f.frequency.value = 210; g.gain.value = 0.0001;
+        o.connect(f); o2.connect(f); f.connect(g).connect(compressor);
+        o.start(); o2.start(); s._h = g;
+      }
+      s._h.gain.linearRampToValueAtTime(Math.max(v, 0.0001), a.currentTime + r);
+    }),
+    sweep: W((d = 4.5) => {
+      const a = ctx(), o = a.createOscillator(), g = a.createGain(), t0 = a.currentTime;
+      o.type = 'sine'; o.frequency.setValueAtTime(160, t0);
+      const maxF = Math.min(3600, (a.sampleRate || 44100) * 0.45);
+      o.frequency.exponentialRampToValueAtTime(Math.min(1500, maxF), t0 + d);
+      o.connect(g).connect(compressor); env(g, t0, 0.3, 0.06, d);
+      o.start(); o.stop(t0 + d + 0.5);
+    }),
+    beam: W(() => {
+      const a = ctx(), n = noise(0.6), f = a.createBiquadFilter(), g = a.createGain(), t0 = a.currentTime;
+      f.type = 'highpass'; f.frequency.setValueAtTime(400, t0);
+      const maxF = Math.min(3600, (a.sampleRate || 44100) * 0.45);
+      f.frequency.exponentialRampToValueAtTime(maxF, t0 + 0.5);
+      n.connect(f).connect(g).connect(compressor); env(g, t0, 0.05, 0.22, 0.5); n.start();
+    }),
+    thud: W(() => {
+      const a = ctx(), o = a.createOscillator(), g = a.createGain(), t0 = a.currentTime;
+      o.type = 'sine'; o.frequency.setValueAtTime(52, t0);
+      o.frequency.exponentialRampToValueAtTime(24, t0 + 0.7);
+      o.connect(g).connect(compressor); env(g, t0, 0.01, 0.9, 1.4);
+      o.start(); o.stop(t0 + 2);
+      const n = noise(0.3), f = a.createBiquadFilter(), g2 = a.createGain();
+      f.type = 'lowpass'; f.frequency.value = 140;
+      n.connect(f).connect(g2).connect(compressor); env(g2, t0, 0.01, 0.5, 0.3); n.start();
+    }),
+    relay: W(() => {
+      const a = ctx(), n = noise(0.04), f = a.createBiquadFilter(), g = a.createGain();
+      f.type = 'bandpass'; f.frequency.value = 1800; f.Q.value = 3;
+      n.connect(f).connect(g).connect(compressor); env(g, a.currentTime, 0.002, 0.16, 0.05); n.start();
+    }),
+    blip: W((fr = 880, d = 0.08, v = 0.05) => {
+      const a = ctx(), o = a.createOscillator(), g = a.createGain(), t0 = a.currentTime;
+      o.type = 'sine'; o.frequency.value = fr;
+      o.connect(g).connect(compressor); env(g, t0, 0.005, v, d);
+      o.start(); o.stop(t0 + d + 0.1);
+    }),
+    servo: W((d = 1.2, up = false) => {
+      const a = ctx(), o = a.createOscillator(), f = a.createBiquadFilter(), g = a.createGain(), t0 = a.currentTime;
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(up ? 90 : 260, t0);
+      o.frequency.exponentialRampToValueAtTime(up ? 260 : 90, t0 + d);
+      f.type = 'lowpass'; f.frequency.value = 900;
+      o.connect(f).connect(g).connect(compressor); env(g, t0, 0.05, 0.05, d);
+      o.start(); o.stop(t0 + d + 0.3);
+    }),
+
+    // ── Extended Physical Sound Design Vocabulary (Section 9) ──
+    click: W((pitch = 1800) => {
+      throttled('click', 35, () => {
+        const a = ctx(), o = a.createOscillator(), g = a.createGain(), t0 = a.currentTime;
+        o.type = 'triangle'; o.frequency.setValueAtTime(pitch, t0);
+        o.frequency.exponentialRampToValueAtTime(400, t0 + 0.02);
+        o.connect(g).connect(compressor); env(g, t0, 0.001, 0.09, 0.025);
+        o.start(); o.stop(t0 + 0.04);
+      });
+    }),
+    snap: W(() => {
+      const a = ctx(), n = noise(0.025), f = a.createBiquadFilter(), g = a.createGain();
+      f.type = 'bandpass'; f.frequency.value = 2400; f.Q.value = 4;
+      n.connect(f).connect(g).connect(compressor); env(g, a.currentTime, 0.001, 0.18, 0.035); n.start();
+    }),
+    paperFlick: W(() => {
+      throttled('paper', 60, () => {
+        const a = ctx(), n = noise(0.06), f = a.createBiquadFilter(), g = a.createGain();
+        f.type = 'bandpass'; f.frequency.value = 1400; f.Q.value = 2.2;
+        n.connect(f).connect(g).connect(compressor); env(g, a.currentTime, 0.005, 0.07, 0.055); n.start();
+      });
+    }),
+    paperSlide: W(() => {
+      throttled('paperSlide', 80, () => {
+        const a = ctx(), n = noise(0.12), f = a.createBiquadFilter(), g = a.createGain();
+        f.type = 'lowpass'; f.frequency.value = 950;
+        n.connect(f).connect(g).connect(compressor); env(g, a.currentTime, 0.01, 0.05, 0.11); n.start();
+      });
+    }),
+    stylusScratch: W((p = 0.5) => {
+      throttled('scratch', 35, () => {
+        const a = ctx(), n = noise(0.035), f = a.createBiquadFilter(), g = a.createGain();
+        f.type = 'bandpass'; f.frequency.value = 2200 + p * 1200; f.Q.value = 5.0;
+        n.connect(f).connect(g).connect(compressor);
+        env(g, a.currentTime, 0.002, 0.03 + p * 0.04, 0.03); n.start();
+      });
+    }),
+    glassTick: W(() => {
+      const a = ctx(), o = a.createOscillator(), g = a.createGain(), t0 = a.currentTime;
+      o.type = 'sine'; o.frequency.setValueAtTime(2800, t0);
+      o.frequency.exponentialRampToValueAtTime(1900, t0 + 0.04);
+      o.connect(g).connect(compressor); env(g, t0, 0.001, 0.06, 0.04);
+      o.start(); o.stop(t0 + 0.05);
+    }),
+    discharge: W(() => {
+      throttled('discharge', 70, () => {
+        const a = ctx(), o = a.createOscillator(), g = a.createGain(), t0 = a.currentTime;
+        o.type = 'sawtooth'; o.frequency.setValueAtTime(650 + Math.random() * 400, t0);
+        o.frequency.exponentialRampToValueAtTime(120, t0 + 0.06);
+        const f = a.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 400;
+        o.connect(f).connect(g).connect(compressor); env(g, t0, 0.002, 0.11, 0.06);
+        o.start(); o.stop(t0 + 0.08);
+      });
+    }),
+    portalOpen: W(() => {
+      const a = ctx(), t0 = a.currentTime;
+      // Sub-bass rupture pulse
+      const o1 = a.createOscillator(), g1 = a.createGain();
+      o1.type = 'sine'; o1.frequency.setValueAtTime(45, t0);
+      o1.frequency.exponentialRampToValueAtTime(85, t0 + 0.8);
+      o1.connect(g1).connect(compressor); env(g1, t0, 0.08, 0.35, 0.9);
+      o1.start(); o1.stop(t0 + 1.2);
+      // Atmospheric vortex breath
+      const n = noise(0.9), f = a.createBiquadFilter(), g2 = a.createGain();
+      f.type = 'bandpass'; f.frequency.setValueAtTime(280, t0);
+      f.frequency.exponentialRampToValueAtTime(950, t0 + 0.7); f.Q.value = 2.5;
+      n.connect(f).connect(g2).connect(compressor); env(g2, t0, 0.1, 0.18, 0.8); n.start();
+    }),
+    portalClose: W(() => {
+      const a = ctx(), t0 = a.currentTime;
+      const o = a.createOscillator(), g = a.createGain();
+      o.type = 'sine'; o.frequency.setValueAtTime(110, t0);
+      o.frequency.exponentialRampToValueAtTime(32, t0 + 0.5);
+      o.connect(g).connect(compressor); env(g, t0, 0.02, 0.22, 0.55);
+      o.start(); o.stop(t0 + 0.7);
+    }),
+    crystalHarmonic: W((baseFreq = 880) => {
+      throttled('crystal', 100, () => {
+        const a = ctx(), t0 = a.currentTime;
+        const freqs = [baseFreq, baseFreq * 1.5, baseFreq * 2.0];
+        freqs.forEach((fr, i) => {
+          const o = a.createOscillator(), g = a.createGain();
+          o.type = 'sine'; o.frequency.setValueAtTime(fr, t0);
+          o.connect(g).connect(compressor);
+          env(g, t0, 0.01 + i * 0.015, (0.07 / (i + 1)), 0.45 + i * 0.15);
+          o.start(); o.stop(t0 + 0.8);
+        });
+      });
+    }),
+    crystalBirthSeq: W(() => {
+      const a = ctx(), t0 = a.currentTime;
+      const chords = [392.00, 523.25, 659.25, 783.99, 1046.50];
+      chords.forEach((note, idx) => {
+        const o = a.createOscillator(), g = a.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(note, t0 + idx * 0.16);
+        o.connect(g).connect(compressor);
+        env(g, t0 + idx * 0.16, 0.04, 0.08, 0.9);
+        o.start(t0 + idx * 0.16);
+        o.stop(t0 + idx * 0.16 + 1.1);
+      });
+    }),
+    focusResonance: W(() => {
+      const a = ctx(), o = a.createOscillator(), g = a.createGain(), t0 = a.currentTime;
+      o.type = 'sine'; o.frequency.setValueAtTime(240, t0);
+      o.frequency.exponentialRampToValueAtTime(480, t0 + 0.35);
+      o.connect(g).connect(compressor); env(g, t0, 0.02, 0.08, 0.35);
+      o.start(); o.stop(t0 + 0.45);
+    }),
+    servoReturn: W(() => {
+      const a = ctx(), o = a.createOscillator(), f = a.createBiquadFilter(), g = a.createGain(), t0 = a.currentTime;
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(320, t0);
+      o.frequency.exponentialRampToValueAtTime(140, t0 + 0.4);
+      f.type = 'lowpass'; f.frequency.value = 650;
+      o.connect(f).connect(g).connect(compressor); env(g, t0, 0.03, 0.06, 0.38);
+      o.start(); o.stop(t0 + 0.45);
+    }),
+
+    // High-level event dispatcher (Section 9 architecture requirement)
+    play: W((name, opts = {}) => {
+      switch (name) {
+        case 'sector.focus': s.focusResonance(); break;
+        case 'sector.unfocus': s.servoReturn(); break;
+        case 'note.select': s.click(1400); break;
+        case 'note.drag': s.paperSlide(); break;
+        case 'note.drop': s.paperFlick(); break;
+        case 'note.tack': s.snap(); break;
+        case 'note.draw': s.stylusScratch(opts.pressure ?? 0.5); break;
+        case 'note.key': s.click(2100); break;
+        case 'portal.open': s.portalOpen(); break;
+        case 'portal.close': s.portalClose(); break;
+        case 'portal.electric': s.discharge(); break;
+        case 'crystal.select': s.crystalHarmonic(opts.freq || 880); break;
+        case 'crystal.birth': s.crystalBirthSeq(); break;
+        case 'calendar.slot': s.click(1600); break;
+        case 'calendar.range': s.crystalHarmonic(660); break;
+        case 'calendar.invalid': s.blip(260, 0.08, 0.04); break;
+        case 'globe.drag': s.whirr?.(opts.vel) || s.click(900); break;
+        default: s.blip(880, 0.05, 0.03); break;
+      }
+    })
+  };
+  return s;
+}
 
 /* ═════════════════════════════════════════════ THE HALL ═════════════════════════════════════════════ */
 export function createLab({ renderer, composer, env, LOW = false, rockMats, metalMats, idHash = '00000000' }) {
@@ -406,7 +651,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   /* dimensions (m) */ const HR = 10.8, WH = 5.6, RK = 8.6, FR = 12, PL_R = 5.0, B_OUT = 4.66, B_IN = 3.3, DK_Y = .95, TOP = DK_Y + .012, HT_R = 1.9, EMIT_Y = .72, BEAM_H = 5.0, CAM_R = 5.95, IN_R = 2.62, EYE = 1.62, PZ = 9.4, MIR = .5;
 
   const lab = new THREE.Scene(); lab.background = new THREE.Color(0); lab.fog = new THREE.FogExp2(0x03050a, .055);
-  const cam = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, .05, 80);
+  const cam = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, .05, 120);
   const S = { active: false, t: 0, theta: 0, vel: 0, magnet: null, lastInput: -9, sector: 0, stride: 0, look: { x: 0, y: 0, tx: 0, ty: 0 }, ready: false, entF: 0, insideT: 0, inside: 0, hover: null, focus: null, focusT: 0, focusReady: false };
   const disc = softDisc(), cues = new Set(), sfx = makeSfx(), cue = (n, c, f) => { if (c && !cues.has(n)) { cues.add(n); f(); } };
   const polar = (th, r, y = 0) => new THREE.Vector3(Math.sin(th) * r, y, Math.cos(th) * r);
@@ -424,29 +669,31 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   const holoMat = t => new THREE.MeshBasicMaterial({ map: t, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false });
   const lineM = o => new THREE.LineBasicMaterial({ color: 0x5fe8ff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, ...o });
   const screenMat = t => mat({ map: t, emissiveMap: t, emissive: 0xffffff, emissiveIntensity: 0, color: 0x101010, roughness: .3, side: THREE.DoubleSide });
-  const blueprintPaperMat = t => mat({ map: t, emissiveMap: t, emissive: 0xffffff, emissiveIntensity: 0.55, color: 0xffffff, roughness: 0.88, metalness: 0.02, side: THREE.DoubleSide });
+  const blueprintPaperMat = t => mat({ map: t, emissiveMap: t, emissive: 0xffffff, emissiveIntensity: 0, color: 0xffffff, roughness: 0.88, metalness: 0.02, side: THREE.DoubleSide });
   const hits = [], scanSrc = [], holos = [], screens = [], leds = [], labels = [], spin = [], heroGroups = [], mirrorPairs = [], mirror = new THREE.Group(); mirror.scale.y = -1; lab.add(mirror);
   const tag = (g, id) => { g.traverse(o => { if (o.isMesh) { o.userData.sector = id; hits.push(o); } }); return g; };
   const reflect = o => { o.updateWorldMatrix(true, true); const c = o.clone(true), a = [], b = []; o.traverse(x => a.push(x)); c.traverse(x => { if (x.material) x.material = x.material.clone(); b.push(x); }); c.matrixAutoUpdate = false; a.forEach((x, i) => mirrorPairs.push([x, b[i], i === 0])); mirror.add(c); return c; };
 
   /* ── floor, contact shadow, wall, rock crown ── */
+  const caveEnclosure = [];
   const floor = add(new THREE.Mesh(new THREE.CircleGeometry(FR, 96).rotateX(-Math.PI / 2), floorMaterial(LOW ? 384 : 512, FR * 2)), 0, 0, 0); floor.renderOrder = 2; scanSrc.push(floor);
   { const t = cvs(256, 256, (g, w) => { const r = g.createRadialGradient(128, 128, 0, 128, 128, 128), u = x => x / 7.0; r.addColorStop(0, '#333'); r.addColorStop(u(HT_R + .2), '#333'); r.addColorStop(u(HT_R + .7), '#eee'); r.addColorStop(u(B_IN - .5), '#fff'); r.addColorStop(u(B_IN - .1), '#222'); r.addColorStop(u(PL_R), '#000'); r.addColorStop(u(PL_R + .5), '#777'); r.addColorStop(u(6.4), '#fff'); r.addColorStop(1, '#fff'); g.fillStyle = r; g.fillRect(0, 0, w, w); }, false);
     add(new THREE.Mesh(new THREE.CircleGeometry(7.0, 64).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0, alphaMap: t, transparent: true, opacity: .8, depthWrite: false })), 0, .008, 0).renderOrder = 3; }
-  const wall = add(new THREE.Mesh(new THREE.CylinderGeometry(HR, HR, WH, 64, 1, true), wallPanel), 0, WH / 2, 0); wall.material.side = THREE.BackSide; scanSrc.push(wall);
+  const wall = add(new THREE.Mesh(new THREE.CylinderGeometry(HR, HR, WH, 64, 1, true), wallPanel), 0, WH / 2, 0); wall.material.side = THREE.BackSide; scanSrc.push(wall); caveEnclosure.push(wall);
   { const g = new THREE.CylinderGeometry(HR, HR + .3, RK - WH + .1, 56, 5, true), p = g.attributes.position; for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i), z = p.getZ(i), d = (fbm3(x * .3, y * .4, z * .3, 3) - .5) * 1.6 + (fbm3(x * 1.3, y * 1.3, z * 1.3, 2) - .5) * .4, s = 1 - d / HR; p.setXYZ(i, x * s, y + (fbm3(x, 3, z, 2) - .5) * .3, z * s); } g.computeVertexNormals();
-    add(new THREE.Mesh(g, rock), 0, WH + (RK - WH) / 2, 0).material.side = THREE.DoubleSide;
-    const dome = new THREE.SphereGeometry(HR + .2, LOW ? 32 : 44, LOW ? 12 : 16, 0, TAU, 0, Math.PI * .5); dome.scale(1, .5, 1); const dp = dome.attributes.position; for (let i = 0; i < dp.count; i++) { const x = dp.getX(i), y = dp.getY(i), z = dp.getZ(i), s = 1 - (fbm3(x * .35, y * .5, z * .35, 3) - .5) * 1.8 / HR; dp.setXYZ(i, x * s, y * s, z * s); } dome.computeVertexNormals(); add(new THREE.Mesh(dome, rock), 0, RK, 0).material.side = THREE.DoubleSide; }
+    const rockCrown = add(new THREE.Mesh(g, rock), 0, WH + (RK - WH) / 2, 0); rockCrown.material.side = THREE.DoubleSide; caveEnclosure.push(rockCrown);
+    const dome = new THREE.SphereGeometry(HR + .2, LOW ? 32 : 44, LOW ? 12 : 16, 0, TAU, 0, Math.PI * .5); dome.scale(1, .5, 1); const dp = dome.attributes.position; for (let i = 0; i < dp.count; i++) { const x = dp.getX(i), y = dp.getY(i), z = dp.getZ(i), s = 1 - (fbm3(x * .35, y * .5, z * .35, 3) - .5) * 1.8 / HR; dp.setXYZ(i, x * s, y * s, z * s); } dome.computeVertexNormals(); const domeMesh = add(new THREE.Mesh(dome, rock), 0, RK, 0); domeMesh.material.side = THREE.DoubleSide; caveEnclosure.push(domeMesh); }
   { // columns, sconces (emissive only), mezzanine + rail, robot arms
     const cols = [], bk = [], bars = []; for (let k = 0; k < 12; k++) { const th = k / 12 * TAU + .26, c = box(.8, RK, .6, compD); c.position.copy(polar(th, HR - .45, RK / 2)); c.rotation.y = th; cols.push(c); const cap = box(1.1, .3, .9, compD); cap.position.copy(polar(th, HR - .45, WH - .15)); cap.rotation.y = th; cols.push(cap);
       const b = box(.16, 1.5, .08, gunD); b.position.copy(polar(th, HR - .8, 3.0)); b.rotation.y = th; bk.push(b); const s = box(.05, 1.3, .05, sconceE); s.position.copy(polar(th, HR - .87, 3.0)); s.rotation.y = th; bars.push(s); }
-    scanSrc.push(merged(cols, compD)); merged(bk, gunD); reflect(merged(bars, sconceE));
-    scanSrc.push(add(new THREE.Mesh(arcGeo(HR + .1, 9.4, .24, 0, TAU, 72), gunD), 0, WH - 1.4, 0));
-    add(new THREE.Mesh(new THREE.TorusGeometry(9.42, .025, 6, 120).rotateX(Math.PI / 2), tit), 0, WH - .3, 0); add(new THREE.Mesh(new THREE.TorusGeometry(9.41, .008, 6, 120).rotateX(Math.PI / 2), railE), 0, WH - .28, 0); add(new THREE.Mesh(new THREE.TorusGeometry(9.42, .018, 6, 120).rotateX(Math.PI / 2), tit), 0, WH - .78, 0);
-    const im = new THREE.InstancedMesh(new THREE.CylinderGeometry(.02, .02, 1.1, 6), tit, 60), m = new THREE.Object3D(); for (let i = 0; i < 60; i++) { m.position.copy(polar(i / 60 * TAU, 9.42, WH - .85)); m.updateMatrix(); im.setMatrixAt(i, m.matrix); } lab.add(im);
+    const mCols = merged(cols, compD); scanSrc.push(mCols); if (mCols) caveEnclosure.push(mCols); const mBk = merged(bk, gunD); if (mBk) caveEnclosure.push(mBk); const mBars = merged(bars, sconceE); if (mBars) { reflect(mBars); caveEnclosure.push(mBars); }
+    const mezzMesh = add(new THREE.Mesh(arcGeo(HR + .1, 9.4, .24, 0, TAU, 72), gunD), 0, WH - 1.4, 0); scanSrc.push(mezzMesh); caveEnclosure.push(mezzMesh);
+    const t1 = add(new THREE.Mesh(new THREE.TorusGeometry(9.42, .025, 6, 120).rotateX(Math.PI / 2), tit), 0, WH - .3, 0); const t2 = add(new THREE.Mesh(new THREE.TorusGeometry(9.41, .008, 6, 120).rotateX(Math.PI / 2), railE), 0, WH - .28, 0); const t3 = add(new THREE.Mesh(new THREE.TorusGeometry(9.42, .018, 6, 120).rotateX(Math.PI / 2), tit), 0, WH - .78, 0);
+    caveEnclosure.push(t1, t2, t3);
+    const im = new THREE.InstancedMesh(new THREE.CylinderGeometry(.02, .02, 1.1, 6), tit, 60), m = new THREE.Object3D(); for (let i = 0; i < 60; i++) { m.position.copy(polar(i / 60 * TAU, 9.42, WH - .85)); m.updateMatrix(); im.setMatrixAt(i, m.matrix); } lab.add(im); caveEnclosure.push(im);
     const arms = []; for (const s of [-1, 1]) { const th = Math.PI + s * .8, g = new THREE.Group(); g.position.copy(polar(th, 8.4)); g.rotation.y = th + Math.PI; lab.add(g); const P = (o, x, y, z, rx = 0, rz = 0) => { o.position.set(x, y, z); o.rotation.set(rx, 0, rz); g.add(o); arms.push(o); };
       P(cyl(.4, .48, .5, matte, 24), 0, .25, 0); P(box(.3, 1.5, .3, matte), 0, 1.2, 0, 0, s * .35); P(new THREE.Mesh(new THREE.SphereGeometry(.24, 12, 10), matte), s * .5, 1.9, 0); P(box(.22, 1.6, .22, matte), s * .8, 2.5, .3, .55, s * .95); P(box(.3, .3, .4, matte), s * 1.5, 3.0, .75); g.updateMatrixWorld(true); }
-    lab.add(new THREE.Mesh(mergeGeometries(arms.map(o => o.geometry.clone().applyMatrix4(o.matrixWorld)), false), matte)); arms.forEach(o => o.parent.remove(o)); }
+    const armMesh = add(new THREE.Mesh(mergeGeometries(arms.map(o => o.geometry.clone().applyMatrix4(o.matrixWorld)), false), matte)); arms.forEach(o => o.parent.remove(o)); caveEnclosure.push(armMesh); }
   { // left workstation (long bench, three wall monitors, server rack) · right wall (pressure door, pipes) · back wall relay map
     const gL = new THREE.Group(); gL.position.copy(polar(-1.55, HR - 1.35)); gL.rotation.y = -1.55 + Math.PI; lab.add(gL); add(box(5.2, .9, .8, gunD), 0, .45, 0, gL); add(box(5.3, .05, .86, comp), 0, .92, 0, gL);
     const mons = [], atlas = TEX.monitors(); for (let i = 0; i < 3; i++) { const h = box(.92, .62, .08, compD); h.position.set(-1.5 + i * 1.5, 2.6, -.15); mons.push(h); const s = new THREE.Mesh(new THREE.PlaneGeometry(.84, .54), compD); s.position.set(-1.5 + i * 1.5, 2.6, -.105); const uv = s.geometry.attributes.uv; for (let v = 0; v < uv.count; v++) uv.setX(v, (i + uv.getX(v)) / 3); mons.push(s); s.userData.atlas = true; }
@@ -456,7 +703,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     const gR = new THREE.Group(); gR.position.copy(polar(1.55, HR - 1.0)); gR.rotation.y = 1.55 + Math.PI; lab.add(gR); add(box(2.4, 3.4, .2, gunD), 0, 1.7, 0, gR); add(box(2.0, 3.0, .08, gun), 0, 1.7, .12, gR); add(new THREE.Mesh(new THREE.TorusGeometry(.3, .03, 8, 24), tit), 0, 1.7, .2, gR);
     const pipes = []; for (const x of [-2.2, -1.8, 1.9, 2.3]) { const p = cyl(.08, .08, 5.2, comp, 12); p.position.set(x, 2.6, .2); pipes.push(p); } const hp = cyl(.08, .08, 5.0, comp, 12); hp.rotation.z = Math.PI / 2; hp.position.set(0, 4.4, .2); pipes.push(hp); merged(pipes, comp, gR);
     const wm = screenMat(TEX.wall()); add(new THREE.Mesh(new THREE.PlaneGeometry(3.4, 2.0), wm), 0, 2.7, -(HR - 1.0)); screens.push({ m: wm, t0: T.power[0] + 3.3, i: .9 }); add(box(3.6, 2.2, .1, gunD), 0, 2.7, -(HR - .94));
-    const gl = new THREE.LineSegments(new THREE.WireframeGeometry(new THREE.IcosahedronGeometry(.75, 2)), lineM({})); add(gl, 0, 2.7, -(HR - 1.9)); holos.push({ m: gl.material, target: .28, t0: T.power[0] + 3.5 }); spin.push(gl); }
+    const gl = new THREE.LineSegments(new THREE.WireframeGeometry(new THREE.IcosahedronGeometry(.75, 2)), lineM({})); add(gl, 0, 2.7, -(HR - 1.9)); holos.push({ m: gl.material, target: .28, t0: T.power[0] + 3.5 }); spin.push(gl); caveEnclosure.push(gL, gR); }
 
   /* ── portal frame (we stand in it) + short tunnel + closed door behind us ── */
   { const R = 3.0, cy = 2.77, members = [], strips = [], edge = 2 * R * Math.sin(Math.PI / 8), portal = new THREE.Group(); portal.position.set(0, cy, PZ); lab.add(portal);
@@ -466,7 +713,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       if (i === 0 || i === 4 || i === 1 || i === 3) { const s = box(edge * .8, .035, .025, portalE); s.position.set(x * .905, y * .905, .27); s.rotation.z = a + Math.PI / 2; strips.push(s); }
       for (let j = 0; j < 5; j++) { const u = (j - 2) / 5 * edge, ta = a + Math.PI / 2; m.position.set(x + Math.cos(ta) * u, y + Math.sin(ta) * u, .28); m.updateMatrix(); rivets.setMatrixAt(i * 5 + j, m.matrix); } }
     merged(members, gun, portal); const st = merged(strips, portalE, portal); portal.add(rivets); add(new THREE.Mesh(new THREE.PlaneGeometry(2.4, .3), mat({ map: TEX.portal(), roughness: .8, metalness: .4 })), 0, R * Math.cos(Math.PI / 8) - .45, .29, portal); reflect(st);
-    const tun = new THREE.Group(); tun.position.set(0, 0, PZ + 1.8); lab.add(tun); add(box(.4, 6.2, 3.6, compD), -2.95, 3.1, 0, tun); add(box(.4, 6.2, 3.6, compD), 2.95, 3.1, 0, tun); add(box(6.3, .4, 3.6, compD), 0, 5.95, 0, tun); add(box(5.6, 5.6, .5, gunD), 0, 2.8, 1.85, tun); }
+    const tun = new THREE.Group(); tun.position.set(0, 0, PZ + 1.8); lab.add(tun); add(box(.4, 6.2, 3.6, compD), -2.95, 3.1, 0, tun); add(box(.4, 6.2, 3.6, compD), 2.95, 3.1, 0, tun); add(box(6.3, .4, 3.6, compD), 0, 5.95, 0, tun); add(box(5.6, 5.6, .5, gunD), 0, 2.8, 1.85, tun); caveEnclosure.push(portal, tun); }
 
   /* ── THE WORKBENCH: donut with an open bay at S0 ── */
   const table = new THREE.Group(), glow = new THREE.Group(); lab.add(table); table.add(glow);
@@ -1322,6 +1569,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   }
 
   const sheetGroup = new THREE.Group();
+  sheetGroup.visible = false;
   const DESK = { w: 1.4, d: 0.8 };
   const sheets = new Map();
   let rs1g = null;
@@ -1474,12 +1722,56 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     const d = defaultLayout(i, n);
     const baseRot = d.rot ?? 0;
     const baseQuat = new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, baseRot, 0, 'YXZ'));
-    g.position.set(d.x, 0.003 + i * 0.002, d.z);
+
+    let initX = d.x, initZ = d.z;
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const raw = localStorage.getItem('vault_blueprint_positions');
+        if (raw) {
+          const posMap = JSON.parse(raw);
+          if (posMap && posMap[p.id] && typeof posMap[p.id].x === 'number') {
+            initX = posMap[p.id].x;
+            initZ = posMap[p.id].z;
+          }
+        }
+      }
+    } catch {}
+
+    g.position.set(initX, 0.003 + i * 0.002, initZ);
     g.quaternion.copy(baseQuat);
     sheetGroup.add(g);
     sheets.set(p.id, { group: g, plane, redraw, project: p, basePos: g.position.clone(), baseRot, baseQuat });
     return g;
   }
+
+  function bringSheetToTop(id) {
+    if (!id || id === '__placeholder__') return;
+    const targetSheet = sheets.get(id);
+    if (!targetSheet) return;
+
+    // Collect all valid sheets and sort them by current basePos.y
+    const allSheets = Array.from(sheets.values()).filter(s => s && s.group);
+    allSheets.sort((a, b) => a.basePos.y - b.basePos.y);
+
+    const idx = allSheets.indexOf(targetSheet);
+    if (idx !== -1) {
+      allSheets.splice(idx, 1);
+    }
+    allSheets.push(targetSheet);
+
+    // Reassign layered Y heights cleanly and update Three.js render order
+    allSheets.forEach((s, i) => {
+      const newY = 0.003 + i * 0.002;
+      s.basePos.y = newY;
+      if (typeof readId !== 'undefined' && readId !== s.project?.id) {
+        s.group.position.y = newY;
+      }
+      if (sheetGroup && s.group.parent === sheetGroup) {
+        sheetGroup.add(s.group); // re-append to end for Three.js draw order
+      }
+    });
+  }
+  window.bringRS1SheetToTop = bringSheetToTop;
 
   const DEFAULT_BLUEPRINTS = [
     {
@@ -1961,6 +2253,19 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       date_to: 'Present',
       tags: ['Visual Arts', 'Sketching', 'Illustration', 'UCEED', 'Creative Arts'],
       weight: 84
+    },
+    {
+      id: 'skill:musical-instruments',
+      kind: 'skill',
+      title: 'Musical Instruments & Acoustic Arts (Guitar, Flute & Piano Basics)',
+      summary: 'Foundational acoustic guitar rhythm chords & fingerpicking patterns, breath modulation & melodic phrasing on Indian bansuri / transverse bamboo flute, and basic piano keyboard harmony & scale chord progressions.',
+      proof_url: 'https://github.com/PriyanshGadia',
+      proof_type: 'link',
+      issuer: 'Acoustic Arts & Self-Directed Practice',
+      date_from: '2021',
+      date_to: 'Present',
+      tags: ['Acoustic Guitar', 'Flute / Bansuri', 'Piano Basics', 'Musical Instruments', 'Acoustic Arts'],
+      weight: 85
     }
   ];
 
@@ -1969,30 +2274,63 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       id: 'quant-research',
       name: 'QUANT / ML RESEARCH',
       accent: '#39d6ff',
+      tag: 'ST-GCN / MIMIC',
       defaults: ['edu:iitg', 'edu:djsce', 'proj:argus', 'proj:cryptograph', 'proj:rso', 'proj:physionet', 'cert:oci-ds', 'cert:citi-program', 'skill:languages', 'skill:ml-analytics', 'skill:finance-quant']
     },
     {
       id: 'fullstack-ai',
       name: 'FULL-STACK AI / PROD',
       accent: '#4dff8a',
+      tag: 'NEXT14 / REDIS',
       defaults: ['edu:iitg', 'edu:djsce', 'proj:cryptograph', 'proj:idp', 'proj:argus', 'proj:gpt2', 'cert:oci-ds', 'skill:languages', 'skill:ml-analytics', 'skill:frameworks-systems']
     },
     {
       id: 'robotics-mech',
       name: 'ROBOTICS & MECH-ENG',
       accent: '#ffb15c',
+      tag: 'CAD / CNC / DJS',
       defaults: ['edu:djsce', 'edu:iitg', 'proj:cryptograph', 'proj:rso', 'cert:oci-ds', 'skill:cad-robotics', 'skill:languages', 'skill:ml-analytics']
     },
     {
       id: 'exec-clean',
       name: 'EXECUTIVE / CLEAN',
       accent: '#c084fc',
-      defaults: ['edu:iitg', 'edu:djsce', 'edu:kc-college', 'exp:rotaract-photo', 'proj:argus', 'proj:cryptograph', 'cert:oci-ds', 'cert:michiganx-py4e', 'skill:photography', 'skill:creative-arts']
+      tag: 'IITG / DUAL-DEG',
+      defaults: ['edu:iitg', 'edu:djsce', 'edu:kc-college', 'exp:rotaract-photo', 'proj:argus', 'proj:cryptograph', 'cert:oci-ds', 'cert:michiganx-py4e', 'skill:photography', 'skill:creative-arts', 'skill:musical-instruments']
+    },
+    {
+      id: 'moderncv',
+      name: 'MODERN-CV [LATEX]',
+      accent: '#38bdf8',
+      tag: 'LATEX CLASSIC',
+      defaults: ['edu:iitg', 'edu:djsce', 'proj:argus', 'proj:cryptograph', 'proj:physionet', 'cert:oci-ds', 'skill:languages', 'skill:ml-analytics']
+    },
+    {
+      id: 'deedy',
+      name: 'DEEDY-CV [2-COL LATEX]',
+      accent: '#a78bfa',
+      tag: 'CORNELL 2-COL',
+      defaults: ['edu:iitg', 'edu:djsce', 'proj:argus', 'proj:cryptograph', 'proj:rso', 'proj:gpt2', 'cert:oci-ds', 'cert:citi-program', 'skill:languages', 'skill:ml-analytics', 'skill:frameworks-systems', 'skill:finance-quant']
+    },
+    {
+      id: 'sb2nov',
+      name: 'SB2NOV [DENSE LATEX]',
+      accent: '#34d399',
+      tag: 'MAX 1-PAGE DENSE',
+      defaults: ['edu:iitg', 'edu:djsce', 'proj:argus', 'proj:cryptograph', 'proj:rso', 'proj:physionet', 'proj:idp', 'cert:oci-ds', 'cert:citi-program', 'cert:michiganx-py4e', 'skill:languages', 'skill:ml-analytics', 'skill:finance-quant']
+    },
+    {
+      id: 'altacv',
+      name: 'ALTA-CV [2-COL LATEX]',
+      accent: '#f472b6',
+      tag: 'MODERN 2-COL',
+      defaults: ['edu:iitg', 'edu:djsce', 'proj:argus', 'proj:cryptograph', 'proj:rso', 'cert:oci-ds', 'cert:citi-program', 'skill:languages', 'skill:ml-analytics', 'skill:cad-robotics']
     }
   ];
 
   const RESUME = {
     items: DEFAULT_RESUME_ITEMS,
+    templates: RESUME_TEMPLATES,
     filtered: [],
     selected: new Set([
       'edu:iitg', 'edu:djsce', 'proj:argus', 'proj:cryptograph', 'proj:rso',
@@ -2000,12 +2338,132 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       'skill:languages', 'skill:ml-analytics', 'skill:finance-quant'
     ]),
     template: 'quant-research',
+    templateManuallyLocked: false,
+    overflowModal: {
+      active: false,
+      triggerItemId: null,
+      currentTemplate: 'quant-research',
+      suggestedTemplate: 'sb2nov',
+      pageCount: 2
+    },
     category: 'all',
     query: '',
     typing: false,
     scroll: 0,
     busy: false
   };
+
+  function estimateResumePageCount(selectedItemIds, templateId) {
+    const tpl = RESUME_TEMPLATES.find(t => t.id === templateId) || RESUME_TEMPLATES[0];
+    const items = RESUME.items.filter(it => (selectedItemIds && selectedItemIds.has) ? selectedItemIds.has(it.id) : (Array.isArray(selectedItemIds) ? selectedItemIds.includes(it.id) : false));
+    const maxPageH = 750; // Printable A4 content height in points (842pt - margins)
+
+    if (tpl.id === 'deedy') {
+      // 2-column layout: left column (edu, skill, cert), right column (exp, proj)
+      const leftItems = items.filter(it => it.kind === 'education' || it.kind === 'skill' || it.kind === 'certification');
+      const rightItems = items.filter(it => it.kind === 'experience' || it.kind === 'project');
+
+      let leftH = 145; // Header (70) + summary
+      const leftSecs = new Set(leftItems.map(it => it.kind));
+      leftH += leftSecs.size * 24;
+      for (const it of leftItems) leftH += it.kind === 'skill' ? 28 : (it.kind === 'education' ? 44 : 32);
+
+      let rightH = 145;
+      const rightSecs = new Set(rightItems.map(it => it.kind));
+      rightH += rightSecs.size * 24;
+      for (const it of rightItems) rightH += it.kind === 'experience' ? 76 : 58;
+
+      const totalH = Math.max(leftH, rightH);
+      return Math.max(1, Math.ceil(totalH / maxPageH));
+    }
+
+    if (tpl.id === 'altacv') {
+      // 2-column layout: sidebar (skill, cert), main (exp, proj, edu)
+      const sideItems = items.filter(it => it.kind === 'skill' || it.kind === 'certification');
+      const mainItems = items.filter(it => it.kind !== 'skill' && it.kind !== 'certification');
+
+      let sideH = 145;
+      for (const it of sideItems) sideH += it.kind === 'skill' ? 28 : 34;
+
+      let mainH = 145;
+      const mainSecs = new Set(mainItems.map(it => it.kind));
+      mainH += mainSecs.size * 24;
+      for (const it of mainItems) mainH += it.kind === 'experience' ? 76 : (it.kind === 'education' ? 44 : 58);
+
+      const totalH = Math.max(sideH, mainH);
+      return Math.max(1, Math.ceil(totalH / maxPageH));
+    }
+
+    if (tpl.id === 'sb2nov') {
+      // Ultra-dense single column layout
+      let h = 135; // Header + compact summary
+      const secs = new Set(items.map(it => it.kind));
+      h += secs.size * 22;
+      for (const it of items) {
+        if (it.kind === 'skill') h += 24;
+        else if (it.kind === 'education') h += 38;
+        else if (it.kind === 'experience') h += 72;
+        else h += 52;
+      }
+      return Math.max(1, Math.ceil(h / maxPageH));
+    }
+
+    if (tpl.id === 'moderncv') {
+      // Classic elegant LaTeX layout
+      let h = 165;
+      const secs = new Set(items.map(it => it.kind));
+      h += secs.size * 28;
+      for (const it of items) {
+        if (it.kind === 'skill') h += 30;
+        else if (it.kind === 'education') h += 48;
+        else if (it.kind === 'experience') h += 86;
+        else h += 64;
+      }
+      return Math.max(1, Math.ceil(h / maxPageH));
+    }
+
+    // Standard templates ('quant-research', 'fullstack-ai', 'robotics-mech', 'exec-clean')
+    // Header: Name (22pt + 16pt margin) + Subtitle (9.5pt + 14pt margin) + Contact (8.5pt + 4pt margin) = 74pt
+    // Summary: Section header (25pt) + Summary lines (55pt) = 80pt. Total header+summary = 154pt.
+    let h = 154;
+    const secs = new Set(items.map(it => it.kind));
+    h += secs.size * 25;
+    for (const it of items) {
+      if (it.kind === 'skill') h += 27;
+      else if (it.kind === 'education') h += 44;
+      else if (it.kind === 'project') h += 59;
+      else if (it.kind === 'experience') h += 81;
+      else h += 32;
+    }
+    return Math.max(1, Math.ceil(h / maxPageH));
+  }
+
+  function autoSelectBestTemplate(selectedSet) {
+    const sel = selectedSet || RESUME.selected;
+    const fitsOnePage = RESUME_TEMPLATES.filter(tpl => estimateResumePageCount(sel, tpl.id) === 1);
+
+    if (fitsOnePage.length > 0) {
+      if (fitsOnePage.some(t => t.id === RESUME.template)) {
+        return RESUME.template;
+      }
+      const prefOrder = ['sb2nov', 'deedy', 'altacv', 'moderncv', 'quant-research', 'fullstack-ai', 'robotics-mech', 'exec-clean'];
+      for (const p of prefOrder) {
+        if (fitsOnePage.some(t => t.id === p)) return p;
+      }
+      return fitsOnePage[0].id;
+    }
+
+    let bestTpl = 'sb2nov';
+    let minPages = 999;
+    for (const tpl of RESUME_TEMPLATES) {
+      const p = estimateResumePageCount(sel, tpl.id);
+      if (p < minPages) {
+        minPages = p;
+        bestTpl = tpl.id;
+      }
+    }
+    return bestTpl;
+  }
 
   function applyResumeFilter() {
     const q = RESUME.query.trim().toLowerCase();
@@ -2035,54 +2493,145 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
 
   function drawPaperPreview(cnv, items, templateId) {
     if (!cnv) return;
-    const g = cnv.getContext('2d'), w = cnv.width, h = cnv.height;
+    const g = cnv.getContext('2d');
+    const scale = cnv.width / 400;
+    g.save();
+    g.scale(scale, scale);
+    const w = 400, h = 566;
     g.fillStyle = '#f8fafc';
     g.fillRect(0, 0, w, h);
 
-    // Document header
-    g.fillStyle = '#0f172a';
-    mono(g, 13, 'bold');
-    g.fillText('PRIYANSH GADIA', 18, 24);
+    const isDeedy = templateId === 'deedy';
+    const isAlta = templateId === 'altacv';
+    const isSb2 = templateId === 'sb2nov';
+    const isModern = templateId === 'moderncv';
 
-    g.fillStyle = '#1e3a8a';
-    mono(g, 8.5, '');
-    g.fillText('DUAL DEGREE: B.Sc. DATA SCIENCE (IITG) · B.Tech ROBOTICS (DJSCE)', 18, 36);
-
-    g.fillStyle = '#94a3b8';
-    g.fillRect(18, 42, w - 36, 1);
-
-    let y = 58;
-    const sections = ['education', 'projects', 'skills', 'certifications', 'experience'];
-    for (const sec of sections) {
-      const secItems = items.filter(it => it.kind === sec || (sec === 'skills' && it.kind === 'skill') || (sec === 'projects' && it.kind === 'project') || (sec === 'certifications' && it.kind === 'certification') || (sec === 'education' && it.kind === 'education'));
-      if (!secItems.length) continue;
-      if (y > h - 40) break;
-
-      g.fillStyle = '#1e3a8a';
-      mono(g, 9.5, 'bold');
-      g.fillText(sec.toUpperCase(), 18, y);
+    // Header styling
+    if (isSb2) {
+      g.fillStyle = '#0f172a';
+      mono(g, 12, 'bold');
+      g.fillText('PRIYANSH GADIA', 18, 20);
+      g.fillStyle = '#334155';
+      mono(g, 7.5, '');
+      g.fillText('B.Sc. Data Science (IITG) | B.Tech Robotics (DJSCE) | gadiapriyansh@gmail.com', 18, 30);
+      g.fillStyle = '#475569';
+      g.fillRect(18, 34, w - 36, 0.8);
+    } else if (isModern) {
+      g.fillStyle = '#0284c7';
+      g.fillRect(18, 14, 4, 28);
+      g.fillStyle = '#0f172a';
+      mono(g, 13, 'bold');
+      g.fillText('PRIYANSH GADIA', 28, 26);
+      g.fillStyle = '#0369a1';
+      mono(g, 8, '');
+      g.fillText('IIT GUWAHATI & DJSCE // ROBOTICS & QUANT ML', 28, 38);
       g.fillStyle = '#cbd5e1';
-      g.fillRect(18, y + 2, w - 36, 0.5);
-      y += 14;
-
-      for (const it of secItems.slice(0, 2)) {
-        if (y > h - 20) break;
-        g.fillStyle = '#0f172a';
-        mono(g, 8, 'bold');
-        g.fillText('• ' + it.title.slice(0, 36), 20, y);
-        y += 11;
-        g.fillStyle = '#475569';
-        mono(g, 7, '');
-        g.fillText(it.summary.slice(0, 44) + '…', 26, y);
-        y += 13;
-      }
-      y += 5;
+      g.fillRect(18, 44, w - 36, 0.5);
+    } else {
+      g.fillStyle = '#0f172a';
+      mono(g, 13, 'bold');
+      g.fillText('PRIYANSH GADIA', 18, 24);
+      g.fillStyle = '#1e3a8a';
+      mono(g, 8.5, '');
+      g.fillText('DUAL DEGREE: B.Sc. DATA SCIENCE (IITG) · B.Tech ROBOTICS (DJSCE)', 18, 36);
+      g.fillStyle = '#94a3b8';
+      g.fillRect(18, 42, w - 36, 1);
     }
+
+    if (isDeedy || isAlta) {
+      // 2-Column layout preview
+      const midX = Math.floor(w * 0.36);
+      g.fillStyle = '#cbd5e1';
+      g.fillRect(midX, 52, 0.8, h - 64);
+
+      // Left column: Education, Skills, Certs
+      let yL = 56;
+      for (const sec of ['skills', 'education', 'certifications']) {
+        const secItems = items.filter(it => it.kind === sec || (sec === 'skills' && it.kind === 'skill') || (sec === 'certifications' && it.kind === 'certification') || (sec === 'education' && it.kind === 'education'));
+        if (!secItems.length || yL > h - 35) continue;
+        g.fillStyle = isDeedy ? '#7c3aed' : '#db2777';
+        mono(g, 8.5, 'bold');
+        g.fillText(sec.toUpperCase(), 18, yL);
+        yL += 12;
+        for (const it of secItems.slice(0, 3)) {
+          if (yL > h - 18) break;
+          g.fillStyle = '#0f172a';
+          mono(g, 7.5, 'bold');
+          g.fillText('• ' + it.title.slice(0, 16), 18, yL);
+          yL += 11;
+        }
+        yL += 4;
+      }
+
+      // Right column: Projects, Experience, Summary
+      let yR = 56;
+      for (const sec of ['projects', 'experience']) {
+        const secItems = items.filter(it => it.kind === sec || (sec === 'projects' && it.kind === 'project') || (sec === 'experience' && it.kind === 'experience'));
+        if (!secItems.length || yR > h - 35) continue;
+        g.fillStyle = isDeedy ? '#1e3a8a' : '#0369a1';
+        mono(g, 9, 'bold');
+        g.fillText(sec.toUpperCase(), midX + 8, yR);
+        g.fillStyle = '#e2e8f0';
+        g.fillRect(midX + 8, yR + 2, w - midX - 26, 0.5);
+        yR += 13;
+        for (const it of secItems.slice(0, 3)) {
+          if (yR > h - 22) break;
+          g.fillStyle = '#0f172a';
+          mono(g, 8, 'bold');
+          g.fillText(it.title.slice(0, 24), midX + 8, yR);
+          yR += 10;
+          g.fillStyle = '#475569';
+          mono(g, 6.8, '');
+          g.fillText(it.summary.slice(0, 30) + '…', midX + 12, yR);
+          yR += 12;
+        }
+        yR += 5;
+      }
+    } else {
+      // Single column layout preview
+      let y = isSb2 ? 46 : 58;
+      const sections = ['education', 'projects', 'skills', 'certifications', 'experience'];
+      for (const sec of sections) {
+        const secItems = items.filter(it => it.kind === sec || (sec === 'skills' && it.kind === 'skill') || (sec === 'projects' && it.kind === 'project') || (sec === 'certifications' && it.kind === 'certification') || (sec === 'education' && it.kind === 'education'));
+        if (!secItems.length || y > h - 40) continue;
+
+        g.fillStyle = isSb2 ? '#0f172a' : '#1e3a8a';
+        mono(g, isSb2 ? 8.5 : 9.5, 'bold');
+        g.fillText(sec.toUpperCase(), 18, y);
+        g.fillStyle = isSb2 ? '#475569' : '#cbd5e1';
+        g.fillRect(18, y + 2, w - 36, 0.5);
+        y += isSb2 ? 11 : 14;
+
+        for (const it of secItems.slice(0, isSb2 ? 3 : 2)) {
+          if (y > h - 20) break;
+          g.fillStyle = '#0f172a';
+          mono(g, isSb2 ? 7.5 : 8, 'bold');
+          g.fillText('• ' + it.title.slice(0, 36), 20, y);
+          y += isSb2 ? 9.5 : 11;
+          g.fillStyle = '#475569';
+          mono(g, 7, '');
+          g.fillText(it.summary.slice(0, 44) + '…', 26, y);
+          y += isSb2 ? 10.5 : 13;
+        }
+        y += isSb2 ? 3 : 5;
+      }
+    }
+    const estP = estimateResumePageCount(items.map(it => it.id), templateId);
+    if (estP > 1) {
+      g.fillStyle = '#64748b';
+      mono(g, 6.8, '');
+      g.fillText(`[PAGE 1 OF ${estP} · MULTI-PAGE PAYLOAD]`, 18, h - 12);
+    }
+    g.restore();
   }
 
   function drawResume(cnv) {
     if (!cnv) return;
-    const g = cnv.getContext('2d'), w = cnv.width, h = cnv.height;
+    const g = cnv.getContext('2d');
+    const scale = cnv.width / 640;
+    g.save();
+    g.scale(scale, scale);
+    const w = 640, h = 400;
 
     // 1. Deep Obsidian Tactical Space Background
     g.fillStyle = '#01050a';
@@ -2155,7 +2704,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     g.fillRect(w - 58, 27, 40, 1.5);
 
     // ── Search Matrix ──
-    const sbX = 18, sbY = 34, sbW = w - 106, sbH = 26;
+    const sbX = 18, sbY = 31, sbW = w - 106, sbH = 20;
     g.fillStyle = RESUME.typing ? '#061a26' : '#030e16';
     g.fillRect(sbX, sbY, sbW, sbH);
     g.strokeStyle = RESUME.typing ? '#39d6ff' : '#1b4a5a';
@@ -2168,10 +2717,10 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     g.fillRect(sbX + sbW - 3, sbY + sbH - 3, 3, 3);
 
     g.fillStyle = RESUME.query ? '#ffffff' : (RESUME.typing ? '#a5e8ff' : '#45798e');
-    mono(g, 10, '');
+    mono(g, 9.5, '');
     const cursor = (RESUME.typing && (Math.floor(S.t * 3) % 2)) ? '▮' : '';
     const qText = RESUME.query ? RESUME.query : (RESUME.typing ? '' : 'QUERY MATRIX [KEYWORD / TECH / DOMAIN / ROLE]...');
-    g.fillText('>_ ' + qText + cursor, sbX + 8, sbY + 17);
+    g.fillText('>_ ' + qText + cursor, sbX + 8, sbY + 14);
 
     // Search Clear Button [CLR]
     const clrX = w - 82, clrY = sbY, clrW = 64, clrH = sbH;
@@ -2181,77 +2730,95 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     g.lineWidth = 1;
     g.strokeRect(clrX, clrY, clrW, clrH);
     g.fillStyle = RESUME.query ? '#ffb366' : '#65a9bf';
-    mono(g, 8.5, 'bold');
-    g.fillText('CLR ✕', clrX + 16, clrY + 17);
+    mono(g, 8, 'bold');
+    g.fillText('CLR ✕', clrX + 16, clrY + 14);
 
-    // ── Template Selection Tabs (4 specialized mission profiles) ──
+    // ── Template Selection Tabs (8 mission profiles across 2 compact rows) ──
     const tplTabs = [
-      { id: 'quant-research', label: '01 · QUANT / RESEARCH', tag: 'ST-GCN / MIMIC',  x: 18,  w: 146 },
-      { id: 'fullstack-ai',   label: '02 · FULL-STACK AI',    tag: 'NEXT14 / REDIS',  x: 170, w: 146 },
-      { id: 'robotics-mech',  label: '03 · ROBOTICS / MECH',  tag: 'CAD / CNC / DJS', x: 322, w: 146 },
-      { id: 'exec-clean',     label: '04 · EXECUTIVE CLEAN',  tag: 'IITG / DUAL-DEG', x: 474, w: 148 }
+      // Row 1: Core Technical & Executive Profiles
+      { id: 'quant-research', label: '01 · QUANT / RESEARCH', tag: 'ST-GCN',   row: 1, x: 18,  w: 146 },
+      { id: 'fullstack-ai',   label: '02 · FULL-STACK AI',    tag: 'NEXT14',   row: 1, x: 170, w: 146 },
+      { id: 'robotics-mech',  label: '03 · ROBOTICS / MECH',  tag: 'CAD/CNC',  row: 1, x: 322, w: 146 },
+      { id: 'exec-clean',     label: '04 · EXECUTIVE CLEAN',  tag: 'IITG',     row: 1, x: 474, w: 148 },
+      // Row 2: Professional LaTeX Profiles
+      { id: 'moderncv',       label: '05 · MODERN-CV [TEX]',  tag: 'CLASSIC',  row: 2, x: 18,  w: 146 },
+      { id: 'deedy',          label: '06 · DEEDY-CV [TEX]',   tag: '2-COLUMN', row: 2, x: 170, w: 146 },
+      { id: 'sb2nov',         label: '07 · SB2NOV [DENSE]',   tag: '1-PAGE',   row: 2, x: 322, w: 146 },
+      { id: 'altacv',         label: '08 · ALTA-CV [TEX]',    tag: '2-COLUMN', row: 2, x: 474, w: 148 }
     ];
 
     tplTabs.forEach(t => {
       const active = RESUME.template === t.id;
+      const tabY = t.row === 1 ? 53 : 73;
+      const tabH = 18;
       g.fillStyle = active ? '#0b2b3a' : '#031018';
-      g.fillRect(t.x, 66, t.w, 24);
+      g.fillRect(t.x, tabY, t.w, tabH);
       g.strokeStyle = active ? '#39d6ff' : '#143644';
       g.lineWidth = active ? 1.5 : 1;
-      g.strokeRect(t.x, 66, t.w, 24);
+      g.strokeRect(t.x, tabY, t.w, tabH);
 
       if (active) {
         g.fillStyle = '#39d6ff';
-        g.fillRect(t.x, 88, t.w, 2); // active underline
+        g.fillRect(t.x, tabY + tabH - 2, t.w, 2); // active underline
         // Active indicator pip
         g.fillStyle = '#35ff7a';
-        g.fillRect(t.x + 6, 73, 3, 10);
+        g.fillRect(t.x + 4, tabY + 4, 3, 10);
       }
 
       g.fillStyle = active ? '#ffffff' : '#6293a6';
-      mono(g, 8.5, active ? 'bold' : '');
-      g.fillText(t.label, t.x + (active ? 14 : 8), 78);
-
-      g.fillStyle = active ? '#39d6ff' : '#356375';
-      mono(g, 7, '');
-      g.fillText(t.tag, t.x + (active ? 14 : 8), 87);
+      mono(g, 7.5, active ? 'bold' : '');
+      const autoTag = (active && !RESUME.templateManuallyLocked) ? ' [AUTO]' : '';
+      g.fillText(t.label + autoTag, t.x + (active ? 10 : 6), tabY + 12);
     });
 
-    // ── Category Filter Sub-System Badges ──
+    // ── Category Filter Sub-System Badges & Auto-Fit Mode Toggle ──
     const catPills = [
-      { id: 'all',           label: `SYS: ALL (${counts.all})`,               x: 18,  w: 80 },
-      { id: 'experience',    label: `EXP (${counts.experience || 0})`,        x: 104, w: 58 },
-      { id: 'project',       label: `PROJECT (${counts.project || 0})`,       x: 168, w: 84 },
-      { id: 'certification', label: `CERTS (${counts.certification || 0})`,   x: 258, w: 76 },
-      { id: 'education',     label: `EDUC (${counts.education || 0})`,        x: 340, w: 74 },
-      { id: 'skill',         label: `SKILLS (${counts.skill || 0})`,          x: 420, w: 78 }
+      { id: 'all',           label: `ALL (${counts.all})`,              x: 18,  w: 64 },
+      { id: 'experience',    label: `EXP (${counts.experience || 0})`,  x: 88,  w: 52 },
+      { id: 'project',       label: `PROJ (${counts.project || 0})`,    x: 146, w: 66 },
+      { id: 'certification', label: `CERTS (${counts.certification || 0})`, x: 218, w: 64 },
+      { id: 'education',     label: `EDUC (${counts.education || 0})`,  x: 288, w: 64 },
+      { id: 'skill',         label: `SKILLS (${counts.skill || 0})`,    x: 358, w: 70 }
     ];
 
     catPills.forEach(c => {
       const active = RESUME.category === c.id;
       g.fillStyle = active ? '#184f66' : '#04151f';
-      g.fillRect(c.x, 96, c.w, 18);
+      g.fillRect(c.x, 94, c.w, 18);
       g.strokeStyle = active ? '#39d6ff' : '#193f4e';
       g.lineWidth = 1;
-      g.strokeRect(c.x, 96, c.w, 18);
+      g.strokeRect(c.x, 94, c.w, 18);
       g.fillStyle = active ? '#a5f3ff' : '#528296';
-      mono(g, 8, active ? 'bold' : '');
-      g.fillText(c.label, c.x + 6, 109);
+      mono(g, 7.5, active ? 'bold' : '');
+      g.fillText(c.label, c.x + 5, 106);
     });
+
+    // Auto-Fit status badge / manual lock toggle
+    const autoPillX = 440, autoPillY = 94, autoPillW = 182, autoPillH = 18;
+    const isAuto = !RESUME.templateManuallyLocked;
+    g.fillStyle = isAuto ? 'rgba(53, 255, 122, 0.12)' : 'rgba(255, 154, 60, 0.12)';
+    g.fillRect(autoPillX, autoPillY, autoPillW, autoPillH);
+    g.strokeStyle = isAuto ? '#35ff7a' : '#ff9a3c';
+    g.lineWidth = 1;
+    g.strokeRect(autoPillX, autoPillY, autoPillW, autoPillH);
+    g.fillStyle = isAuto ? '#86efac' : '#fdba74';
+    mono(g, 7.8, 'bold');
+    const autoLabel = isAuto ? '⚡ AUTO-FIT: 1-PAGE [ON]' : `🔒 LOCKED: ${RESUME.template.slice(0, 8)} [RESET]`;
+    g.fillText(autoLabel, autoPillX + 10, autoPillY + 12);
 
     // ── Items Table Header Legend ──
     g.fillStyle = '#225367';
     mono(g, 7.5, '');
-    g.fillText('STATE   SUBSYS   VERIFIED CLAIM / INSTITUTION / RESEARCH PROJECT / ARCHITECTURE       PROOF GATE ↗', 18, 126);
+    g.fillText('STATE   SUBSYS   VERIFIED CLAIM / INSTITUTION / RESEARCH PROJECT / ARCHITECTURE       PROOF GATE ↗', 18, 122);
     g.fillStyle = '#0f2f3d';
-    g.fillRect(18, 129, w - 36, 1);
+    g.fillRect(18, 125, w - 36, 1);
 
     // ── Items List (6 visible per view) ──
     const visibleCount = 6;
     const itemsToShow = RESUME.filtered.slice(RESUME.scroll, RESUME.scroll + visibleCount);
 
     itemsToShow.forEach((it, idx) => {
-      const rowY = 134 + idx * 35;
+      const rowY = 129 + idx * 35;
       const isSelected = RESUME.selected.has(it.id);
 
       // Tactical data node card background
@@ -2310,7 +2877,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
 
     // ── Sci-Fi Scrollbar ──
     if (RESUME.filtered.length > visibleCount) {
-      const trackX = w - 14, trackY = 134, trackH = 210;
+      const trackX = w - 14, trackY = 129, trackH = 210;
       g.fillStyle = '#04121a';
       g.fillRect(trackX, trackY, 4, trackH);
       const maxScroll = RESUME.filtered.length - visibleCount;
@@ -2322,15 +2889,17 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
 
     // ── Bottom Action Console & Laser Dispatch ──
     g.fillStyle = '#103848';
-    g.fillRect(18, 350, w - 36, 1);
+    g.fillRect(18, 348, w - 36, 1);
 
     // Left Telemetry Readout
     g.fillStyle = '#6598aa';
     mono(g, 8.5, '');
-    g.fillText(`⚡ ${RESUME.selected.size} NODES ARMED // 0 UNVERIFIED CLAIMS // STRICT CRYPTO-AUDIT`, 20, 375);
+    const activeTplObj = RESUME_TEMPLATES.find(t => t.id === RESUME.template) || RESUME_TEMPLATES[0];
+    const estimatedPages = estimateResumePageCount(RESUME.selected, RESUME.template);
+    g.fillText(`⚡ ${RESUME.selected.size} NODES // TPL: ${activeTplObj.name} // EST: ${estimatedPages} ${estimatedPages === 1 ? 'PAGE' : 'PAGES'}`, 20, 372);
 
     // Right Action Button
-    const btnActX = w - 280, btnActY = 356, btnActW = 262, btnActH = 34;
+    const btnActX = w - 280, btnActY = 354, btnActW = 262, btnActH = 34;
     g.fillStyle = RESUME.busy ? '#ff9a3c' : '#0c3444';
     g.fillRect(btnActX, btnActY, btnActW, btnActH);
     g.strokeStyle = RESUME.busy ? '#ffb15c' : '#39d6ff';
@@ -2404,6 +2973,89 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       mono(g, 9, '');
       g.fillText('EJECTING SPECIMEN TO CONSOLE APRON TRAY...', w / 2 - 110, 245);
     }
+
+    // ── Interactive Capacity Overflow Modal Dialog (Requirement 2) ──
+    if (RESUME.overflowModal && RESUME.overflowModal.active) {
+      // Backdrop
+      g.fillStyle = 'rgba(1, 8, 16, 0.90)';
+      g.fillRect(0, 0, w, h);
+
+      // Card frame
+      const mX = 50, mY = 75, mW = 540, mH = 250;
+      g.fillStyle = '#041522';
+      g.fillRect(mX, mY, mW, mH);
+      g.strokeStyle = '#ff9a3c';
+      g.lineWidth = 1.5;
+      g.strokeRect(mX, mY, mW, mH);
+
+      // Corner hazard brackets
+      g.fillStyle = '#ff9a3c';
+      g.fillRect(mX, mY, 10, 2);
+      g.fillRect(mX, mY, 2, 10);
+      g.fillRect(mX + mW - 10, mY, 10, 2);
+      g.fillRect(mX + mW - 2, mY, 2, 10);
+      g.fillRect(mX, mY + mH - 2, 10, 2);
+      g.fillRect(mX, mY + mH - 10, 2, 10);
+      g.fillRect(mX + mW - 10, mY + mH - 2, 10, 2);
+      g.fillRect(mX + mW - 2, mY + mH - 10, 2, 10);
+
+      // Header Banner
+      g.fillStyle = '#ff9a3c';
+      mono(g, 10.5, 'bold');
+      g.fillText('⚠ CAPACITY OVERFLOW WARNING // SIDES EXCEED 1-PAGE LIMIT', mX + 22, mY + 26);
+
+      // Primary question requested by user:
+      g.fillStyle = '#ffffff';
+      mono(g, 9.5, 'bold');
+      g.fillText('The number of sides with this selection exceeds 1 for the selected template.', mX + 22, mY + 48);
+
+      const curTpl = RESUME_TEMPLATES.find(t => t.id === RESUME.overflowModal.currentTemplate) || { name: RESUME.overflowModal.currentTemplate };
+      const sugTpl = RESUME_TEMPLATES.find(t => t.id === RESUME.overflowModal.suggestedTemplate) || { name: RESUME.overflowModal.suggestedTemplate };
+
+      g.fillStyle = '#7dbbd1';
+      mono(g, 8.2, '');
+      g.fillText(`Selected template [${curTpl.name}] spans ~${RESUME.overflowModal.pageCount} sides.`, mX + 22, mY + 68);
+      g.fillText(`Suggested alternative [${sugTpl.name}] fits all chosen items into exactly 1 page.`, mX + 22, mY + 82);
+
+      // Choice 1: Proceed with selected template
+      const b1Y = mY + 98, bH = 32;
+      g.fillStyle = '#0a2538';
+      g.fillRect(mX + 20, b1Y, mW - 40, bH);
+      g.strokeStyle = '#39d6ff';
+      g.lineWidth = 1;
+      g.strokeRect(mX + 20, b1Y, mW - 40, bH);
+      g.fillStyle = '#ffffff';
+      mono(g, 8.5, 'bold');
+      g.fillText(`[1] Proceed with selected template? (${curTpl.name})`, mX + 32, b1Y + 20);
+
+      // Choice 2: Try suggested template
+      const b2Y = b1Y + 40;
+      g.fillStyle = '#0f3a2b';
+      g.fillRect(mX + 20, b2Y, mW - 40, bH);
+      g.strokeStyle = '#34d399';
+      g.lineWidth = 1.5;
+      g.strokeRect(mX + 20, b2Y, mW - 40, bH);
+      g.fillStyle = '#a7f3d0';
+      mono(g, 8.5, 'bold');
+      g.fillText(`[2] Try suggested template? (${sugTpl.name} - Fits in 1 page)`, mX + 32, b2Y + 20);
+
+      // Choice 3: Go back to editing
+      const b3Y = b2Y + 40;
+      g.fillStyle = '#2d1810';
+      g.fillRect(mX + 20, b3Y, mW - 40, bH);
+      g.strokeStyle = '#ff9a3c';
+      g.lineWidth = 1;
+      g.strokeRect(mX + 20, b3Y, mW - 40, bH);
+      g.fillStyle = '#fed7aa';
+      mono(g, 8.5, 'bold');
+      g.fillText('[3] Go back to editing? (Revert selection)', mX + 32, b3Y + 20);
+
+      // Bottom note
+      g.fillStyle = '#507e91';
+      mono(g, 7.5, '');
+      g.fillText('Click an option or press [1], [2], [3], or [ESC] on keyboard', mX + 22, mY + mH - 12);
+    }
+    g.restore();
   }
 
   function downloadBlob(bytes, filename) {
@@ -2466,12 +3118,15 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     const bold = await doc.embedFont(StandardFonts.HelveticaBold);
     const oblique = await doc.embedFont(StandardFonts.HelveticaOblique);
 
+    const estimatedPages = estimateResumePageCount(selectedItems, template?.id);
+    const isOnePage = estimatedPages === 1;
+
     let page = doc.addPage([595.28, 841.89]); // A4 standard
     const { width, height } = page.getSize();
-    const left = 38;
-    const right = width - 38;
+    const left = isOnePage ? 34 : 38;
+    const right = width - (isOnePage ? 34 : 38);
     const contentW = right - left;
-    let y = height - 34;
+    let y = height - (isOnePage ? 28 : 34);
 
     const navy = rgb(0.12, 0.23, 0.54);
     const dark = rgb(0.06, 0.09, 0.16);
@@ -2501,24 +3156,25 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     }
 
     function checkPage(needed) {
-      if (y - needed < 32) {
+      const bottomLimit = isOnePage ? 22 : 32;
+      if (y - needed < bottomLimit) {
         page = doc.addPage([595.28, 841.89]);
-        y = height - 34;
+        y = height - (isOnePage ? 28 : 34);
       }
     }
 
     function drawSection(title) {
-      checkPage(30);
-      y -= 8;
-      safeDraw(title, { x: left, y, size: 10.5, font: bold, color: navy });
-      y -= 3;
+      checkPage(isOnePage ? 24 : 30);
+      y -= (isOnePage ? 6 : 8);
+      safeDraw(title, { x: left, y, size: isOnePage ? 10.0 : 10.5, font: bold, color: navy });
+      y -= (isOnePage ? 2.5 : 3);
       page.drawLine({
         start: { x: left, y },
         end: { x: right, y },
         thickness: 0.6,
         color: lineGray,
       });
-      y -= 10;
+      y -= (isOnePage ? 8 : 10);
     }
 
     // 1. Header
@@ -2533,6 +3189,10 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       'fullstack-ai': 'Full-Stack AI Engineer  |  Distributed Systems  |  Production ML',
       'robotics-mech': 'Robotics Engineer  |  Autonomous Systems  |  CAD / Mechanical Design',
       'exec-clean': 'Dual-Degree Technologist  |  AI Systems  |  Creative Media',
+      'moderncv': 'Dual-Degree Engineer  |  Robotics & AI  |  Sam Bagli Photography Fellow',
+      'deedy': 'B.Sc. Data Science (IITG)  |  B.Tech Robotics (DJSCE)  |  ML Engineer',
+      'sb2nov': 'Dual Degree: IIT Guwahati (DSAI) & DJSCE (Robotics)  |  Quant & AI Systems',
+      'altacv': 'Robotics & ML Engineer  |  Dual-Degree Technologist  |  Mumbai, India',
     };
     const subStr = cleanWinAnsi(subMap[tplId] || subMap['quant-research']);
     const subW = bold.widthOfTextAtSize(subStr, 9.5);
@@ -2565,6 +3225,10 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       'fullstack-ai': 'Dual-degree engineer (IIT Guwahati 9.25 GPA | DJSCE 8.23 GPA) engineering enterprise-grade full-stack AI platforms and microservices. Architected CryptoGraph Analytics with real-time WebSocket feeds across 107 crypto assets and Next.js 14 dashboards, and an Intelligent Document Processing engine with 1:1 OCI Cloud Adapter pattern under 150 MB RAM cold start. Expert in async APIs (FastAPI), Redis pub/sub, Dockerized deployments, and production MLOps.',
       'robotics-mech': 'Dual-degree engineer (IIT Guwahati 9.25 GPA | DJSCE 8.23 GPA) bridging advanced robotics, machine learning, and precision mechanical design. Hands-on mastery of parametric CAD/CAM (Autodesk Inventor, Fusion 360), CNC manufacturing, FEA analysis, and autonomous robotics perception (ST-GCN graph neural networks, ROS). Strong academic grounding with Grade O across AI/ML, CAD/CAM, and FEA Laboratories.',
       'exec-clean': 'Dual-degree technologist (IIT Guwahati 9.25 GPA | DJSCE 8.23 GPA) combining deep technical AI rigor with visual media leadership and creative communication. Qualified national UCEED 2023 design exam with dedicated illustration portfolio; official photographer for Rotaract Club of KC College AGM 2022 and R.E.D. 2022 Mumbai youth fest. Proven leadership across cross-functional engineering, production AI, and visual arts.',
+      'moderncv': 'Dual-degree engineer (IIT Guwahati 9.25 GPA | DJSCE 8.23 GPA) shipping production AI and quantitative systems end-to-end. Architected Argus (institutional quant monorepo with strict DSR/PBO anti-overfitting discipline), CryptoGraph Analytics (live real-time platform forecasting 107 crypto assets), and clinical ML models validated across 50,920 ICU records. Combines mathematical rigor with enterprise engineering.',
+      'deedy': 'Dual-degree engineer (IIT Guwahati 9.25 GPA | DJSCE 8.23 GPA) shipping production AI and quantitative systems end-to-end. Architected Argus (quant monorepo with DSR/PBO discipline), CryptoGraph Analytics (live real-time platform forecasting 107 crypto assets), and clinical ML models across 50,920 ICU records.',
+      'sb2nov': 'Dual-degree engineer (IIT Guwahati 9.25 GPA | DJSCE 8.23 GPA). Architected Argus (institutional quant monorepo), CryptoGraph Analytics (107 crypto assets real-time forecasting), and clinical ML models across 50,920 ICU records. Expert in PyTorch, ROS2, Next.js 14, C++, and Docker.',
+      'altacv': 'Dual-degree technologist (IIT Guwahati 9.25 GPA | DJSCE 8.23 GPA) bridging advanced robotics, machine learning, and precision mechanical design. Hands-on mastery of parametric CAD/CAM, CNC manufacturing, FEA analysis, and autonomous robotics perception.',
     };
     const sumLines = wrapPdfText(summaryMap[tplId] || summaryMap['quant-research'], font, 8.5, contentW);
     for (const l of sumLines) {
@@ -2719,6 +3383,22 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       }
     }
 
+    const totalPages = doc.getPageCount();
+    if (totalPages > 1) {
+      const allPages = doc.getPages();
+      allPages.forEach((p, idx) => {
+        const pageText = cleanWinAnsi(`Page ${idx + 1} of ${totalPages}`);
+        const pW = font.widthOfTextAtSize(pageText, 8);
+        p.drawText(pageText, {
+          x: width - (isOnePage ? 34 : 38) - pW,
+          y: isOnePage ? 14 : 18,
+          size: 8,
+          font,
+          color: textGray,
+        });
+      });
+    }
+
     return doc.save();
   }
 
@@ -2737,22 +3417,33 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
 
   async function triggerGenerateAndPrint() {
     if (RESUME.busy) return;
+    const chosen = RESUME.items.filter(i => RESUME.selected.has(i.id));
+    const tpl = RESUME_TEMPLATES.find(t => t.id === RESUME.template) || RESUME_TEMPLATES[0];
+    const estPages = estimateResumePageCount(RESUME.selected, tpl.id);
+
+    // Heads-up confirmation before printing
+    const proceed = window.confirm(
+      `[VAULT-01 RESUME FABRICATOR: PRINT HEADS-UP]\n\n` +
+      `Payload estimated: ${estPages} page${estPages > 1 ? 's' : ''} (${chosen.length} verified items selected).\n` +
+      `Template format: ${tpl.name} [${tpl.tag}]\n` +
+      `Output: High-fidelity Vector PDF + 3D Tabletop Laser Extrusion.\n\n` +
+      `Proceed with laser printout?`
+    );
+    if (!proceed) return;
+
     RESUME.busy = true;
     drawResume(resumeCanvas);
     resumeTex.needsUpdate = true;
     sfx.relay();
 
     try {
-      const chosen = RESUME.items.filter(i => RESUME.selected.has(i.id));
-      const tpl = RESUME_TEMPLATES.find(t => t.id === RESUME.template) || RESUME_TEMPLATES[0];
-
-      // 1. Build and download client-side PDF with verified proof hyperlinks
+      // 1. Build and download client-side PDF with verified proof hyperlinks (supports multi-page)
       if (window.PDFLib) {
         const bytes = await buildResumePdf(chosen, tpl);
         downloadBlob(bytes, `Priyansh_Gadia_Resume_${tpl.id}.pdf`);
       }
 
-      // 2. Trigger physical 3D print slot animation
+      // 2. Trigger physical 3D print slot animation (resets cleanly for multiple printouts)
       triggerPrint(chosen, tpl.id);
       if (api2.resume.onBuild) await api2.resume.onBuild(Array.from(RESUME.selected));
     } catch (err) {
@@ -2770,7 +3461,9 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       if (res.ok) {
         const data = await res.json();
         if (data.items && data.items.length > 0) {
-          RESUME.items = data.items;
+          const fetchedIds = new Set(data.items.map(i => i.id));
+          const missingDefaults = DEFAULT_RESUME_ITEMS.filter(d => !fetchedIds.has(d.id));
+          RESUME.items = [...data.items, ...missingDefaults];
         }
       }
     } catch {
@@ -2837,11 +3530,15 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
 
     // 7. Tactical flat screen panel embedded flush into the tapered deck
     resumeCanvas = document.createElement('canvas');
-    resumeCanvas.width = 640;
-    resumeCanvas.height = 400;
+    resumeCanvas.width = 1280;
+    resumeCanvas.height = 800;
     drawResume(resumeCanvas);
     resumeTex = new THREE.CanvasTexture(resumeCanvas);
     resumeTex.colorSpace = THREE.SRGBColorSpace;
+    resumeTex.minFilter = THREE.LinearMipmapLinearFilter;
+    resumeTex.magFilter = THREE.LinearFilter;
+    resumeTex.anisotropy = 16;
+    resumeTex.generateMipmaps = true;
     const smR = new THREE.MeshBasicMaterial({ map: resumeTex });
 
     const scrMesh = new THREE.Mesh(new THREE.PlaneGeometry(.58, .35), smR);
@@ -2859,6 +3556,15 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     const leftBezel = box(.014, .010, .36, gunD); leftBezel.rotation.x = slope; add(leftBezel, -.297, .034, -.04, g);
     const rightBezel = box(.014, .010, .36, gunD); rightBezel.rotation.x = slope; add(rightBezel, .297, .034, -.04, g);
     const midBezel = box(.60, .010, .014, gunD); midBezel.rotation.x = slope; add(midBezel, 0, .021, .14, g);
+
+    // Tactile chassis hardware: laser calibration marks and dual knurled dials
+    for (let i = 0; i < 9; i++) {
+      const tickZ = -.20 + i * .04;
+      const tL = box(.004, .001, .0015, E(0x39d6ff)); tL.rotation.x = slope; add(tL, -.290, .040, tickZ, g);
+      const tR = box(.004, .001, .0015, E(0x39d6ff)); tR.rotation.x = slope; add(tR, .290, .040, tickZ, g);
+    }
+    const dialL = cyl(.010, .010, .008, tit, 12); dialL.rotation.x = slope; add(dialL, -.322, .032, .10, g);
+    const dialR = cyl(.010, .010, .008, tit, 12); dialR.rotation.x = slope; add(dialR, .322, .032, .10, g);
 
     // Jewel status LEDs at top rear of console
     const stCyan = E(0x39d6ff), stGrn = E(0x35ff7a), stAmb = E(0xff9a3c), stPur = E(0xa78bfa);
@@ -2889,11 +3595,15 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
 
     // 10. Ejected paper sheet (procedural canvas texture, zero raster assets)
     paperCanvas = document.createElement('canvas');
-    paperCanvas.width = 400;
-    paperCanvas.height = 566;
+    paperCanvas.width = 800;
+    paperCanvas.height = 1132;
     drawPaperPreview(paperCanvas, RESUME.items.filter(i => RESUME.selected.has(i.id)), RESUME.template);
     paperTex = new THREE.CanvasTexture(paperCanvas);
     paperTex.colorSpace = THREE.SRGBColorSpace;
+    paperTex.minFilter = THREE.LinearMipmapLinearFilter;
+    paperTex.magFilter = THREE.LinearFilter;
+    paperTex.anisotropy = 16;
+    paperTex.generateMipmaps = true;
     const paperMat = new THREE.MeshBasicMaterial({
       map: paperTex,
       side: THREE.DoubleSide
@@ -2921,20 +3631,25 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   const CAL = {
     configured: null,        // null = unknown, true/false once fetched
     busy: [],                // [{start:Date, end:Date}]
-    events: [],              // [{id, summary, start:Date, end:Date, status, location, description}]
+    events: [],              // [{id, summary, start:Date, end:Date, status, location, description, calendar}]
     lastBooked: null,        // {name, email, location, start:Date, end:Date, summary}
     syncedAt: 0,
     syncing: false,
     syncFailed: false,
     monthCursor: (() => { const d = new Date(); d.setDate(1); d.setHours(0,0,0,0); return d; })(),
-    view: 'grid',            // grid | slots | form | sending | sent | error
+    view: 'grid',            // grid | slots | form | sending | sent | error | event_detail
     selectedDate: null,
     selectedSlot: null,
+    selectedEvent: null,
+    rangeStart: null,
+    rangeEnd: null,
     form: { name:'', email:'', location:'', description:'', field:null },
     errorMsg: '',
     _formBoxes: null,
     _formSubmitBox: null,
+    _rangeConfirmBox: null,
     _slotBoxes: [],
+    _eventBoxes: [],
   };
   let calCanvas, calTex;
 
@@ -2997,7 +3712,8 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
             end: new Date(ev.end),
             status: ev.status || 'confirmed',
             location: ev.location || '',
-            description: ev.description || ''
+            description: ev.description || '',
+            calendar: ev.calendar || 'My Calendar'
           }));
 
           // Preserve any freshly booked reservation if Google Calendar hasn't finished indexing it yet
@@ -3071,6 +3787,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     }
     if (CAL.view === 'grid') return drawCalGrid(g, w, h);
     if (CAL.view === 'slots') return drawCalSlots(g, w, h);
+    if (CAL.view === 'event_detail') return drawCalEventDetail(g, w, h);
     if (CAL.view === 'form') return drawCalForm(g, w, h);
     if (CAL.view === 'sending') return drawCalSending(g, w, h);
     if (CAL.view === 'sent') return drawCalSent(g, w, h);
@@ -3100,7 +3817,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       const dayEvents = calEventsForDay(dayDate);
       const hasEvents = dayEvents.length > 0;
 
-      let fill = '#06101c', border = 'rgba(30, 58, 138, 0.4)', textCol = '#2a4855';
+      let fill = '#06101c', border = 'rgba(30, 58, 138, 0.4)', textCol = past ? '#64748b' : '#7dd3fc';
       if (!past && inWindow) {
         const free = calFreeMinutesOnDay(dayDate);
         if (free >= CAL_SLOT_MIN) {
@@ -3113,6 +3830,11 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
           textCol = '#fca5a5';
         }
       }
+      if (hasEvents && past) {
+        fill = 'rgba(42, 28, 10, 0.9)';
+        border = 'rgba(245, 158, 11, 0.7)';
+        textCol = '#fef3c7';
+      }
       g.fillStyle = fill; g.fillRect(cx+2, cy+2, cellW-4, rowH-4);
       g.strokeStyle = border; g.lineWidth = 1; g.strokeRect(cx+2, cy+2, cellW-4, rowH-4);
 
@@ -3123,7 +3845,8 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
 
       // Scheduled plans indicator pip (amber gold)
       if (hasEvents) {
-        g.fillStyle = '#f59e0b'; g.beginPath(); g.arc(cx + cellW - 6, cy + 6, 2.5, 0, TAU); g.fill();
+        g.fillStyle = '#f59e0b'; g.beginPath(); g.arc(cx + cellW - 7, cy + 8, 3, 0, TAU); g.fill();
+        g.strokeStyle = '#fef3c7'; g.lineWidth = 0.8; g.stroke();
       }
 
       mono(g, 9, 'bold');
@@ -3169,10 +3892,12 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       g.fillText('NO PRE-EXISTING PLANS SCHEDULED FOR THIS DATE', w / 2, curY + 16);
       curY += 32;
     } else {
+      CAL._eventBoxes = [];
       const showEvs = dayEvents.slice(0, 2);
       showEvs.forEach(ev => {
         g.fillStyle = 'rgba(28, 20, 8, 0.9)'; g.fillRect(14, curY, w - 28, 24);
         g.strokeStyle = '#f59e0b'; g.lineWidth = 1; g.strokeRect(14, curY, w - 28, 24);
+        CAL._eventBoxes.push({ x: 14, y: curY, w: w - 28, h: 24, event: ev });
 
         const tStart = ev.start.toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' });
         const tEnd = ev.end.toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' });
@@ -3181,11 +3906,11 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
 
         mono(g, 8, ''); g.fillStyle = '#f8fafc';
         let title = ev.summary || 'Reserved Event';
-        if (title.length > 22) title = title.slice(0, 20) + '…';
-        g.fillText(title, 130, curY + 15);
+        if (title.length > 18) title = title.slice(0, 16) + '…';
+        g.fillText(title, 116, curY + 15);
 
-        mono(g, 7, 'bold'); g.fillStyle = '#34d399'; g.textAlign = 'right';
-        g.fillText('RESERVED', w - 20, curY + 15);
+        mono(g, 7, 'bold'); g.fillStyle = '#38bdf8'; g.textAlign = 'right';
+        g.fillText('DETAILS ›', w - 20, curY + 15);
 
         curY += 27;
       });
@@ -3220,30 +3945,179 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       const maxRows = 4;
       const maxDisplay = cols * maxRows;
       const displaySlots = slots.slice(0, maxDisplay);
+      const toTime = v => {
+        if (!v) return null;
+        if (v instanceof Date) return v.getTime();
+        if (typeof v === 'number') return v;
+        if (typeof v === 'string') return new Date(v).getTime();
+        return null;
+      };
+
+      const rStartT = CAL.rangeStart ? toTime(CAL.rangeStart.start) : null;
+      const rEndT = (CAL.rangeEnd || CAL.rangeStart) ? toTime((CAL.rangeEnd || CAL.rangeStart).start) : null;
+      const rStartEndT = CAL.rangeStart ? toTime(CAL.rangeStart.end) : null;
+      const rEndEndT = (CAL.rangeEnd || CAL.rangeStart) ? toTime((CAL.rangeEnd || CAL.rangeStart).end) : null;
+
+      const minSelT = rStartT !== null ? Math.min(rStartT, rEndT) : null;
+      const maxSelT = rStartEndT !== null ? Math.max(rStartEndT, rEndEndT) : null;
+
       displaySlots.forEach((s, i) => {
         const col = i % cols, row = Math.floor(i / cols);
         const cx = 14 + col * cellW, cy = curY + row * (cellH + 4);
         const bx = cx + 2, by = cy, bw = cellW - 4, bh = cellH;
 
-        g.fillStyle = 'rgba(14, 42, 66, 0.9)'; g.fillRect(bx, by, bw, bh);
-        g.strokeStyle = '#0284c7'; g.lineWidth = 1; g.strokeRect(bx, by, bw, bh);
-        mono(g, 9, 'bold'); g.fillStyle = '#7dd3fc'; g.textAlign = 'center';
-        g.fillText(s.start.toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' }), bx + bw / 2, by + bh / 2 + 4);
+        const sStartT = toTime(s.start);
+        const sEndT = toTime(s.end);
+        const inRange = minSelT !== null && sStartT !== null && sEndT !== null && sStartT >= minSelT && sEndT <= maxSelT;
+        const isStart = minSelT !== null && sStartT === minSelT;
+
+        if (inRange) {
+          g.fillStyle = isStart ? 'rgba(56, 189, 248, 0.45)' : 'rgba(52, 211, 153, 0.35)';
+          g.fillRect(bx, by, bw, bh);
+          g.strokeStyle = isStart ? '#38bdf8' : '#34d399';
+          g.lineWidth = 1.5;
+          g.strokeRect(bx, by, bw, bh);
+          mono(g, 9, 'bold');
+          g.fillStyle = isStart ? '#ffffff' : '#a7f3d0';
+        } else {
+          g.fillStyle = 'rgba(14, 42, 66, 0.9)'; g.fillRect(bx, by, bw, bh);
+          g.strokeStyle = '#0284c7'; g.lineWidth = 1; g.strokeRect(bx, by, bw, bh);
+          mono(g, 9, 'bold'); g.fillStyle = '#7dd3fc';
+        }
+        g.textAlign = 'center';
+        const sStartDate = s.start instanceof Date ? s.start : new Date(s.start);
+        g.fillText(sStartDate.toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' }), bx + bw / 2, by + bh / 2 + 4);
 
         CAL._slotBoxes.push({ x: bx, y: by, w: bw, h: bh, slot: s });
       });
-      if (slots.length > maxDisplay) {
-        mono(g, 7, ''); g.fillStyle = '#64748b'; g.textAlign = 'center';
-        g.fillText(`+${slots.length - maxDisplay} MORE SLOTS AVAILABLE`, w / 2, h - 8);
+
+      if (CAL.rangeStart && minSelT !== null && maxSelT !== null) {
+        const minS = new Date(minSelT);
+        const maxE = new Date(maxSelT);
+        const dur = Math.round((maxSelT - minSelT) / 60000);
+        const durStr = dur >= 60 ? `${Math.floor(dur/60)}h ${dur%60 ? (dur%60)+'m' : ''}` : `${dur}m`;
+        const tStart = minS.toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' });
+        const tEnd = maxE.toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' });
+        const confW = 230, confH = 22, confX = w / 2 - confW / 2, confY = h - 28;
+        g.fillStyle = 'rgba(16, 185, 129, 0.3)'; g.fillRect(confX, confY, confW, confH);
+        g.strokeStyle = '#34d399'; g.lineWidth = 1.5; g.strokeRect(confX, confY, confW, confH);
+        mono(g, 8, 'bold'); g.fillStyle = '#6ee7b7'; g.textAlign = 'center';
+        const isSingle = (minSelT === maxSelT - CAL_SLOT_MIN * 60000);
+        const btnText = isSingle ? `CONFIRM [${tStart}–${tEnd} (${durStr})] ›` : `CONFIRM RANGE [${tStart}–${tEnd} (${durStr})] ›`;
+        g.fillText(btnText, w / 2, confY + 15);
+        CAL._rangeConfirmBox = { x: confX, y: confY, w: confW, h: confH };
+      } else {
+        CAL._rangeConfirmBox = null;
+        if (slots.length > maxDisplay) {
+          mono(g, 7, ''); g.fillStyle = '#64748b'; g.textAlign = 'center';
+          g.fillText(`+${slots.length - maxDisplay} MORE SLOTS AVAILABLE`, w / 2, h - 8);
+        }
       }
     }
   }
 
+  function drawCalEventDetail(g, w, h) {
+    const ev = CAL.selectedEvent;
+    if (!ev) { CAL.view = 'slots'; return; }
+
+    // Top Navigation bar: [‹ BACK TO SCHEDULE] button
+    mono(g, 9, 'bold'); g.fillStyle = '#38bdf8'; g.textAlign = 'left';
+    g.fillText('‹ BACK TO SCHEDULE', 14, 46);
+    mono(g, 10, 'bold'); g.fillStyle = '#f0f9ff'; g.textAlign = 'center';
+    g.fillText('PLAN / RESERVATION DETAILS', w / 2, 46);
+
+    g.strokeStyle = 'rgba(56, 189, 248, 0.25)'; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(12, 54); g.lineTo(w - 12, 54); g.stroke();
+
+    let curY = 66;
+
+    // Card background
+    g.fillStyle = 'rgba(12, 28, 48, 0.88)';
+    g.fillRect(14, curY, w - 28, 204);
+    g.strokeStyle = '#38bdf8'; g.lineWidth = 1.2;
+    g.strokeRect(14, curY, w - 28, 204);
+
+    // Tech corners
+    const C = 8;
+    g.strokeStyle = '#5fe8ff'; g.lineWidth = 2;
+    g.beginPath(); g.moveTo(14, curY + C); g.lineTo(14, curY); g.lineTo(14 + C, curY); g.stroke();
+    g.beginPath(); g.moveTo(w - 14 - C, curY); g.lineTo(w - 14, curY); g.lineTo(w - 14, curY + C); g.stroke();
+    g.beginPath(); g.moveTo(14, curY + 204 - C); g.lineTo(14, curY + 204); g.lineTo(14 + C, curY + 204); g.stroke();
+    g.beginPath(); g.moveTo(w - 14 - C, curY + 204); g.lineTo(w - 14, curY + 204); g.lineTo(w - 14, curY + 204 - C); g.stroke();
+
+    curY += 20;
+
+    // Calendar Badge (e.g. [MY CALENDAR], [BIRTHDAYS], [HOLIDAYS], [FAMILY], [TASKS])
+    const calName = (ev.calendar || 'My Calendar').toUpperCase();
+    const isSpecial = calName.includes('HOLIDAY') || calName.includes('BIRTHDAY') || calName.includes('TASK');
+    const badgeCol = isSpecial ? '#f59e0b' : '#38bdf8';
+    mono(g, 8, 'bold');
+    const badgeW = g.measureText('[' + calName + ']').width + 12;
+    g.fillStyle = isSpecial ? 'rgba(245, 158, 11, 0.2)' : 'rgba(56, 189, 248, 0.2)';
+    g.fillRect(24, curY - 12, badgeW, 16);
+    g.strokeStyle = badgeCol; g.lineWidth = 1;
+    g.strokeRect(24, curY - 12, badgeW, 16);
+    g.fillStyle = badgeCol; g.textAlign = 'left';
+    g.fillText(calName, 30, curY);
+
+    // Status
+    mono(g, 8, 'bold'); g.fillStyle = '#34d399'; g.textAlign = 'right';
+    g.fillText('● CONFIRMED', w - 24, curY);
+
+    curY += 22;
+
+    // Full Event Title / Summary
+    mono(g, 10, 'bold'); g.fillStyle = '#ffffff'; g.textAlign = 'left';
+    calWrapText(g, ev.summary || 'Scheduled Reservation', 24, curY, w - 48, 14, 2);
+    curY += 32;
+
+    // Date & Time Range
+    const sDate = ev.start instanceof Date ? ev.start : new Date(ev.start);
+    const eDate = ev.end instanceof Date ? ev.end : new Date(ev.end);
+    const dateStr = sDate.toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
+    const tStart = sDate.toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' });
+    const tEnd = eDate.toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' });
+    const durMins = Math.round((eDate.getTime() - sDate.getTime()) / 60000);
+    const durStr = durMins >= 60 ? `${Math.floor(durMins/60)}h ${durMins%60 ? (durMins%60)+'m' : ''}` : `${durMins}m`;
+
+    mono(g, 8.5, ''); g.fillStyle = '#7dd3fc';
+    g.fillText(`DATE:  ${dateStr}`, 24, curY);
+    curY += 16;
+    g.fillText(`TIME:  ${tStart} – ${tEnd} (${durStr})`, 24, curY);
+    curY += 16;
+
+    // Location
+    const loc = ev.location || 'VAULT-01 // VIRTUAL HOLO-RELAY';
+    g.fillText(`LOC:   ${loc.slice(0, 40)}`, 24, curY);
+    curY += 18;
+
+    // Description / Notes
+    mono(g, 8, ''); g.fillStyle = '#94a3b8';
+    g.fillText('AGENDA / DETAILS:', 24, curY);
+    curY += 14;
+    const desc = ev.description || 'Confirmed calendar reservation with owner. Operational session synchronised.';
+    calWrapText(g, desc, 24, curY, w - 48, 12, 3);
+
+    // Return button at bottom
+    const btnW = 160, btnH = 24, btnX = w / 2 - btnW / 2, btnY = h - 34;
+    g.fillStyle = 'rgba(56, 189, 248, 0.2)'; g.fillRect(btnX, btnY, btnW, btnH);
+    g.strokeStyle = '#38bdf8'; g.lineWidth = 1.2; g.strokeRect(btnX, btnY, btnW, btnH);
+    mono(g, 8.5, 'bold'); g.fillStyle = '#e0f2fe'; g.textAlign = 'center';
+    g.fillText('‹ RETURN TO SCHEDULE', w / 2, btnY + 16);
+  }
+
   function drawCalForm(g, w, h) {
     const slot = CAL.selectedSlot;
-    mono(g, 9, 'bold'); g.fillStyle = '#38bdf8'; g.textAlign = 'left'; g.fillText('‹ BACK', 14, 46);
+    if (!slot) return;
+    const sStart = slot.start instanceof Date ? slot.start : new Date(slot.start);
+    const sEnd = slot.end instanceof Date ? slot.end : new Date(slot.end);
+    const durMin = Math.round((sEnd - sStart) / 60000);
+    const startStr = sStart.toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' });
+    const endStr = sEnd.toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' });
+    const dayStr = sStart.toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase();
+    mono(g, 9, 'bold'); g.fillStyle = '#38bdf8'; g.textAlign = 'left'; g.fillText('‹ SLOTS', 14, 46);
     mono(g, 10, 'bold'); g.fillStyle = '#8fe8ff'; g.textAlign = 'center';
-    g.fillText(slot.start.toLocaleString('en', { weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }).toUpperCase(), w/2, 46);
+    g.fillText(`${dayStr} · ${startStr}–${endStr} (${durMin}m)`, w / 2, 46);
 
     const x0 = 14, boxW = w - 28, rowH = { name:24, email:24, location:24, description:54 };
     let y = 60; const boxes = {};
@@ -4038,15 +4912,9 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     GLOBE.targetRotX = THREE.MathUtils.degToRad(channel.lat);
     sfx.blip(2600, 0.12, 0.05);
 
-    if (isLiveStreamEnabled()) {
-      GLOBE.holoPyramidTarget = 1.0;
-      const countryChannels = GLOBE.liveNews.filter(c => c.country === channel.country);
-      window.dispatchEvent(new CustomEvent('lab:ls3:news:open', { detail: { channel, channels: countryChannels } }));
-    } else {
-      GLOBE.holoPyramidTarget = 0.0;
-      GLOBE.albumNoticeUntil = performance.now() + 4500;
-      GLOBE.standbyNotice = `SITREP STANDBY // UPLINK INERT (${channel.country.toUpperCase()})`;
-    }
+    GLOBE.holoPyramidTarget = 1.0;
+    const countryChannels = GLOBE.liveNews.filter(c => c.country === channel.country);
+    window.dispatchEvent(new CustomEvent('lab:ls3:news:open', { detail: { channel, channels: countryChannels } }));
     syncLS3Taskbar();
   }
 
@@ -4409,6 +5277,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
 
   { const g = sectorGroup(6, 3.95); add(cyl(.26, .3, .07, tit, 24), 0, .035, 0, g); const puck = E(0x3fe0ff); const puckMesh = add(cyl(.18, .18, .006, puck, 24), 0, .074, 0, g); puckMesh.userData.interactive = true; puckMesh.userData.isPuck = true; leds.push({ m: puck, target: 1.8, t0: T.power[0] + 3.3 });   // LS3 · holo-globe
     const globe = new THREE.Group(); globe.position.y = .8; g.add(globe); globeGroup = globe; globe.userData.isGlobe = true;
+    globe.visible = false;
 
     // ── 1. Smooth Obsidian Base Core (64x48 smooth silhouette, depthWrite: true) ──
     const coreMat = new THREE.MeshStandardMaterial({ color: 0x030814, roughness: 0.85, metalness: 0.15, transparent: false, depthWrite: true });
@@ -4661,6 +5530,186 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     });
   }
 
+  const LS2_STORAGE_KEY = 'vault_ls2_notes_session_v1';
+
+  function saveLS2Session() {
+    try {
+      if (typeof localStorage === 'undefined') return;
+      const data = {
+        page: LS2.page,
+        notes: LS2.notes.map(n => ({
+          id: n.id,
+          serverId: n.serverId,
+          author: n.author,
+          message: n.message,
+          inkStrokes: n.inkStrokes,
+          paperTheme: n.paperTheme,
+          inkColor: n.inkColor,
+          posX: n.posX,
+          posY: n.posY,
+          isCustom: n.isCustom
+        }))
+      };
+      localStorage.setItem(LS2_STORAGE_KEY, JSON.stringify(data));
+    } catch (e) {
+      console.warn('[LS2] LocalStorage save failed:', e);
+    }
+  }
+
+  function loadLS2Session() {
+    try {
+      if (typeof localStorage === 'undefined') return false;
+      const raw = localStorage.getItem(LS2_STORAGE_KEY);
+      if (!raw) return false;
+      const data = JSON.parse(raw);
+      if (!data || !Array.isArray(data.notes)) return false;
+      if (typeof data.page === 'number') LS2.page = data.page;
+      for (let i = 0; i < 16; i++) {
+        if (data.notes[i]) {
+          const s = data.notes[i];
+          const n = LS2.notes[i];
+          n.serverId = s.serverId || null;
+          n.author = s.author || '';
+          n.message = s.message || '';
+          n.inkStrokes = Array.isArray(s.inkStrokes) ? s.inkStrokes : [];
+          n.paperTheme = s.paperTheme || n.paperTheme;
+          n.inkColor = s.inkColor || 'cyan';
+          if (s.posX != null) n.posX = s.posX;
+          if (s.posY != null) n.posY = s.posY;
+          n.isCustom = !!s.isCustom;
+        }
+      }
+      return true;
+    } catch (e) {
+      console.warn('[LS2] LocalStorage load failed:', e);
+      return false;
+    }
+  }
+
+  function duplicateLS2Note(idx) {
+    if (idx === null || !LS2.notes[idx]) return -1;
+    const src = LS2.notes[idx];
+    
+    // Find next available slot on the board
+    let destIdx = -1;
+    for (let i = 0; i < 16; i++) {
+      if (i !== idx && !LS2.notes[i].isCustom && !LS2.notes[i].message && (!LS2.notes[i].inkStrokes || !LS2.notes[i].inkStrokes.length)) {
+        destIdx = i;
+        break;
+      }
+    }
+    if (destIdx === -1) {
+      destIdx = (idx + 1) % 16;
+    }
+
+    const dest = LS2.notes[destIdx];
+    dest.author = src.author ? (src.author + ' (Copy)') : 'COPY';
+    dest.message = src.message;
+    dest.inkStrokes = src.inkStrokes ? JSON.parse(JSON.stringify(src.inkStrokes)) : [];
+    dest.paperTheme = src.paperTheme;
+    dest.inkColor = src.inkColor;
+    dest.isCustom = true;
+    dest.serverId = null;
+
+    // Position offset prominently right next to source note
+    const offsetDx = 0.085 + (Math.random() - 0.5) * 0.02;
+    const offsetDy = -0.065 + (Math.random() - 0.5) * 0.02;
+    const newX = clamp((src.posX || 0) + offsetDx, -0.82, 0.82);
+    const newY = clamp((src.posY || 0.6) + offsetDy, 0.16, 1.05);
+    dest.posX = newX;
+    dest.posY = newY;
+
+    if (ls2Meshes[destIdx]) {
+      ls2Meshes[destIdx].position.x = newX;
+      ls2Meshes[destIdx].position.y = newY;
+      ls2Meshes[destIdx].position.z = Math.max(ls2Meshes[destIdx].position.z, (ls2Meshes[idx]?.position.z || 0.035) + 0.004);
+    }
+
+    drawLS2Note(destIdx);
+    if (ls2Textures[destIdx]) ls2Textures[destIdx].needsUpdate = true;
+
+    saveLS2Session();
+    saveLS2Note(destIdx, true);
+    sfx.blip(1400, 0.08, 0.04);
+
+    return destIdx;
+  }
+
+  const MAX_USER_NOTES = 5;
+  function getVisitorNoteCount() {
+    let count = 0;
+    try {
+      const stored = typeof localStorage !== 'undefined' ? localStorage.getItem('vault_user_note_ids') : null;
+      if (stored) {
+        const ids = JSON.parse(stored);
+        if (Array.isArray(ids)) count = ids.length;
+      }
+    } catch {}
+    return count;
+  }
+  function recordVisitorNote(id) {
+    try {
+      if (typeof localStorage === 'undefined') return;
+      const stored = localStorage.getItem('vault_user_note_ids') || '[]';
+      const ids = JSON.parse(stored);
+      if (!ids.includes(id)) {
+        ids.push(id);
+        localStorage.setItem('vault_user_note_ids', JSON.stringify(ids));
+      }
+    } catch {}
+  }
+
+  function addLS2Note(opts = {}) {
+    // 1. Quota check: limit 5 created notes per visitor session
+    if (getVisitorNoteCount() >= MAX_USER_NOTES) {
+      LS2.noticeText = 'LIMIT: MAX 5 NOTES';
+      LS2.noticeUntil = performance.now() + 4500;
+      drawLS2PageLed();
+      sfx.blip(400, 0.08, 0.04);
+      return -1;
+    }
+
+    // 2. Find first empty, untouched slot on the board
+    let destIdx = -1;
+    for (let i = 0; i < 16; i++) {
+      if (!LS2.notes[i].isCustom && !LS2.notes[i].message && (!LS2.notes[i].inkStrokes || !LS2.notes[i].inkStrokes.length)) {
+        destIdx = i;
+        break;
+      }
+    }
+    if (destIdx === -1) {
+      LS2.noticeText = 'BOARD FULL (16 NOTES)';
+      LS2.noticeUntil = performance.now() + 4500;
+      drawLS2PageLed();
+      sfx.blip(400, 0.08, 0.04);
+      return -1;
+    }
+
+    // 3. Initialize the untouched note without disturbing its assigned corkboard position
+    const note = LS2.notes[destIdx];
+    note.author = opts.author || 'OPERATOR';
+    note.message = opts.message || opts.text || '';
+    note.inkStrokes = opts.inkStrokes ? JSON.parse(JSON.stringify(opts.inkStrokes)) : [];
+    note.paperTheme = opts.paperTheme || ['yellow', 'pink', 'cyan', 'green'][destIdx % 4];
+    note.inkColor = opts.inkColor || LS2.inkColor || 'cyan';
+    note.isCustom = true;
+    note.serverId = null;
+
+    recordVisitorNote('slot_' + destIdx);
+    LS2.noticeText = 'UNTOUCHED NOTE ACTIVE';
+    LS2.noticeUntil = performance.now() + 3000;
+    drawLS2PageLed();
+
+    drawLS2Note(destIdx);
+    if (ls2Textures[destIdx]) ls2Textures[destIdx].needsUpdate = true;
+
+    saveLS2Session();
+    saveLS2Note(destIdx, true);
+    sfx.blip(1650, 0.09, 0.05);
+
+    return destIdx;
+  }
+
   const ls2Canvases = [];
   const ls2Textures = [];
   const ls2Meshes = [];
@@ -4671,8 +5720,13 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     const ctx = ls2PageLedCanvas.getContext('2d'), w = ls2PageLedCanvas.width, h = ls2PageLedCanvas.height;
     ctx.fillStyle = '#05121b'; ctx.fillRect(0, 0, w, h);
     ctx.strokeStyle = '#00f0ff'; ctx.lineWidth = 2; ctx.strokeRect(1, 1, w - 2, h - 2);
-    ctx.fillStyle = '#4dff8a'; mono(ctx, 13, 'bold'); ctx.textAlign = 'center';
-    ctx.fillText(`PAGE 0${LS2.page + 1} / 0${LS2.maxPages}`, w / 2, 21);
+    if (LS2.noticeText && performance.now() < (LS2.noticeUntil || 0)) {
+      ctx.fillStyle = '#ff9a3c'; mono(ctx, 10, 'bold'); ctx.textAlign = 'center';
+      ctx.fillText(LS2.noticeText.slice(0, 24), w / 2, 21);
+    } else {
+      ctx.fillStyle = '#4dff8a'; mono(ctx, 13, 'bold'); ctx.textAlign = 'center';
+      ctx.fillText(`PAGE 0${LS2.page + 1} / 0${LS2.maxPages}`, w / 2, 21);
+    }
     if (ls2PageLedTex) ls2PageLedTex.needsUpdate = true;
   }
 
@@ -4831,11 +5885,11 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       });
 
       g.fillStyle = '#cbf5ff';
-      mono(g, 13, 'bold');
+      mono(g, 12, 'bold');
       g.textAlign = 'right';
-      g.fillText(`[${note.message.length}/280] [ALT+P:PAPER ALT+C:CLR]`, w - 16, h - 28);
+      g.fillText(`[${note.message.length}/280] [ALT+D:DUP] [ALT+P:PAPER]`, w - 16, h - 28);
       mono(g, 11);
-      g.fillText(`[STYLUS:INK  TAB:FIELD  ESC:EXIT]`, w - 16, h - 12);
+      g.fillText(`[STYLUS:INK  TAB:FIELD  ALT+C:CLR  ESC:EXIT]`, w - 16, h - 12);
       g.textAlign = 'left';
     }
   }
@@ -4857,6 +5911,16 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
         if (LS2.activeNote === i) continue; // Do not overwrite actively edited note
         const sNote = serverNotes[i];
         const cur = LS2.notes[i];
+        // Do not overwrite notes that have been customized or moved in the local session
+        if (cur.isCustom && (cur.posX != null || cur.message || cur.inkStrokes?.length)) {
+          if (sNote && sNote.id === cur.serverId) {
+            // Keep local position and ink intact
+          }
+          drawLS2Note(i);
+          if (ls2Textures[i]) ls2Textures[i].needsUpdate = true;
+          continue;
+        }
+
         if (sNote) {
           cur.serverId = sNote.id;
           cur.author = sNote.author || '';
@@ -4864,10 +5928,16 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
           cur.inkStrokes = Array.isArray(sNote.inkStrokes) ? sNote.inkStrokes : [];
           cur.paperTheme = sNote.paperTheme || 'yellow';
           cur.inkColor = sNote.colorTheme || 'cyan';
-          if (sNote.posX != null) cur.posX = sNote.posX;
-          if (sNote.posY != null) cur.posY = sNote.posY;
+          if (sNote.posX != null && sNote.posX !== 0) {
+            cur.posX = sNote.posX;
+            if (ls2Meshes[i]) ls2Meshes[i].position.x = cur.posX;
+          }
+          if (sNote.posY != null && sNote.posY !== 0) {
+            cur.posY = sNote.posY;
+            if (ls2Meshes[i]) ls2Meshes[i].position.y = cur.posY;
+          }
           cur.isCustom = true;
-        } else {
+        } else if (!cur.isCustom) {
           cur.serverId = null;
           cur.author = '';
           cur.message = '';
@@ -4879,6 +5949,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
         drawLS2Note(i);
         if (ls2Textures[i]) ls2Textures[i].needsUpdate = true;
       }
+      saveLS2Session();
     } catch {
       // Offline fallback to procedural
     }
@@ -4887,7 +5958,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   function saveLS2Note(idx, immediate = false) {
     if (idx === null || !LS2.notes[idx]) return;
     const note = LS2.notes[idx];
-    if (!note.isCustom && !note.message && (!note.inkStrokes || !note.inkStrokes.length)) return;
+    if (!note.isCustom && !note.message && (!note.inkStrokes || !note.inkStrokes.length) && !note.posX && !note.posY) return;
     if (LS2.debounceTimer) {
       clearTimeout(LS2.debounceTimer);
       LS2.debounceTimer = null;
@@ -4902,7 +5973,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   async function flushLS2Note(idx) {
     if (idx === null || !LS2.notes[idx]) return;
     const note = LS2.notes[idx];
-    if (!note.isCustom && !note.message && (!note.inkStrokes || !note.inkStrokes.length)) return;
+    if (!note.isCustom && !note.message && (!note.inkStrokes || !note.inkStrokes.length) && !note.posX && !note.posY) return;
 
     if (note.serverId) {
       const tokenKey = 'vault_note_token_' + note.serverId;
@@ -4919,7 +5990,9 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
             message: note.message,
             inkStrokes: note.inkStrokes,
             colorTheme: note.inkColor,
-            paperTheme: note.paperTheme
+            paperTheme: note.paperTheme,
+            posX: note.posX,
+            posY: note.posY
           })
         });
       } catch (err) {
@@ -5045,6 +6118,8 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     ls2Textures.length = 0;
     ls2Meshes.length = 0;
 
+    loadLS2Session();
+
     for (let i = 0; i < 16; i++) {
       const [nx, ny, rotJitter] = notePositions[i];
       const nw = .16 + (i % 3) * .015;
@@ -5059,20 +6134,33 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
 
       drawLS2Note(i);
 
+      const note = LS2.notes[i];
+      const defaultX = nx + (hash(i * 1.7) - .5) * .05;
+      const defaultY = ny + (hash(i * 2.9) - .5) * .04;
+      const posX = (note.posX != null && note.posX !== 0) ? note.posX : defaultX;
+      const posY = (note.posY != null && note.posY !== 0) ? note.posY : defaultY;
+      note.posX = posX;
+      note.posY = posY;
+
       const noteMesh = new THREE.Mesh(new THREE.PlaneGeometry(nw, nh), mat({ map: tex, roughness: .94, metalness: .02 }));
       const zOff = .033 + (i % 6) * .0028;
-      noteMesh.position.set(nx + (hash(i * 1.7) - .5) * .05, ny + (hash(i * 2.9) - .5) * .04, zOff);
+      noteMesh.position.set(posX, posY, zOff);
       noteMesh.rotation.set((hash(i * 3.1) - .5) * .05, (hash(i * 2.3) - .5) * .05, rotJitter);
       noteMesh.userData.interactive = true;
       noteMesh.userData.noteIdx = i;
       g.add(noteMesh);
       ls2Meshes.push(noteMesh);
 
-      // Physical 3D metallic thumbtack / staple pin at top center of note
+      // Physical 3D metallic thumbtack / staple pin at top center of note (child of noteMesh)
       const pHeadMat = (i % 2 === 0) ? pinHeadMat : steelPinMat;
-      const pinHead = add(cyl(.008, .008, .005, pHeadMat, 10), noteMesh.position.x, noteMesh.position.y + nh * .44, zOff + .006, g);
+      const pinHead = cyl(.008, .008, .005, pHeadMat, 10);
       pinHead.rotation.x = Math.PI / 2;
-      add(cyl(.003, .003, .012, tit, 6), noteMesh.position.x, noteMesh.position.y + nh * .44, zOff + .002, g).rotation.x = Math.PI / 2;
+      pinHead.position.set(0, nh * .44, .006);
+      noteMesh.add(pinHead);
+      const pinShaft = cyl(.003, .003, .012, tit, 6);
+      pinShaft.rotation.x = Math.PI / 2;
+      pinShaft.position.set(0, nh * .44, .002);
+      noteMesh.add(pinShaft);
     }
 
     // 5. Cantilevered heavy workshop tool shelf, titanium brackets, stylus & drafting accessories
@@ -5128,7 +6216,17 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     add(cyl(.004, .001, .025, gunD, 8), -.17, .052, .09, g).rotation.set(Math.PI / 2, 0, .68);  // Carbide scribe tip
 
     // Rolled parchment schematic scrap
-    const roll = add(cyl(.014, .014, .13, mat({ color: 0xded4be, roughness: .9 }), 12), .06, .052, .11, g); roll.rotation.z = Math.PI / 2;
+    const roll = add(cyl(.014, .014, .13, mat({ color: 0xded4be, roughness: .9 }), 12), .08, .052, .11, g); roll.rotation.z = Math.PI / 2;
+
+    // 3D "NEW NOTE" Sticky Notepad on Shelf (Clickable to create/pin new notes)
+    const newNotePad = add(box(.072, .018, .072, mat({ color: 0xfef08a, roughness: .85 })), -.02, .048, .12, g);
+    newNotePad.userData.isNewNotePad = true;
+    newNotePad.userData.interactive = true;
+    newNotePad.userData.sector = 'LS2';
+    const padLabel = add(box(.068, .002, .020, mat({ color: 0x0284c7, roughness: .6 })), -.02, .058, .14, g);
+    padLabel.userData.isNewNotePad = true;
+    padLabel.userData.interactive = true;
+    padLabel.userData.sector = 'LS2';
 
     tag(g, 'LS2');
     heroGroups.push({ id: 'LS2', group: g });
@@ -5163,6 +6261,16 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   let ls1SmokeMesh = null;
   let ls1SmokeMat = null;
   let ls1SmokeData = [];
+  let ls1SleeveGroup = null;
+  let ls1SleeveMats = [];
+  let ls1TorusSmokeMesh = null;
+  let ls1TorusSmokeMat = null;
+  let ls1InnerTorusMesh = null;
+  let ls1InnerTorusMat = null;
+  let ls1AbyssGroup = null;
+  let ls1AbyssTunnelMesh = null;
+  let ls1AbyssTunnelMat = null;
+  let ls1Destination3DGroup = null;
   let ls1ElectricGroup = null;
   let ls1ElectricData = [];
   let ls1ThroatMesh = null;
@@ -5178,16 +6286,34 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   let ls1StationState = 'sleeping'; // 'sleeping' | 'hologram_boot' | 'crystal_birth' | 'active'
   let ls1BootTimer = 0;
   let ls1BirthTimer = 0;
+  let ls1BirthFrozen = false;
+  let ls1HarmonicPlayed = false;
   let ls1ActivatorMesh = null;
+  let ls1ChanE = null;
+  let ls1CoreE = null;
+  let ls1ActivatorRing = null;
   let ls1ActivatorMat = null;
   let ls1AccretionMesh = null;
   let ls1AccretionData = [];
+  let ls1CosmicMesh = null;
+  let ls1CosmicMat = null;
+  let ls1StellarCoreMesh = null;
+  let ls1StellarCoreMat = null;
+  let ls1AccretionDiscMesh = null;
+  let ls1AccretionDiscMat = null;
+  let ls1PolarJetsMesh = null;
+  let ls1PolarJetsMat = null;
+  let ls1ShockwaveMesh = null;
+  let ls1ShockwaveMat = null;
+  let ls1FlashSfxPlayed = false;
   let ls1Traversal = null;
   let ls1ReturnAnim = null;
   let wakeLS1 = null;
+  let ls1DestinationsList = null;
 
   { const g = sectorGroup(8, 3.95);
     ls1HoloGroup = g;
+    ls1HoloGroup.visible = false;
 
     // ── 1. CONTAINMENT BASE APPARATUS (Grounding Hardware on Workbench Deck) ──
     // A. Heavy octagonal base foundation plate (composite dark)
@@ -5198,16 +6324,16 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     add(cyl(0.58, 0.58, 0.015, compD, 36), 0, 0.065, 0, g);
 
     // Subdued local emissive materials for containment base (quiet containment effect)
-    const ls1ChanE = new THREE.MeshStandardMaterial({
+    ls1ChanE = new THREE.MeshStandardMaterial({
       color: 0x001a24,
       emissive: 0x0088aa,
-      emissiveIntensity: 0.45,
+      emissiveIntensity: 0.0,
       roughness: 0.45
     });
-    const ls1CoreE = new THREE.MeshStandardMaterial({
+    ls1CoreE = new THREE.MeshStandardMaterial({
       color: 0x002430,
       emissive: 0x1aa0cc,
-      emissiveIntensity: 0.65,
+      emissiveIntensity: 0.0,
       roughness: 0.35
     });
 
@@ -5223,7 +6349,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     ls1ActivatorMat = new THREE.MeshStandardMaterial({
       color: 0x051824,
       emissive: 0x00c8ff,
-      emissiveIntensity: 0.50,
+      emissiveIntensity: 0.0,
       roughness: 0.25,
       metalness: 0.85
     });
@@ -5234,9 +6360,9 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     hits.push(ls1ActivatorMesh);
 
     // Illuminated Bezel Ring around activator
-    const ls1ActivatorRing = new THREE.Mesh(
+    ls1ActivatorRing = new THREE.Mesh(
       new THREE.RingGeometry(0.056, 0.068, 32).rotateX(-Math.PI / 2),
-      new THREE.MeshBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.75 })
+      new THREE.MeshBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.0 })
     );
     ls1ActivatorRing.position.set(0, 0.086, 0.60);
     g.add(ls1ActivatorRing);
@@ -5262,11 +6388,12 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     }
 
     // Local restrained volumetric blue light spill (quietly illuminates base without overpowering face)
-    ls1EmitterLight = add(new THREE.PointLight(0x00b8e6, 0.40, 2.5, 2), 0, 0.45, 0, g);
+    ls1EmitterLight = add(new THREE.PointLight(0x00b8e6, 0.0, 2.5, 2), 0, 0.45, 0, g);
 
     // ── 2. FRONT/BACK PHOTOGRAPHIC HOLOGRAM PROJECTION (STAR-WARS-LIKE EMISSION) ──
     ls1FigureGroup = new THREE.Group();
     ls1FigureGroup.position.set(0, 0.08, 0); // Ground contact right on central optical crystal lens
+    ls1FigureGroup.visible = false; // Starts invisible until user clicks activator button and sequence completes
     g.add(ls1FigureGroup);
 
     // Canvas textures for Front and Back authoritative imagery
@@ -5323,20 +6450,9 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     }
 
     const FIG_W = 0.84, FIG_H = 1.68;
-    function createCurvedHoloPlane(W, H, segX, segY, zMult) {
-      const geo = new THREE.PlaneGeometry(W, H, segX, segY);
+    function createFlatHoloPlane(W, H) {
+      const geo = new THREE.PlaneGeometry(W, H, 1, 1);
       geo.translate(0, H / 2, 0);
-      const pos = geo.attributes.position;
-      for (let i = 0; i < pos.count; i++) {
-        const x = pos.getX(i);
-        const y = pos.getY(i);
-        const v = Math.max(0.0, Math.min(1.0, y / H));
-        const thick = getSmoothBodyThickness(v);
-        const xNorm = Math.abs(x) / (W * 0.44);
-        const curve = Math.sqrt(Math.max(0.0, 1.0 - Math.min(1.0, xNorm * xNorm)));
-        pos.setZ(i, zMult * thick * 0.5 * curve);
-      }
-      geo.computeVertexNormals();
       return geo;
     }
 
@@ -5349,13 +6465,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
 
       void main() {
         vUv = uv;
-        vec3 pos = position;
-
-        // Subtle high-energy static micro-fluctuation (sub-millimeter: 0.00025m)
-        float jitter = sin(pos.y * 60.0 + uTime * 20.0) * 0.00025;
-        pos.x += jitter;
-
-        vec4 worldPos = modelMatrix * vec4(pos, 1.0);
+        vec4 worldPos = modelMatrix * vec4(position, 1.0);
         vWorldPosition = worldPos.xyz;
         vNormal = normalize(normalMatrix * normal);
         vViewDir = normalize(cameraPosition - worldPos.xyz);
@@ -5383,20 +6493,13 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
 
       void main() {
         vec2 uv = vUv;
-
-        // ── 1. FACE CLARITY ZONE ──
-        // Face center at u = 0.50, v = 0.88; face width ~0.16, height ~0.10
+        vec2 sUv = uv;
         vec2 faceCenter = vec2(0.50, 0.88);
-        vec2 faceDelta = abs(uv - faceCenter) / vec2(0.16, 0.10);
-        float faceFactor = 1.0 - smoothstep(0.70, 1.15, length(faceDelta));
-
-        // Subtle reconstruction shimmer (strictly outside the face zone)
-        float shimmerPhase = sin(uv.y * 180.0 + uTime * 6.0);
-        float shimmerOffset = shimmerPhase * 0.00035 * (1.0 - 0.85 * faceFactor);
-        vec2 sUv = vec2(uv.x + shimmerOffset, uv.y);
+        float faceDist = length((uv - faceCenter) * vec2(1.0, 1.8));
+        float faceFactor = smoothstep(0.18, 0.04, faceDist);
 
         // Alpha cutout & edge feathering (zero rectangular card boundary)
-        vec4 baseTex = texture2D(tHolo, sUv);
+        vec4 baseTex = texture2D(tHolo, uv);
         float alpha = baseTex.a;
         if (alpha < 0.04) discard;
 
@@ -5516,12 +6619,12 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       return mesh;
     }
 
-    // 1. Front Primary Hologram Plane (Faces +Z forward)
-    const frontMesh = makeHoloMesh(createCurvedHoloPlane(FIG_W, FIG_H, 24, 64, 1.0), frontTex, true, 0.95, true);
+    // 1. Front Primary Hologram Plane (Faces +Z forward - completely flat 2D)
+    const frontMesh = makeHoloMesh(createFlatHoloPlane(FIG_W, FIG_H), frontTex, true, 0.95, true);
     ls1FigureGroup.add(frontMesh);
 
     // 2. Back Primary Hologram Plane (Facing backward: rotated PI on Y, so FrontSide faces -Z)
-    const backGeo = createCurvedHoloPlane(FIG_W, FIG_H, 24, 64, 1.0);
+    const backGeo = createFlatHoloPlane(FIG_W, FIG_H);
     backGeo.rotateY(Math.PI);
     const backMesh = makeHoloMesh(backGeo, backTex, false, 0.95, false);
     ls1FigureGroup.add(backMesh);
@@ -5567,7 +6670,108 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     // ── Layer 4: Helical Filaments = OFF for LS1 MVP (Clean, calm hologram center) ──
     ls1FilamentLines = [];
 
-    // ── 3. FLOATING ICOSAHEDRON DESTINATION NEXUS (8 DESTINATIONS, GATE C) ──
+  function createCrystalLogoTexture(icon, colorHex, accentHex) {
+    const cnv = document.createElement('canvas');
+    cnv.width = 128;
+    cnv.height = 128;
+    const g = cnv.getContext('2d');
+
+    // Deep luminous core background
+    const bg = g.createRadialGradient(64, 64, 12, 64, 64, 64);
+    bg.addColorStop(0, '#0a1622');
+    bg.addColorStop(0.85, '#02060b');
+    bg.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = bg;
+    g.fillRect(0, 0, 128, 128);
+
+    // Outer cyber-ring border matching accent
+    const accStr = typeof accentHex === 'number' ? '#' + accentHex.toString(16).padStart(6, '0') : (accentHex || '#38bdf8');
+    g.strokeStyle = accStr;
+    g.lineWidth = 3.5;
+    g.beginPath();
+    g.arc(64, 64, 52, 0, Math.PI * 2);
+    g.stroke();
+
+    g.fillStyle = '#ffffff';
+    g.strokeStyle = '#ffffff';
+    g.lineCap = 'round';
+    g.lineJoin = 'round';
+
+    if (icon === 'github') {
+      g.beginPath();
+      g.arc(64, 66, 26, 0, Math.PI * 2);
+      g.fill();
+      g.beginPath();
+      g.moveTo(44, 46); g.lineTo(52, 30); g.lineTo(60, 42); g.fill();
+      g.beginPath();
+      g.moveTo(84, 46); g.lineTo(76, 30); g.lineTo(68, 42); g.fill();
+      g.fillStyle = '#0a1622';
+      g.beginPath();
+      g.ellipse(64, 70, 15, 12, 0, 0, Math.PI * 2);
+      g.fill();
+    } else if (icon === 'linkedin') {
+      g.fillStyle = '#ffffff';
+      g.font = 'bold 44px -apple-system, sans-serif';
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.fillText('in', 64, 63);
+    } else if (icon === 'blog') {
+      g.lineWidth = 4;
+      g.strokeRect(38, 34, 52, 60);
+      g.beginPath();
+      g.moveTo(48, 50); g.lineTo(80, 50);
+      g.moveTo(48, 64); g.lineTo(80, 64);
+      g.moveTo(48, 78); g.lineTo(72, 78);
+      g.stroke();
+    } else if (icon === 'youtube') {
+      g.fillStyle = '#ef4444';
+      g.beginPath();
+      g.roundRect(32, 42, 64, 44, 10);
+      g.fill();
+      g.fillStyle = '#ffffff';
+      g.beginPath();
+      g.moveTo(56, 52); g.lineTo(76, 64); g.lineTo(56, 76);
+      g.closePath();
+      g.fill();
+    } else if (icon === 'spotify') {
+      g.lineWidth = 5;
+      g.strokeStyle = '#10b981';
+      g.beginPath(); g.arc(64, 82, 38, -Math.PI * 0.72, -Math.PI * 0.28); g.stroke();
+      g.lineWidth = 4.5;
+      g.beginPath(); g.arc(64, 80, 26, -Math.PI * 0.74, -Math.PI * 0.26); g.stroke();
+      g.lineWidth = 4.0;
+      g.beginPath(); g.arc(64, 78, 15, -Math.PI * 0.76, -Math.PI * 0.24); g.stroke();
+    } else if (icon === 'about') {
+      g.fillStyle = '#c084fc';
+      g.beginPath(); g.arc(64, 48, 16, 0, Math.PI * 2); g.fill();
+      g.beginPath();
+      g.arc(64, 94, 28, Math.PI * 1.15, Math.PI * 1.85);
+      g.fill();
+      g.strokeStyle = '#ffffff'; g.lineWidth = 2.5;
+      g.beginPath();
+      g.moveTo(64, 22); g.lineTo(64, 28);
+      g.moveTo(58, 25); g.lineTo(70, 25);
+      g.stroke();
+    } else if (icon === 'contact') {
+      g.lineWidth = 4;
+      g.strokeRect(34, 44, 60, 40);
+      g.beginPath();
+      g.moveTo(34, 44); g.lineTo(64, 66); g.lineTo(94, 44);
+      g.stroke();
+    } else {
+      g.lineWidth = 4;
+      g.strokeRect(36, 36, 56, 56);
+      g.beginPath(); g.arc(64, 64, 15, 0, Math.PI * 2); g.stroke();
+      g.fillStyle = '#ffffff';
+      g.beginPath(); g.arc(80, 48, 4, 0, Math.PI * 2); g.fill();
+    }
+
+    const tex = new THREE.CanvasTexture(cnv);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    return tex;
+  }
+
+    // ── 3. FLOATING ICOSAHEDRON DESTINATION NEXUS (6 CANONICAL SITES + EXTRA, GATE C) ──
     const LS1_DESTINATIONS = [
       {
         id: 'GITHUB',
@@ -5575,49 +6779,43 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
         band: 'near',
         pos: [0.55, 0.95, 0.90],
         url: 'https://github.com/PriyanshGadia',
-        color: 0x2ea043,
-        hex: '#2ea043',
-        accent: 0x56d364
+        color: 0x1f2428,
+        hex: '#1f2428',
+        accent: 0x58a6ff,
+        icon: 'github'
       },
       {
         id: 'LINKEDIN',
         label: 'LINKEDIN',
         band: 'near',
         pos: [-0.52, 1.12, 0.92],
-        url: 'https://linkedin.com/in/priyanshgadia',
+        url: 'https://www.linkedin.com/in/priyansh-gadia-b7645320b/',
         color: 0x0a66c2,
         hex: '#0a66c2',
-        accent: 0x388bfd
+        accent: 0x38bdf8,
+        icon: 'linkedin'
+      },
+      {
+        id: 'ABOUT',
+        label: 'ABOUT ME',
+        band: 'middle',
+        pos: [-0.68, 0.62, 1.05],
+        url: '/about.html',
+        color: 0x8b5cf6,
+        hex: '#8b5cf6',
+        accent: 0xc084fc,
+        icon: 'about'
       },
       {
         id: 'SPOTIFY',
         label: 'SPOTIFY',
         band: 'near',
         pos: [-0.58, 0.62, 0.98],
-        url: 'https://open.spotify.com/user/priyanshgadia',
-        color: 0x1db954,
-        hex: '#1db954',
-        accent: 0x1ed760
-      },
-      {
-        id: 'ABOUT',
-        label: 'ABOUT',
-        band: 'middle',
-        pos: [0.70, 1.30, 1.15],
-        url: 'https://github.com/PriyanshGadia',
-        color: 0x00d8f6,
-        hex: '#00d8f6',
-        accent: 0x70f0ff
-      },
-      {
-        id: 'PAPERS',
-        label: 'PAPERS',
-        band: 'middle',
-        pos: [-0.72, 0.82, 1.12],
-        url: 'https://github.com/PriyanshGadia',
-        color: 0xf59e0b,
-        hex: '#f59e0b',
-        accent: 0xfbbf24
+        url: 'https://open.spotify.com/user/31l65l6ugalqyfeyjf22i7bjby5i',
+        color: 0x10b981,
+        hex: '#10b981',
+        accent: 0x34d399,
+        icon: 'spotify'
       },
       {
         id: 'CONTACT',
@@ -5627,29 +6825,33 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
         url: 'mailto:gadiapriyansh@gmail.com',
         color: 0xf97316,
         hex: '#f97316',
-        accent: 0xfb923c
+        accent: 0xfb923c,
+        icon: 'contact'
       },
       {
-        id: 'BLOG',
-        label: 'BLOG',
+        id: 'YOUTUBE',
+        label: 'YOUTUBE',
         band: 'far',
         pos: [-0.85, 1.35, 1.45],
-        url: 'https://github.com/PriyanshGadia/Cave',
-        color: 0x8b5cf6,
-        hex: '#8b5cf6',
-        accent: 0xa78bfa
+        url: 'https://www.youtube.com/@priyanshgadia7170/playlists',
+        color: 0xef4444,
+        hex: '#ef4444',
+        accent: 0xff0000,
+        icon: 'youtube'
       },
       {
         id: 'INSTAGRAM',
         label: 'INSTAGRAM',
         band: 'far',
         pos: [0.88, 0.88, 1.50],
-        url: 'https://instagram.com/priyanshgadia',
+        url: 'https://www.instagram.com/p._.g_/',
         color: 0xe1306c,
         hex: '#e1306c',
-        accent: 0xf77737
+        accent: 0xf77737,
+        icon: 'instagram'
       }
     ];
+    ls1DestinationsList = LS1_DESTINATIONS;
 
     // Reduced icosahedron size: radius 0.026 (~59% of previous 0.044 diameter)
     const icosaGeo = new THREE.IcosahedronGeometry(0.026, 0);
@@ -5682,10 +6884,22 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       const edgeLines = new THREE.LineSegments(icosaEdges, edgeMat);
       crystalMesh.add(edgeLines);
 
-      // Inner faint luminous core (scaled to 0.010)
+      // Embedded miniature logo sphere matching target site
+      const logoTex = createCrystalLogoTexture(dest.icon, dest.color, dest.accent);
+      const logoGeo = new THREE.SphereGeometry(0.012, 16, 12);
+      const logoMat = new THREE.MeshBasicMaterial({
+        map: logoTex,
+        transparent: true,
+        opacity: 0.95,
+        toneMapped: false
+      });
+      const logoSphere = new THREE.Mesh(logoGeo, logoMat);
+      crystalMesh.add(logoSphere);
+
+      // Inner faint luminous core (scaled to 0.008)
       const innerCore = new THREE.Mesh(
-        new THREE.IcosahedronGeometry(0.010, 0),
-        new THREE.MeshBasicMaterial({ color: dest.accent || dest.color, transparent: true, opacity: 0.60 })
+        new THREE.IcosahedronGeometry(0.008, 0),
+        new THREE.MeshBasicMaterial({ color: dest.accent || dest.color, transparent: true, opacity: 0.50 })
       );
       crystalMesh.add(innerCore);
 
@@ -5696,6 +6910,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
         index: i,
         crystalMesh,
         innerCore,
+        logoSphere,
         cMat,
         edgeMat,
         basePos: new THREE.Vector3(dest.pos[0], dest.pos[1], dest.pos[2]),
@@ -5772,7 +6987,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
         vec2 p = gl_PointCoord - vec2(0.5);
         float d = length(p);
         if (d > 0.5) discard;
-        float alpha = smoothstep(0.5, 0.08, d) * vOpacity;
+        float alpha = (1.0 - smoothstep(0.08, 0.5, d)) * vOpacity;
         gl_FragColor = vec4(vColor, alpha);
       }
     `;
@@ -5787,50 +7002,452 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     ls1AccretionMesh.visible = false;
     g.add(ls1AccretionMesh);
 
+    // ── 3B. 360-DEGREE ENTIRE-ROOM PROCEDURAL CELESTIAL DEEP-SPACE UNIVERSE ──
+    const cosmicGeo = new THREE.SphereGeometry(70.0, 64, 48);
+    const cosmicVertShader = `
+      varying vec3 vWorldDir;
+      void main() {
+        vWorldDir = normalize(position);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `;
+    const cosmicFragShader = `
+      precision highp float;
+      varying vec3 vWorldDir;
+      uniform float uTime;
+      uniform float uCosmic;
+      uniform float uStars;
+
+      float hash31(vec3 p) {
+        p = fract(p * vec3(443.897, 441.423, 437.195));
+        p += dot(p, p.yzx + 19.19);
+        return fract((p.x + p.y) * p.z);
+      }
+
+      vec3 hash33(vec3 p) {
+        p = fract(p * vec3(443.897, 441.423, 437.195));
+        p += dot(p, p.yxz + 19.19);
+        return fract((p.xxy + p.yxx) * p.zyx);
+      }
+
+      float noise3D(vec3 p) {
+        vec3 i = floor(p);
+        vec3 f = fract(p);
+        f = f * f * (3.0 - 2.0 * f);
+        return mix(
+          mix(mix(hash31(i + vec3(0,0,0)), hash31(i + vec3(1,0,0)), f.x),
+              mix(hash31(i + vec3(0,1,0)), hash31(i + vec3(1,1,0)), f.x), f.y),
+          mix(mix(hash31(i + vec3(0,0,1)), hash31(i + vec3(1,0,1)), f.x),
+              mix(hash31(i + vec3(0,1,1)), hash31(i + vec3(1,1,1)), f.x), f.y), f.z);
+      }
+
+      float fbm3D(vec3 p) {
+        float v = 0.0, a = 0.5;
+        for (int i = 0; i < 5; i++) {
+          v += a * noise3D(p);
+          p = p * 2.08 + vec3(0.15, 0.28, 0.37);
+          a *= 0.5;
+        }
+        return v;
+      }
+
+      void main() {
+        float totalIntensity = uCosmic + uStars;
+        if (totalIntensity <= 0.001) discard;
+
+        vec3 dir = normalize(vWorldDir);
+        float t = uTime * 0.04;
+
+        // ── 1. Domain-Warped Fibrous Interstellar Nebula (4K Reference Match) ──
+        // Warp vectors create turbulent, wispy cosmic gas filaments and ridge fronts
+        vec3 p1 = dir * 3.2 + vec3(0.04 * sin(t * 0.8), 0.03 * cos(t * 0.6), 0.0);
+        vec3 warpA = vec3(
+          fbm3D(p1 + vec3(0.0, 1.2, 3.4)),
+          fbm3D(p1 + vec3(4.3, 0.5, 1.9)),
+          fbm3D(p1 + vec3(2.1, 3.7, 0.8))
+        );
+        vec3 warpB = vec3(
+          fbm3D(p1 + 2.2 * warpA + vec3(1.7, 9.2, 0.4)),
+          fbm3D(p1 + 2.2 * warpA + vec3(8.3, 2.8, 4.1)),
+          fbm3D(p1 + 2.2 * warpA + vec3(3.5, 6.1, 7.2))
+        );
+
+        float neb1 = fbm3D(p1 + 2.8 * warpB);
+        float neb2 = fbm3D(dir * 5.8 + 1.6 * warpA);
+
+        // Sharp, luminous filamentary ridge structures
+        float filamentA = pow(max(0.0, 1.0 - abs(neb1 - 0.48) * 3.6), 2.2);
+        float filamentB = pow(max(0.0, 1.0 - abs(neb2 - 0.52) * 3.4), 1.8);
+
+        // Dark interstellar dust lanes (Barnard absorption rifts)
+        float darkLanes = smoothstep(0.38, 0.72, fbm3D(dir * 8.5 + warpA * 1.5));
+
+        // ── 2. Palette Architecture Grounded in Reference Images ──
+        // Reference 1 & 2: Velvety space, glowing rose/magenta ribbons, luminous emerald/cyan clouds, golden filament boundaries
+        vec3 cVoid         = vec3(0.0012, 0.0020, 0.0055); // Deep velvety cosmic vacuum
+        vec3 cTealDark     = vec3(0.015, 0.120, 0.160);    // Deep emerald-cyan gas body
+        vec3 cTealGlow     = vec3(0.050, 0.520, 0.580);    // Brilliant ionized OIII teal emission
+        vec3 cMagentaDark  = vec3(0.180, 0.035, 0.120);    // Deep cosmic plum-violet
+        vec3 cMagentaGlow  = vec3(0.720, 0.140, 0.420);    // Radiant H-alpha rose/magenta filaments
+        vec3 cGoldenFire   = vec3(0.920, 0.580, 0.140);    // Fiery amber collision boundary ridges
+        vec3 cSapphireStar = vec3(0.200, 0.520, 1.000);    // Brilliant blue starburst emission pocket
+
+        // Spatial partitioning of nebular emission complexes
+        float zoneMix = smoothstep(-0.25, 0.35, dir.x * 0.7 + dir.y * 0.5 + (warpA.y - 0.5) * 0.4);
+
+        // Teal / Emerald emission complex
+        vec3 colTeal = mix(cTealDark, cTealGlow, smoothstep(0.35, 0.85, neb1));
+        colTeal += cSapphireStar * smoothstep(0.68, 0.95, neb1 * neb2) * 0.65;
+
+        // Magenta / Rose emission complex
+        vec3 colMagenta = mix(cMagentaDark, cMagentaGlow, smoothstep(0.32, 0.82, neb2));
+        colMagenta += cGoldenFire * filamentA * 0.85;
+
+        // Blended cosmic gas cloud
+        vec3 nebCol = mix(colMagenta, colTeal, zoneMix);
+        nebCol += cGoldenFire * (filamentA * filamentB) * 1.25; // Fiery interaction ridges
+
+        // Modulate with broad cosmic density & dark absorption rifts
+        float totalGas = smoothstep(0.28, 0.78, (neb1 * 0.6 + neb2 * 0.4));
+        vec3 finalNebula = mix(cVoid, nebCol, totalGas);
+        finalNebula *= (1.0 - darkLanes * 0.88);
+
+        // ── 3. Multi-Magnitude Celestial Starfield & Clusters ──
+        // Multi-colored micro-stardust pinpoints
+        vec3 g1 = dir * 280.0;
+        vec3 id1 = floor(g1);
+        vec3 f1 = fract(g1) - 0.5;
+        float r1 = hash31(id1);
+        vec3 pOffset1 = (hash33(id1 + 1.2) - 0.5) * 0.7;
+        float d1 = length(f1 - pOffset1);
+        float twinkle1 = 0.72 + 0.28 * sin(uTime * 3.8 + r1 * 25.0);
+        float microStars = step(0.928, r1) * (1.0 - smoothstep(0.012, 0.075, d1)) * twinkle1;
+
+        // Multi-spectral star color distribution
+        vec3 starTint = vec3(1.0, 1.0, 1.0);
+        float starType = hash31(id1 + 5.5);
+        if (starType < 0.25) starTint = vec3(0.65, 0.85, 1.0);      // Blue giant / O-class
+        else if (starType < 0.45) starTint = vec3(1.0, 0.78, 0.52); // Amber dwarf / K-class
+        else if (starType < 0.60) starTint = vec3(1.0, 0.60, 0.75); // Rose protostar
+        else starTint = vec3(0.95, 0.98, 1.0);                      // Diamond white
+
+        // Prominent stars with authentic 4-point cross diffraction spikes
+        vec3 g2 = dir * 65.0;
+        vec3 id2 = floor(g2);
+        vec3 f2 = fract(g2) - 0.5;
+        float r2 = hash31(id2 + 9.3);
+        vec3 p2 = (hash33(id2 + 4.7) - 0.5) * 0.6;
+        vec3 dStar2 = f2 - p2;
+        float starDist2 = length(dStar2);
+        float core2 = (1.0 - smoothstep(0.008, 0.085, starDist2)) * 2.2;
+        float spikeX = max(0.0, 1.0 - abs(dStar2.x) * 28.0) * max(0.0, 1.0 - abs(dStar2.y) * 4.2);
+        float spikeY = max(0.0, 1.0 - abs(dStar2.y) * 28.0) * max(0.0, 1.0 - abs(dStar2.x) * 4.2);
+        float brightStars = step(0.972, r2) * (core2 + (spikeX + spikeY) * 0.95);
+
+        // Radiant starburst cluster nodes (dense stellar nurseries like in reference 1)
+        float clusterDist = length(dir - normalize(vec3(0.55, 0.15, -0.82)));
+        float clusterGlow = exp(-clusterDist * clusterDist * 18.0) * 0.65;
+        vec3 clusterCol = vec3(0.40, 0.75, 1.0) * clusterGlow;
+
+        // ── 4. Composite 4K Celestial Deep Space Horizon ──
+        vec3 starOutput = (microStars * starTint * 1.35) + (brightStars * vec3(1.0, 1.0, 1.0) * 1.8) + (clusterCol * uCosmic);
+        vec3 finalCosmic = (finalNebula * 1.15 * uCosmic) + starOutput * (uCosmic * 1.0 + uStars * 1.5);
+        float finalAlpha = clamp(uCosmic * 0.99 + (microStars + brightStars) * uStars, 0.0, 1.0);
+
+        gl_FragColor = vec4(finalCosmic, finalAlpha);
+      }
+    `;
+    ls1CosmicMat = new THREE.ShaderMaterial({
+      vertexShader: cosmicVertShader,
+      fragmentShader: cosmicFragShader,
+      uniforms: {
+        uTime: { value: 0 },
+        uCosmic: { value: 0 },
+        uStars: { value: 0 }
+      },
+      transparent: true,
+      depthTest: false,
+      depthWrite: false,
+      side: THREE.BackSide
+    });
+    ls1CosmicMesh = new THREE.Mesh(cosmicGeo, ls1CosmicMat);
+    ls1CosmicMesh.position.set(0, WH / 2, 0);
+    ls1CosmicMesh.renderOrder = -9999;
+    ls1CosmicMesh.visible = false;
+    lab.add(ls1CosmicMesh);
+
+    // ── 3C. ASTROPHYSICAL STELLAR BIRTH SIMULATION ACTORS ──
+    // 1. Protostellar Core Sphere (Incandescent Thermal Core)
+    const coreGeo = new THREE.SphereGeometry(0.12, 32, 24);
+    ls1StellarCoreMat = new THREE.ShaderMaterial({
+      vertexShader: `
+        varying vec3 vNormal;
+        varying vec3 vPosition;
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          vPosition = position;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        precision highp float;
+        varying vec3 vNormal;
+        varying vec3 vPosition;
+        uniform float uTime;
+        uniform float uIgnition;
+        uniform float uFlash;
+
+        void main() {
+          if (uIgnition <= 0.001 && uFlash <= 0.001) discard;
+          float rim = 1.0 - max(0.0, dot(vNormal, vec3(0.0, 0.0, 1.0)));
+          float gran = sin(vPosition.x * 35.0 + uTime * 6.0) * cos(vPosition.y * 35.0 - uTime * 5.0) * sin(vPosition.z * 35.0);
+          vec3 coreCol = mix(vec3(1.0, 0.55, 0.15), vec3(1.0, 0.95, 0.85), clamp(rim * 1.4 + gran * 0.25, 0.0, 1.0));
+          coreCol += vec3(1.0, 1.0, 1.0) * (uFlash * 3.0);
+          float alpha = clamp(uIgnition * (0.85 + rim * 0.45) + uFlash, 0.0, 1.0);
+          gl_FragColor = vec4(coreCol * (1.3 + uFlash * 3.5), alpha);
+        }
+      `,
+      uniforms: {
+        uTime: { value: 0 },
+        uIgnition: { value: 0 },
+        uFlash: { value: 0 }
+      },
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+    ls1StellarCoreMesh = new THREE.Mesh(coreGeo, ls1StellarCoreMat);
+    ls1StellarCoreMesh.position.set(0, 0.45, 0);
+    ls1StellarCoreMesh.visible = false;
+    g.add(ls1StellarCoreMesh);
+
+    // 2. Relativistic Accretion Shock Disc (Keplerian Spinning Plasma)
+    const discGeo = new THREE.RingGeometry(0.06, 0.58, 64).rotateX(-Math.PI / 2);
+    ls1AccretionDiscMat = new THREE.ShaderMaterial({
+      vertexShader: `
+        varying vec3 vPos;
+        void main() {
+          vPos = position;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        precision highp float;
+        varying vec3 vPos;
+        uniform float uTime;
+        uniform float uDiscIntensity;
+
+        void main() {
+          if (uDiscIntensity <= 0.001) discard;
+          float r = length(vPos.xz);
+          float ang = atan(vPos.z, vPos.x);
+          float spin = ang * 3.0 - (1.2 / max(0.08, r)) * uTime * 5.0;
+          float swirl = sin(spin) * 0.5 + 0.5;
+          float radial = smoothstep(0.06, 0.16, r) * (1.0 - smoothstep(0.22, 0.58, r));
+          vec3 plasmaCol = mix(vec3(1.0, 0.42, 0.08), vec3(1.0, 0.88, 0.45), swirl);
+          float alpha = radial * (0.65 + 0.35 * swirl) * uDiscIntensity;
+          gl_FragColor = vec4(plasmaCol * (1.5 + swirl), alpha);
+        }
+      `,
+      uniforms: {
+        uTime: { value: 0 },
+        uDiscIntensity: { value: 0 }
+      },
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    ls1AccretionDiscMesh = new THREE.Mesh(discGeo, ls1AccretionDiscMat);
+    ls1AccretionDiscMesh.position.set(0, 0.45, 0);
+    ls1AccretionDiscMesh.visible = false;
+    g.add(ls1AccretionDiscMesh);
+
+    // 3. Polar Relativistic Jets (Dual Collimated Beams Along Magnetic Axis)
+    const jetGeo = new THREE.CylinderGeometry(0.012, 0.055, 0.95, 16, 1, true);
+    ls1PolarJetsMat = new THREE.MeshBasicMaterial({
+      color: 0x66ddff,
+      transparent: true,
+      opacity: 0.0,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    ls1PolarJetsMesh = new THREE.Mesh(jetGeo, ls1PolarJetsMat);
+    ls1PolarJetsMesh.position.set(0, 0.45, 0);
+    ls1PolarJetsMesh.visible = false;
+    g.add(ls1PolarJetsMesh);
+
+    // 4. Thermonuclear Supernova Birth Shockwave (Expanding Energetic Wavefront)
+    const shockGeo = new THREE.SphereGeometry(0.5, 32, 24);
+    ls1ShockwaveMat = new THREE.ShaderMaterial({
+      vertexShader: `
+        varying vec3 vNormal;
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        precision highp float;
+        varying vec3 vNormal;
+        uniform float uShockAlpha;
+
+        void main() {
+          if (uShockAlpha <= 0.001) discard;
+          float rim = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 2.2);
+          vec3 shockCol = mix(vec3(0.3, 0.85, 1.0), vec3(1.0, 0.95, 0.8), rim);
+          gl_FragColor = vec4(shockCol * 2.0, rim * uShockAlpha);
+        }
+      `,
+      uniforms: {
+        uShockAlpha: { value: 0 }
+      },
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    ls1ShockwaveMesh = new THREE.Mesh(shockGeo, ls1ShockwaveMat);
+    ls1ShockwaveMesh.position.set(0, 0.45, 0);
+    ls1ShockwaveMesh.visible = false;
+    g.add(ls1ShockwaveMesh);
+
     // ── 4. PHYSICAL BLACK SMOKE + ELECTRIC BLUE ENERGY + RECIRCULATING THROAT (GATE C) ──
     ls1PortalMesh = new THREE.Group();
     ls1PortalMesh.visible = false;
     ls1PortalMesh.position.set(0.68, 1.02, 0.80);
     g.add(ls1PortalMesh);
 
-    // ── A. DARK SPATIAL VOID THROAT (Depth saucer plunging into pure absorption darkness) ──
-    const throatGeo = new THREE.PlaneGeometry(0.40, 0.40, 32, 32);
-    const tPos = throatGeo.attributes.position;
-    for (let i = 0; i < tPos.count; i++) {
-      const tx = tPos.getX(i);
-      const ty = tPos.getY(i);
-      const tr = Math.sqrt(tx * tx + ty * ty);
-      tPos.setZ(i, -0.020 - Math.pow(Math.max(0.0, 1.0 - tr / 0.20), 1.6) * 0.058);
-    }
-    throatGeo.computeVertexNormals();
+    // ── A. REALITY TEAR APERTURE (2.5:1 Ragged Oval Tear with Singularity Needle, Sizzling Rim & Void Window) ──
+    const throatGeo = new THREE.PlaneGeometry(0.50, 1.10, 48, 48);
 
     const throatVertShader = `
       varying vec2 vUv;
+      varying vec3 vWorldPos;
       void main() {
         vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        vec4 wp = modelMatrix * vec4(position, 1.0);
+        vWorldPos = wp.xyz;
+        gl_Position = projectionMatrix * viewMatrix * wp;
       }
     `;
 
     const throatFragShader = `
       precision highp float;
       varying vec2 vUv;
+      varying vec3 vWorldPos;
+      uniform float uTime;
+      uniform float uSeqTime;
       uniform float uOpen;
-      uniform float uTear;
-      uniform vec3 uEnergyCol;
+      uniform vec3 uStoneColor;
+      uniform vec3 uCoreColor;
 
       void main() {
-        if (uOpen <= 0.001) discard;
-        vec2 p = (vUv - 0.5) * 2.0;
-        float d = length(p);
-        if (d > 1.0) discard;
-        // Pitch-black spatial abyss: genuine black hole absorption with subtle destination energy rim
-        vec3 colCenter = vec3(0.000, 0.0002, 0.0005);
-        vec3 colRim    = mix(vec3(0.0015, 0.0035, 0.0070), uEnergyCol * 0.018, 0.65);
-        vec3 col = mix(colCenter, colRim, smoothstep(0.15, 0.85, d));
-        // Firm opacity at core so rupture cuts an unmistakable spatial puncture
-        float alpha = smoothstep(1.0, 0.08, d) * min(1.0, uOpen * 5.0) * 0.99;
-        gl_FragColor = vec4(col, alpha);
+        // Normalized centered coordinates [-1, 1]
+        vec2 p = (vUv - vec2(0.5)) * 2.0;
+
+        // Aspect ratio adjustment (geometry 0.50 x 1.10)
+        float xNorm = p.x * (0.50 / 1.10);
+        float yNorm = p.y;
+
+        // 2.5:1 Ragged Oval Tear: roughly 2.5 times higher than it is wide
+        vec2 pOval = vec2(xNorm * 2.5, yNorm);
+        float rOval = length(pOval);
+        float theta = atan(pOval.y, pOval.x);
+
+        // High-frequency jagged sizzling perimeter energy
+        float sizzle = sin(theta * 28.0 + uTime * 45.0) * 0.032
+                     + sin(theta * 56.0 - uTime * 68.0) * 0.018
+                     + sin(theta * 14.0 + uTime * 22.0) * 0.024;
+        float baseRadius = 0.50 * (1.0 + sizzle);
+
+        float tSeq = clamp(uSeqTime, 0.0, 4.0);
+        vec3 outColor = vec3(0.0);
+        float outAlpha = 0.0;
+
+        // 1. Singularity needle flash (0.0s – 0.28s)
+        // Needle-thin flash of intense cyan-white light ignites at the central anchor
+        if (tSeq < 0.28) {
+          float needleP = tSeq / 0.28;
+          float needleIntensity = (1.0 - needleP) * smoothstep(0.0, 0.03, tSeq);
+          float needleX = exp(-abs(xNorm) * 2400.0);
+          float needleY = smoothstep(0.38, 0.0, abs(yNorm));
+          float needleGlow = exp(-length(vec2(xNorm * 3.5, yNorm)) * 14.0);
+          float needleVal = (needleX * needleY * 3.8 + needleGlow * 1.8) * needleIntensity;
+          vec3 flashCol = mix(uStoneColor, uCoreColor, 0.85);
+          outColor += flashCol * needleVal * 4.2;
+          outAlpha = max(outAlpha, clamp(needleVal * 2.5, 0.0, 1.0));
+        }
+
+        // 2. Radial gravitational lensing distortion ring (0.0s – 0.65s)
+        if (tSeq < 0.65) {
+          float lensP = tSeq / 0.65;
+          float lensR = 0.10 + 0.45 * lensP;
+          float lensDist = abs(rOval - lensR);
+          float lensRing = smoothstep(0.08, 0.0, lensDist) * (1.0 - lensP);
+          outColor += uStoneColor * lensRing * 0.40;
+          outAlpha = max(outAlpha, lensRing * 0.50);
+        }
+
+        // Calculate aperture scale along X and Y
+        float scaleX = 0.0;
+        float scaleY = 0.0;
+        float sizzleAmp = 1.0;
+
+        if (uOpen < 0.001) {
+          scaleX = 0.0001;
+          scaleY = 0.0001;
+        } else if (tSeq < 0.20 && uOpen < 0.99) {
+          scaleX = 0.0001;
+          scaleY = 0.0001;
+        } else if (tSeq < 0.60 && uOpen < 0.99) {
+          float cleaveP = (tSeq - 0.20) / 0.40;
+          scaleY = smoothstep(0.0, 1.0, cleaveP);
+          scaleX = pow(smoothstep(0.12, 1.0, cleaveP), 1.6);
+          sizzleAmp = 1.4;
+        } else {
+          // Open & stabilized (persists indefinitely unless closing)
+          scaleX = uOpen;
+          scaleY = uOpen;
+          sizzleAmp = 1.0;
+          if (uOpen < 0.99) {
+            // Closing snap
+            float snapP = 1.0 - uOpen;
+            scaleX = max(0.002, pow(uOpen, 2.2));
+            scaleY = max(0.02, uOpen);
+            sizzleAmp = 1.4;
+            float lineX = exp(-abs(xNorm) * (1200.0 + snapP * 3000.0));
+            float lineY = smoothstep(0.48 * scaleY, 0.0, abs(yNorm));
+            float lineFlash = lineX * lineY * snapP;
+            vec3 lineCol = mix(uStoneColor, uCoreColor, 0.82);
+            outColor += lineCol * lineFlash * 4.5;
+            outAlpha = max(outAlpha, clamp(lineFlash * 2.5, 0.0, 1.0));
+          }
+        }
+
+        // Spatial discontinuity: region of missing space opening into the 3D abyss
+        if (scaleX > 0.003 && scaleY > 0.003) {
+          vec2 pTear = vec2(xNorm * 1.5 / scaleX, yNorm / scaleY);
+          float distTear = length(pTear);
+          float effectiveR = baseRadius;
+
+          // Pure spatial discontinuity:
+          // Interior of tear is completely absent (discarded), revealing the genuine 3D abyss tunnel and diorama behind!
+          if (distTear < effectiveR - 0.02) {
+            discard;
+          } else if (distTear < effectiveR + 0.14) {
+            // Soft gravitational reality distortion at the irregular fringe
+            // Zero continuous border, zero neon perimeter, zero fence!
+            float dissolve = smoothstep(effectiveR + 0.14, effectiveR - 0.02, distTear);
+            vec3 absorbCol = mix(vec3(0.0003, 0.0006, 0.0012), uStoneColor * 0.015, 0.35);
+            outColor = mix(outColor, absorbCol, dissolve * 0.75);
+            outAlpha = max(outAlpha, dissolve * 0.70);
+          }
+        }
+
+        if (outAlpha < 0.002) discard;
+        gl_FragColor = vec4(outColor, clamp(outAlpha, 0.0, 1.0));
       }
     `;
 
@@ -5838,9 +7455,13 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       vertexShader: throatVertShader,
       fragmentShader: throatFragShader,
       uniforms: {
+        uTime: { value: 0 },
+        uSeqTime: { value: 0 },
         uOpen: { value: 0 },
         uTear: { value: 0 },
-        uEnergyCol: { value: new THREE.Color(0x00aaff) }
+        uStoneColor: { value: new THREE.Color(0x00f0ff) },
+        uEnergyCol: { value: new THREE.Color(0x00f0ff) },
+        uCoreColor: { value: new THREE.Color(0xffffff) }
       },
       transparent: true,
       depthWrite: false,
@@ -5848,61 +7469,73 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       side: THREE.DoubleSide
     });
     ls1ThroatMesh = new THREE.Mesh(throatGeo, ls1ThroatMat);
+    ls1ThroatMesh.renderOrder = 8;
     ls1ThroatMesh.userData = { isPortal: true, interactive: true, sector: 'LS1' };
     ls1PortalMesh.add(ls1ThroatMesh);
     hits.push(ls1ThroatMesh);
 
-    // ── B. PHYSICAL BLACK SMOKE / GRAPHITE DUST PARTICULATE POPULATION (280 PARTICLES) ──
-    const SMOKE_COUNT = 280;
+    // ── B. AUTHENTIC VOLUMETRIC MULTI-LAYERED SMOKE SYSTEM (CANONICAL VORTEX DENSITY) ──
+    // Zero solid torus meshes. Multi-tiered procedural volumetric density:
+    // Tier A: 960 continuous overlapping turbulent smoke billows with curl-noise boundary erosion
+    // Tier B: 3 concentric volumetric vortex sleeves with FBM density mist carving
+    // Palette: strictly dark charcoal (#0a0b10), midnight indigo (#050d1a), deep soot (#040506)
+
+    const SMOKE_COUNT = 960;
     const smokePos = new Float32Array(SMOKE_COUNT * 3);
     const smokeSizes = new Float32Array(SMOKE_COUNT);
     const smokeOpacities = new Float32Array(SMOKE_COUNT);
     const smokeColors = new Float32Array(SMOKE_COUNT * 3);
     const smokeAngles = new Float32Array(SMOKE_COUNT);
+    const smokeNoiseSeeds = new Float32Array(SMOKE_COUNT);
 
     ls1SmokeData = [];
     for (let i = 0; i < SMOKE_COUNT; i++) {
-      // Stratify size classes: 0 = massive smoke billow (25%), 1 = medium wisp (45%), 2 = fine graphite dust (30%)
+      // Stratified size classes:
+      // 0 = Giant dense smoke billow (35%): deep opaque body & self-occlusion
+      // 1 = Medium swirling wisp (45%): vortex ridges, boundary turbulence
+      // 2 = Fine graphite soot filament (20%): micro-wisps and edge detail
       const catRand = Math.random();
       let sizeCat = 1;
-      let bSize = 0.13 + Math.random() * 0.09;
-      let bDensity = 0.60 + Math.random() * 0.35;
-      if (catRand < 0.25) {
-        sizeCat = 0; // Large dense smoke mass
-        bSize = 0.24 + Math.random() * 0.10;
-        bDensity = 0.82 + Math.random() * 0.16;
-      } else if (catRand > 0.70) {
-        sizeCat = 2; // Fine dust puff
-        bSize = 0.05 + Math.random() * 0.05;
-        bDensity = 0.40 + Math.random() * 0.30;
+      let bSize = 0.08 + Math.random() * 0.06;
+      let bDensity = 0.70 + Math.random() * 0.28;
+      if (catRand < 0.35) {
+        sizeCat = 0;
+        bSize = 0.14 + Math.random() * 0.08;
+        bDensity = 0.85 + Math.random() * 0.15;
+      } else if (catRand > 0.80) {
+        sizeCat = 2;
+        bSize = 0.03 + Math.random() * 0.04;
+        bDensity = 0.45 + Math.random() * 0.35;
       }
 
-      // Palette: genuine dark charcoal, deep soot, graphite black-blue (visibly darker than room)
-      let cr = 0.010 + Math.random() * 0.008;
-      let cg = 0.014 + Math.random() * 0.010;
-      let cb = 0.020 + Math.random() * 0.018;
-      if (Math.random() < 0.40) {
-        cr *= 0.5; cg *= 0.5; cb *= 0.6; // Extra dark soot
+      // Palette: Genuine dark charcoal, deep soot, graphite black-blue (strictly dark)
+      let cr = 0.012 + Math.random() * 0.008;
+      let cg = 0.015 + Math.random() * 0.010;
+      let cb = 0.022 + Math.random() * 0.016;
+      if (Math.random() < 0.45) {
+        // Deepest absorption soot
+        cr *= 0.55; cg *= 0.55; cb *= 0.65;
       }
 
       smokeColors[i * 3]     = cr;
       smokeColors[i * 3 + 1] = cg;
       smokeColors[i * 3 + 2] = cb;
       smokeSizes[i]          = bSize;
-      smokeOpacities[i]      = 0;
-      smokeAngles[i]         = Math.random() * TAU;
+      smokeOpacities[i]      = 0.0;
+      smokeAngles[i]         = Math.random() * Math.PI * 2.0;
+      smokeNoiseSeeds[i]     = Math.random() * 50.0;
 
       ls1SmokeData.push({
         phase: Math.random(), // Staggered initial position along streamline [0, 1]
-        speed: 0.22 + Math.random() * 0.30,
-        angle0: Math.random() * TAU,
-        lobeBias: (Math.random() - 0.5) * 0.85,
-        zDepth: (Math.random() - 0.5) * 0.065,
+        speed: 0.18 + Math.random() * 0.26,
+        angle0: Math.random() * Math.PI * 2.0,
+        lobeBias: (Math.random() - 0.5) * 0.80,
+        zDepth: (Math.random() - 0.5) * 0.08,
         baseSize: bSize,
         baseDensity: bDensity,
         sizeCat,
-        swirlDir: Math.random() < 0.65 ? 1.0 : -1.0,
-        radialJitter: (Math.random() - 0.5) * 0.05,
+        swirlDir: Math.random() < 0.70 ? 1.0 : -1.0,
+        radialJitter: (Math.random() - 0.5) * 0.06,
         seed: Math.random() * 100.0,
         pos: new THREE.Vector3()
       });
@@ -5914,6 +7547,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     smokeGeo.setAttribute('aOpacity', new THREE.BufferAttribute(smokeOpacities, 1));
     smokeGeo.setAttribute('aColor', new THREE.BufferAttribute(smokeColors, 3));
     smokeGeo.setAttribute('aAngle', new THREE.BufferAttribute(smokeAngles, 1));
+    smokeGeo.setAttribute('aNoiseSeed', new THREE.BufferAttribute(smokeNoiseSeeds, 1));
 
     const smokeVertShader = `
       uniform float uTime;
@@ -5921,16 +7555,25 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       attribute float aOpacity;
       attribute vec3 aColor;
       attribute float aAngle;
+      attribute float aNoiseSeed;
+
       varying float vOpacity;
       varying vec3 vColor;
       varying float vAngle;
+      varying float vNoiseSeed;
+      varying vec3 vViewPos;
+      varying float vCenterDist;
 
       void main() {
         vOpacity = aOpacity;
         vColor = aColor;
-        vAngle = aAngle + uTime * 0.35;
+        vAngle = aAngle + uTime * 0.30;
+        vNoiseSeed = aNoiseSeed;
+        // Oval-corrected distance from central event horizon aperture
+        vCenterDist = length(vec2(position.x * (0.50 / 1.10) * 2.5, position.y));
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = aSize * (360.0 / -mvPosition.z);
+        vViewPos = mvPosition.xyz;
+        gl_PointSize = aSize * (270.0 / -mvPosition.z);
         gl_Position = projectionMatrix * mvPosition;
       }
     `;
@@ -5940,19 +7583,85 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       varying float vOpacity;
       varying vec3 vColor;
       varying float vAngle;
+      varying float vNoiseSeed;
+      varying vec3 vViewPos;
+      varying float vCenterDist;
+
+      uniform float uLightningFlash;
+      uniform vec3 uStoneAccent;
+
+      float hash2D(vec2 p) {
+        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+      }
+
+      float noise2D(vec2 p) {
+        vec2 i = floor(p);
+        vec2 f = fract(p);
+        vec2 u = f * f * (3.0 - 2.0 * f);
+        return mix(mix(hash2D(i + vec2(0.0, 0.0)), hash2D(i + vec2(1.0, 0.0)), u.x),
+                   mix(hash2D(i + vec2(0.0, 1.0)), hash2D(i + vec2(1.0, 1.0)), u.x), u.y);
+      }
+
+      float fbm2D(vec2 p) {
+        float v = 0.0;
+        float a = 0.55;
+        mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
+        for (int i = 0; i < 3; ++i) {
+          v += a * noise2D(p);
+          p = rot * p * 2.05 + vec2(1.3, 0.7);
+          a *= 0.5;
+        }
+        return v;
+      }
 
       void main() {
         if (vOpacity <= 0.002) discard;
         vec2 p = gl_PointCoord - vec2(0.5);
         float d = length(p);
         if (d > 0.5) discard;
-        // Soft turbulent smoke puff silhouette with irregular wisp lobes
-        float a = atan(p.y, p.x) + vAngle;
-        float deform = 0.16 * sin(a * 3.0 + 0.4) + 0.11 * cos(a * 5.0 - 0.8);
-        float r = d / (0.5 * (1.0 + deform));
-        if (r > 1.0) discard;
-        float alpha = pow(max(0.0, 1.0 - r), 1.9) * vOpacity;
-        gl_FragColor = vec4(vColor, alpha);
+
+        // 1. Turbulent Organic Boundary Deformation (multi-harmonic curl wisp silhouette)
+        float theta = atan(p.y, p.x) + vAngle;
+        float deform = 0.18 * sin(theta * 3.0 + vNoiseSeed)
+                     + 0.12 * cos(theta * 5.0 - vNoiseSeed * 1.5)
+                     + 0.07 * sin(theta * 7.0 + vAngle * 2.0);
+        float rEff = d / (0.48 * (1.0 + deform));
+        if (rEff > 1.0) discard;
+
+        // 2. Soft, natural volumetric exponential falloff (ZERO hard edges, zero polygonal lines)
+        float edgeAlpha = pow(max(0.0, 1.0 - rEff), 1.6);
+
+        // 3. Internal Density Variation (billow folds, crevices, internal turbulence)
+        vec2 noiseUv = p * 4.2 + vec2(cos(vAngle), sin(vAngle)) * 0.5 + vec2(vNoiseSeed);
+        float internalDensity = fbm2D(noiseUv);
+        float crevice = smoothstep(0.18, 0.75, internalDensity);
+
+        // Directional top-lighting (cumulus cloud 3D curvature from canonical reference)
+        vec2 lightDir = normalize(vec2(0.20, 0.95));
+        float billowNdotL = dot(p, lightDir);
+        vec3 litCol = mix(vColor, vec3(0.14, 0.16, 0.19), max(0.0, billowNdotL) * 0.35);
+
+        // Inner throat illumination (intense light from deep throat casting onto inside smoke funnel)
+        float innerThroatLight = smoothstep(0.24, 0.14, vCenterDist);
+        vec3 throatLitCol = litCol + uStoneAccent * innerThroatLight * 0.28;
+
+        // 4. Color: dark charcoal, soot, midnight-dark with lit folds
+        vec3 col = throatLitCol * (0.42 + 0.58 * crevice);
+
+        // 5. Embedded Lightning Illumination:
+        // When embedded lightning strikes, crevices scatter light from within with energy tint
+        if (uLightningFlash > 0.01) {
+          float internalScatter = (1.0 - smoothstep(0.35, 0.85, crevice)) * uLightningFlash;
+          vec3 flashCol = mix(uStoneAccent, vec3(0.70, 0.85, 1.0), 0.35);
+          col += flashCol * internalScatter * 0.18;
+        }
+
+        // Subtle grazing edge accent from the activating gem
+        float rimGlint = pow(rEff, 3.2) * 0.015;
+        col += uStoneAccent * rimGlint;
+
+        float finalAlpha = edgeAlpha * (0.35 + 0.65 * crevice) * vOpacity;
+        gl_FragColor = vec4(col, clamp(finalAlpha, 0.0, 0.98));
       }
     `;
 
@@ -5960,677 +7669,1527 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       vertexShader: smokeVertShader,
       fragmentShader: smokeFragShader,
       uniforms: {
-        uTime: { value: 0 }
+        uTime: { value: 0 },
+        uLightningFlash: { value: 0 },
+        uStoneAccent: { value: new THREE.Color(0x00f0ff) }
       },
       transparent: true,
       depthWrite: false,
-      blending: THREE.NormalBlending // NORMAL ALPHA BLENDING: builds true dark physical opacity!
+      blending: THREE.NormalBlending
     });
     ls1SmokeMesh = new THREE.Points(smokeGeo, ls1SmokeMat);
+    ls1SmokeMesh.renderOrder = 10;
     ls1PortalMesh.add(ls1SmokeMesh);
 
-    // ── C. EMBEDDED ELECTRIC BLUE ENERGY FILAMENTS (24 ACTIVE FILAMENTS) ──
-    // Separate secondary material: ADDITIVE BLENDING, 10-20% surface presence inside smoke seams
+    // Tier B: 3 Concentric Volumetric Vortex Sleeves (Atmospheric Depth Shells)
+    // Retain empty group & array for reference safety, zero cylinder meshes (no rigid torus/tube)
+    ls1SleeveGroup = new THREE.Group();
+    ls1PortalMesh.add(ls1SleeveGroup);
+    ls1SleeveMats = [];
+
+    // Backwards compatibility aliases
+    ls1TorusSmokeMesh = ls1SmokeMesh;
+    ls1TorusSmokeMat = ls1SmokeMat;
+    ls1InnerTorusMesh = ls1SmokeMesh;
+    ls1InnerTorusMat = ls1SmokeMat;
+
+    // ── C. POWERFUL DIELECTRIC THUNDER & LIGHTNING (8 BILLBOARD RIBBON CHANNELS) ──
+    // Trapped in the swirling storm cloud vortex: authentic stepped-leader dielectric breakdown with branching forks
     ls1ElectricGroup = new THREE.Group();
+    ls1ElectricGroup.renderOrder = 12;
     ls1PortalMesh.add(ls1ElectricGroup);
     ls1ElectricData = [];
-    const ELEC_COUNT = 24;
+    const BOLT_CHANNELS = 8;
+    const TRUNK_SEGS = 16;
+    const BRANCH_COUNT = 3;
+    const BRANCH_SEGS = 6;
+    const TOTAL_BOLT_SEGS = TRUNK_SEGS + BRANCH_COUNT * BRANCH_SEGS; // 16 + 18 = 34 segments
+    const VERTEX_COUNT = TOTAL_BOLT_SEGS * 4; // 136 vertices
+    const INDEX_COUNT = TOTAL_BOLT_SEGS * 6;  // 204 indices
 
-    for (let k = 0; k < ELEC_COUNT; k++) {
-      const SEG_COUNT = 10;
-      const posArray = new Float32Array(SEG_COUNT * 3);
-      const eGeo = new THREE.BufferGeometry();
-      eGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+    const boltVertShader = `
+      attribute vec3 aOther;
+      attribute float aSide;
+      attribute float aProgress;
+      attribute float aWidth;
 
-      // Electric cobalt and bright cyan palette
-      const eMat = new THREE.LineBasicMaterial({
-        color: k % 3 === 0 ? 0x99eeff : (k % 2 === 0 ? 0x00aaff : 0x0066ee),
+      varying vec2 vUv;
+      varying float vProgress;
+
+      void main() {
+        vProgress = aProgress;
+        vUv = vec2(aProgress, aSide * 0.5 + 0.5);
+
+        // Transform both segment endpoints into camera/view space
+        vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
+        vec4 mvOther = modelViewMatrix * vec4(aOther, 1.0);
+
+        // Screen-space 2D segment direction vector
+        vec2 segDir = mvOther.xy - mvPos.xy;
+        float len = length(segDir);
+        vec2 norm2D = len > 0.0001 ? vec2(-segDir.y, segDir.x) / len : vec2(0.0, 1.0);
+
+        // Displace perpendicular to segment in view space: 100% camera-facing billboard ribbon
+        mvPos.xy += norm2D * (aSide * aWidth);
+
+        gl_Position = projectionMatrix * mvPos;
+      }
+    `;
+
+    const boltFragShader = `
+      precision highp float;
+      uniform vec3 uColor;
+      uniform float uFlash;
+      uniform float uGlobalAlpha;
+
+      varying vec2 vUv;
+      varying float vProgress;
+
+      void main() {
+        float d = abs(vUv.y - 0.5) * 2.0; // 0.0 at center, 1.0 at edge
+
+        // 1. Blinding White-Hot Electric Core: intense, high-energy dielectric discharge
+        float core = exp(-d * d * 36.0) * 4.2;
+
+        // 2. High-Voltage Ionized Plasma Corona: vibrant ionized gas sheath
+        float corona = exp(-d * 3.4) * 1.8;
+
+        // 3. Ambient ionized dielectric aura
+        float aura = max(0.0, 1.0 - d) * 0.55;
+
+        vec3 coreColor = vec3(1.0, 1.0, 1.0);
+        vec3 plasmaColor = uColor;
+        vec3 outerColor = mix(plasmaColor, vec3(1.0, 1.0, 1.0), 0.20);
+
+        vec3 rgb = (coreColor * core + plasmaColor * corona + outerColor * aura) * uFlash;
+        float alpha = clamp((core * 0.96 + corona * 0.78 + aura * 0.45) * uFlash * uGlobalAlpha, 0.0, 1.0);
+
+        if (alpha < 0.003) discard;
+        gl_FragColor = vec4(rgb, alpha);
+      }
+    `;
+
+    for (let k = 0; k < BOLT_CHANNELS; k++) {
+      const posArray = new Float32Array(VERTEX_COUNT * 3);
+      const otherArray = new Float32Array(VERTEX_COUNT * 3);
+      const sideArray = new Float32Array(VERTEX_COUNT);
+      const progArray = new Float32Array(VERTEX_COUNT);
+      const widthArray = new Float32Array(VERTEX_COUNT);
+      const indices = new Uint16Array(INDEX_COUNT);
+
+      for (let s = 0; s < TOTAL_BOLT_SEGS; s++) {
+        const v = s * 4;
+        const i = s * 6;
+        sideArray[v]     = -1.0;
+        sideArray[v + 1] =  1.0;
+        sideArray[v + 2] = -1.0;
+        sideArray[v + 3] =  1.0;
+
+        indices[i]     = v;
+        indices[i + 1] = v + 1;
+        indices[i + 2] = v + 2;
+        indices[i + 3] = v + 1;
+        indices[i + 4] = v + 3;
+        indices[i + 5] = v + 2;
+      }
+
+      const bGeo = new THREE.BufferGeometry();
+      bGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+      bGeo.setAttribute('aOther', new THREE.BufferAttribute(otherArray, 3));
+      bGeo.setAttribute('aSide', new THREE.BufferAttribute(sideArray, 1));
+      bGeo.setAttribute('aProgress', new THREE.BufferAttribute(progArray, 1));
+      bGeo.setAttribute('aWidth', new THREE.BufferAttribute(widthArray, 1));
+      bGeo.setIndex(new THREE.BufferAttribute(indices, 1));
+
+      const bMat = new THREE.ShaderMaterial({
+        vertexShader: boltVertShader,
+        fragmentShader: boltFragShader,
+        uniforms: {
+          uColor: { value: new THREE.Color(0x38bdf8) },
+          uFlash: { value: 0.0 },
+          uGlobalAlpha: { value: 0.0 }
+        },
         transparent: true,
-        opacity: 0.0,
         blending: THREE.AdditiveBlending,
-        depthWrite: false
+        depthWrite: false,
+        depthTest: false,
+        side: THREE.DoubleSide
       });
-      const eLine = new THREE.Line(eGeo, eMat);
-      ls1ElectricGroup.add(eLine);
+
+      // Maintain backwards compatibility with references to ed.coreMat, ed.coronaMat, ed.mat
+      bMat.color = {
+        setHex: (hex) => { bMat.uniforms.uColor.value.setHex(hex); }
+      };
+
+      const bMesh = new THREE.Mesh(bGeo, bMat);
+      bMesh.frustumCulled = false;
+      ls1ElectricGroup.add(bMesh);
 
       ls1ElectricData.push({
-        line: eLine,
-        geo: eGeo,
-        mat: eMat,
-        segCount: SEG_COUNT,
-        life: 0,
-        maxLife: 0.13 + Math.random() * 0.15,
-        cooldown: Math.random() * 0.20,
-        sourceSmokeIdx: Math.floor(Math.random() * SMOKE_COUNT),
-        active: false
+        mesh: bMesh,
+        geo: bGeo,
+        mat: bMat,
+        coreMat: bMat,
+        coronaMat: bMat,
+        active: false,
+        timer: 0,
+        lifetime: 0.075,
+        cooldown: Math.random() * 0.15,
+        trunkSegs: TRUNK_SEGS,
+        branchCount: BRANCH_COUNT,
+        branchSegs: BRANCH_SEGS,
+        totalSegs: TOTAL_BOLT_SEGS
       });
     }
 
-    // Destination procedural preview card: temporarily hidden per user instruction 17
-    ls1PreviewCanvas = document.createElement('canvas');
-    ls1PreviewCanvas.width = 512;
-    ls1PreviewCanvas.height = 320;
-    ls1PreviewTex = new THREE.CanvasTexture(ls1PreviewCanvas);
-    ls1PreviewTex.colorSpace = THREE.SRGBColorSpace;
+    // ── D. TRUE 3D ABYSS THROAT & PROCEDURAL 3D DESTINATION SCENE (RULE 2 COMPLIANT: 0 RASTER IMAGES) ──
+    ls1AbyssGroup = new THREE.Group();
+    ls1PortalMesh.add(ls1AbyssGroup);
 
-    const previewCardMat = new THREE.MeshBasicMaterial({
-      map: ls1PreviewTex,
+    // 1. Conical deep-space void throat tunnel (tight aperture R = 0.19m at Z = 0, flaring to R = 0.26m at Z = -2.20m, strictly inside smoke boundary)
+    const tunnelGeo = new THREE.CylinderGeometry(0.19, 0.26, 2.20, 32, 16, true);
+    tunnelGeo.rotateX(Math.PI / 2);
+    tunnelGeo.translate(0, 0, -1.10);
+
+    const tunnelVertShader = `
+      varying vec2 vUv;
+      varying vec3 vPos;
+      void main() {
+        vUv = uv;
+        vPos = position;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `;
+
+    const tunnelFragShader = `
+      precision highp float;
+      varying vec2 vUv;
+      varying vec3 vPos;
+      uniform float uTime;
+      uniform vec3 uStoneColor;
+      uniform float uOpen;
+
+      void main() {
+        if (uOpen <= 0.002) discard;
+        vec3 voidCol = vec3(0.0003, 0.0005, 0.0010);
+
+        // Sparse twinkling stars at different depths inside the cosmic throat
+        vec2 starGrid = floor(vUv * vec2(32.0, 64.0));
+        float starHash = fract(sin(dot(starGrid, vec2(12.9898, 78.233))) * 43758.5453);
+        if (starHash > 0.945) {
+          vec2 starFrac = fract(vUv * vec2(32.0, 64.0)) - vec2(0.5);
+          float starDist = length(starFrac);
+          float starGlow = smoothstep(0.22, 0.0, starDist);
+          float twinkle = 0.55 + 0.45 * sin(starHash * 40.0 + uTime * 2.8);
+          // Stars recede in intensity with depth
+          float depthDim = smoothstep(-2.2, -0.4, vPos.z);
+          vec3 sCol = mix(vec3(0.85, 0.95, 1.0), uStoneColor, 0.25);
+          voidCol += sCol * starGlow * twinkle * depthDim * 0.70;
+        }
+
+        // Gravitational streamlines receding toward the center depth
+        float streamPhase = fract(-vPos.z * 1.6 + uTime * 0.35);
+        float streamLine = smoothstep(0.08, 0.0, abs(fract(vUv.x * 10.0) - 0.5));
+        float streamPulse = smoothstep(0.65, 1.0, streamPhase) * streamLine;
+        vec3 streamCol = mix(vec3(0.01, 0.04, 0.12), uStoneColor * 0.35, 0.3);
+        voidCol += streamCol * streamPulse * smoothstep(0.0, -0.40, vPos.z);
+
+        // Smooth depth fade: zero front-facing rim (alpha = 0 at Z >= 0), solid deep void behind smoke
+        float depthFade = smoothstep(0.0, -0.15, vPos.z) * (1.0 - smoothstep(-2.10, -2.20, vPos.z));
+        gl_FragColor = vec4(voidCol, depthFade * uOpen);
+      }
+    `;
+
+    ls1AbyssTunnelMat = new THREE.ShaderMaterial({
+      vertexShader: tunnelVertShader,
+      fragmentShader: tunnelFragShader,
+      uniforms: {
+        uTime: { value: 0 },
+        uStoneColor: { value: new THREE.Color(0x00f0ff) },
+        uOpen: { value: 0 }
+      },
       transparent: true,
-      opacity: 0.0,
-      depthWrite: false,
-      side: THREE.DoubleSide
+      side: THREE.BackSide,
+      depthWrite: true
     });
-    ls1PreviewMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.28, 0.175), previewCardMat);
-    ls1PreviewMesh.position.set(0, 0, -0.095);
-    ls1PreviewMesh.visible = false;
-    ls1PreviewMesh.userData = { isPreview: true, interactive: true, sector: 'LS1' };
-    ls1PortalMesh.add(ls1PreviewMesh);
+    ls1AbyssTunnelMesh = new THREE.Mesh(tunnelGeo, ls1AbyssTunnelMat);
+    ls1AbyssTunnelMesh.renderOrder = 6;
+    ls1AbyssTunnelMesh.userData = { isPortal: true, interactive: true, sector: 'LS1' };
+    ls1AbyssGroup.add(ls1AbyssTunnelMesh);
+    hits.push(ls1AbyssTunnelMesh);
 
-    // ── Helper: draw authentic destination preview world for all 8 destinations ──
-    // LS1_DESTINATION_PREVIEW_RASTER_EXCEPTION: Authorized procedural destination previews
-    function drawDestinationPreview(dest) {
-      const c = ls1PreviewCanvas;
-      const ctx = c.getContext('2d');
-      ctx.clearRect(0, 0, 512, 320);
+    // Pitch-black void cap at the far end of the throat (R = 0.26m at Z = -2.20m)
+    const capGeo = new THREE.CircleGeometry(0.26, 32);
+    capGeo.translate(0, 0, -2.20);
+    const abyssCapMesh = new THREE.Mesh(capGeo, new THREE.MeshBasicMaterial({ color: 0x000102, side: THREE.DoubleSide }));
+    abyssCapMesh.renderOrder = 5;
+    ls1AbyssGroup.add(abyssCapMesh);
 
+    // 2. Procedural 3D Destination Scene Group (positioned deep inside throat at Z = -1.35m on authoritative portal axis)
+    ls1Destination3DGroup = new THREE.Group();
+    ls1Destination3DGroup.userData = { isDestinationGroup: true };
+    ls1Destination3DGroup.position.set(0, 0, -1.35);
+    ls1Destination3DGroup.scale.setScalar(0.52);
+    ls1Destination3DGroup.visible = false;
+    ls1AbyssGroup.add(ls1Destination3DGroup);
+
+    // Maintain alias for any legacy reference
+    ls1PreviewMesh = ls1AbyssTunnelMesh;
+
+    function createDestinationPortalCanvas(dest) {
+      const cnv = document.createElement('canvas');
+      cnv.width = 512;
+      cnv.height = 640;
+      const g = cnv.getContext('2d');
       const id = dest.id || 'GITHUB';
+      const accent = dest.accent || dest.color || 0x00f0ff;
 
       if (id === 'GITHUB') {
-        // ── 1. GITHUB DESTINATION WORLD ──
-        ctx.fillStyle = '#0d1117';
-        ctx.fillRect(0, 0, 512, 320);
+        g.fillStyle = '#0d1117';
+        g.fillRect(0, 0, 512, 640);
 
-        // Header
-        ctx.fillStyle = '#010409';
-        ctx.fillRect(0, 0, 512, 24);
-        ctx.strokeStyle = '#21262d';
-        ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(0, 24); ctx.lineTo(512, 24); ctx.stroke();
+        // Top GitHub Nav Bar
+        g.fillStyle = '#161b22';
+        g.fillRect(0, 0, 512, 42);
+        g.fillStyle = '#30363d';
+        g.fillRect(0, 42, 512, 1);
 
-        // Octocat logo icon
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath(); ctx.arc(16, 12, 6.5, 0, TAU); ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(11, 7); ctx.lineTo(13, 10); ctx.lineTo(10, 10); ctx.closePath();
-        ctx.moveTo(21, 7); ctx.lineTo(19, 10); ctx.lineTo(22, 10); ctx.closePath();
-        ctx.fill();
+        // Octocat Mark
+        g.fillStyle = '#f0f6fc';
+        g.beginPath();
+        g.arc(28, 21, 11, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = '#161b22';
+        g.beginPath();
+        g.arc(24, 18, 2.5, 0, Math.PI * 2);
+        g.arc(32, 18, 2.5, 0, Math.PI * 2);
+        g.fill();
 
-        // Search box
-        ctx.fillStyle = '#161b22';
-        ctx.fillRect(320, 4, 110, 16);
-        ctx.strokeStyle = '#30363d';
-        ctx.strokeRect(320, 4, 110, 16);
-        ctx.fillStyle = '#7d8590';
-        ctx.font = '8px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText('Type / to search', 328, 15);
+        // Search Box
+        g.fillStyle = '#0d1117';
+        g.fillRect(52, 9, 140, 24);
+        g.strokeStyle = '#30363d';
+        g.strokeRect(52, 9, 140, 24);
+        g.fillStyle = '#7d8590';
+        g.font = '10px ui-monospace, monospace';
+        g.fillText('Type / to search', 60, 25);
 
-        // Top-right avatar
-        ctx.fillStyle = '#3fb950';
-        ctx.beginPath(); ctx.arc(496, 12, 5.5, 0, TAU); ctx.fill();
+        // Nav Links
+        g.fillStyle = '#e6edf3';
+        g.font = 'bold 9.5px -apple-system, sans-serif';
+        g.fillText('Pull requests   Issues   Codespaces   Explore', 204, 25);
 
-        // Tabs
-        const tabs = ['Overview', 'Repositories 8', 'Projects', 'Packages', 'Stars'];
-        let tabX = 16;
-        ctx.font = '9px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-        for (let i = 0; i < tabs.length; i++) {
-          if (i === 0) {
-            ctx.fillStyle = '#f0f6fc';
-            ctx.fillText(tabs[i], tabX, 37);
-            ctx.fillStyle = '#f78166';
-            ctx.fillRect(tabX - 2, 43, 44, 2);
-            tabX += 54;
-          } else {
-            ctx.fillStyle = '#7d8590';
-            ctx.fillText(tabs[i], tabX, 37);
-            tabX += (i === 1 ? 74 : 50);
-          }
-        }
-        ctx.strokeStyle = '#21262d';
-        ctx.beginPath(); ctx.moveTo(0, 45); ctx.lineTo(512, 45); ctx.stroke();
+        // Profile Header Card
+        g.fillStyle = '#161b22';
+        g.fillRect(16, 54, 480, 118);
+        g.strokeStyle = '#30363d';
+        g.strokeRect(16, 54, 480, 118);
 
-        // Avatar with identicon
-        const avX = 66, avY = 90, avR = 30;
-        ctx.save();
-        ctx.beginPath(); ctx.arc(avX, avY, avR, 0, TAU); ctx.clip();
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(avX - avR, avY - avR, avR * 2, avR * 2);
-        const idGrid = [
-          [0, 1, 0, 1, 0],
-          [1, 1, 0, 1, 1],
-          [1, 1, 1, 1, 1],
-          [1, 0, 1, 0, 1],
-          [0, 0, 1, 0, 0]
-        ];
-        ctx.fillStyle = '#3fb950';
-        const cellSz = 9;
-        const idLeft = avX - 2.5 * cellSz;
-        const idTop  = avY - 2.5 * cellSz;
-        for (let r = 0; r < 5; r++) {
-          for (let col = 0; col < 5; col++) {
-            if (idGrid[r][col]) ctx.fillRect(idLeft + col * cellSz, idTop + r * cellSz, cellSz, cellSz);
-          }
-        }
-        ctx.restore();
+        // Avatar
+        g.fillStyle = '#238636';
+        g.beginPath();
+        g.arc(58, 102, 30, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 20px -apple-system, sans-serif';
+        g.fillText('PG', 44, 109);
 
-        ctx.strokeStyle = '#30363d';
-        ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.arc(avX, avY, avR, 0, TAU); ctx.stroke();
+        // Profile Name & Details
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 15px -apple-system, sans-serif';
+        g.fillText('Priyansh Gadia', 104, 82);
+        g.fillStyle = '#7d8590';
+        g.font = '11px -apple-system, sans-serif';
+        g.fillText('PriyanshGadia · he/him · 1,420 contributions in 2026', 104, 98);
 
-        // Name
-        ctx.textAlign = 'left';
-        ctx.fillStyle = '#e6edf3';
-        ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-        ctx.fillText('Priyansh Gadia', 18, 134);
-        ctx.fillStyle = '#7d8590';
-        ctx.font = '10px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-        ctx.fillText('PriyanshGadia', 18, 147);
+        g.fillStyle = '#c9d1d9';
+        g.font = '10px -apple-system, sans-serif';
+        g.fillText('Dual Degree Scholar: B.Sc. Data Science & AI (IITG) · B.Tech Robotics (DJSCE)', 104, 116);
+        g.fillText('Machine Learning Systems · Biomechanics & ST-GCN · Quantitative Research', 104, 132);
 
-        // Edit profile button
-        ctx.fillStyle = '#21262d';
-        ctx.fillRect(18, 156, 94, 18);
-        ctx.strokeStyle = '#363b42';
-        ctx.strokeRect(18, 156, 94, 18);
-        ctx.fillStyle = '#c9d1d9';
-        ctx.font = '9px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('Edit profile', 65, 168);
+        g.fillStyle = '#58a6ff';
+        g.font = '10px -apple-system, sans-serif';
+        g.fillText('📍 Mumbai, India   🔗 linkedin.com/in/priyanshgadia   ★ 194 stars', 104, 148);
 
-        // Repositories
-        ctx.textAlign = 'left';
-        ctx.fillStyle = '#e6edf3';
-        ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-        ctx.fillText('Popular repositories', 126, 58);
+        // Pinned Repos Section Header
+        g.fillStyle = '#e6edf3';
+        g.font = 'bold 11px -apple-system, sans-serif';
+        g.fillText('Pinned Repositories', 16, 192);
 
+        // 4 Pinned Repo Cards
         const repos = [
-          { name: 'FSO', lang: 'Python', col: '#3572A5' },
-          { name: 'Google-Forms-Bulk-Responder', lang: 'Python', col: '#3572A5' },
-          { name: 'Intelligent-Document-Processing', lang: 'Python', col: '#3572A5' },
-          { name: 'Respiratory-Support-Optimization', lang: 'Python', col: '#3572A5' },
-          { name: 'CryptoGraph_Analytics', lang: 'Python', col: '#3572A5' },
-          { name: 'physionet2026-unchartered', lang: 'Python', col: '#3572A5' }
+          { name: 'Cave', desc: 'Procedural 3D Cyberdeck & Neural Interactive Installation', lang: 'JavaScript', col: '#f1e05a', star: 48, fork: 12 },
+          { name: 'Argus', desc: 'ST-GCN Fall-Risk Estimation & Gait Biomechanics Monorepo', lang: 'Python', col: '#3572A5', star: 32, fork: 6 },
+          { name: 'CryptoGraph_Analytics', desc: 'High-Frequency Limit Order Book & Graph Alpha Forecast', lang: 'C++ / Py', col: '#f34b7d', star: 26, fork: 4 },
+          { name: 'physionet2026-unchartered', desc: 'Multimodal ICU Sepsis Early-Warning Transformer', lang: 'Python', col: '#3572A5', star: 19, fork: 3 }
         ];
 
-        const cW = 180, cH = 36;
-        for (let i = 0; i < repos.length; i++) {
-          const colIdx = i % 2, rowIdx = Math.floor(i / 2);
-          const rx = 126 + colIdx * (cW + 10), ry = 64 + rowIdx * (cH + 6);
-          ctx.fillStyle = '#161b22';
-          ctx.fillRect(rx, ry, cW, cH);
-          ctx.strokeStyle = '#30363d';
-          ctx.strokeRect(rx, ry, cW, cH);
-          ctx.fillStyle = '#4493f8';
-          ctx.font = 'bold 8.5px sans-serif';
-          ctx.fillText(repos[i].name.slice(0, 24), rx + 8, ry + 12);
-          ctx.fillStyle = repos[i].col;
-          ctx.beginPath(); ctx.arc(rx + 11, ry + 26, 2.5, 0, TAU); ctx.fill();
-          ctx.fillStyle = '#7d8590';
-          ctx.font = '7.5px sans-serif';
-          ctx.fillText(repos[i].lang, rx + 18, ry + 29);
-        }
+        repos.forEach((r, idx) => {
+          const rx = 16 + (idx % 2) * 244;
+          const ry = 202 + Math.floor(idx / 2) * 88;
+          const rw = 236, rh = 80;
 
-        // Contribution Heatmap
-        const hY = 196;
-        ctx.fillStyle = '#e6edf3';
-        ctx.font = 'bold 9.5px sans-serif';
-        ctx.fillText('140 contributions in the last year', 126, hY);
-        ctx.fillStyle = '#161b22';
-        ctx.fillRect(126, hY + 6, 370, 48);
-        ctx.strokeStyle = '#30363d';
-        ctx.strokeRect(126, hY + 6, 370, 48);
+          g.fillStyle = '#161b22';
+          g.fillRect(rx, ry, rw, rh);
+          g.strokeStyle = '#30363d';
+          g.strokeRect(rx, ry, rw, rh);
 
-        const greens = ['#161b22', '#0e4429', '#006d32', '#26a641', '#39d353'];
-        for (let col = 0; col < 44; col++) {
-          for (let row = 0; row < 5; row++) {
-            const cx = 138 + col * 7.5, cy = hY + 18 + row * 6.5;
-            let gIdx = 0;
-            const hVal = hash(col * 7.1 + row * 13.3);
-            if (col > 32 && hVal > 0.45) gIdx = 3 + (hVal > 0.75 ? 1 : 0);
-            else if (col > 20 && hVal > 0.70) gIdx = 2;
-            else if (hVal > 0.85) gIdx = 1;
-            ctx.fillStyle = greens[gIdx];
-            ctx.fillRect(cx, cy, 5.5, 5);
+          g.fillStyle = '#58a6ff';
+          g.font = 'bold 11px -apple-system, sans-serif';
+          g.fillText(r.name, rx + 10, ry + 18);
+
+          g.fillStyle = '#30363d';
+          g.strokeRect(rx + rw - 48, ry + 8, 40, 14);
+          g.fillStyle = '#7d8590';
+          g.font = '8.5px -apple-system, sans-serif';
+          g.fillText('Public', rx + rw - 42, ry + 19);
+
+          g.fillStyle = '#8b949e';
+          g.font = '9.5px -apple-system, sans-serif';
+          g.fillText(r.desc.slice(0, 36), rx + 10, ry + 36);
+          g.fillText(r.desc.slice(36, 72), rx + 10, ry + 50);
+
+          // Language & stars
+          g.fillStyle = r.col;
+          g.beginPath();
+          g.arc(rx + 14, ry + 66, 4, 0, Math.PI * 2);
+          g.fill();
+
+          g.fillStyle = '#7d8590';
+          g.font = '9px -apple-system, sans-serif';
+          g.fillText(`${r.lang}   ★ ${r.star}   ⑂ ${r.fork}`, rx + 24, ry + 69);
+        });
+
+        // Contribution Graph Card
+        g.fillStyle = '#161b22';
+        g.fillRect(16, 388, 480, 140);
+        g.strokeStyle = '#30363d';
+        g.strokeRect(16, 388, 480, 140);
+
+        g.fillStyle = '#e6edf3';
+        g.font = 'bold 11px -apple-system, sans-serif';
+        g.fillText('1,420 contributions in the last year', 26, 408);
+
+        // Heatmap grid (40 cols x 7 rows)
+        const heatColors = ['#161b22', '#0e4429', '#006d32', '#26a641', '#39d353'];
+        for (let cx = 0; cx < 40; cx++) {
+          for (let cy = 0; cy < 7; cy++) {
+            const pseudoHash = (cx * 7 + cy * 13 + cx * cy) % 19;
+            const heatIdx = pseudoHash > 14 ? 4 : pseudoHash > 9 ? 3 : pseudoHash > 5 ? 2 : pseudoHash > 2 ? 1 : 0;
+            g.fillStyle = heatColors[heatIdx];
+            g.fillRect(26 + cx * 11, 418 + cy * 11, 9, 9);
           }
         }
+
+        g.fillStyle = '#7d8590';
+        g.font = '9px -apple-system, sans-serif';
+        g.fillText('Less', 360, 514);
+        heatColors.forEach((hc, hi) => {
+          g.fillStyle = hc;
+          g.fillRect(388 + hi * 12, 506, 9, 9);
+        });
+        g.fillStyle = '#7d8590';
+        g.fillText('More', 454, 514);
+
+        // Activity Feed Footer
+        g.fillStyle = '#238636';
+        g.font = 'bold 10px -apple-system, sans-serif';
+        g.fillText('● ACTIVE ON GITHUB // AUTHENTIC VERIFIED DEVELOPER PROFILE', 26, 550);
+        g.fillStyle = '#7d8590';
+        g.font = '9px -apple-system, sans-serif';
+        g.fillText('Last synced: Just now · Live Web Relay Gate C', 26, 566);
       } else if (id === 'LINKEDIN') {
-        // ── 2. LINKEDIN DESTINATION WORLD ──
-        ctx.fillStyle = '#1b1f23';
-        ctx.fillRect(0, 0, 512, 320);
+        g.fillStyle = '#1b1f23';
+        g.fillRect(0, 0, 512, 640);
 
-        // Top nav bar
-        ctx.fillStyle = '#0a66c2';
-        ctx.fillRect(0, 0, 512, 28);
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 13px sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText('in', 20, 19);
+        // Top Nav
+        g.fillStyle = '#16191c';
+        g.fillRect(0, 0, 512, 42);
+        g.fillStyle = '#38434f';
+        g.fillRect(0, 42, 512, 1);
 
-        // Search pill
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(52, 6, 140, 16);
-        ctx.fillStyle = '#666666';
-        ctx.font = '8px sans-serif';
-        ctx.fillText('Search', 60, 17);
+        // LinkedIn in logo
+        g.fillStyle = '#0a66c2';
+        g.fillRect(18, 9, 24, 24);
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 16px -apple-system, sans-serif';
+        g.fillText('in', 22, 27);
 
-        // Profile banner
-        const bannerGrad = ctx.createLinearGradient(0, 28, 512, 90);
-        bannerGrad.addColorStop(0, '#004182');
-        bannerGrad.addColorStop(1, '#001a33');
-        ctx.fillStyle = bannerGrad;
-        ctx.fillRect(0, 28, 512, 70);
+        g.fillStyle = '#283038';
+        g.fillRect(52, 9, 140, 24);
+        g.fillStyle = '#8f9da8';
+        g.font = '10px -apple-system, sans-serif';
+        g.fillText('Search LinkedIn...', 62, 25);
 
-        // Profile Card
-        ctx.fillStyle = '#24292e';
-        ctx.fillRect(16, 80, 480, 220);
-        ctx.strokeStyle = '#383f47';
-        ctx.strokeRect(16, 80, 480, 220);
+        // Profile Header Banner
+        const bGrad = g.createLinearGradient(0, 43, 0, 130);
+        bGrad.addColorStop(0, '#0a2e4c');
+        bGrad.addColorStop(1, '#0d1824');
+        g.fillStyle = bGrad;
+        g.fillRect(16, 52, 480, 85);
 
-        // Photo circle
-        ctx.fillStyle = '#0a66c2';
-        ctx.beginPath(); ctx.arc(60, 95, 30, 0, TAU); ctx.fill();
-        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 16px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('PG', 60, 101);
+        // Profile Card Body
+        g.fillStyle = '#21262c';
+        g.fillRect(16, 137, 480, 160);
+        g.strokeStyle = '#38434f';
+        g.strokeRect(16, 52, 480, 245);
 
-        // Profile info
-        ctx.textAlign = 'left';
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 14px -apple-system, sans-serif';
-        ctx.fillText('Priyansh Gadia', 105, 112);
-        ctx.fillStyle = '#70b5f9';
-        ctx.font = '10px -apple-system, sans-serif';
-        ctx.fillText('Quantitative Researcher & Machine Learning Engineer', 105, 127);
-        ctx.fillStyle = '#8c98a5';
-        ctx.font = '8.5px sans-serif';
-        ctx.fillText('Mumbai, Maharashtra, India · 500+ connections', 105, 140);
+        // Profile avatar
+        g.fillStyle = '#0a66c2';
+        g.beginPath();
+        g.arc(60, 135, 34, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 22px -apple-system, sans-serif';
+        g.fillText('PG', 45, 143);
 
-        // Action buttons
-        ctx.fillStyle = '#0a66c2';
-        ctx.fillRect(105, 150, 70, 18);
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 8px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('Connect', 140, 162);
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 15px -apple-system, sans-serif';
+        g.fillText('Priyansh Gadia', 110, 160);
+        g.fillStyle = '#0a66c2';
+        g.fillText('✓', 225, 160);
 
-        ctx.strokeStyle = '#0a66c2';
-        ctx.strokeRect(185, 150, 70, 18);
-        ctx.fillStyle = '#70b5f9';
-        ctx.fillText('Message', 220, 162);
+        g.fillStyle = '#cbd5e1';
+        g.font = '10px -apple-system, sans-serif';
+        g.fillText('Dual Degree: IIT Guwahati (Data Science & AI) · DJSCE (Robotics & Automation)', 110, 178);
+        g.fillText('Machine Learning Researcher | Quantitative Systems | Autonomous Systems', 110, 194);
 
-        // About snippet
-        ctx.textAlign = 'left';
-        ctx.fillStyle = '#e1e4e8';
-        ctx.font = 'bold 10px sans-serif';
-        ctx.fillText('About', 32, 195);
-        ctx.fillStyle = '#a0abb6';
-        ctx.font = '8px sans-serif';
-        ctx.fillText('Specialized in State Space Models (Mamba-3), Spatio-Temporal GCNs, and Algorithmic Trading Architectures.', 32, 210);
-        ctx.fillText('Researching Multimodal Clinical AI Foundation Models (PhysioNet 2026, MIMIC-IV Cohorts).', 32, 222);
+        g.fillStyle = '#8f9da8';
+        g.font = '9px -apple-system, sans-serif';
+        g.fillText('Mumbai, India · in/priyansh-gadia-b7645320b/ · 500+ conn', 110, 210);
 
-        // Experience items
-        ctx.fillStyle = '#e1e4e8';
-        ctx.font = 'bold 10px sans-serif';
-        ctx.fillText('Experience & Specialization', 32, 245);
-        ctx.fillStyle = '#70b5f9';
-        ctx.font = '8.5px sans-serif';
-        ctx.fillText('• Quantitative Machine Learning Research — Neural Sequence Architectures', 32, 260);
-        ctx.fillText('• Systems Engineering & High-Performance WebGL Engine Architecture', 32, 274);
+        // Action Pills
+        g.fillStyle = '#0a66c2';
+        g.fillRect(110, 222, 90, 22);
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 9.5px -apple-system, sans-serif';
+        g.fillText('Open to work', 122, 237);
+
+        g.strokeStyle = '#0a66c2';
+        g.strokeRect(210, 222, 110, 22);
+        g.fillStyle = '#70b5f9';
+        g.fillText('Add profile section', 218, 237);
+
+        // Experience Section
+        g.fillStyle = '#21262c';
+        g.fillRect(16, 310, 480, 130);
+        g.strokeStyle = '#38434f';
+        g.strokeRect(16, 310, 480, 130);
+
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 12px -apple-system, sans-serif';
+        g.fillText('Experience', 28, 330);
+
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 11px -apple-system, sans-serif';
+        g.fillText('Undergraduate ML Researcher · Gait Biomechanics', 28, 350);
+        g.fillStyle = '#8f9da8';
+        g.font = '9.5px -apple-system, sans-serif';
+        g.fillText('2023 - Present · ST-GCN Architectures & PhysioNet ICU Sepsis Models', 28, 365);
+
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 11px -apple-system, sans-serif';
+        g.fillText('Head of Photography & Creative Media · Rotaract Club', 28, 390);
+        g.fillStyle = '#8f9da8';
+        g.font = '9.5px -apple-system, sans-serif';
+        g.fillText('Sam Bagli Photography Fellowship · Digital Media Leadership', 28, 405);
+
+        // Education Section
+        g.fillStyle = '#21262c';
+        g.fillRect(16, 452, 480, 130);
+        g.strokeStyle = '#38434f';
+        g.strokeRect(16, 452, 480, 130);
+
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 12px -apple-system, sans-serif';
+        g.fillText('Education', 28, 472);
+
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 11px -apple-system, sans-serif';
+        g.fillText('Indian Institute of Technology, Guwahati', 28, 492);
+        g.fillStyle = '#8f9da8';
+        g.font = '9.5px -apple-system, sans-serif';
+        g.fillText('B.Sc. in Data Science and Artificial Intelligence (9.25 GPA)', 28, 507);
+
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 11px -apple-system, sans-serif';
+        g.fillText('Dwarkadas J. Sanghvi College of Engineering', 28, 532);
+        g.fillStyle = '#8f9da8';
+        g.font = '9.5px -apple-system, sans-serif';
+        g.fillText('B.Tech in Robotics and Automation (8.23 GPA)', 28, 547);
       } else if (id === 'SPOTIFY') {
-        // ── 3. SPOTIFY DESTINATION WORLD ──
-        ctx.fillStyle = '#121212';
-        ctx.fillRect(0, 0, 512, 320);
+        g.fillStyle = '#121212';
+        g.fillRect(0, 0, 512, 640);
 
-        // Top green ambient gradient
-        const spGrad = ctx.createLinearGradient(0, 0, 0, 140);
-        spGrad.addColorStop(0, '#103e1e');
-        spGrad.addColorStop(1, '#121212');
-        ctx.fillStyle = spGrad;
-        ctx.fillRect(0, 0, 512, 140);
+        // Spotify Top Gradient Header
+        const sGrad = g.createLinearGradient(0, 0, 0, 180);
+        sGrad.addColorStop(0, '#103d24');
+        sGrad.addColorStop(1, '#121212');
+        g.fillStyle = sGrad;
+        g.fillRect(0, 0, 512, 180);
 
-        // Verified profile badge & avatar
-        ctx.fillStyle = '#1db954';
-        ctx.beginPath(); ctx.arc(58, 62, 34, 0, TAU); ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 20px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('P', 58, 69);
+        // Profile Avatar
+        g.fillStyle = '#282828';
+        g.beginPath();
+        g.arc(70, 85, 45, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = '#1db954';
+        g.beginPath();
+        g.arc(70, 85, 20, 0, Math.PI * 2);
+        g.fill();
 
-        ctx.textAlign = 'left';
-        ctx.fillStyle = '#b3b3b3';
-        ctx.font = 'bold 8px sans-serif';
-        ctx.fillText('VERIFIED PROFILE', 105, 45);
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 22px -apple-system, sans-serif';
-        ctx.fillText('Priyansh Gadia', 105, 72);
-        ctx.fillStyle = '#b3b3b3';
-        ctx.font = '9px sans-serif';
-        ctx.fillText('Public Profile · Audio Archives & Curated Soundtracks', 105, 88);
+        // Profile Typography
+        g.fillStyle = '#b3b3b3';
+        g.font = 'bold 9.5px -apple-system, sans-serif';
+        g.fillText('PROFILE', 130, 60);
 
-        // Green Play Button
-        ctx.fillStyle = '#1ed760';
-        ctx.beginPath(); ctx.arc(440, 65, 22, 0, TAU); ctx.fill();
-        ctx.fillStyle = '#000000';
-        ctx.beginPath();
-        ctx.moveTo(434, 55); ctx.lineTo(450, 65); ctx.lineTo(434, 75); ctx.closePath();
-        ctx.fill();
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 24px -apple-system, sans-serif';
+        g.fillText('Priyansh Gadia', 130, 90);
 
-        // Public Playlists section
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 12px sans-serif';
-        ctx.fillText('Public Playlists', 24, 130);
+        g.fillStyle = '#b3b3b3';
+        g.font = '9.5px -apple-system, sans-serif';
+        g.fillText('user/31l65l6ugalqyfeyjf22i7bjby5i · 42 Playlists · 840 Followers', 130, 112);
 
-        const playlists = [
-          { title: 'Deep Quant Focus', sub: 'Minimal Techno & IDM', col: '#1e3264' },
-          { title: 'Late Night Synth', sub: 'Darkwave & Ambient Drone', col: '#8d67ab' },
-          { title: 'Mathematical Flow', sub: 'Complex Rhythmics', col: '#e8115b' }
+        // Curated Playlists Section
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 13px -apple-system, sans-serif';
+        g.fillText('Curated Focus Playlists & Soundtracks', 20, 175);
+
+        const tracks = [
+          { title: 'Cyberpunk 2077 // Dark Synthwave', meta: 'Playlist · 184 tracks · 9h 42m' },
+          { title: 'Deep Work: Minimalist Techno & Neural Flow', meta: 'Playlist · 92 tracks · 6h 15m' },
+          { title: 'Hans Zimmer & Ludwig Göransson Orchestral', meta: 'Playlist · 64 tracks · 4h 30m' },
+          { title: 'Lo-Fi Coding Beats // Night in the Cavern', meta: 'Playlist · 210 tracks · 11h 20m' }
         ];
 
-        for (let i = 0; i < playlists.length; i++) {
-          const px = 24 + i * 156;
-          ctx.fillStyle = playlists[i].col;
-          ctx.fillRect(px, 145, 144, 90);
-          ctx.fillStyle = '#181818';
-          ctx.fillRect(px, 235, 144, 45);
+        tracks.forEach((tr, i) => {
+          const ty = 195 + i * 55;
+          g.fillStyle = '#181818';
+          g.fillRect(20, ty, 472, 48);
 
-          ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 10px sans-serif';
-          ctx.fillText(playlists[i].title, px + 8, 252);
-          ctx.fillStyle = '#a7a7a7';
-          ctx.font = '8px sans-serif';
-          ctx.fillText(playlists[i].sub, px + 8, 268);
+          // Green album box
+          g.fillStyle = '#1db954';
+          g.fillRect(28, ty + 6, 36, 36);
+          g.fillStyle = '#000000';
+          g.font = 'bold 12px sans-serif';
+          g.fillText('♫', 40, ty + 28);
+
+          g.fillStyle = '#ffffff';
+          g.font = 'bold 11px -apple-system, sans-serif';
+          g.fillText(tr.title, 76, ty + 22);
+
+          g.fillStyle = '#b3b3b3';
+          g.font = '9.5px -apple-system, sans-serif';
+          g.fillText(tr.meta, 76, ty + 38);
+        });
+
+        // Bottom Audio Player Bar with Equalizer
+        g.fillStyle = '#181818';
+        g.fillRect(0, 440, 512, 160);
+        g.fillStyle = '#282828';
+        g.fillRect(0, 440, 512, 1);
+
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 11px -apple-system, sans-serif';
+        g.fillText('NOW PLAYING: Resonance (Cyberdeck Session)', 24, 465);
+        g.fillStyle = '#1db954';
+        g.font = '9.5px -apple-system, sans-serif';
+        g.fillText('Priyansh Gadia Curated Selection · 320 kbps High Fidelity', 24, 480);
+
+        // Equalizer bars
+        for (let b = 0; b < 24; b++) {
+          const barH = 10 + Math.sin(b * 0.8) * 16 + 12;
+          g.fillStyle = '#1db954';
+          g.fillRect(24 + b * 19, 530 - barH, 12, barH);
         }
 
-        // Bottom playback bar
-        ctx.fillStyle = '#181818';
-        ctx.fillRect(0, 290, 512, 30);
-        ctx.fillStyle = '#1db954';
-        ctx.fillRect(0, 290, 180, 2);
-      } else if (id === 'INSTAGRAM') {
-        // ── 4. INSTAGRAM DESTINATION WORLD ──
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, 512, 320);
-
-        // Header
-        ctx.fillStyle = '#121212';
-        ctx.fillRect(0, 0, 512, 32);
-        ctx.strokeStyle = '#262626';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(0, 0, 512, 32);
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 11px sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText('priyanshgadia', 24, 20);
-
-        // Avatar with gradient story ring
-        const avX = 54, avY = 70;
-        const ringGrad = ctx.createLinearGradient(24, 40, 84, 100);
-        ringGrad.addColorStop(0, '#f09433');
-        ringGrad.addColorStop(0.5, '#e6683c');
-        ringGrad.addColorStop(1, '#bc1888');
-        ctx.strokeStyle = ringGrad; ctx.lineWidth = 2.5;
-        ctx.beginPath(); ctx.arc(avX, avY, 26, 0, TAU); ctx.stroke();
-
-        ctx.fillStyle = '#262626';
-        ctx.beginPath(); ctx.arc(avX, avY, 22, 0, TAU); ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 12px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('PG', avX, avY + 4);
-
-        // Stats
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#ffffff'; ctx.font = 'bold 11px sans-serif';
-        ctx.fillText('42', 150, 65);
-        ctx.fillText('1,280', 230, 65);
-        ctx.fillText('490', 310, 65);
-        ctx.fillStyle = '#8e8e8e'; ctx.font = '8px sans-serif';
-        ctx.fillText('posts', 150, 78);
-        ctx.fillText('followers', 230, 78);
-        ctx.fillText('following', 310, 78);
-
-        // Bio
-        ctx.textAlign = 'left';
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 10px sans-serif';
-        ctx.fillText('Priyansh Gadia', 24, 114);
-        ctx.fillStyle = '#e0e0e0';
-        ctx.font = '8.5px sans-serif';
-        ctx.fillText('Visual Archives · Spatial Light & Algorithmic Geometry', 24, 128);
-        ctx.fillStyle = '#737373';
-        ctx.fillText('Mumbai, India · Computational Art & Photography', 24, 140);
-
-        // 6 Photo Grid Thumbnails
-        const photoColors = ['#1a2a3a', '#2c1e28', '#1b322a', '#28241d', '#1d212b', '#2e1c22'];
-        for (let i = 0; i < 6; i++) {
-          const col = i % 3, row = Math.floor(i / 3);
-          const px = 24 + col * 156, py = 155 + row * 78;
-          ctx.fillStyle = photoColors[i];
-          ctx.fillRect(px, py, 148, 72);
-          ctx.strokeStyle = '#262626';
-          ctx.strokeRect(px, py, 148, 72);
-
-          // Abstract photo geometry inside each card
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
-          ctx.beginPath();
-          ctx.arc(px + 74, py + 36, 18, 0, TAU);
-          ctx.fill();
-        }
-      } else if (id === 'PAPERS') {
-        // ── 5. PAPERS DESTINATION WORLD ──
-        ctx.fillStyle = '#0b0f19';
-        ctx.fillRect(0, 0, 512, 320);
-
-        // Header bar
-        ctx.fillStyle = '#111827';
-        ctx.fillRect(0, 0, 512, 36);
-        ctx.strokeStyle = '#1f2937';
-        ctx.strokeRect(0, 0, 512, 36);
-        ctx.fillStyle = '#f59e0b';
-        ctx.font = 'bold 11px monospace';
-        ctx.textAlign = 'left';
-        ctx.fillText('PUBLICATIONS & COMPUTATIONAL ARCHIVES // PRIYANSH GADIA', 20, 22);
-
-        // 3 Paper Cards
-        const paperList = [
-          {
-            title: 'PhysioNet 2026 Challenge: Multimodal Sleep-Staging',
-            venue: 'Neural Sequence Models · Biometric EEG/ECG Latents',
-            badges: ['[PDF]', '[CODE]', '[BENCHMARK]']
-          },
-          {
-            title: 'Adaptive Mechanical Ventilation on MIMIC-IV (50,920 Cohort)',
-            venue: 'Offline Reinforcement Learning in Critical Care',
-            badges: ['[PREPRINT]', '[DATASET]']
-          },
-          {
-            title: 'High-Order Spectral Graph Convolutions in Microstructure',
-            venue: 'Ultra-Low Latency Order Book Spatial Geometry',
-            badges: ['[ARXIV]', '[EXPERIMENTS]']
-          }
-        ];
-
-        for (let i = 0; i < paperList.length; i++) {
-          const py = 50 + i * 86;
-          ctx.fillStyle = '#111827';
-          ctx.fillRect(18, py, 476, 76);
-          ctx.strokeStyle = '#374151';
-          ctx.strokeRect(18, py, 476, 76);
-
-          ctx.fillStyle = '#fbbf24';
-          ctx.font = 'bold 10.5px -apple-system, sans-serif';
-          ctx.fillText(paperList[i].title, 32, py + 22);
-
-          ctx.fillStyle = '#9ca3af';
-          ctx.font = '8.5px sans-serif';
-          ctx.fillText(paperList[i].venue, 32, py + 38);
-
-          // Badges
-          let bx = 32;
-          for (let b = 0; b < paperList[i].badges.length; b++) {
-            ctx.fillStyle = '#1f2937';
-            ctx.fillRect(bx, py + 48, 56, 16);
-            ctx.strokeStyle = '#f59e0b';
-            ctx.strokeRect(bx, py + 48, 56, 16);
-            ctx.fillStyle = '#fef3c7';
-            ctx.font = 'bold 7.5px monospace';
-            ctx.textAlign = 'center';
-            ctx.fillText(paperList[i].badges[b], bx + 28, py + 59);
-            ctx.textAlign = 'left';
-            bx += 64;
-          }
-        }
-      } else if (id === 'BLOG') {
-        // ── 6. BLOG DESTINATION WORLD ──
-        ctx.fillStyle = '#0e1117';
-        ctx.fillRect(0, 0, 512, 320);
-
-        // Header
-        ctx.fillStyle = '#161b22';
-        ctx.fillRect(0, 0, 512, 34);
-        ctx.strokeStyle = '#30363d';
-        ctx.strokeRect(0, 0, 512, 34);
-        ctx.fillStyle = '#8b5cf6';
-        ctx.font = 'bold 11px monospace';
-        ctx.textAlign = 'left';
-        ctx.fillText('ENGINEERING DISPATCHES // TECHNICAL LOG', 20, 21);
-
-        const articles = [
-          {
-            title: 'Building a 60 FPS Procedural WebGL Engine with Zero Images',
-            date: 'September 2026 · 14 min read',
-            tags: '#WebGL #GLSL #Procedural'
-          },
-          {
-            title: 'Discretizing Continuous Mamba-3 State Spaces for Trading',
-            date: 'August 2026 · 18 min read',
-            tags: '#Quant #SSM #DeepLearning'
-          },
-          {
-            title: 'Real-Time Raymarched PBR Cook-Torrance BRDF in GLSL',
-            date: 'July 2026 · 10 min read',
-            tags: '#Shaders #Math #Graphics'
-          }
-        ];
-
-        for (let i = 0; i < articles.length; i++) {
-          const py = 48 + i * 88;
-          ctx.fillStyle = '#161b22';
-          ctx.fillRect(20, py, 472, 78);
-          ctx.strokeStyle = '#30363d';
-          ctx.strokeRect(20, py, 472, 78);
-
-          ctx.fillStyle = '#c4b5fd';
-          ctx.font = 'bold 11px -apple-system, sans-serif';
-          ctx.fillText(articles[i].title, 34, py + 22);
-
-          ctx.fillStyle = '#8b949e';
-          ctx.font = '8.5px sans-serif';
-          ctx.fillText(articles[i].date, 34, py + 40);
-
-          ctx.fillStyle = '#a78bfa';
-          ctx.font = 'bold 8px monospace';
-          ctx.fillText(articles[i].tags, 34, py + 60);
-        }
+        // Scrubber line
+        g.fillStyle = '#404040';
+        g.fillRect(24, 550, 464, 4);
+        g.fillStyle = '#1db954';
+        g.fillRect(24, 550, 260, 4);
       } else if (id === 'ABOUT') {
-        // ── 7. ABOUT DESTINATION WORLD ──
-        ctx.fillStyle = '#0a0f1d';
-        ctx.fillRect(0, 0, 512, 320);
+        g.fillStyle = '#03080f';
+        g.fillRect(0, 0, 512, 640);
 
-        ctx.fillStyle = '#00d8f6';
-        ctx.font = 'bold 12px monospace';
-        ctx.textAlign = 'left';
-        ctx.fillText('ARCHITECT DOSSIER // PRIYANSH GADIA', 24, 30);
+        // Cybernetic circuit grid lines
+        g.strokeStyle = 'rgba(0, 216, 246, 0.07)';
+        g.lineWidth = 1;
+        for (let x = 0; x < 512; x += 28) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 640); g.stroke(); }
+        for (let y = 0; y < 640; y += 28) { g.beginPath(); g.moveTo(0, y); g.lineTo(512, y); g.stroke(); }
 
-        ctx.fillStyle = '#111e33';
-        ctx.fillRect(20, 44, 472, 256);
-        ctx.strokeStyle = '#1e3558';
-        ctx.strokeRect(20, 44, 472, 256);
+        // Top Omniscient Header
+        g.fillStyle = '#081c2c';
+        g.fillRect(14, 8, 484, 44);
+        g.strokeStyle = '#00d8f6';
+        g.lineWidth = 1.2;
+        g.strokeRect(14, 8, 484, 44);
 
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 14px -apple-system, sans-serif';
-        ctx.fillText('Priyansh Gadia', 38, 72);
+        g.fillStyle = '#00d8f6';
+        g.font = 'bold 12.5px ui-monospace, monospace';
+        g.fillText('❖ PRIYANSH GADIA // OMNI-DOSSIER ARCHIVE', 26, 26);
+        g.fillStyle = '#38bdf8';
+        g.font = '8px ui-monospace, monospace';
+        g.fillText('CLASSIFICATION: OPEN INTEL // THE MASTER DIRECTORY TO EVERY INQUIRY', 26, 42);
 
-        ctx.fillStyle = '#70e0ff';
-        ctx.font = '9.5px monospace';
-        ctx.fillText('LOCATION: MUMBAI, INDIA · APPLIED QUANT & BIO-AI RESEARCHER', 38, 90);
+        // Status badge on top right
+        g.fillStyle = '#0284c7';
+        g.fillRect(380, 16, 108, 22);
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 8.5px ui-monospace, monospace';
+        g.fillText('● SYSTEM READY', 392, 31);
 
-        ctx.fillStyle = '#a0b8d8';
-        ctx.font = '9px sans-serif';
-        ctx.fillText('Architect of VAULT-01 — A 60 FPS Procedural WebGL Virtual Facility built with zero external textures.', 38, 116);
-        ctx.fillText('Research specializes in State Space Sequence Models (Mamba-3), Spatio-Temporal Graph Convolutions,', 38, 130);
-        ctx.fillText('and Multimodal Biological Foundation Models for Critical Care & Clinical Monitoring.', 38, 144);
+        // Section 1: Identity & Executive Core Summary
+        g.fillStyle = '#071624';
+        g.fillRect(14, 58, 484, 72);
+        g.strokeStyle = '#00d8f6';
+        g.lineWidth = 0.8;
+        g.strokeRect(14, 58, 484, 72);
 
-        ctx.fillStyle = '#00d8f6';
-        ctx.font = 'bold 10px monospace';
-        ctx.fillText('CORE RESEARCH PILLARS', 38, 175);
+        g.fillStyle = '#38bdf8';
+        g.font = 'bold 9.5px ui-monospace, monospace';
+        g.fillText('1. IDENTITY & CAPABILITY MATRIX // WHO IS PRIYANSH?', 22, 73);
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 9.5px -apple-system, sans-serif';
+        g.fillText('Polymathic Engineer & Researcher operating at the intersection of AI, Robotics & Arts.', 22, 88);
+        g.fillStyle = '#94a3b8';
+        g.font = '8.5px -apple-system, sans-serif';
+        g.fillText('Synthesizes pure mathematical intelligence (GNNs, ST-GCN, Hawkes processes, causal transformers)', 22, 103);
+        g.fillText('with physical hardware design (ROS2, Autodesk Inventor, Fusion 360, CNC) and fine-art media.', 22, 117);
 
-        const pillars = [
-          '• High-Frequency L2 Order Book Microstructure Dynamics & Spectral Graph Convolutions',
-          '• Continuous-to-Discrete State Space Models (Mamba) for Real-Time Financial Sequence Modeling',
-          '• Zero-Raster PBR Procedural Graphics Engines, Shaders, & Deterministic WebGL Math'
+        // Section 2: Dual Degree Academic Credentials
+        g.fillStyle = '#071624';
+        g.fillRect(14, 126, 484, 82);
+        g.strokeStyle = '#0284c7';
+        g.strokeRect(14, 126, 484, 82);
+
+        g.fillStyle = '#38bdf8';
+        g.font = 'bold 9.5px ui-monospace, monospace';
+        g.fillText('2. SCHOLARSHIP & INSTITUTIONS // WHERE DID HE STUDY?', 22, 140);
+
+        // IITG
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 9px -apple-system, sans-serif';
+        g.fillText('• INDIAN INSTITUTE OF TECHNOLOGY, GUWAHATI (IITG)', 22, 155);
+        g.fillStyle = '#38bdf8';
+        g.font = 'bold 8.5px ui-monospace, monospace';
+        g.fillText('CPI: 9.25/10.0 (Peak: 9.77)', 348, 155);
+        g.fillStyle = '#94a3b8';
+        g.font = '8px -apple-system, sans-serif';
+        g.fillText('  B.Sc. (Hons) Data Science & AI · Deep Learning, Stochastic Calculus, Convex Optimization, DSA', 22, 168);
+
+        // DJSCE
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 9px -apple-system, sans-serif';
+        g.fillText('• D.J. SANGHVI COLLEGE OF ENGINEERING (DJSCE, MUMBAI)', 22, 183);
+        g.fillStyle = '#38bdf8';
+        g.font = 'bold 8.5px ui-monospace, monospace';
+        g.fillText('CGPA: 8.23/10.0 (Grade O)', 348, 183);
+        g.fillStyle = '#94a3b8';
+        g.font = '8px -apple-system, sans-serif';
+        g.fillText('  B.Tech (Hons) Mechanical & Robotics · Kinematics, CAD/CAM, FEA, CNC Machining, Mechatronics', 22, 196);
+
+        // Section 3: Flagship Research & Engineering Deployments
+        g.fillStyle = '#071624';
+        g.fillRect(14, 214, 484, 128);
+        g.strokeStyle = '#0284c7';
+        g.strokeRect(14, 214, 484, 128);
+
+        g.fillStyle = '#38bdf8';
+        g.font = 'bold 9.5px ui-monospace, monospace';
+        g.fillText('3. FLAGSHIP INNOVATIONS // WHAT HAS HE BUILT & PUBLISHED?', 22, 228);
+
+        const projs = [
+          { name: 'ARGUS (ST-GCN Fall Prediction)', desc: 'Spatiotemporal Graph ConvNets with 94.2% sensitivity in kinematics.' },
+          { name: 'CRYPTOGRAPH (Monograph)', desc: 'Tick-level microstructure across 107 crypto assets; Hawkes + ST-GCN x LSTM.' },
+          { name: 'PHYSIONET / CinC CHALLENGE 2026', desc: 'Cognitive impairment prediction across 6,600 PSG records with residualization.' },
+          { name: 'VAULT-01 CYBERDECK (Cave Engine)', desc: 'Subterranean 3D WebGL cyberdeck built with zero raster images & 60 FPS physics.' },
+          { name: 'GPT-2 IN PURE PYTORCH', desc: 'Autoregressive causal transformer implemented from mathematical primitives.' }
         ];
-        ctx.fillStyle = '#cbd5e1';
-        ctx.font = '8.5px sans-serif';
-        for (let p = 0; p < pillars.length; p++) {
-          ctx.fillText(pillars[p], 38, 198 + p * 18);
-        }
+
+        projs.forEach((p, i) => {
+          const py = 245 + i * 18;
+          g.fillStyle = '#00d8f6';
+          g.font = 'bold 8.5px ui-monospace, monospace';
+          g.fillText('❖ ' + p.name, 22, py);
+          g.fillStyle = '#e2e8f0';
+          g.font = '8px -apple-system, sans-serif';
+          g.fillText('— ' + p.desc, 210, py);
+        });
+
+        // Section 4: Technical Arsenal & Certified Qualifications
+        g.fillStyle = '#071624';
+        g.fillRect(14, 348, 484, 88);
+        g.strokeStyle = '#0284c7';
+        g.strokeRect(14, 348, 484, 88);
+
+        g.fillStyle = '#38bdf8';
+        g.font = 'bold 9.5px ui-monospace, monospace';
+        g.fillText('4. TECHNICAL ARSENAL & LICENSES // WHAT ARE HIS COMPETENCIES?', 22, 362);
+
+        const techLines = [
+          { cat: 'Languages:', val: 'Python, C++, TypeScript, JavaScript, SQL, C, Java, R, MATLAB, Bash, GLSL' },
+          { cat: 'AI & Data:', val: 'PyTorch, ST-GCN, GNNs, Transformers, XGBoost, Scikit-learn, SHAP, LightGBM' },
+          { cat: 'Hardware/CAD:', val: 'ROS2, Autodesk Inventor, Fusion 360, KeyShot, CNC (Milling/Lathe), FEA' },
+          { cat: 'Systems/Cloud:', val: 'Docker, Cloudflare D1/Workers, Next.js 14, FastAPI, Redis, WebSockets, Three.js' },
+          { cat: 'Certifications:', val: 'Oracle OCI 2025 Data Science · CITI/MIT Clinical Ethics · Univ. of Glasgow AI' }
+        ];
+        techLines.forEach((t, i) => {
+          const ty = 376 + i * 13;
+          g.fillStyle = '#38bdf8';
+          g.font = 'bold 8px ui-monospace, monospace';
+          g.fillText(t.cat, 22, ty);
+          g.fillStyle = '#cbd5e1';
+          g.font = '8px -apple-system, sans-serif';
+          g.fillText(t.val, 110, ty);
+        });
+
+        // Section 5: Arts, Design & Creative Pursuits
+        g.fillStyle = '#071624';
+        g.fillRect(14, 442, 484, 82);
+        g.strokeStyle = '#0284c7';
+        g.strokeRect(14, 442, 484, 82);
+
+        g.fillStyle = '#38bdf8';
+        g.font = 'bold 9.5px ui-monospace, monospace';
+        g.fillText('5. ARTS & DESIGN DISCIPLINE // WHAT DOES HE DO BEYOND CODE?', 22, 456);
+
+        g.fillStyle = '#f472b6';
+        g.font = 'bold 8px ui-monospace, monospace';
+        g.fillText('• UCEED 2023 NATIONAL QUALIFIER:', 22, 471);
+        g.fillStyle = '#e2e8f0';
+        g.font = '8px -apple-system, sans-serif';
+        g.fillText('Qualified India\'s National Undergraduate Common Entrance for Design.', 180, 471);
+
+        g.fillStyle = '#f472b6';
+        g.font = 'bold 8px ui-monospace, monospace';
+        g.fillText('• SAM BAGLI PHOTOGRAPHY FELLOWSHIP:', 22, 487);
+        g.fillStyle = '#e2e8f0';
+        g.font = '8px -apple-system, sans-serif';
+        g.fillText('4+ years under mentor Sam Bagli; Official Photographer for Rotaract & R.E.D. Fest.', 200, 487);
+
+        g.fillStyle = '#f472b6';
+        g.font = 'bold 8px ui-monospace, monospace';
+        g.fillText('• FINE ARTS & PERFORMING EXPRESSION:', 22, 503);
+        g.fillStyle = '#e2e8f0';
+        g.font = '8px -apple-system, sans-serif';
+        g.fillText('Freehand sketching portfolio (@p._.g_), watercolor portraiture, vocal singing & dance.', 200, 503);
+
+        // Section 6: Direct Dispatch Relay
+        g.fillStyle = '#04101b';
+        g.fillRect(14, 530, 484, 88);
+        g.strokeStyle = '#00d8f6';
+        g.strokeRect(14, 530, 484, 88);
+
+        g.fillStyle = '#38bdf8';
+        g.font = 'bold 9.5px ui-monospace, monospace';
+        g.fillText('6. DIRECT RELAY COORDINATES // HOW DO YOU REACH HIM?', 22, 545);
+
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 8.5px ui-monospace, monospace';
+        g.fillText('EMAIL:    gadiapriyansh@gmail.com', 22, 563);
+        g.fillText('PHONE:    +91 8104521541', 250, 563);
+        g.fillText('LOCATION: Mumbai, Maharashtra, India', 22, 580);
+        g.fillText('PGP:      4096-BIT RSA VERIFIED', 250, 580);
+
+        g.fillStyle = '#00d8f6';
+        g.font = 'bold 8px ui-monospace, monospace';
+        g.fillText('AVAILABILITY: OPEN FOR SELECT ELITE AI / ROBOTICS / SYSTEM CONTRACTS', 22, 600);
+      } else if (id === 'FACEBOOK') {
+        g.fillStyle = '#18191a';
+        g.fillRect(0, 0, 512, 640);
+
+        // Top Facebook Nav Bar
+        g.fillStyle = '#242526';
+        g.fillRect(0, 0, 512, 46);
+        g.fillStyle = '#3a3b3c';
+        g.fillRect(0, 46, 512, 1);
+
+        // Facebook logo
+        g.fillStyle = '#1877f2';
+        g.beginPath();
+        g.arc(28, 23, 16, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 22px -apple-system, sans-serif';
+        g.fillText('f', 23, 30);
+
+        // Search Bar
+        g.fillStyle = '#3a3b3c';
+        g.fillRect(56, 11, 150, 24);
+        g.fillStyle = '#b0b3b8';
+        g.font = '10px -apple-system, sans-serif';
+        g.fillText('Search Facebook...', 66, 27);
+
+        // Nav icons
+        g.fillStyle = '#1877f2';
+        g.fillRect(240, 42, 32, 4);
+        g.fillStyle = '#2d88ff';
+        g.font = '15px sans-serif';
+        g.fillText('⌂', 248, 28);
+        g.fillStyle = '#b0b3b8';
+        g.fillText('▷', 295, 28);
+        g.fillText('🛒', 340, 28);
+        g.fillText('👥', 385, 28);
+
+        // Cover Banner
+        const fbGrad = g.createLinearGradient(0, 47, 0, 160);
+        fbGrad.addColorStop(0, '#0c2e59');
+        fbGrad.addColorStop(1, '#18191a');
+        g.fillStyle = fbGrad;
+        g.fillRect(16, 54, 480, 105);
+
+        // Profile Card Body
+        g.fillStyle = '#242526';
+        g.fillRect(16, 159, 480, 150);
+        g.strokeStyle = '#393a3b';
+        g.strokeRect(16, 54, 480, 255);
+
+        // Profile Avatar
+        g.fillStyle = '#1877f2';
+        g.beginPath();
+        g.arc(65, 155, 38, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = '#242526';
+        g.beginPath();
+        g.arc(65, 155, 35, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 24px -apple-system, sans-serif';
+        g.fillText('PG', 48, 163);
+
+        // User info
+        g.fillStyle = '#e4e6eb';
+        g.font = 'bold 18px -apple-system, sans-serif';
+        g.fillText('Priyansh Gadia', 115, 180);
+        g.fillStyle = '#1877f2';
+        g.fillText('✓', 242, 180);
+
+        g.fillStyle = '#b0b3b8';
+        g.font = '10px -apple-system, sans-serif';
+        g.fillText('facebook.com/gadiapriyansh/ · 1.3K friends · 1,280 followers', 115, 198);
+
+        g.fillStyle = '#e4e6eb';
+        g.font = '10px -apple-system, sans-serif';
+        g.fillText('Building intelligent machines & procedural worlds. Dual-track @ IITG & DJSCE.', 115, 218);
+
+        // Buttons
+        g.fillStyle = '#1877f2';
+        g.fillRect(115, 235, 110, 26);
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 10px -apple-system, sans-serif';
+        g.fillText('+ Add to story', 130, 252);
+
+        g.fillStyle = '#3a3b3c';
+        g.fillRect(235, 235, 95, 26);
+        g.fillStyle = '#e4e6eb';
+        g.fillText('Edit profile', 252, 252);
+
+        // Intro section
+        g.fillStyle = '#242526';
+        g.fillRect(16, 320, 480, 110);
+        g.strokeStyle = '#393a3b';
+        g.strokeRect(16, 320, 480, 110);
+
+        g.fillStyle = '#e4e6eb';
+        g.font = 'bold 12px -apple-system, sans-serif';
+        g.fillText('Intro', 28, 340);
+
+        const intros = [
+          '🎓 Studies Data Science & AI at Indian Institute of Technology, Guwahati',
+          '⚙️ Studies Mechanical & Robotics Engineering at DJSCE Mumbai',
+          '📍 Lives in Mumbai, Maharashtra, India',
+          '📷 Photography fellow under Sam Bagli · UCEED 2023 Qualified'
+        ];
+        intros.forEach((inText, i) => {
+          g.fillStyle = '#e4e6eb';
+          g.font = '9.5px -apple-system, sans-serif';
+          g.fillText(inText, 28, 360 + i * 18);
+        });
+
+        // Recent Post Card
+        g.fillStyle = '#242526';
+        g.fillRect(16, 442, 480, 145);
+        g.strokeStyle = '#393a3b';
+        g.strokeRect(16, 442, 480, 145);
+
+        // Post header
+        g.fillStyle = '#1877f2';
+        g.beginPath();
+        g.arc(38, 465, 14, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 10px -apple-system, sans-serif';
+        g.fillText('PG', 31, 469);
+
+        g.fillStyle = '#e4e6eb';
+        g.font = 'bold 11px -apple-system, sans-serif';
+        g.fillText('Priyansh Gadia', 60, 462);
+        g.fillStyle = '#b0b3b8';
+        g.font = '8.5px -apple-system, sans-serif';
+        g.fillText('Just now · 🌐 Public', 60, 474);
+
+        g.fillStyle = '#e4e6eb';
+        g.font = '9.5px -apple-system, sans-serif';
+        g.fillText('Excited to unveil VAULT-01 Cyberdeck: a subterranean real-time WebGL space', 28, 498);
+        g.fillText('crafted with 0 raster assets, volumetric fog, and 60 FPS physics on Cloudflare Edge!', 28, 514);
+
+        // Post footer action bar
+        g.fillStyle = '#3a3b3c';
+        g.fillRect(28, 545, 456, 1);
+        g.fillStyle = '#b0b3b8';
+        g.font = 'bold 9.5px -apple-system, sans-serif';
+        g.fillText('👍 Like (48)', 50, 566);
+        g.fillText('💬 Comment (12)', 200, 566);
+        g.fillText('↗ Share', 360, 566);
       } else if (id === 'CONTACT') {
-        // ── 8. CONTACT DESTINATION WORLD ──
-        ctx.fillStyle = '#050810';
-        ctx.fillRect(0, 0, 512, 320);
+        g.fillStyle = '#0c0704';
+        g.fillRect(0, 0, 512, 640);
 
-        // Terminal frame
-        ctx.fillStyle = '#0c1220';
-        ctx.fillRect(16, 16, 480, 288);
-        ctx.strokeStyle = '#f97316';
-        ctx.strokeRect(16, 16, 480, 288);
+        g.fillStyle = '#f97316';
+        g.font = 'bold 13px ui-monospace, monospace';
+        g.fillText('❖ DIRECT COMMUNICATIONS RELAY // ENCRYPTED', 24, 36);
+        g.fillRect(24, 44, 464, 1.5);
 
-        ctx.fillStyle = '#f97316';
-        ctx.font = 'bold 11px monospace';
-        ctx.textAlign = 'left';
-        ctx.fillText('ENCRYPTED DIRECT CHANNEL // STATION LS1', 32, 40);
+        // Contact Dossier Card
+        g.fillStyle = '#1c1109';
+        g.fillRect(24, 60, 464, 180);
+        g.strokeStyle = '#f97316';
+        g.strokeRect(24, 60, 464, 180);
 
-        ctx.fillStyle = '#fb923c';
-        ctx.font = '10px monospace';
-        ctx.fillText('priyansh@vault:~$ ./direct_comm.sh', 32, 68);
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 12px -apple-system, sans-serif';
+        g.fillText('PRIMARY DISPATCH COORDINATES', 36, 85);
 
-        const commFields = [
-          ['STATUS', 'READY FOR SELECT RESEARCH & ENGINEERING COLLABORATIONS'],
-          ['EMAIL', 'gadiapriyansh@gmail.com'],
-          ['LOCATION', 'MUMBAI, INDIA (UTC+5:30)'],
-          ['ENCRYPTION', '256-BIT PROCEDURAL SHIFT / DIRECT DISPATCH'],
-          ['SPECIALTY', 'QUANTITATIVE ARCHITECTURES & BIO-AI RESEARCH']
+        g.fillStyle = '#fdba74';
+        g.font = '11px ui-monospace, monospace';
+        g.fillText('EMAIL:    gadiapriyansh@gmail.com', 36, 115);
+        g.fillText('PHONE:    +91 8104521541', 36, 135);
+        g.fillText('LOCATION: Mumbai, Maharashtra, India', 36, 155);
+        g.fillText('SECURITY: PGP 4096-BIT RSA PUBLIC KEY VERIFIED', 36, 175);
+        g.fillText('SLA:      GUARANTEED RESPONSE < 24 HOURS', 36, 195);
+
+        // Interactive Comms Form Mock
+        g.fillStyle = '#1c1109';
+        g.fillRect(24, 260, 464, 250);
+        g.strokeStyle = '#ea580c';
+        g.strokeRect(24, 260, 464, 250);
+
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 12px -apple-system, sans-serif';
+        g.fillText('TRANSMIT SECURE DISPATCH MESSAGE', 36, 285);
+
+        g.fillStyle = '#27160d';
+        g.fillRect(36, 305, 440, 28);
+        g.fillStyle = '#9a3412';
+        g.font = '10px ui-monospace, monospace';
+        g.fillText('SENDER IDENTITY / RETURN COMMS CHANNEL...', 46, 323);
+
+        g.fillStyle = '#27160d';
+        g.fillRect(36, 345, 440, 100);
+        g.fillStyle = '#9a3412';
+        g.fillText('ENTER TRANSMISSION PAYLOAD / COLLABORATION REQUEST...', 46, 368);
+
+        g.fillStyle = '#f97316';
+        g.fillRect(36, 460, 200, 32);
+        g.fillStyle = '#000000';
+        g.font = 'bold 11px ui-monospace, monospace';
+        g.fillText('TRANSMIT RELAY ↗', 58, 480);
+      } else if (id === 'YOUTUBE') {
+        g.fillStyle = '#0f0f0f';
+        g.fillRect(0, 0, 512, 640);
+
+        // Top YouTube Nav Bar
+        g.fillStyle = '#0f0f0f';
+        g.fillRect(0, 0, 512, 46);
+        g.fillStyle = '#272727';
+        g.fillRect(0, 46, 512, 1);
+
+        // YouTube icon & logo
+        g.fillStyle = '#ff0000';
+        g.fillRect(18, 13, 26, 18);
+        g.fillStyle = '#ffffff';
+        g.beginPath();
+        g.moveTo(28, 17);
+        g.lineTo(36, 22);
+        g.lineTo(28, 27);
+        g.closePath();
+        g.fill();
+
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 15px -apple-system, sans-serif';
+        g.fillText('YouTube', 50, 27);
+
+        // Search Bar
+        g.fillStyle = '#121212';
+        g.fillRect(140, 11, 220, 24);
+        g.strokeStyle = '#303030';
+        g.strokeRect(140, 11, 220, 24);
+        g.fillStyle = '#888888';
+        g.font = '10px -apple-system, sans-serif';
+        g.fillText('Search playlists & videos...', 150, 26);
+
+        // Channel Banner
+        const ytGrad = g.createLinearGradient(0, 47, 0, 145);
+        ytGrad.addColorStop(0, '#380a0a');
+        ytGrad.addColorStop(1, '#0f0f0f');
+        g.fillStyle = ytGrad;
+        g.fillRect(16, 52, 480, 90);
+
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 13px ui-monospace, monospace';
+        g.fillText('PRIYANSH GADIA // TECH, ROBOTICS & CREATIVE MEDIA', 32, 98);
+        g.fillStyle = '#ff4e45';
+        g.font = '9px ui-monospace, monospace';
+        g.fillText('AUTODESK INVENTOR · ST-GCN AI · WEBGL GRAPHICS · VOCALS', 32, 114);
+
+        // Channel Profile Row
+        g.fillStyle = '#ff0000';
+        g.beginPath();
+        g.arc(60, 168, 30, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = '#0f0f0f';
+        g.beginPath();
+        g.arc(60, 168, 27, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 18px -apple-system, sans-serif';
+        g.fillText('PG', 48, 174);
+
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 16px -apple-system, sans-serif';
+        g.fillText('Priyansh Gadia', 104, 162);
+        g.fillStyle = '#aaaaaa';
+        g.font = '10px -apple-system, sans-serif';
+        g.fillText('@priyanshgadia7170 · 1.4K subscribers · 38 videos', 104, 178);
+
+        // Subscribed button
+        g.fillStyle = '#272727';
+        g.fillRect(360, 154, 110, 26);
+        g.fillStyle = '#f1f1f1';
+        g.font = 'bold 10px -apple-system, sans-serif';
+        g.fillText('Subscribed ✓', 378, 171);
+
+        // Navigation Tabs Bar
+        g.fillStyle = '#272727';
+        g.fillRect(16, 206, 480, 1);
+        g.fillStyle = '#aaaaaa';
+        g.font = 'bold 10px -apple-system, sans-serif';
+        g.fillText('HOME', 32, 222);
+        g.fillText('VIDEOS', 88, 222);
+        g.fillStyle = '#ffffff';
+        g.fillText('PLAYLISTS', 150, 222);
+        // Active indicator under PLAYLISTS
+        g.fillStyle = '#ffffff';
+        g.fillRect(150, 226, 60, 2);
+        g.fillStyle = '#aaaaaa';
+        g.fillText('COMMUNITY', 230, 222);
+        g.fillText('ABOUT', 320, 222);
+
+        // Curated Playlist Cards
+        const playlists = [
+          {
+            title: 'Robotics, CAD & Kinematics Demonstrations',
+            meta: '12 videos · Updated yesterday',
+            desc: 'Autodesk Inventor & Fusion 360 mechanical modeling, CNC simulation, and robotic arm inverse kinematics.'
+          },
+          {
+            title: 'Machine Learning & ST-GCN Visualizations',
+            meta: '8 videos · Updated last week',
+            desc: 'Real-time gait pose analysis, skeletal graph convolutions, and medical time-series risk forecasting.'
+          },
+          {
+            title: 'Procedural 3D WebGL & Graphics Engines',
+            meta: '6 videos · Updated 2 weeks ago',
+            desc: 'Building zero-asset real-time 3D cavern engines, custom GLSL shaders, and volumetric lighting.'
+          },
+          {
+            title: 'Vocal Performances & Fine Art Sketch Timelapses',
+            meta: '12 videos · Creative Media',
+            desc: 'Vocal singing covers, acoustic performances, and pencil sketching timelapses from the art studio.'
+          }
         ];
 
-        for (let i = 0; i < commFields.length; i++) {
-          const py = 100 + i * 32;
-          ctx.fillStyle = '#64748b';
-          ctx.font = 'bold 8.5px monospace';
-          ctx.fillText(commFields[i][0] + ':', 32, py);
-          ctx.fillStyle = '#f8fafc';
-          ctx.font = 'bold 9.5px monospace';
-          ctx.fillText(commFields[i][1], 120, py);
+        playlists.forEach((pl, i) => {
+          const py = 240 + i * 86;
+          g.fillStyle = '#161616';
+          g.fillRect(16, py, 480, 78);
+          g.strokeStyle = '#272727';
+          g.strokeRect(16, py, 480, 78);
+
+          // Thumbnail Box with Playlist Overlay
+          g.fillStyle = '#220808';
+          g.fillRect(24, py + 7, 100, 64);
+          g.fillStyle = 'rgba(0, 0, 0, 0.7)';
+          g.fillRect(84, py + 7, 40, 64);
+          g.fillStyle = '#ffffff';
+          g.font = '11px sans-serif';
+          g.fillText('☰', 98, py + 38);
+          g.font = 'bold 9px -apple-system, sans-serif';
+          g.fillText(pl.meta.split(' ')[0], 96, py + 52);
+
+          // Title & Details
+          g.fillStyle = '#ffffff';
+          g.font = 'bold 11px -apple-system, sans-serif';
+          g.fillText(pl.title, 136, py + 22);
+
+          g.fillStyle = '#aaaaaa';
+          g.font = '9px -apple-system, sans-serif';
+          g.fillText(pl.meta, 136, py + 36);
+
+          g.fillStyle = '#888888';
+          g.font = '8.5px -apple-system, sans-serif';
+          g.fillText(pl.desc.slice(0, 58), 136, py + 52);
+          if (pl.desc.length > 58) g.fillText(pl.desc.slice(58), 136, py + 64);
+        });
+
+        // Footer
+        g.fillStyle = '#ff0000';
+        g.font = 'bold 9.5px ui-monospace, monospace';
+        g.fillText('YOUTUBE CHANNEL ARCHIVE // YOUTUBE.COM/@PRIYANSHGADIA7170/PLAYLISTS', 24, 606);
+      } else if (id === 'ABOUT') {
+        // OPERATIVE DOSSIER & PROFILE (Amethyst / Deep Space Purple)
+        g.fillStyle = '#080511';
+        g.fillRect(0, 0, 512, 640);
+
+        // Header Banner
+        const abGrad = g.createLinearGradient(0, 0, 512, 110);
+        abGrad.addColorStop(0, '#2e1065');
+        abGrad.addColorStop(1, '#0f0728');
+        g.fillStyle = abGrad;
+        g.fillRect(16, 16, 480, 95);
+        g.strokeStyle = '#8b5cf6';
+        g.lineWidth = 1.5;
+        g.strokeRect(16, 16, 480, 95);
+
+        // Avatar Core
+        g.fillStyle = '#5b21b6';
+        g.beginPath(); g.arc(65, 63, 34, 0, Math.PI * 2); g.fill();
+        g.strokeStyle = '#c084fc'; g.lineWidth = 2;
+        g.beginPath(); g.arc(65, 63, 34, 0, Math.PI * 2); g.stroke();
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 24px -apple-system, sans-serif';
+        g.textAlign = 'center';
+        g.fillText('PG', 65, 71);
+        g.textAlign = 'left';
+
+        g.fillStyle = '#f3e8ff';
+        g.font = 'bold 18px -apple-system, sans-serif';
+        g.fillText('Priyansh Gadia', 115, 52);
+        g.fillStyle = '#a855f7';
+        g.font = 'bold 9.5px ui-monospace, monospace';
+        g.fillText('ROOT OPERATIVE // IDENT: PG-001 // CLEARANCE LEVEL 5', 115, 68);
+        g.fillStyle = '#e9d5ff';
+        g.font = '10px -apple-system, sans-serif';
+        g.fillText('Dual-Track Systems Engineer, AI Researcher & Graphics Architect', 115, 88);
+
+        // Section 1: Academic Pedigree
+        g.fillStyle = '#110b24';
+        g.fillRect(16, 122, 480, 118);
+        g.strokeStyle = '#4c1d95';
+        g.strokeRect(16, 122, 480, 118);
+
+        g.fillStyle = '#c084fc';
+        g.font = 'bold 10px ui-monospace, monospace';
+        g.fillText('■ ACADEMIC PEDIGREE & INSTITUTIONAL AFFILIATIONS', 28, 140);
+
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 11px -apple-system, sans-serif';
+        g.fillText('Indian Institute of Technology, Guwahati (IITG)', 28, 160);
+        g.fillStyle = '#a855f7';
+        g.font = '9.5px ui-monospace, monospace';
+        g.fillText('B.S. DATA SCIENCE & ARTIFICIAL INTELLIGENCE · 2023–2027', 28, 174);
+
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 11px -apple-system, sans-serif';
+        g.fillText('Dwarkadas J. Sanghvi College of Engineering (DJSCE)', 28, 196);
+        g.fillStyle = '#a855f7';
+        g.font = '9.5px ui-monospace, monospace';
+        g.fillText('B.TECH MECHANICAL & ROBOTICS ENGINEERING · 2022–2026', 28, 210);
+
+        // Section 2: Core Capabilities
+        g.fillStyle = '#110b24';
+        g.fillRect(16, 250, 480, 150);
+        g.strokeStyle = '#4c1d95';
+        g.strokeRect(16, 250, 480, 150);
+
+        g.fillStyle = '#c084fc';
+        g.font = 'bold 10px ui-monospace, monospace';
+        g.fillText('■ OPERATIONAL EXPERTISE & DISTRIBUTED SYSTEMS', 28, 268);
+
+        const skills = [
+          '• High-Performance WebGL/Three.js Engines (Zero raster assets, custom GLSL raymarchers)',
+          '• Autonomous Multi-Agent Cognitive Swarms & Neural Compilers (AGY, Gemini, LangGraph)',
+          '• Distributed Serverless Edge Infrastructure (Cloudflare Workers, Pages, D1, WebSockets)',
+          '• Kinematics, CAD & Simulation (Autodesk Inventor, Fusion 360, CNC toolpaths)',
+          '• Machine Learning Vision: Spatio-Temporal Graph Convolutions (ST-GCN) & Pose Analysis'
+        ];
+        skills.forEach((sk, idx) => {
+          g.fillStyle = '#f3e8ff';
+          g.font = '9.5px -apple-system, sans-serif';
+          g.fillText(sk, 28, 290 + idx * 22);
+        });
+
+        // Section 3: Honors & Accreditations
+        g.fillStyle = '#110b24';
+        g.fillRect(16, 410, 480, 105);
+        g.strokeStyle = '#4c1d95';
+        g.strokeRect(16, 410, 480, 105);
+
+        g.fillStyle = '#c084fc';
+        g.font = 'bold 10px ui-monospace, monospace';
+        g.fillText('■ NATIONAL ACCREDITATIONS & HONORS', 28, 428);
+
+        const honors = [
+          '• UCEED National Examination 2023: Qualified in top percentiles nationwide for Design & Visuality',
+          '• Fine Arts & Aesthetics Fellowship under Sam Bagli: Advanced perspective, ink & anatomical study',
+          '• Vault-01 Architecture: Complete bespoke procedural cyberdeck executed with zero raster image assets'
+        ];
+        honors.forEach((hn, idx) => {
+          g.fillStyle = '#e9d5ff';
+          g.font = '9.5px -apple-system, sans-serif';
+          g.fillText(hn, 28, 450 + idx * 20);
+        });
+
+        // Footer Action
+        g.fillStyle = '#8b5cf6';
+        g.fillRect(16, 530, 480, 36);
+        g.fillStyle = '#080511';
+        g.font = 'bold 11px ui-monospace, monospace';
+        g.textAlign = 'center';
+        g.fillText('❖ OPERATIVE DOSSIER VERIFIED & SYNCHRONISED ❖', 256, 552);
+        g.textAlign = 'left';
+
+        g.fillStyle = '#a855f7';
+        g.font = 'bold 9px ui-monospace, monospace';
+        g.fillText('IDENTITY NEXUS // HTTPS://GITHUB.COM/PRIYANSHGADIA', 24, 606);
+      } else if (id === 'BLOG') {
+        // BLOG / DISPATCH LOGS (Amber / Gold Theme)
+        g.fillStyle = '#0a0802';
+        g.fillRect(0, 0, 512, 640);
+
+        // Header
+        g.fillStyle = '#171104';
+        g.fillRect(16, 16, 480, 80);
+        g.strokeStyle = '#f59e0b';
+        g.lineWidth = 1.5;
+        g.strokeRect(16, 16, 480, 80);
+
+        g.fillStyle = '#fbbf24';
+        g.font = 'bold 16px -apple-system, sans-serif';
+        g.fillText('Computational Engineering & Research Logs', 32, 46);
+        g.fillStyle = '#fde68a';
+        g.font = '10px ui-monospace, monospace';
+        g.fillText('BY PRIYANSH GADIA // ESSAYS ON GRAPHICS, MULTI-AGENT AI & EDGE ARCHITECTURE', 32, 68);
+
+        const posts = [
+          {
+            tag: 'GRAPHICS & SHADERS',
+            date: 'SEP 2026',
+            title: 'Zero-Raster WebGL: Engineering 60 FPS Subterranean Worlds',
+            snippet: 'How to bypass texture memory bandwidth entirely using mathematical procedural surfaces and signed distance fields.'
+          },
+          {
+            tag: 'MULTI-AGENT AI',
+            date: 'AUG 2026',
+            title: 'Autonomous Coding Swarms: Deterministic State vs Stochastic Generation',
+            snippet: 'Architecting multi-agent feedback loops where LLMs test, verify, and screenshot their own WebGL outputs.'
+          },
+          {
+            tag: 'DISTRIBUTED SYSTEMS',
+            date: 'JUL 2026',
+            title: 'Edge-Native Runtimes: Global Consensus with Cloudflare D1 & Workers',
+            snippet: 'Benchmarking millisecond calendar synchronization and live telemetric packet fan-out across global edges.'
+          },
+          {
+            tag: 'ROBOTICS & POSE',
+            date: 'MAY 2026',
+            title: 'Spatio-Temporal Graph Convolutions for Real-Time Biomechanical Gait',
+            snippet: 'Extracting skeletal pose kinematics and predicting physical stress vectors using graph neural networks.'
+          }
+        ];
+
+        posts.forEach((p, idx) => {
+          const py = 108 + idx * 105;
+          g.fillStyle = '#150f05';
+          g.fillRect(16, py, 480, 95);
+          g.strokeStyle = '#78350f';
+          g.strokeRect(16, py, 480, 95);
+
+          g.fillStyle = '#f59e0b';
+          g.font = 'bold 8.5px ui-monospace, monospace';
+          g.fillText(`[${p.tag}] · ${p.date}`, 28, py + 22);
+
+          g.fillStyle = '#ffffff';
+          g.font = 'bold 12px -apple-system, sans-serif';
+          g.fillText(p.title, 28, py + 42);
+
+          g.fillStyle = '#d4d4d8';
+          g.font = '9.5px -apple-system, sans-serif';
+          g.fillText(p.snippet.slice(0, 68), 28, py + 64);
+          if (p.snippet.length > 68) g.fillText(p.snippet.slice(68), 28, py + 78);
+        });
+
+        g.fillStyle = '#f59e0b';
+        g.font = 'bold 9.5px ui-monospace, monospace';
+        g.fillText('TECHNICAL ESSAY ARCHIVE // PRIYANSHGADIA.HASHNODE.DEV', 24, 606);
+      } else {
+        // INSTAGRAM / DEFAULT
+        g.fillStyle = '#000000';
+        g.fillRect(0, 0, 512, 640);
+
+        // Top Instagram Bar
+        g.fillStyle = '#121212';
+        g.fillRect(0, 0, 512, 42);
+        g.fillStyle = '#262626';
+        g.fillRect(0, 42, 512, 1);
+
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 14px -apple-system, sans-serif';
+        g.fillText('p._.g_', 24, 26);
+        g.fillStyle = '#0095f6';
+        g.fillText('✓', 78, 26);
+
+        // Profile Info
+        const igGrad = g.createLinearGradient(30, 65, 90, 125);
+        igGrad.addColorStop(0, '#f09433');
+        igGrad.addColorStop(0.25, '#e6683c');
+        igGrad.addColorStop(0.5, '#dc2743');
+        igGrad.addColorStop(0.75, '#cc2366');
+        igGrad.addColorStop(1, '#bc1888');
+        g.strokeStyle = igGrad;
+        g.lineWidth = 2.5;
+        g.beginPath();
+        g.arc(60, 95, 33, 0, Math.PI * 2);
+        g.stroke();
+
+        g.fillStyle = '#1a1a1a';
+        g.beginPath();
+        g.arc(60, 95, 29, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 18px -apple-system, sans-serif';
+        g.fillText('PG', 48, 102);
+
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 14px -apple-system, sans-serif';
+        g.fillText('142', 140, 90);
+        g.fillText('1,840', 230, 90);
+        g.fillText('620', 330, 90);
+
+        g.fillStyle = '#a8a8a8';
+        g.font = '10px -apple-system, sans-serif';
+        g.fillText('Posts', 140, 106);
+        g.fillText('Followers', 230, 106);
+        g.fillText('Following', 330, 106);
+
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 11px -apple-system, sans-serif';
+        g.fillText('Priyansh Gadia', 24, 146);
+        g.fillStyle = '#8e8e8e';
+        g.font = '9.5px -apple-system, sans-serif';
+        g.fillText('Artist / Engineer', 24, 160);
+        g.fillStyle = '#f5f5f5';
+        g.font = '9.5px -apple-system, sans-serif';
+        g.fillText('Fine Arts & Sketching Portfolio · Photography & Visual Media', 24, 174);
+        g.fillText('Sam Bagli Mentorship · National UCEED 2023 Qualified', 24, 188);
+        g.fillStyle = '#e0f1ff';
+        g.fillText('🔗 instagram.com/p._.g_ · linktr.ee/priyanshgadia', 24, 202);
+
+        // Story Highlights Circles
+        const highlights = ['Sketches', 'Portraits', 'Nature', 'Robotics', 'Studio'];
+        highlights.forEach((hl, i) => {
+          const hx = 44 + i * 85;
+          g.strokeStyle = '#262626';
+          g.lineWidth = 1.5;
+          g.beginPath();
+          g.arc(hx, 238, 22, 0, Math.PI * 2);
+          g.stroke();
+          g.fillStyle = '#1c1c1c';
+          g.beginPath();
+          g.arc(hx, 238, 20, 0, Math.PI * 2);
+          g.fill();
+          g.fillStyle = '#ffffff';
+          g.font = '8px -apple-system, sans-serif';
+          g.fillText(hl, hx - 14, 274);
+        });
+
+        // 3x3 Photo Grid
+        for (let rx = 0; rx < 3; rx++) {
+          for (let ry = 0; ry < 2; ry++) {
+            const gx = 16 + rx * 162;
+            const gy = 295 + ry * 135;
+            g.fillStyle = (rx + ry) % 2 === 0 ? '#181818' : '#222222';
+            g.fillRect(gx, gy, 156, 128);
+
+            g.strokeStyle = '#e1306c';
+            g.lineWidth = 1;
+            g.strokeRect(gx + 8, gy + 8, 140, 112);
+
+            g.fillStyle = '#ffffff';
+            g.font = 'bold 9px -apple-system, sans-serif';
+            const titles = ['PORTRAIT STUDY', 'PENCIL SKETCH', 'NATURE SAM BAGLI', 'CANVAS WATERCOLOR', 'ROBOTICS CAD', 'ARCHITECTURAL'];
+            g.fillText(titles[ry * 3 + rx] || 'ART SPECIMEN', gx + 16, gy + 32);
+
+            g.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+            g.beginPath();
+            g.arc(gx + 78, gy + 70, 24, 0, Math.PI * 2);
+            g.stroke();
+          }
         }
 
-        ctx.fillStyle = '#f97316';
-        ctx.fillRect(32, 260, 180, 22);
-        ctx.fillStyle = '#000000';
-        ctx.font = 'bold 9px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('CLICK TO INITIATE DISPATCH', 122, 274);
+        g.fillStyle = '#e1306c';
+        g.font = 'bold 10px ui-monospace, monospace';
+        g.fillText('INSTAGRAM CREATIVE MEDIA ARCHIVE // @P._.G_', 24, 580);
       }
 
-      // Soft radial vignette to dissolve canvas rectangular boundaries into the optical throat void
-      const grad = ctx.createRadialGradient(256, 160, 140, 256, 160, 255);
-      grad.addColorStop(0, 'rgba(0, 0, 0, 0)');
-      grad.addColorStop(0.65, 'rgba(0, 0, 0, 0.40)');
-      grad.addColorStop(1, 'rgba(0, 0, 0, 1.0)');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, 512, 320);
+      return cnv;
+    }
 
-      ls1PreviewTex.needsUpdate = true;
+    function buildDestination3DScene(dest) {
+      while (ls1Destination3DGroup.children.length > 0) {
+        const ch = ls1Destination3DGroup.children[0];
+        ls1Destination3DGroup.remove(ch);
+      }
+
+      const id = dest.id || 'GITHUB';
+      const accent = dest.accent || dest.color || 0x00f0ff;
+
+      // 1. Backing Titanium / Obsidian Bezel Slab (0.38m x 0.50m)
+      const slab = new THREE.Mesh(
+        new THREE.BoxGeometry(0.38, 0.50, 0.014),
+        new THREE.MeshStandardMaterial({ color: 0x0a1016, roughness: 0.35, metalness: 0.85 })
+      );
+      slab.userData = { isDestination: true, isPortal: true, interactive: true, sector: 'LS1', dest };
+      ls1Destination3DGroup.add(slab);
+      hits.push(slab);
+
+      // 2. High-Resolution Authentic Procedural Webpage Canvas Texture (Rule 2 Compliant)
+      const pageCnv = createDestinationPortalCanvas(dest);
+      const pageTex = new THREE.CanvasTexture(pageCnv);
+      pageTex.minFilter = THREE.LinearFilter;
+      pageTex.magFilter = THREE.LinearFilter;
+      pageTex.generateMipmaps = false;
+
+      const pageMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.35, 0.44),
+        new THREE.MeshBasicMaterial({ map: pageTex, toneMapped: false })
+      );
+      pageMesh.position.set(0, 0.016, 0.008);
+      pageMesh.userData = { isDestination: true, isPortal: true, interactive: true, sector: 'LS1', dest };
+      slab.add(pageMesh);
+      hits.push(pageMesh);
+
+      // 3. Traversal Rune Button at bottom of slab
+      const btn = new THREE.Mesh(
+        new THREE.BoxGeometry(0.26, 0.032, 0.008),
+        new THREE.MeshStandardMaterial({ color: 0x071520, emissive: accent, emissiveIntensity: 0.65 })
+      );
+      btn.position.set(0, -0.218, 0.012);
+      btn.userData = { isDestination: true, isPortal: true, interactive: true, sector: 'LS1', dest };
+      slab.add(btn);
+      hits.push(btn);
     }
 
     activatePortal = function(crystalNode) {
@@ -6638,36 +9197,68 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       const dest = crystalNode.userData.dest;
       if (!dest) return;
 
+      const stoneColor = dest.accent || dest.color;
+
       ls1ActivePortal = {
         node: crystalNode,
         dest,
         t: 0,
-        state: 'opening'
+        seqTime: 0.0,
+        closeT: 1.0,
+        stoneColor,
+        state: 'inception'
       };
 
-      // Position portal aperture beside hologram on the right (clearing central corridor)
-      ls1PortalMesh.position.set(0.68, 1.02, 0.80);
-      ls1PortalMesh.scale.setScalar(0.06);
+      // Position portal aperture right at the activated gem anchor!
+      const gemWorld = crystalNode.getWorldPosition(new THREE.Vector3());
+      const localPos = g.worldToLocal(gemWorld.clone());
+      ls1PortalMesh.position.copy(localPos);
+      ls1PortalMesh.scale.setScalar(0.70);
+      ls1PortalMesh.lookAt(cam.position);
       ls1PortalMesh.visible = true;
+
       if (ls1SmokeMesh) ls1SmokeMesh.visible = true;
+      if (ls1SleeveGroup) ls1SleeveGroup.visible = true;
       if (ls1ElectricGroup) ls1ElectricGroup.visible = true;
       if (ls1ThroatMesh) ls1ThroatMesh.visible = true;
-      if (ls1PreviewMesh) ls1PreviewMesh.visible = true;
+      if (ls1AbyssGroup) ls1AbyssGroup.visible = true;
       if (ls1ThroatMat) {
-        ls1ThroatMat.uniforms.uOpen.value = 0;
-        ls1ThroatMat.uniforms.uEnergyCol.value.setHex(dest.color);
+        ls1ThroatMat.uniforms.uSeqTime.value = 0.0;
+        ls1ThroatMat.uniforms.uOpen.value = 0.0;
+        ls1ThroatMat.uniforms.uStoneColor.value.setHex(stoneColor);
+        ls1ThroatMat.uniforms.uEnergyCol.value.setHex(stoneColor);
+      }
+      if (ls1AbyssTunnelMat) {
+        ls1AbyssTunnelMat.uniforms.uOpen.value = 0.0;
+        ls1AbyssTunnelMat.uniforms.uStoneColor.value.setHex(stoneColor);
+      }
+      if (ls1SmokeMat) {
+        ls1SmokeMat.uniforms.uStoneAccent.value.setHex(stoneColor);
+        ls1SmokeMat.uniforms.uLightningFlash.value = 0.0;
+      }
+      if (ls1SleeveMats && ls1SleeveMats.length > 0) {
+        for (let s = 0; s < ls1SleeveMats.length; s++) {
+          ls1SleeveMats[s].uniforms.uStoneAccent.value.setHex(stoneColor);
+          ls1SleeveMats[s].uniforms.uOpen.value = 0.0;
+          ls1SleeveMats[s].uniforms.uLightningFlash.value = 0.0;
+        }
       }
 
-      // Spectral energy color inheritance for electric filaments
+      // Spectral energy color inheritance for lightning corona and storm clouds (dictated by activating gem)
       if (ls1ElectricData && ls1ElectricData.length > 0) {
         for (let k = 0; k < ls1ElectricData.length; k++) {
           const ed = ls1ElectricData[k];
           const filamentCol = (k % 3 === 0) ? (dest.accent || dest.color) : dest.color;
-          ed.mat.color.setHex(filamentCol);
+          if (ed.mat && ed.mat.uniforms && ed.mat.uniforms.uColor) {
+            ed.mat.uniforms.uColor.value.setHex(filamentCol);
+          }
+          if (ed.coronaMat && ed.coronaMat.color) ed.coronaMat.color.setHex(filamentCol);
+          if (ed.mat && ed.mat.color) ed.mat.color.setHex(filamentCol);
         }
       }
 
-      drawDestinationPreview(dest);
+      buildDestination3DScene(dest);
+      if (ls1Destination3DGroup) ls1Destination3DGroup.visible = false;
       crystalNode.userData.isAnchored = true;
 
       sfx.blip(1500, 0.08, 0.05);
@@ -6679,10 +9270,13 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       if (instant) {
         ls1PortalMesh.visible = false;
         if (ls1SmokeMesh) ls1SmokeMesh.visible = false;
+        if (ls1SleeveGroup) ls1SleeveGroup.visible = false;
         if (ls1ElectricGroup) ls1ElectricGroup.visible = false;
         if (ls1ThroatMesh) ls1ThroatMesh.visible = false;
-        if (ls1PreviewMesh) ls1PreviewMesh.visible = false;
+        if (ls1AbyssGroup) ls1AbyssGroup.visible = false;
+        if (ls1Destination3DGroup) ls1Destination3DGroup.visible = false;
         if (ls1ThroatMat) ls1ThroatMat.uniforms.uOpen.value = 0;
+        if (ls1AbyssTunnelMat) ls1AbyssTunnelMat.uniforms.uOpen.value = 0;
         if (ls1ActivePortal.node) {
           ls1ActivePortal.node.userData.isAnchored = false;
           ls1ActivePortal.node.position.copy(ls1ActivePortal.node.userData.basePos);
@@ -6695,10 +9289,18 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     };
 
     wakeLS1 = function() {
-      if (ls1StationState !== 'sleeping') return;
-      ls1StationState = 'hologram_boot';
-      ls1BootTimer = 0;
+      if (ls1StationState === 'crystal_birth') return;
+      ls1StationState = 'crystal_birth';
+      ls1BirthTimer = 0;
+      ls1HarmonicPlayed = false;
+      ls1FlashSfxPlayed = false;
       if (ls1ActivatorMat) ls1ActivatorMat.emissiveIntensity = 0.95;
+      if (ls1FigureGroup) ls1FigureGroup.visible = false;
+      for (let i = 0; i < ls1Crystals.length; i++) {
+        ls1Crystals[i].visible = false;
+        ls1Crystals[i].scale.setScalar(0.0001);
+      }
+      sfx.play('crystal.birth');
       sfx.relay();
       sfx.hum();
     };
@@ -6710,14 +9312,21 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
 
       const pWorld = ls1PortalMesh.getWorldPosition(new THREE.Vector3());
       const pQuat = ls1PortalMesh.getWorldQuaternion(new THREE.Quaternion());
-      const fwd = new THREE.Vector3(0, 0, 1).applyQuaternion(pQuat);
+      const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(pQuat);
+      const normal = new THREE.Vector3(0, 0, 1).applyQuaternion(pQuat);
+
+      // Entrance waypoint directly in front of the aperture entrance to avoid cutting through outer chamber geometry
+      const entryWaypoint = pWorld.clone().add(normal.clone().multiplyScalar(0.70));
+      const targetPos = pWorld.clone().add(fwd.clone().multiplyScalar(0.95));
 
       ls1Traversal = {
         active: true,
         t: 0,
-        duration: 2.0,
-        fromPos: cam.position.clone(),
-        targetPos: pWorld.clone().add(fwd.multiplyScalar(0.06)),
+        duration: 1.8,
+        p0: cam.position.clone(),
+        p1: entryWaypoint,
+        p2: targetPos,
+        lookTarget: pWorld.clone().add(fwd.clone().multiplyScalar(2.0)),
         dest
       };
 
@@ -6741,13 +9350,25 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       }
       if (ls1ActivePortal) {
         ls1ActivePortal.t = 1.0;
+        ls1ActivePortal.closeT = 1.0;
         ls1ActivePortal.state = 'closing';
       }
+
+      const pWorld = ls1PortalMesh.getWorldPosition(new THREE.Vector3());
+      const pQuat = ls1PortalMesh.getWorldQuaternion(new THREE.Quaternion());
+      const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(pQuat);
+      const deepAbyssPos = pWorld.clone().add(fwd.multiplyScalar(0.75));
+
+      const ls1Group = sectorGroups['LS1'];
+      const benchPos = ls1Group ? ls1Group.localToWorld(new THREE.Vector3(0.0, 1.18, 2.45)) : cam.position.clone();
 
       ls1ReturnAnim = {
         active: true,
         t: 0,
         duration: 1.8,
+        fromPos: deepAbyssPos,
+        toPos: benchPos,
+        lookTarget: pWorld.clone(),
         node
       };
       sfx.servo(0.6, false);
@@ -6886,7 +9507,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   sectorGroups['LS2_LAMP'] = sectorGroups['LS2']; sectorGroups['LS2_SHELF'] = sectorGroups['LS2']; sectorGroups['LS2_NOTE'] = sectorGroups['LS2']; sectorGroups['LS2_NOTE1'] = sectorGroups['LS2'];
   const FOCUS_CFG = {
     RS1: { dolly: (g) => [g.localToWorld(new THREE.Vector3(0, .6, .5)), g.localToWorld(new THREE.Vector3(0, .01, 0))] },
-    RS2: { dolly: (g) => [g.localToWorld(new THREE.Vector3(0, .45, .36)), g.localToWorld(new THREE.Vector3(0, .025, .03))] },
+    RS2: { dolly: (g) => [g.localToWorld(new THREE.Vector3(0, .48, .03)), g.localToWorld(new THREE.Vector3(0, .033, -.03))] },
     RS3: { dolly: (g) => [g.localToWorld(new THREE.Vector3(0, .84, 1.05)), g.localToWorld(new THREE.Vector3(0, .78, 0))] },
     LS3: { dolly: (g) => [g.localToWorld(new THREE.Vector3(0, 1.05, 2.35)), g.localToWorld(new THREE.Vector3(0, 0.62, 0.15))] },
     LS2: { dolly: (g) => [g.localToWorld(new THREE.Vector3(0, .64, 1.82)), g.localToWorld(new THREE.Vector3(0, .60, .05))] },
@@ -6894,9 +9515,38 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     LS2_NOTE1: { dolly: (g) => [g.localToWorld(new THREE.Vector3(-0.42, 0.92, 0.24)), g.localToWorld(new THREE.Vector3(-0.42, 0.92, 0.035))] },
     LS2_LAMP: { dolly: (g) => [g.localToWorld(new THREE.Vector3(-0.75, 1.35, 0.65)), g.localToWorld(new THREE.Vector3(-0.36, 1.15, 0.35))] },
     LS2_SHELF: { dolly: (g) => [g.localToWorld(new THREE.Vector3(0, 0.28, 0.58)), g.localToWorld(new THREE.Vector3(0, 0.04, 0.12))] },
-    LS1: { dolly: (g) => [g.localToWorld(new THREE.Vector3(0.36, 1.08, 1.88)), g.localToWorld(new THREE.Vector3(0, 0.95, 0.0))] },
+    LS1: { dolly: (g) => [g.localToWorld(new THREE.Vector3(0.0, 1.18, 2.45)), g.localToWorld(new THREE.Vector3(0.0, 0.88, 0.0))] },
   };
-  const FOCUS = { id: null, t: 0, from: new THREE.Vector3(), fromQ: new THREE.Quaternion(), toPos: new THREE.Vector3(), toLook: new THREE.Vector3(), active: false };
+  const FOCUS = {
+    id: null,
+    t: 0,
+    from: new THREE.Vector3(),
+    fromQ: new THREE.Quaternion(),
+    toPos: new THREE.Vector3(),
+    toLook: new THREE.Vector3(),
+    toQ: new THREE.Quaternion(),
+    active: false,
+    benchPose: null,
+    unfocusing: false,
+    unfocusT: 0,
+    returnFromPos: new THREE.Vector3(),
+    returnFromQ: new THREE.Quaternion(),
+    returnToPos: new THREE.Vector3(),
+    returnToQ: new THREE.Quaternion(),
+    noteCam: {
+      active: false,
+      unfocusing: false,
+      t: 0,
+      unfocusT: 0,
+      fromPos: new THREE.Vector3(),
+      fromQ: new THREE.Quaternion(),
+      toPos: new THREE.Vector3(),
+      toQ: new THREE.Quaternion(),
+      returnFromPos: new THREE.Vector3(),
+      returnFromQ: new THREE.Quaternion(),
+      mesh: null
+    }
+  };
 
   const api2 = {
     resume: {
@@ -6919,6 +9569,8 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       flush: (idx) => flushLS2Note(idx),
       setPage: (p) => { LS2.page = Math.max(0, Math.min(LS2.maxPages - 1, p)); updateLS2Page(); },
       sync: (page) => { if (page != null) LS2.page = page; updateLS2Page(); },
+      addNote: (opts) => addLS2Note(opts),
+      duplicateNote: (idx) => duplicateLS2Note(idx),
       getState: () => LS2
     },
     globe: {
@@ -6958,6 +9610,8 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     ls1: {
       getCrystals: () => ls1Crystals,
       getActivePortal: () => ls1ActivePortal,
+      getDestinationGroup: () => ls1Destination3DGroup,
+      getPortalMesh: () => ls1PortalMesh,
       activatePortal: (target) => {
         let node = target;
         if (typeof target === 'string') {
@@ -7046,12 +9700,26 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     window.dispatchEvent(new CustomEvent('lab:blueprint:unread'));
   }
 
+  let lastBlueprintDragAt = 0;
+
+  function saveBlueprintPositions() {
+    try {
+      if (typeof localStorage === 'undefined') return;
+      const posMap = {};
+      sheets.forEach((s, pid) => {
+        posMap[pid] = { x: s.basePos.x, z: s.basePos.z };
+      });
+      localStorage.setItem('vault_blueprint_positions', JSON.stringify(posMap));
+    } catch {}
+  }
+
   const SECTOR_HANDLERS = {
     RS1: {
       usesPointerDrag: true,
       onHit(mesh, uv, point, e) {
         const id = mesh.userData.projectId;
         if (!id || id === '__placeholder__') return;
+        bringSheetToTop(id);
         if (readId) {
           closeReadMode();
           return;
@@ -7085,7 +9753,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
         const local = localPt.sub(dragOff);
         local.x = clamp(local.x, -DESK.w / 2 + 0.15, DESK.w / 2 - 0.15);
         local.z = clamp(local.z, -DESK.d / 2 + 0.1, DESK.d / 2 - 0.1);
-        if (dragScreenDist > 6 || Math.hypot(local.x - dragging.group.position.x, local.z - dragging.group.position.z) > .003) {
+        if (dragScreenDist > 4 || Math.hypot(local.x - dragging.group.position.x, local.z - dragging.group.position.z) > .002) {
           dragging.moved = true;
         }
         dragging.group.position.x = local.x;
@@ -7096,13 +9764,27 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
         const { id, moved, downAt } = dragging;
         const elapsed = performance.now() - downAt;
         const s = sheets.get(id);
-        if (!moved && dragScreenDist < 10 && elapsed < 800) {
+        const wasDragged = moved || dragScreenDist > 4;
+
+        if (wasDragged) {
+          lastBlueprintDragAt = performance.now();
+          if (s) {
+            s.basePos.x = dragging.group.position.x;
+            s.basePos.z = dragging.group.position.z;
+            s.rest = null; // Do NOT spring back! Retain moved position!
+            saveBlueprintPositions();
+          }
+          sfx.play('note.release');
+        } else if (elapsed < 800) {
           openReadMode(id);
-        } else if (s) {
-          // Immediately spring back to clean default position - no retention of moved position
-          s.rest = true;
         }
         dragging = null;
+      },
+      getInteractionDepth() {
+        return readId ? 1 : 0;
+      },
+      onCancelInner() {
+        if (readId) closeReadMode();
       },
       onKey(e) {
         if (e.key === 'Escape' || e.key === 'Backspace') {
@@ -7115,11 +9797,17 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       onExit() {
         dragging = null;
         if (readId) closeReadMode();
-        sheets.forEach(s => { s.rest = true; });
+        // Do not reset blueprint positions to default; retain the moved layout!
       },
     },
     LS1: {
       usesPointerDrag: false,
+      getInteractionDepth() {
+        return (ls1ActivePortal && ls1ActivePortal.state !== 'closing') ? 1 : 0;
+      },
+      onCancelInner() {
+        if (ls1ActivePortal) closePortal(false);
+      },
       onHit(mesh, uv, point, e) {
         if (mesh?.userData?.isActivator) {
           wakeLS1();
@@ -7192,7 +9880,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
         }
         if (e.key === 'Escape') {
           if (ls1ActivePortal) {
-            closePortal();
+            closePortal(false);
             e.preventDefault();
             return;
           }
@@ -7208,8 +9896,36 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
         if (!uv) return;
         const px = uv.x * 640, py = (1 - uv.y) * 400;
 
+        // Interactive Capacity Overflow Modal Click Handling
+        if (RESUME.overflowModal && RESUME.overflowModal.active) {
+          const mX = 50, mY = 75, mW = 540;
+          const b1Y = mY + 98, b2Y = b1Y + 40, b3Y = b2Y + 40, bH = 32;
+          if (px >= mX + 20 && px <= mX + mW - 20) {
+            if (py >= b1Y && py <= b1Y + bH) {
+              // Choice 1: Proceed with selected template
+              RESUME.overflowModal.active = false;
+              sfx.blip(1100, .03, .02);
+            } else if (py >= b2Y && py <= b2Y + bH) {
+              // Choice 2: Try suggested template
+              RESUME.template = RESUME.overflowModal.suggestedTemplate;
+              RESUME.overflowModal.active = false;
+              sfx.blip(1300, .04, .02);
+            } else if (py >= b3Y && py <= b3Y + bH) {
+              // Choice 3: Go back to editing
+              if (RESUME.overflowModal.triggerItemId) {
+                RESUME.selected.delete(RESUME.overflowModal.triggerItemId);
+              }
+              RESUME.overflowModal.active = false;
+              sfx.blip(900, .04, .02);
+            }
+            drawResume(resumeCanvas);
+            resumeTex.needsUpdate = true;
+          }
+          return;
+        }
+
         // Search bar click
-        if (py >= 36 && py <= 66) {
+        if (py >= 28 && py <= 52) {
           if (px <= 556) {
             RESUME.typing = true;
             sfx.blip(1200, .03, .02);
@@ -7224,32 +9940,68 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
           return;
         }
 
-        // Template tabs click (4 options)
-        if (py >= 68 && py <= 94) {
-          const prevTpl = RESUME.template;
-          if (px < 166) RESUME.template = 'quant-research';
-          else if (px < 318) RESUME.template = 'fullstack-ai';
-          else if (px < 470) RESUME.template = 'robotics-mech';
-          else RESUME.template = 'exec-clean';
-          if (RESUME.template !== prevTpl) {
-            const tplObj = RESUME_TEMPLATES.find(t => t.id === RESUME.template);
-            if (tplObj && tplObj.defaults) {
-              RESUME.selected = new Set(tplObj.defaults);
-            }
+        // Template tabs click (8 profiles across 2 rows)
+        if (py >= 53 && py <= 92) {
+          let chosenTpl = null;
+          if (py <= 72) {
+            // Row 1
+            if (px < 166) chosenTpl = 'quant-research';
+            else if (px < 318) chosenTpl = 'fullstack-ai';
+            else if (px < 470) chosenTpl = 'robotics-mech';
+            else chosenTpl = 'exec-clean';
+          } else {
+            // Row 2
+            if (px < 166) chosenTpl = 'moderncv';
+            else if (px < 318) chosenTpl = 'deedy';
+            else if (px < 470) chosenTpl = 'sb2nov';
+            else chosenTpl = 'altacv';
           }
-          sfx.blip(1100, .03, .02);
+
+          if (chosenTpl) {
+            RESUME.templateManuallyLocked = true;
+            const curPages = estimateResumePageCount(RESUME.selected, chosenTpl);
+            if (curPages > 1) {
+              const altFitting = RESUME_TEMPLATES.find(t => t.id !== chosenTpl && estimateResumePageCount(RESUME.selected, t.id) === 1);
+              if (altFitting) {
+                RESUME.template = chosenTpl;
+                RESUME.overflowModal = {
+                  active: true,
+                  triggerItemId: null,
+                  currentTemplate: chosenTpl,
+                  suggestedTemplate: altFitting.id,
+                  pageCount: curPages
+                };
+                sfx.blip(950, .05, .03);
+                drawResume(resumeCanvas);
+                resumeTex.needsUpdate = true;
+                return;
+              }
+            }
+            RESUME.template = chosenTpl;
+            sfx.blip(1100, .03, .02);
+            drawResume(resumeCanvas);
+            resumeTex.needsUpdate = true;
+            return;
+          }
+        }
+
+        // Auto-Fit Mode Toggle Button click
+        if (py >= 94 && py <= 114 && px >= 440) {
+          RESUME.templateManuallyLocked = false;
+          RESUME.template = autoSelectBestTemplate(RESUME.selected);
+          sfx.blip(1350, .04, .02);
           drawResume(resumeCanvas);
           resumeTex.needsUpdate = true;
           return;
         }
 
         // Category filter pills click
-        if (py >= 96 && py <= 120) {
-          if (px < 88) RESUME.category = 'all';
-          else if (px < 160) RESUME.category = 'experience';
-          else if (px < 258) RESUME.category = 'project';
-          else if (px < 348) RESUME.category = 'certification';
-          else if (px < 438) RESUME.category = 'education';
+        if (py >= 94 && py <= 114 && px < 440) {
+          if (px < 86) RESUME.category = 'all';
+          else if (px < 144) RESUME.category = 'experience';
+          else if (px < 216) RESUME.category = 'project';
+          else if (px < 286) RESUME.category = 'certification';
+          else if (px < 356) RESUME.category = 'education';
           else RESUME.category = 'skill';
           RESUME.scroll = 0;
           applyResumeFilter();
@@ -7260,8 +10012,8 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
         }
 
         // List item click
-        if (py >= 138 && py <= 348) {
-          const rowIndex = Math.floor((py - 140) / 34);
+        if (py >= 126 && py <= 344) {
+          const rowIndex = Math.floor((py - 128) / 35);
           const item = RESUME.filtered[RESUME.scroll + rowIndex];
           if (item) {
             // Click on proof link button
@@ -7270,13 +10022,45 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
               sfx.relay();
               return;
             }
-            // Toggle selection
-            if (RESUME.selected.has(item.id)) {
+
+            // Toggle selection with auto-fit or overflow modal check
+            const isCurrentlySelected = RESUME.selected.has(item.id);
+            if (isCurrentlySelected) {
               RESUME.selected.delete(item.id);
+              if (!RESUME.templateManuallyLocked) {
+                RESUME.template = autoSelectBestTemplate(RESUME.selected);
+              }
+              sfx.blip(850, .03, .02);
             } else {
-              RESUME.selected.add(item.id);
+              const nextSel = new Set(RESUME.selected);
+              nextSel.add(item.id);
+              if (!RESUME.templateManuallyLocked) {
+                RESUME.selected = nextSel;
+                RESUME.template = autoSelectBestTemplate(nextSel);
+                sfx.blip(1150, .04, .02);
+              } else {
+                const estPages = estimateResumePageCount(nextSel, RESUME.template);
+                if (estPages > 1) {
+                  const altFitting = RESUME_TEMPLATES.find(t => t.id !== RESUME.template && estimateResumePageCount(nextSel, t.id) === 1);
+                  if (altFitting) {
+                    RESUME.selected = nextSel;
+                    RESUME.overflowModal = {
+                      active: true,
+                      triggerItemId: item.id,
+                      currentTemplate: RESUME.template,
+                      suggestedTemplate: altFitting.id,
+                      pageCount: estPages
+                    };
+                    sfx.blip(950, .05, .03);
+                    drawResume(resumeCanvas);
+                    resumeTex.needsUpdate = true;
+                    return;
+                  }
+                }
+                RESUME.selected = nextSel;
+                sfx.blip(900, .04, .02);
+              }
             }
-            sfx.blip(900, .04, .02);
             drawResume(resumeCanvas);
             resumeTex.needsUpdate = true;
             if (api2.resume.onFields) api2.resume.onFields(Array.from(RESUME.selected));
@@ -7285,7 +10069,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
         }
 
         // Print button click
-        if (py >= 354 && py <= 394 && px >= 340) {
+        if (py >= 352 && py <= 394 && px >= 340) {
           triggerGenerateAndPrint();
           return;
         }
@@ -7298,6 +10082,39 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
         }
       },
       onKey(e) {
+        // Modal Keyboard Handling (1, 2, 3, Escape)
+        if (RESUME.overflowModal && RESUME.overflowModal.active) {
+          if (e.key === '1') {
+            RESUME.overflowModal.active = false;
+            sfx.blip(1100, .03, .02);
+            drawResume(resumeCanvas);
+            resumeTex.needsUpdate = true;
+            e.preventDefault();
+            return;
+          }
+          if (e.key === '2') {
+            RESUME.template = RESUME.overflowModal.suggestedTemplate;
+            RESUME.overflowModal.active = false;
+            sfx.blip(1300, .04, .02);
+            drawResume(resumeCanvas);
+            resumeTex.needsUpdate = true;
+            e.preventDefault();
+            return;
+          }
+          if (e.key === '3' || e.key === 'Escape') {
+            if (RESUME.overflowModal.triggerItemId) {
+              RESUME.selected.delete(RESUME.overflowModal.triggerItemId);
+            }
+            RESUME.overflowModal.active = false;
+            sfx.blip(900, .04, .02);
+            drawResume(resumeCanvas);
+            resumeTex.needsUpdate = true;
+            e.preventDefault();
+            return;
+          }
+          return;
+        }
+
         if (!RESUME.typing) {
           if (e.key === '/' || e.key === 's' || e.key === 'S') {
             RESUME.typing = true;
@@ -7338,6 +10155,16 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
         drawResume(resumeCanvas);
         resumeTex.needsUpdate = true;
       },
+      getInteractionDepth() {
+        return RESUME.typing ? 1 : 0;
+      },
+      onCancelInner() {
+        if (RESUME.typing) {
+          RESUME.typing = false;
+          drawResume(resumeCanvas);
+          if (resumeTex) resumeTex.needsUpdate = true;
+        }
+      },
       onExit() {
         RESUME.typing = false;
         drawResume(resumeCanvas);
@@ -7358,20 +10185,91 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
             const dayNum = row*7 + col - first + 1, daysInMonth = new Date(mc.getFullYear(), mc.getMonth()+1, 0).getDate();
             if (dayNum >= 1 && dayNum <= daysInMonth) {
               const dayDate = new Date(mc.getFullYear(), mc.getMonth(), dayNum);
-              if (!calIsPast(dayDate) && calWithinSyncWindow(dayDate)) {
-                CAL.selectedDate = dayDate; CAL.view = 'slots'; sfx.blip(1100,.04,.02); redrawCal();
-              } else sfx.blip(300,.05,.02);
+              CAL.selectedDate = dayDate; CAL.view = 'slots'; sfx.blip(1100,.04,.02); redrawCal();
             }
           }
           return;
         }
+        if (CAL.view === 'event_detail') {
+          if ((py >= 34 && py <= 58 && px <= 140) || (py >= CAL_H - 42 && py <= CAL_H - 10)) {
+            CAL.view = 'slots';
+            CAL.selectedEvent = null;
+            sfx.play('ui.chirp');
+            redrawCal();
+          }
+          return;
+        }
         if (CAL.view === 'slots') {
-          if (py >= 34 && py <= 58 && px <= 75) { CAL.view = 'grid'; sfx.blip(700,.04,.02); redrawCal(); return; }
+          if (py >= 34 && py <= 58 && px <= 75) {
+            if (CAL.rangeStart) {
+              CAL.rangeStart = null;
+              CAL.rangeEnd = null;
+              redrawCal();
+              return;
+            }
+            CAL.view = 'grid';
+            sfx.play('ui.chirp');
+            redrawCal();
+            return;
+          }
+
+          // Check if clicking on scheduled plans/reservations to show full details
+          for (const eb of (CAL._eventBoxes || [])) {
+            if (px >= eb.x && px <= eb.x + eb.w && py >= eb.y && py <= eb.y + eb.h) {
+              CAL.selectedEvent = eb.event;
+              CAL.view = 'event_detail';
+              sfx.blip(1300, .04, .02);
+              redrawCal();
+              return;
+            }
+          }
+
+          // Check if clicking confirm button
+          if (CAL.rangeStart && CAL._rangeConfirmBox) {
+            const cb = CAL._rangeConfirmBox;
+            if (px >= cb.x && px <= cb.x + cb.w && py >= cb.y && py <= cb.y + cb.h) {
+              const minStart = CAL.rangeStart.start < (CAL.rangeEnd || CAL.rangeStart).start ? CAL.rangeStart.start : (CAL.rangeEnd || CAL.rangeStart).start;
+              const maxEnd = CAL.rangeStart.end > (CAL.rangeEnd || CAL.rangeStart).end ? CAL.rangeStart.end : (CAL.rangeEnd || CAL.rangeStart).end;
+              CAL.selectedSlot = { start: minStart, end: maxEnd };
+              CAL.form = { name:'', email:'', location:'', description:'', field:null };
+              CAL.errorMsg = '';
+              CAL.view = 'form';
+              CAL.rangeStart = null;
+              CAL.rangeEnd = null;
+              sfx.play('calendar.confirm');
+              redrawCal();
+              return;
+            }
+          }
+
+          // Check slot boxes
           for (const sb of (CAL._slotBoxes || [])) {
             if (px >= sb.x && px <= sb.x + sb.w && py >= sb.y && py <= sb.y + sb.h) {
-              CAL.selectedSlot = sb.slot; CAL.form = { name:'', email:'', location:'', description:'', field:null };
-              CAL.errorMsg = ''; CAL.view = 'form'; sfx.blip(1200,.04,.02); redrawCal();
-              return;
+              if (!CAL.rangeStart) {
+                // Clicked 1st timing (e.g. 12:30). Range is 12:30-1:00 by default
+                CAL.rangeStart = sb.slot;
+                CAL.rangeEnd = sb.slot;
+                CAL.errorMsg = '';
+                sfx.play('calendar.click');
+                redrawCal();
+                return;
+              } else {
+                // Clicked 2nd timing (e.g. 3:30) or another timing in sequence.
+                const s1 = CAL.rangeStart.start < sb.slot.start ? CAL.rangeStart.start : sb.slot.start;
+                const s2 = CAL.rangeStart.end > sb.slot.end ? CAL.rangeStart.end : sb.slot.end;
+                const isBlocked = (CAL.busy || []).some(b => b.start < s2 && b.end > s1);
+                if (isBlocked) {
+                  CAL.errorMsg = 'INTERVAL BLOCKED BY EXISTING EVENT';
+                  sfx.play('calendar.invalid');
+                  redrawCal();
+                  return;
+                }
+                CAL.errorMsg = '';
+                CAL.rangeEnd = sb.slot; // Sequence updates the range
+                sfx.play('calendar.click');
+                redrawCal();
+                return;
+              }
             }
           }
           return;
@@ -7404,6 +10302,34 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
           return;
         }
       },
+      getInteractionDepth() {
+        if (CAL.view === 'form') return (CAL.form?.field ? 3 : 2);
+        if (CAL.view === 'slots' || CAL.view === 'event_detail') return 1;
+        return 0;
+      },
+      onCancelInner() {
+        if (CAL.view === 'event_detail') {
+          CAL.view = 'slots';
+          CAL.selectedEvent = null;
+          redrawCal();
+        } else if (CAL.view === 'form') {
+          if (CAL.form?.field) {
+            CAL.form.field = null;
+            redrawCal();
+            return;
+          }
+          CAL.view = 'slots';
+          CAL.rangeStart = null;
+          CAL.rangeEnd = null;
+          redrawCal();
+        } else if (CAL.view === 'slots') {
+          CAL.view = 'grid';
+          CAL.selectedDate = null;
+          CAL.rangeStart = null;
+          CAL.rangeEnd = null;
+          redrawCal();
+        }
+      },
       onKey(e) {
         if (CAL.view === 'sending') { e.preventDefault(); return; }
         if (CAL.view === 'form' && CAL.form.field) {
@@ -7417,14 +10343,19 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
           return;
         }
         if (e.key === 'Escape') {
-          if (CAL.view === 'form') { CAL.view = 'slots'; redrawCal(); e.preventDefault(); return; }
-          if (CAL.view === 'slots') { CAL.view = 'grid'; CAL.selectedDate = null; redrawCal(); e.preventDefault(); return; }
+          if (CAL.view === 'form') {
+            if (CAL.form?.field) { CAL.form.field = null; redrawCal(); e.preventDefault(); return; }
+            CAL.view = 'slots'; CAL.rangeStart = null; CAL.rangeEnd = null; redrawCal(); e.preventDefault(); return;
+          }
+          if (CAL.rangeStart !== null) { CAL.rangeStart = null; CAL.rangeEnd = null; redrawCal(); e.preventDefault(); return; }
+          if (CAL.view === 'slots') { CAL.view = 'grid'; CAL.selectedDate = null; CAL.rangeStart = null; CAL.rangeEnd = null; redrawCal(); e.preventDefault(); return; }
           if (CAL.view === 'sent') { CAL.view = 'slots'; CAL.selectedSlot = null; redrawCal(); syncCalendarIfStale(true); e.preventDefault(); return; }
           if (CAL.view === 'error') { CAL.view = 'grid'; CAL.selectedSlot = null; redrawCal(); e.preventDefault(); return; }
         }
       },
       onExit() {
         CAL.view = 'grid'; CAL.selectedDate = null; CAL.selectedSlot = null;
+        CAL.rangeStart = null; CAL.rangeEnd = null;
         CAL.form = { name:'', email:'', location:'', description:'', field:null }; CAL.errorMsg = '';
         redrawCal();
       }
@@ -7454,30 +10385,132 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
           return;
         }
 
-        // 3. Click on a Note Mesh (Disambiguated Selection vs. Drawing)
+        // 2B. Click on 3D NEW NOTE Sticky Notepad on Shelf
+        if (mesh.userData.isNewNotePad) {
+          const newIdx = addLS2Note();
+          if (newIdx >= 0) {
+            const prev = LS2.activeNote;
+            LS2.activeNote = newIdx;
+            LS2.typingField = 'message';
+            if (prev !== null && prev !== newIdx) { drawLS2Note(prev); ls2Textures[prev].needsUpdate = true; }
+            drawLS2Note(newIdx);
+            ls2Textures[newIdx].needsUpdate = true;
+            focusNoteCamera(newIdx);
+          }
+          return;
+        }
+
+        // 3. Click on a Note Mesh (Disambiguated Selection vs. Move vs. Drawing)
         if (mesh.userData.interactive && mesh.userData.noteIdx !== undefined) {
           const idx = mesh.userData.noteIdx;
-          if (LS2.activeNote !== idx) {
-            const prev = LS2.activeNote;
-            LS2.activeNote = idx;
-            LS2.drawing = false;
-            LS2.currentStroke = [];
-            if (prev !== null) { drawLS2Note(prev); ls2Textures[prev].needsUpdate = true; }
-            drawLS2Note(idx);
-            ls2Textures[idx].needsUpdate = true;
-            sfx.blip(1200, .04, .02);
-            return; // Initial click strictly selects the note — no ink stroke started
+          LS2.pressedNote = idx;
+          LS2.pressStartClientX = e.clientX;
+          LS2.pressStartClientY = e.clientY;
+          LS2.hasDragged = false;
+          LS2.movingNote = false;
+
+          const g = sectorGroups['LS2'];
+          if (g) {
+            ndc.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+            ray.setFromCamera(ndc, cam);
+            const corkPlane = new THREE.Plane();
+            const corkNorm = new THREE.Vector3(0, 0, 1).applyQuaternion(g.quaternion);
+            const corkPt = g.localToWorld(new THREE.Vector3(0, 0.62, 0.035));
+            corkPlane.setFromNormalAndCoplanarPoint(corkNorm, corkPt);
+            const hitPt = new THREE.Vector3();
+            if (ray.ray.intersectPlane(corkPlane, hitPt)) {
+              const localHit = g.worldToLocal(hitPt);
+              LS2.dragOffX = localHit.x - mesh.position.x;
+              LS2.dragOffY = localHit.y - mesh.position.y;
+            } else {
+              LS2.dragOffX = 0;
+              LS2.dragOffY = 0;
+            }
           }
-          
-          // Only reached if note was ALREADY active and user initiates a drawing stroke
-          if (uv && e) {
-            LS2.drawing = true;
-            const p = (e.pressure && e.pressure > 0) ? e.pressure : 0.5;
-            LS2.currentStroke = [uv.x, 1 - uv.y, p];
+
+          // If note is already magnified and active, check interactive regions on the note:
+          if (FOCUS.noteCam?.active && LS2.activeNote === idx && uv && e) {
+            // Action button strip at bottom:
+            if (uv.y <= 0.12 && uv.x >= 0.40 && uv.x <= 0.72) {
+              // Clicked [ALT+D:DUP] button!
+              const destIdx = duplicateLS2Note(idx);
+              if (destIdx >= 0) {
+                const prev = LS2.activeNote;
+                LS2.activeNote = destIdx;
+                if (prev !== null) { drawLS2Note(prev); ls2Textures[prev].needsUpdate = true; }
+                drawLS2Note(destIdx);
+                ls2Textures[destIdx].needsUpdate = true;
+                focusNoteCamera(destIdx);
+              }
+              return;
+            }
+            if (uv.y <= 0.20 && uv.x < 0.40) {
+              LS2.typingField = 'author';
+              drawLS2Note(idx);
+              ls2Textures[idx].needsUpdate = true;
+              sfx.play('ui.chirp');
+              return;
+            }
+            if (uv.y < 0.80 && uv.y > 0.20) {
+              LS2.typingField = 'message';
+              LS2.drawing = true;
+              const p = (e.pressure && e.pressure > 0) ? e.pressure : 0.5;
+              LS2.currentStroke = [uv.x, 1 - uv.y, p];
+              sfx.play('stylus.scratch');
+              return;
+            }
           }
         }
       },
       onMove(e) {
+        // Drag threshold detection
+        if (LS2.pressedNote !== null && !LS2.drawing) {
+          const dist = Math.hypot(e.clientX - (LS2.pressStartClientX || 0), e.clientY - (LS2.pressStartClientY || 0));
+          if (dist > 4) {
+            if (!LS2.movingNote) {
+              LS2.movingNote = true;
+              LS2.hasDragged = true;
+              sfx.play('note.lift');
+            }
+          }
+        }
+
+        if (LS2.movingNote && LS2.pressedNote !== null) {
+          const idx = LS2.pressedNote;
+          const g = sectorGroups['LS2'];
+          const activeMesh = ls2Meshes[idx];
+          if (g && activeMesh) {
+            ndc.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+            ray.setFromCamera(ndc, cam);
+            const corkPlane = new THREE.Plane();
+            const corkNorm = new THREE.Vector3(0, 0, 1).applyQuaternion(g.quaternion);
+            const corkPt = g.localToWorld(new THREE.Vector3(0, 0.62, 0.035));
+            corkPlane.setFromNormalAndCoplanarPoint(corkNorm, corkPt);
+            const hitPt = new THREE.Vector3();
+            if (ray.ray.intersectPlane(corkPlane, hitPt)) {
+              const localHit = g.worldToLocal(hitPt);
+              const targetX = clamp(localHit.x - (LS2.dragOffX || 0), -0.85, 0.85);
+              const targetY = clamp(localHit.y - (LS2.dragOffY || 0), 0.15, 1.08);
+              activeMesh.position.x = targetX;
+              activeMesh.position.y = targetY;
+              LS2.notes[idx].posX = targetX;
+              LS2.notes[idx].posY = targetY;
+              LS2.notes[idx].isCustom = true;
+              if (FOCUS.noteCam && FOCUS.noteCam.active && LS2.activeNote === idx) {
+                activeMesh.updateWorldMatrix(true, false);
+                const noteWPos = activeMesh.getWorldPosition(new THREE.Vector3());
+                const noteWQuat = activeMesh.getWorldQuaternion(new THREE.Quaternion());
+                const normal = new THREE.Vector3(0, 0, 1).applyQuaternion(noteWQuat);
+                const noteH = 0.18;
+                const vFovRad = THREE.MathUtils.degToRad(cam.fov || 65);
+                const fitDist = clamp((noteH * 1.45 * 0.5) / Math.tan(vFovRad * 0.5), 0.21, 0.32);
+                FOCUS.noteCam.toPos.copy(noteWPos.clone().add(normal.clone().multiplyScalar(fitDist)));
+              }
+            }
+          }
+          return;
+        }
+
         if (!LS2.drawing || LS2.activeNote === null) return;
         ndc.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
         ray.setFromCamera(ndc, cam);
@@ -7499,6 +10532,33 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
         }
       },
       onRelease(e) {
+        if (LS2.pressedNote !== null) {
+          const idx = LS2.pressedNote;
+          if (LS2.hasDragged) {
+            LS2.movingNote = false;
+            LS2.pressedNote = null;
+            LS2.hasDragged = false;
+            saveLS2Session();
+            saveLS2Note(idx, true); // Immediate flush on release
+            sfx.play('note.release');
+            return;
+          } else {
+            LS2.movingNote = false;
+            LS2.pressedNote = null;
+            LS2.hasDragged = false;
+            if (!LS2.drawing) {
+              if (LS2.activeNote !== idx || !FOCUS.noteCam?.active) {
+                const prev = LS2.activeNote;
+                LS2.activeNote = idx;
+                if (prev !== null && prev !== idx) { drawLS2Note(prev); ls2Textures[prev].needsUpdate = true; }
+                drawLS2Note(idx);
+                ls2Textures[idx].needsUpdate = true;
+                focusNoteCamera(idx);
+                return;
+              }
+            }
+          }
+        }
         if (!LS2.drawing || LS2.activeNote === null) return;
         // Require at least 2 points (>= 6 coordinates) to record a real stroke, ignoring accidental stationary clicks
         if (LS2.currentStroke.length >= 6) {
@@ -7509,16 +10569,39 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
         LS2.drawing = false;
         drawLS2Note(LS2.activeNote);
         ls2Textures[LS2.activeNote].needsUpdate = true;
+        saveLS2Session();
         saveLS2Note(LS2.activeNote, false); // Trailing 1200ms debounce save
+      },
+      getInteractionDepth() {
+        return (LS2.activeNote !== null || FOCUS.noteCam?.active) ? 1 : 0;
+      },
+      onCancelInner() {
+        if (LS2.activeNote !== null) {
+          const prev = LS2.activeNote;
+          saveLS2Session();
+          saveLS2Note(prev, true);
+          unfocusNoteCamera();
+          LS2.activeNote = null;
+          LS2.drawing = false;
+          LS2.movingNote = false;
+          LS2.currentStroke = [];
+          drawLS2Note(prev);
+          ls2Textures[prev].needsUpdate = true;
+        } else if (FOCUS.noteCam?.active) {
+          unfocusNoteCamera();
+        }
       },
       onKey(e) {
         if (LS2.activeNote !== null) {
           const curNote = LS2.notes[LS2.activeNote];
           if (e.key === 'Escape') {
             const prev = LS2.activeNote;
+            saveLS2Session();
             saveLS2Note(prev, true); // Immediate flush on exit
+            unfocusNoteCamera();
             LS2.activeNote = null;
             LS2.drawing = false;
+            LS2.movingNote = false;
             LS2.currentStroke = [];
             drawLS2Note(prev);
             ls2Textures[prev].needsUpdate = true;
@@ -7534,6 +10617,20 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
             e.preventDefault();
             return;
           }
+
+          if ((e.altKey || e.ctrlKey) && (e.key === 'd' || e.key === 'D')) {
+            const destIdx = duplicateLS2Note(LS2.activeNote);
+            if (destIdx >= 0) {
+              const prev = LS2.activeNote;
+              LS2.activeNote = destIdx;
+              if (prev !== null) { drawLS2Note(prev); ls2Textures[prev].needsUpdate = true; }
+              drawLS2Note(destIdx);
+              ls2Textures[destIdx].needsUpdate = true;
+              focusNoteCamera(destIdx);
+            }
+            e.preventDefault();
+            return;
+          }
           
           if (e.altKey && (e.key === 'p' || e.key === 'P')) {
             const themes = ['yellow', 'pink', 'cyan', 'green'];
@@ -7542,6 +10639,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
             curNote.isCustom = true;
             drawLS2Note(LS2.activeNote);
             ls2Textures[LS2.activeNote].needsUpdate = true;
+            saveLS2Session();
             saveLS2Note(LS2.activeNote, false);
             sfx.blip(1100, .03, .02);
             e.preventDefault();
@@ -7552,6 +10650,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
               curNote.inkStrokes = [];
               drawLS2Note(LS2.activeNote);
               ls2Textures[LS2.activeNote].needsUpdate = true;
+              saveLS2Session();
               saveLS2Note(LS2.activeNote, false);
               sfx.blip(400, .05, .02);
               e.preventDefault();
@@ -7567,6 +10666,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
             }
             drawLS2Note(LS2.activeNote);
             ls2Textures[LS2.activeNote].needsUpdate = true;
+            saveLS2Session();
             saveLS2Note(LS2.activeNote, false);
             e.preventDefault();
             return;
@@ -7577,12 +10677,13 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
               curNote.message += '\n';
               drawLS2Note(LS2.activeNote);
               ls2Textures[LS2.activeNote].needsUpdate = true;
+              saveLS2Session();
               saveLS2Note(LS2.activeNote, false);
             }
             e.preventDefault();
             return;
           }
-          // All alphanumeric characters (including digits '1', '2', '3', '4', symbols, letters) enter text naturally
+          // All alphanumeric characters enter text naturally
           if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
             curNote.isCustom = true;
             if (LS2.typingField === 'author') {
@@ -7590,6 +10691,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
                 curNote.author += e.key;
                 drawLS2Note(LS2.activeNote);
                 ls2Textures[LS2.activeNote].needsUpdate = true;
+                saveLS2Session();
                 saveLS2Note(LS2.activeNote, false);
                 sfx.blip(1800, .02, .01);
               }
@@ -7598,6 +10700,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
                 curNote.message += e.key;
                 drawLS2Note(LS2.activeNote);
                 ls2Textures[LS2.activeNote].needsUpdate = true;
+                saveLS2Session();
                 saveLS2Note(LS2.activeNote, false);
                 sfx.blip(1600, .02, .01);
               }
@@ -7617,6 +10720,18 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
             updateLS2Page();
             sfx.relay();
             e.preventDefault();
+          } else if (e.key === 'n' || e.key === 'N') {
+            const newIdx = addLS2Note();
+            if (newIdx >= 0) {
+              const prev = LS2.activeNote;
+              LS2.activeNote = newIdx;
+              LS2.typingField = 'message';
+              if (prev !== null && prev !== newIdx) { drawLS2Note(prev); ls2Textures[prev].needsUpdate = true; }
+              drawLS2Note(newIdx);
+              ls2Textures[newIdx].needsUpdate = true;
+              focusNoteCamera(newIdx);
+            }
+            e.preventDefault();
           }
         }
       },
@@ -7624,11 +10739,15 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
         if (LS2.activeNote !== null) {
           const prev = LS2.activeNote;
           saveLS2Note(prev, true); // Immediate flush on unfocus / exit
+          unfocusNoteCamera();
           LS2.activeNote = null;
           LS2.drawing = false;
+          LS2.movingNote = false;
           LS2.currentStroke = [];
           drawLS2Note(prev);
           ls2Textures[prev].needsUpdate = true;
+        } else if (FOCUS.noteCam?.active) {
+          unfocusNoteCamera();
         }
       }
     },
@@ -7637,6 +10756,21 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     LS2_LAMP: null,
     LS3: {
       usesPointerDrag: true,
+      getInteractionDepth() {
+        if (GLOBE.selectedNewsChannel) return 2;
+        if (GLOBE.taskbarOpen) return 1;
+        return 0;
+      },
+      onCancelInner() {
+        if (GLOBE.selectedNewsChannel) {
+          closeLS3News();
+          return;
+        }
+        if (GLOBE.taskbarOpen) {
+          closeLS3Taskbar();
+          return;
+        }
+      },
       onHit(mesh, uv, point, e) {
         if (mesh?.userData?.isCity && mesh.userData.city) {
           const c = mesh.userData.city;
@@ -7728,14 +10862,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
           return;
         }
 
-        // Clicking elsewhere on globe or background retracts taskbar & news display
-        if (GLOBE.taskbarOpen) {
-          closeLS3Taskbar();
-        }
-        if (GLOBE.selectedNewsChannel) {
-          closeLS3News();
-        }
-
+        // Allow globe dragging without collapsing taskbar
         GLOBE.dragging = true;
         GLOBE.autoSpin = false;
         if (e) {
@@ -7814,20 +10941,41 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     const g = sectorGroups[id]; if (!g) return;
     g.updateWorldMatrix(true, true);
     const [pos, look] = cfg.dolly(g);
+
+    // Capture exact workbench pose ONLY when transitioning from workbench to sector
+    if (!FOCUS.active && !FOCUS.benchPose) {
+      FOCUS.benchPose = {
+        pos: cam.position.clone(),
+        quat: cam.quaternion.clone(),
+        fov: cam.fov,
+        theta: S.theta,
+        stride: S.stride,
+        lookX: S.look.x,
+        lookY: S.look.y,
+        lookTx: S.look.tx,
+        lookTy: S.look.ty
+      };
+    }
+
+    const dummyCam = new THREE.PerspectiveCamera();
+    dummyCam.position.copy(pos);
+    dummyCam.lookAt(look);
+    FOCUS.toQ.copy(dummyCam.quaternion);
+
     FOCUS.id = id; S.focus = id; FOCUS.active = true; S.navLocked = true;
+    FOCUS.unfocusing = false;
+    if (FOCUS.noteCam) { FOCUS.noteCam.active = false; FOCUS.noteCam.unfocusing = false; }
+
     if (id === 'LS1') {
       ent.visible = false;
       if (anchor) anchor.visible = false;
       if (entLight) entLight.intensity = 0;
-      if (ls1StationState === 'sleeping' && wakeLS1) {
-        wakeLS1();
-      }
     }
     if (instant) {
       FOCUS.t = 1.0; S.focusE = 1.0;
       cam.position.copy(pos);
-      cam.lookAt(look);
-      FOCUS.from.copy(pos); FOCUS.fromQ.copy(cam.quaternion);
+      cam.quaternion.copy(FOCUS.toQ);
+      FOCUS.from.copy(pos); FOCUS.fromQ.copy(FOCUS.toQ);
       FOCUS.toPos.copy(pos); FOCUS.toLook.copy(look);
     } else {
       FOCUS.t = 0;
@@ -7845,21 +10993,70 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     }
     dispatchEvent(new CustomEvent('lab:focus', { detail: { id } }));
     dispatchEvent(new CustomEvent('lab:sector:focus', { detail: { id } }));
-    sfx.relay();
+    sfx.play('sector.focus');
   }
 
   function unfocusSector() {
-    if (!FOCUS.active) return;
+    if (!FOCUS.active && !FOCUS.id) return;
     const prevId = FOCUS.id;
     SECTOR_HANDLERS[prevId]?.onExit?.();
-    FOCUS.active = false; S.navLocked = false;
+    if (FOCUS.noteCam?.active) {
+      FOCUS.noteCam.active = false;
+      FOCUS.noteCam.unfocusing = false;
+    }
+    FOCUS.active = false;
+    FOCUS.unfocusing = true;
+    FOCUS.unfocusT = 0;
+    FOCUS.returnFromPos.copy(cam.position);
+    FOCUS.returnFromQ.copy(cam.quaternion);
+    if (FOCUS.benchPose) {
+      FOCUS.returnToPos.copy(FOCUS.benchPose.pos);
+      FOCUS.returnToQ.copy(FOCUS.benchPose.quat);
+    } else {
+      FOCUS.returnToPos.copy(FOCUS.from);
+      FOCUS.returnToQ.copy(FOCUS.fromQ);
+    }
+
     if (prevId === 'LS1') {
       ent.visible = S.entF > .002;
     }
     dispatchEvent(new CustomEvent('lab:unfocus', { detail: { id: prevId } }));
     dispatchEvent(new CustomEvent('lab:sector:unfocus', { detail: { id: prevId } }));
     FOCUS.id = null; S.focus = null;
-    sfx.servo(.6, false);
+    sfx.play('sector.unfocus');
+  }
+
+  function focusNoteCamera(idx) {
+    const mesh = ls2Meshes[idx];
+    if (!mesh) return;
+    mesh.updateWorldMatrix(true, false);
+    const noteWPos = mesh.getWorldPosition(new THREE.Vector3());
+    const noteWQuat = mesh.getWorldQuaternion(new THREE.Quaternion());
+    const normal = new THREE.Vector3(0, 0, 1).applyQuaternion(noteWQuat);
+    const targetCamPos = noteWPos.clone().add(normal.clone().multiplyScalar(0.28));
+    const dummy = new THREE.PerspectiveCamera();
+    dummy.position.copy(targetCamPos);
+    dummy.lookAt(noteWPos);
+
+    FOCUS.noteCam.active = true;
+    FOCUS.noteCam.unfocusing = false;
+    FOCUS.noteCam.t = 0;
+    FOCUS.noteCam.fromPos.copy(cam.position);
+    FOCUS.noteCam.fromQ.copy(cam.quaternion);
+    FOCUS.noteCam.toPos.copy(targetCamPos);
+    FOCUS.noteCam.toQ.copy(dummy.quaternion);
+    FOCUS.noteCam.mesh = mesh;
+    sfx.play('note.select');
+  }
+
+  function unfocusNoteCamera() {
+    if (!FOCUS.noteCam || !FOCUS.noteCam.active) return;
+    FOCUS.noteCam.active = false;
+    FOCUS.noteCam.unfocusing = true;
+    FOCUS.noteCam.unfocusT = 0;
+    FOCUS.noteCam.returnFromPos.copy(cam.position);
+    FOCUS.noteCam.returnFromQ.copy(cam.quaternion);
+    sfx.play('note.release');
   }
 
   window.__lab_backend = api2;
@@ -7871,6 +11068,59 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   function goTo(id) { const s = SECTORS.find(x => x.id === id); if (!s) return; let d = (s.theta - S.theta) % TAU; if (d > Math.PI) d -= TAU; if (d < -Math.PI) d += TAU; S.magnet = S.theta + d; S.lastInput = -9; }
   function enter() { if (!S.ready || S.inside || S.wantIn) return; S.wantIn = true; S.vel = 0; goTo('S0'); }
   function exit() { if (!S.inside && !S.wantIn) return; S.inside = 0; S.wantIn = false; S.lastInput = -9; sfx.servo(1.0, false); dispatchEvent(new CustomEvent('lab:ai:exit')); }
+  let tourActive = false, tourTimer = null;
+  async function startVisitTour(options = {}) {
+    if (tourActive) return;
+    tourActive = true;
+    const dwellMs = options.dwellMs || 3200;
+    const transitionMs = options.transitionMs || 2200;
+    if (!S.ready) skipToFinal();
+    dispatchEvent(new CustomEvent('vault:tour:started'));
+    const wait = ms => new Promise(r => { tourTimer = setTimeout(r, ms); });
+    try {
+      const stations = [
+        { id: 'S0', name: 'ENTRY GATE' },
+        { id: 'RS1', name: 'BLUEPRINT DECK' },
+        { id: 'RS2', name: 'RESUME FABRICATOR' },
+        { id: 'RS3', name: 'HOLO-CALENDAR' },
+        { id: 'RS4', name: 'WORKSTATION · SEALED' },
+        { id: 'LS4', name: 'WORKSTATION · SEALED' },
+        { id: 'LS3', name: 'HOLO-GLOBE' },
+        { id: 'LS2', name: 'SCRATCHPAD WALL' },
+        { id: 'LS1', name: 'PROFILE PANEL' },
+      ];
+      for (const st of stations) {
+        if (!tourActive) break;
+        unfocusSector();
+        goTo(st.id);
+        await wait(transitionMs);
+        if (!tourActive) break;
+        focusSector(st.id);
+        dispatchEvent(new CustomEvent('vault:tour:station', { detail: { station: st.id, name: st.name } }));
+        await wait(dwellMs);
+      }
+      if (tourActive) {
+        unfocusSector();
+        goTo('S0');
+        await wait(transitionMs);
+        focusSector('S0');
+        dispatchEvent(new CustomEvent('vault:tour:station', { detail: { station: 'RETURN', name: 'RETURN TO ENTRANCE' } }));
+        await wait(2400);
+        unfocusSector();
+        exit();
+        tourActive = false;
+        dispatchEvent(new CustomEvent('vault:tour:ended'));
+        try { await fetch('/api/vault/session', { method: 'DELETE' }); } catch {}
+      }
+    } catch (err) {
+      tourActive = false;
+    }
+  }
+  function stopVisitTour() {
+    tourActive = false;
+    if (tourTimer) clearTimeout(tourTimer);
+    unfocusSector();
+  }
   addEventListener('wheel', e => {
     if (FOCUS.active && SECTOR_HANDLERS[FOCUS.id]?.onWheel) {
       e.preventDefault();
@@ -7883,17 +11133,44 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     const d = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * innerHeight : e.deltaY;
     nudge(clamp(d, -140, 140) * NAV.wheel);
   }, { passive: false });
-  addEventListener('mousemove', e => { if (!canLook()) return; S.look.tx = -((e.clientX / innerWidth) * 2 - 1) * .32; S.look.ty = -((e.clientY / innerHeight) * 2 - 1) * .18; });
+  addEventListener('mousemove', e => { if (!canLook()) return; S.look.tx = -((e.clientX / innerWidth) * 2 - 1) * .48; S.look.ty = -((e.clientY / innerHeight) * 2 - 1) * .26; });
   let touch = null; addEventListener('touchstart', e => { if (S.active) { const t = e.touches[0]; touch = { x: t.clientX, y: t.clientY, vy: 0, moved: 0 }; } }, { passive: true });
-  addEventListener('touchmove', e => { if (!touch || !S.active) return; const t = e.touches[0], dx = t.clientX - touch.x, dy = t.clientY - touch.y; touch.moved += Math.abs(dx) + Math.abs(dy); if (canMove()) { S.theta += dy * NAV.drag; touch.vy = dy; S.lastInput = S.t; S.magnet = null; } if (canLook()) S.look.tx = clamp(S.look.tx - dx * .0025, -.5, .5); touch.x = t.clientX; touch.y = t.clientY; e.preventDefault(); }, { passive: false });
+  addEventListener('touchmove', e => { if (!touch || !S.active) return; const t = e.touches[0], dx = t.clientX - touch.x, dy = t.clientY - touch.y; touch.moved += Math.abs(dx) + Math.abs(dy); if (canMove()) { S.theta += dy * NAV.drag; touch.vy = dy; S.lastInput = S.t; S.magnet = null; } if (canLook()) S.look.tx = clamp(S.look.tx - dx * .003, -.6, .6); touch.x = t.clientX; touch.y = t.clientY; e.preventDefault(); }, { passive: false });
   addEventListener('touchend', () => { if (touch && canMove()) nudge(clamp(touch.vy * .22, -1.4, 1.4)); if (touch && touch.moved > 40 && (S.inside || S.wantIn)) exit(); touch = null; }, { passive: true });
   addEventListener('keydown', e => { if (!S.active) return;
     if (FOCUS.active) {
+      if (e.key === 'Escape') {
+        const handler = SECTOR_HANDLERS[FOCUS.id];
+        const depth = handler?.getInteractionDepth ? handler.getInteractionDepth() : 0;
+        if (depth > 0 && handler?.onCancelInner) {
+          handler.onCancelInner();
+          e.preventDefault();
+          return;
+        }
+        if (handler?.onKey) {
+          handler.onKey(e);
+          if (e.defaultPrevented) return;
+        }
+        unfocusSector();
+        e.preventDefault();
+        return;
+      }
       if (SECTOR_HANDLERS[FOCUS.id]?.onKey) {
         SECTOR_HANDLERS[FOCUS.id].onKey(e);
         if (e.defaultPrevented) return;
       }
-      if (e.key === 'Escape' || e.key === 'Backspace') { unfocusSector(); e.preventDefault(); return; }
+      if (e.key === 'Backspace' && !['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) {
+        const handler = SECTOR_HANDLERS[FOCUS.id];
+        const depth = handler?.getInteractionDepth ? handler.getInteractionDepth() : 0;
+        if (depth > 0 && handler?.onCancelInner) {
+          handler.onCancelInner();
+          e.preventDefault();
+          return;
+        }
+        unfocusSector();
+        e.preventDefault();
+        return;
+      }
       return;
     }
     if (S.inside) { if (e.key === 'Escape') exit(); else if (e.key === 'Enter') ask(AI.input); else if (e.key === 'Backspace') AI.input = AI.input.slice(0, -1); else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && AI.input.length < 140) AI.input += e.key; else return; AI.dirty = true; e.preventDefault(); return; }
@@ -8109,15 +11386,16 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
         if (!SECTOR_HANDLERS[FOCUS.id]?.usesPointerDrag) {
           SECTOR_HANDLERS[FOCUS.id]?.onHit?.(hit.object, hit.uv, hit.point, e);
         } else if (FOCUS.id === 'RS1' && hit.object.userData.projectId) {
-          openReadMode(hit.object.userData.projectId);
+          bringSheetToTop(hit.object.userData.projectId);
+          if (performance.now() - lastBlueprintDragAt > 250) {
+            openReadMode(hit.object.userData.projectId);
+          }
         }
       } else if (!PRINT.active && !RESUME.busy) {
-        if (FOCUS.id === 'LS3' && (GLOBE.taskbarOpen || GLOBE.selectedNewsChannel)) {
-          if (GLOBE.selectedNewsChannel) closeLS3News();
-          else if (GLOBE.taskbarOpen) closeLS3Taskbar();
-          return;
-        }
-        if (FOCUS.id?.startsWith('LS2') && LS2.activeNote !== null) {
+        const handler = SECTOR_HANDLERS[FOCUS.id];
+        const depth = handler?.getInteractionDepth ? handler.getInteractionDepth() : 0;
+        if (depth > 0 && handler?.onCancelInner) {
+          handler.onCancelInner();
           return;
         }
         unfocusSector();
@@ -8180,8 +11458,97 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       perimeterBlue.forEach((l, i) => l.intensity = ph(t, [T.power[0] + 2.8 + i * .2, T.power[1] + .3]) * 3.4 * LK);
       railE.emissiveIntensity = ph(t, [T.power[0] + 2.2, T.power[0] + 2.9]) * 2.8;
       hemi.color.set(0x5c7a9a); hemi.groundColor.set(0x1c130c);
-      floor.material.envMapIntensity = lerp(0.6, 0.85, Ps);
-      const gone = sm(ph(t, T.collapse)), back = sm(ph(t, T.idle)); coreE.emissiveIntensity = Math.max(coreE.emissiveIntensity * (1 - .85 * gone), back * 5 * (1 + .1 * Math.sin(t * 1.7))); tableLight.intensity = Math.max(tableLight.intensity, (gone * .9 + back * .6) * LK * (.9 + .1 * Math.sin(t * 1.7))); }
+      const gone = sm(ph(t, T.collapse)), back = sm(ph(t, T.idle)); coreE.emissiveIntensity = Math.max(coreE.emissiveIntensity * (1 - .85 * gone), back * 5 * (1 + .1 * Math.sin(t * 1.7))); tableLight.intensity = Math.max(tableLight.intensity, (gone * .9 + back * .6) * LK * (.9 + .1 * Math.sin(t * 1.7)));
+
+      // ── LS1 Stellar Birth Room Blackout Modulation ──
+      // Before gems form, the entire room goes pitch black so only the 360° cosmic universe is visible
+      let birthLightSuppression = 1.0;
+      if (ls1StationState === 'crystal_birth') {
+        if (ls1BirthTimer < 1.0) {
+          birthLightSuppression = Math.max(0.0, 1.0 - ls1BirthTimer / 1.0);
+        } else if (ls1BirthTimer < 8.8) {
+          birthLightSuppression = 0.0;
+        } else if (ls1BirthTimer < 9.8) {
+          birthLightSuppression = eo((ls1BirthTimer - 8.8) / 1.0);
+        }
+      }
+
+      if (birthLightSuppression < 0.999) {
+        sconceE.emissiveIntensity *= birthLightSuppression;
+        portalE.emissiveIntensity *= birthLightSuppression;
+        amberE.emissiveIntensity *= birthLightSuppression;
+        gantryE.emissiveIntensity *= birthLightSuppression;
+        downE.emissiveIntensity *= birthLightSuppression;
+        downSpot.intensity *= birthLightSuppression;
+        for (const L of pendants) {
+          L.light.intensity *= birthLightSuppression;
+          L.disc.emissiveIntensity *= birthLightSuppression;
+        }
+        for (const s of screens) {
+          if (s.m.isMeshBasicMaterial) s.m.color.multiplyScalar(birthLightSuppression);
+          else s.m.emissiveIntensity *= birthLightSuppression;
+        }
+        for (const l of leds) l.m.emissiveIntensity *= birthLightSuppression;
+        labels.forEach(m => m.emissiveIntensity *= birthLightSuppression);
+        greenE.emissiveIntensity *= birthLightSuppression;
+        hemi.intensity *= birthLightSuppression;
+        blueFillA.intensity *= birthLightSuppression;
+        blueFillB.intensity *= birthLightSuppression;
+        blueArch.intensity *= birthLightSuppression;
+        if (crownWash) crownWash.intensity *= birthLightSuppression;
+        perimeterBlue.forEach(l => l.intensity *= birthLightSuppression);
+        railE.emissiveIntensity *= birthLightSuppression;
+        coreE.emissiveIntensity *= birthLightSuppression;
+        tableLight.intensity *= birthLightSuppression;
+        if (entLight) entLight.intensity *= birthLightSuppression;
+        lab.fog.density = lerp(0.00001, lab.fog.density, birthLightSuppression);
+        if (sheetGroup && sheets) {
+          sheets.forEach(s => { if (s.plane?.material) s.plane.material.emissiveIntensity *= birthLightSuppression; });
+        }
+      }
+
+      // Cave enclosure hiding and floor opacity modulation for unoccluded 360° deep space
+      if (caveEnclosure && caveEnclosure.length > 0) {
+        const hideEnclosure = (birthLightSuppression < 0.95);
+        for (let i = 0; i < caveEnclosure.length; i++) {
+          const encMesh = caveEnclosure[i];
+          if (encMesh && encMesh.visible !== !hideEnclosure) {
+            encMesh.visible = !hideEnclosure;
+          }
+        }
+        if (floor && floor.material) {
+          if (hideEnclosure) {
+            floor.material.transparent = true;
+            floor.material.opacity = THREE.MathUtils.lerp(0.18, 1.0, birthLightSuppression);
+          } else {
+            floor.material.transparent = false;
+            floor.material.opacity = 1.0;
+          }
+        }
+      }
+
+      // ── Sectors startup / power-on activation ──
+      // 1. RS1 Blueprints: dormant during startup, activate at end of power-up
+      const pRS1 = ph(t, [T.power[0] + 2.2, T.power[0] + 2.8]);
+      if (sheetGroup) {
+        sheetGroup.visible = (t >= T.power[0] + 2.2);
+        sheets.forEach(s => { if (s.plane?.material) s.plane.material.emissiveIntensity = pRS1 * 0.45; });
+      }
+
+      // 2. LS3 Holo-Globe: deactivated during startup, activates when lights and puck power on
+      if (globeGroup) {
+        globeGroup.visible = (t >= T.power[0] + 2.8);
+      }
+
+      // 3. LS1 Containment Apparatus: deactivated during startup, powers on with sector perimeter
+      const pLS1 = ph(t, [T.power[0] + 2.4, T.power[0] + 3.2]);
+      if (ls1HoloGroup) {
+        ls1HoloGroup.visible = (t >= T.power[0] + 2.4);
+        if (ls1ChanE) ls1ChanE.emissiveIntensity = pLS1 * 0.45;
+        if (ls1CoreE) ls1CoreE.emissiveIntensity = pLS1 * 0.65;
+        if (ls1ActivatorRing) ls1ActivatorRing.material.opacity = pLS1 * 0.75;
+      }
+    }
     // S0 gate leaves swing out flat against the end caps once the room is live
     { const g = sm(ph(t, [T.power[1] - 1.6, T.power[1] + .2])); leaves.forEach(L => L.rotation.y = -L.userData.s * OPEN_A * g); cue('gate', t > T.power[1] - 1.6, () => sfx.servo(1.6, true)); cue('gate2', t > T.power[1] + .2, sfx.relay); }
     // dust, spinning holos, console text
@@ -8312,114 +11679,362 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
         }
       }
       if (ls1HoloGroup && ls1FigureGroup) {
-        // ── Station State Machine: 'sleeping' -> 'hologram_boot' -> 'crystal_birth' -> 'active' ──
+        // ── Station State Machine: 'sleeping' -> 'crystal_birth' -> 'active' ──
         if (ls1StationState === 'sleeping') {
-          if (ls1EmitterLight) ls1EmitterLight.intensity = 0.04;
-          if (ls1ActivatorMat) ls1ActivatorMat.emissiveIntensity = 0.32 + 0.20 * Math.sin(t * 3.0);
+          const pLS1 = ph(t, [T.power[0] + 2.4, T.power[0] + 3.2]);
+          if (ls1EmitterLight) ls1EmitterLight.intensity = 0.04 * pLS1;
+          if (ls1ActivatorMat) ls1ActivatorMat.emissiveIntensity = (0.32 + 0.20 * Math.sin(t * 3.0)) * pLS1;
+          if (ls1ActivatorRing) ls1ActivatorRing.material.opacity = 0.75 * pLS1;
           ls1FigureGroup.visible = false;
           if (ls1AccretionMesh) ls1AccretionMesh.visible = false;
+          if (ls1StellarCoreMesh) ls1StellarCoreMesh.visible = false;
+          if (ls1AccretionDiscMesh) ls1AccretionDiscMesh.visible = false;
+          if (ls1PolarJetsMesh) ls1PolarJetsMesh.visible = false;
+          if (ls1ShockwaveMesh) ls1ShockwaveMesh.visible = false;
+          if (ls1PortalMesh) ls1PortalMesh.visible = false;
+          if (ls1CosmicMesh) ls1CosmicMesh.visible = false;
           for (let i = 0; i < ls1Crystals.length; i++) {
             ls1Crystals[i].visible = false;
-          }
-        } else if (ls1StationState === 'hologram_boot') {
-          ls1BootTimer += dt;
-          const b = Math.min(1.0, ls1BootTimer / 1.35);
-          if (ls1EmitterLight) ls1EmitterLight.intensity = 0.04 + 0.36 * eo(b);
-          if (ls1ActivatorMat) ls1ActivatorMat.emissiveIntensity = 0.85;
-
-          ls1FigureGroup.visible = true;
-          let holoOp = 0.0;
-          if (b < 0.25) {
-            // Low-level scan begins, faint optical flicker
-            holoOp = (Math.random() < 0.35 ? 0.28 : 0.06);
-          } else if (b < 0.75) {
-            // Full front/back projection assembles with transmission jitter
-            const assemble = (b - 0.25) / 0.50;
-            holoOp = (0.20 + 0.75 * eo(assemble)) * (0.85 + 0.15 * Math.sin(t * 35.0));
-          } else {
-            // Flicker stabilizes
-            holoOp = 0.95;
-          }
-          for (let i = 0; i < ls1HoloMats.length; i++) {
-            ls1HoloMats[i].uniforms.uOpacity.value = holoOp;
-            ls1HoloMats[i].uniforms.uTime.value = t;
-          }
-
-          if (b >= 1.0) {
-            ls1StationState = 'crystal_birth';
-            ls1BirthTimer = 0;
-            if (ls1AccretionMesh) ls1AccretionMesh.visible = true;
-            sfx.blip(1800, 0.1, 0.05);
+            ls1Crystals[i].scale.setScalar(0.0001);
           }
         } else if (ls1StationState === 'crystal_birth') {
-          ls1BirthTimer += dt;
-          for (let i = 0; i < ls1HoloMats.length; i++) {
-            ls1HoloMats[i].uniforms.uOpacity.value = 0.95;
-            ls1HoloMats[i].uniforms.uTime.value = t;
+          if (!ls1BirthFrozen) ls1BirthTimer += dt;
+          
+          // Strict user sequence:
+          // LS1 (empty) -> Button -> Everything goes dark (0 - 1.2s) -> Universe & star formation (1.2 - 7.8s)
+          // -> Formation of gems (7.8 - 9.0s) -> Universe fades out and gems remain floating (9.0 - 10.5s)
+          // -> Slowly a 2D hologram portrait forms from the centre (10.5 - 12.5s)
+          if (ls1BirthTimer < 10.5) {
+            ls1FigureGroup.visible = false;
+            for (let i = 0; i < ls1HoloMats.length; i++) {
+              ls1HoloMats[i].uniforms.uOpacity.value = 0.0;
+              ls1HoloMats[i].uniforms.uTime.value = t;
+            }
+          } else {
+            // T in [10.5, 12.5s]: Slowly a flat 2D hologram portrait forms from the center
+            ls1FigureGroup.visible = true;
+            const bootP = Math.min(1.0, (ls1BirthTimer - 10.5) / 2.0);
+            const holoOp = eo(bootP) * 0.95;
+            for (let i = 0; i < ls1HoloMats.length; i++) {
+              ls1HoloMats[i].uniforms.uOpacity.value = holoOp;
+              ls1HoloMats[i].uniforms.uTime.value = t;
+            }
           }
 
+          // ── 1. 360° Real Celestial Universe Background ──
+          // 0.0s - 1.2s: Darkness falls, 360° deep space unveils
+          // 1.2s - 9.0s: Full cosmic space background visible (grounded directly in 4K reference images)
+          // 9.0s - 10.5s: Universe fades to pitch black, room lights softly restore
+          let cosmicOp = 0.0;
+          let starPersist = 0.0;
+          if (ls1BirthTimer < 1.2) {
+            cosmicOp = eo(ls1BirthTimer / 1.2);
+            starPersist = cosmicOp;
+          } else if (ls1BirthTimer < 9.0) {
+            cosmicOp = 1.0;
+            starPersist = 1.0;
+          } else if (ls1BirthTimer < 10.5) {
+            const fadeProgress = (ls1BirthTimer - 9.0) / 1.5;
+            cosmicOp = Math.max(0.0, 1.0 - fadeProgress);
+            starPersist = Math.max(0.0, 1.0 - fadeProgress);
+          } else {
+            cosmicOp = 0.0;
+            starPersist = 0.0;
+          }
+
+          if (ls1CosmicMat && ls1CosmicMesh) {
+            ls1CosmicMat.uniforms.uTime.value = t;
+            ls1CosmicMat.uniforms.uCosmic.value = cosmicOp;
+            ls1CosmicMat.uniforms.uStars.value = starPersist;
+            ls1CosmicMesh.visible = (cosmicOp > 0.005 || starPersist > 0.005);
+            ls1CosmicMesh.rotation.y = t * 0.008; // Gentle celestial rotation
+          }
+
+          // ── 2. Emitter Light Dynamic Drive ──
+          if (ls1EmitterLight) {
+            if (ls1BirthTimer < 1.2) {
+              // Gravitational collapse ember
+              ls1EmitterLight.intensity = 0.04 + 0.04 * Math.sin(t * 12.0);
+              ls1EmitterLight.color.setHex(0x553311);
+            } else if (ls1BirthTimer < 3.8) {
+              // Adiabatic heating ember
+              const p = (ls1BirthTimer - 1.2) / 2.6;
+              ls1EmitterLight.intensity = 0.05 + 0.35 * eo(p) + 0.08 * Math.sin(t * 16.0);
+              ls1EmitterLight.color.setHex(0xff5522);
+            } else if (ls1BirthTimer < 6.2) {
+              // Protostellar ignition ramp
+              const ignP = (ls1BirthTimer - 3.8) / 2.4;
+              ls1EmitterLight.intensity = 0.4 + 2.2 * eo(ignP) + 0.25 * Math.sin(t * 24.0);
+              ls1EmitterLight.color.setHex(0xffbb66);
+            } else if (ls1BirthTimer < 7.8) {
+              // Blinding thermonuclear fusion flash & blast wave
+              const flashP = (ls1BirthTimer - 6.2) / 1.6;
+              const flashEnv = Math.sin(flashP * Math.PI);
+              ls1EmitterLight.intensity = 2.6 + 6.5 * flashEnv;
+              ls1EmitterLight.color.setHex(0xffffff);
+            } else if (ls1BirthTimer < 9.0) {
+              // Nucleosynthesis crystallization stabilization
+              ls1EmitterLight.intensity = 1.4 + 0.3 * Math.sin(t * 8.0);
+              ls1EmitterLight.color.setHex(0x66ddff);
+            } else {
+              // Settle into normal operating state
+              const normP = Math.min(1.0, (ls1BirthTimer - 9.0) / 0.8);
+              ls1EmitterLight.intensity = lerp(1.4, 0.25, normP);
+              ls1EmitterLight.color.setHex(0x33bbee);
+            }
+          }
+
+          // ── 3. Stage-by-Stage Stellar Birth Actors ──
+          // 3A. Protostellar Thermal Core
+          if (ls1StellarCoreMesh && ls1StellarCoreMat) {
+            ls1StellarCoreMat.uniforms.uTime.value = t;
+            if (ls1BirthTimer < 1.2) {
+              ls1StellarCoreMesh.visible = false;
+              ls1StellarCoreMat.uniforms.uIgnition.value = 0.0;
+              ls1StellarCoreMat.uniforms.uFlash.value = 0.0;
+            } else if (ls1BirthTimer < 3.8) {
+              // Embryonic collapse ember: smoldering dark orange-red ember
+              ls1StellarCoreMesh.visible = true;
+              const embP = (ls1BirthTimer - 1.2) / 2.6;
+              ls1StellarCoreMat.uniforms.uIgnition.value = 0.25 * eo(embP);
+              ls1StellarCoreMat.uniforms.uFlash.value = 0.0;
+              const s = 0.05 + 0.30 * eo(embP) + 0.02 * Math.sin(t * 12.0);
+              ls1StellarCoreMesh.scale.setScalar(s);
+            } else if (ls1BirthTimer < 6.2) {
+              // Protostellar ignition ramp
+              ls1StellarCoreMesh.visible = true;
+              const ign = eo((ls1BirthTimer - 3.8) / 2.4);
+              ls1StellarCoreMat.uniforms.uIgnition.value = 0.25 + 0.75 * ign;
+              ls1StellarCoreMat.uniforms.uFlash.value = 0.0;
+              const s = 0.35 + 0.50 * ign + 0.05 * Math.sin(t * 20.0);
+              ls1StellarCoreMesh.scale.setScalar(s);
+            } else if (ls1BirthTimer < 7.8) {
+              // Fusion flash!
+              ls1StellarCoreMesh.visible = true;
+              ls1StellarCoreMat.uniforms.uIgnition.value = 1.0;
+              const fP = (ls1BirthTimer - 6.2) / 1.6;
+              const flash = Math.sin(fP * Math.PI);
+              ls1StellarCoreMat.uniforms.uFlash.value = flash;
+              const s = 0.85 + 0.65 * flash;
+              ls1StellarCoreMesh.scale.setScalar(s);
+            } else if (ls1BirthTimer < 9.0) {
+              // Stabilizing into calm radiant stellar ember
+              ls1StellarCoreMesh.visible = true;
+              const stabP = (ls1BirthTimer - 7.8) / 1.2;
+              ls1StellarCoreMat.uniforms.uIgnition.value = 1.0 - 0.45 * stabP;
+              ls1StellarCoreMat.uniforms.uFlash.value = 0.0;
+              const s = lerp(0.85, 0.45, eo(stabP));
+              ls1StellarCoreMesh.scale.setScalar(s);
+            } else {
+              // Gently settles down into emitter well
+              const coolP = Math.min(1.0, (ls1BirthTimer - 9.0) / 0.8);
+              ls1StellarCoreMat.uniforms.uIgnition.value = Math.max(0.0, (1.0 - coolP) * 0.55);
+              ls1StellarCoreMesh.scale.setScalar(lerp(0.45, 0.05, coolP));
+              ls1StellarCoreMesh.visible = (coolP < 0.95);
+            }
+          }
+
+          // 3B. Relativistic Accretion Disc (Keplerian spinning plasma ring)
+          if (ls1AccretionDiscMesh && ls1AccretionDiscMat) {
+            ls1AccretionDiscMat.uniforms.uTime.value = t;
+            ls1AccretionDiscMesh.rotation.y = t * 7.5;
+            if (ls1BirthTimer < 3.8) {
+              ls1AccretionDiscMesh.visible = false;
+              ls1AccretionDiscMat.uniforms.uDiscIntensity.value = 0.0;
+            } else if (ls1BirthTimer < 6.2) {
+              // Rapidly accelerates and grows intensely luminous
+              ls1AccretionDiscMesh.visible = true;
+              const discP = eo((ls1BirthTimer - 3.8) / 2.4);
+              ls1AccretionDiscMat.uniforms.uDiscIntensity.value = discP;
+              const s = 0.25 + 0.75 * discP;
+              ls1AccretionDiscMesh.scale.set(s, s, s);
+            } else if (ls1BirthTimer < 7.8) {
+              // Blown outward by thermonuclear stellar wind
+              ls1AccretionDiscMesh.visible = true;
+              const blowP = (ls1BirthTimer - 6.2) / 1.6;
+              ls1AccretionDiscMat.uniforms.uDiscIntensity.value = Math.max(0.0, 1.0 - blowP);
+              const s = 1.0 + 2.0 * blowP;
+              ls1AccretionDiscMesh.scale.set(s, s, s);
+            } else {
+              ls1AccretionDiscMesh.visible = false;
+              ls1AccretionDiscMat.uniforms.uDiscIntensity.value = 0.0;
+            }
+          }
+
+          // 3C. Polar Relativistic Jets (Dual vertical collimated beams)
+          if (ls1PolarJetsMesh && ls1PolarJetsMat) {
+            if (ls1BirthTimer >= 4.0 && ls1BirthTimer < 7.4) {
+              ls1PolarJetsMesh.visible = true;
+              let jetOp = 0.0;
+              let jetLen = 1.0;
+              if (ls1BirthTimer < 6.2) {
+                // Erupting jets
+                const p = (ls1BirthTimer - 4.0) / 2.2;
+                jetOp = eo(p) * 0.85;
+                jetLen = 0.2 + 1.8 * eo(p);
+              } else {
+                // Peak beam then fade
+                const p = (ls1BirthTimer - 6.2) / 1.2;
+                jetOp = (1.0 - p) * 0.85;
+                jetLen = 2.0 + 0.5 * p;
+              }
+              ls1PolarJetsMat.opacity = jetOp;
+              const jetWob = 1.0 + 0.18 * Math.sin(t * 32.0);
+              ls1PolarJetsMesh.scale.set(jetWob, jetLen, jetWob);
+            } else {
+              ls1PolarJetsMesh.visible = false;
+              ls1PolarJetsMat.opacity = 0.0;
+            }
+          }
+
+          // 3D. Thermonuclear Supernova Shockwave (Expanding energetic wavefront)
+          if (ls1ShockwaveMesh && ls1ShockwaveMat) {
+            if (ls1BirthTimer >= 6.2 && ls1BirthTimer < 7.8) {
+              ls1ShockwaveMesh.visible = true;
+              const shockP = (ls1BirthTimer - 6.2) / 1.6;
+              const shockR = 0.15 + 5.0 * eo(shockP);
+              ls1ShockwaveMesh.scale.setScalar(shockR);
+              ls1ShockwaveMat.uniforms.uShockAlpha.value = Math.pow(1.0 - shockP, 1.8) * 1.6;
+            } else {
+              ls1ShockwaveMesh.visible = false;
+              ls1ShockwaveMat.uniforms.uShockAlpha.value = 0.0;
+            }
+          }
+
+          // 3E. Gravitational Infall & Molecular Cloud Accretion Particles
           if (ls1AccretionMesh && ls1AccretionData.length > 0) {
+            ls1AccretionMesh.visible = true;
             const accPosAttr = ls1AccretionMesh.geometry.attributes.position;
             const accOpAttr = ls1AccretionMesh.geometry.attributes.aOpacity;
 
             for (let i = 0; i < ls1Crystals.length; i++) {
-              const cGroup = ls1Crystals[i];
-              const tStart = i * 0.12;
-              const p = Math.max(0.0, Math.min(1.0, (ls1BirthTimer - tStart) / 0.75));
-
-              if (p <= 0) {
-                cGroup.visible = false;
-              } else if (p < 0.55) {
-                cGroup.visible = true;
-                const coreScale = 0.05 + 0.25 * (p / 0.55);
-                cGroup.scale.setScalar(coreScale);
-              } else {
-                cGroup.visible = true;
-                const formEase = eo((p - 0.55) / 0.45);
-                cGroup.scale.setScalar(formEase);
-              }
-
-              // Update 24 dust particles for crystal i
               for (let k = 0; k < 24; k++) {
                 const idx = i * 24 + k;
                 const d = ls1AccretionData[idx];
-                d.ang += dt * d.speed * (1.0 + (1.0 - p) * 2.5);
 
-                const collapseR = THREE.MathUtils.lerp(d.dist, 0.005, Math.pow(p, 1.4));
-                const px = d.destPos.x + Math.cos(d.ang) * collapseR;
-                const py = d.destPos.y + Math.sin(d.ang) * collapseR * 0.75;
-                const pz = d.destPos.z + d.zOff * (1.0 - p);
-
-                accPosAttr.setXYZ(idx, px, py, pz);
-
-                let op = 0.0;
-                if (p > 0.02 && p < 0.88) {
-                  op = Math.sin((p / 0.88) * Math.PI) * 0.85;
+                if (ls1BirthTimer < 3.8) {
+                  // Phase A: Gravitational collapse toward central protostar (0, 0.45, 0)
+                  const collapseP = Math.min(1.0, ls1BirthTimer / 3.8);
+                  d.ang += dt * d.speed * (1.5 + collapseP * 4.0);
+                  const r = lerp(d.dist * 2.2, 0.02 + 0.08 * hash(idx), Math.pow(collapseP, 1.2));
+                  const px = Math.cos(d.ang) * r;
+                  const py = 0.45 + Math.sin(d.ang * 2.0) * r * 0.35 + (hash(idx + 1) - 0.5) * 0.1 * (1.0 - collapseP);
+                  const pz = Math.sin(d.ang) * r;
+                  accPosAttr.setXYZ(idx, px, py, pz);
+                  const op = smoothstep(collapseP, 0.1, 0.6) * (0.6 + 0.4 * Math.sin(t * 10.0 + idx));
+                  accOpAttr.setX(idx, op);
+                } else if (ls1BirthTimer < 6.2) {
+                  // Phase B: Extreme Keplerian disc compression & polar funneling
+                  const compP = (ls1BirthTimer - 3.8) / 2.4;
+                  d.ang += dt * d.speed * 4.5;
+                  const discR = lerp(0.18, 0.03, compP);
+                  const px = Math.cos(d.ang) * discR;
+                  const py = 0.45 + (Math.sin(d.ang * 3.0) * 0.04) * (1.0 - compP);
+                  const pz = Math.sin(d.ang) * discR;
+                  accPosAttr.setXYZ(idx, px, py, pz);
+                  accOpAttr.setX(idx, 0.95);
+                } else if (ls1BirthTimer < 7.8) {
+                  // Phase C: Blown outward along shockwave toward crystal orbits
+                  const blastP = (ls1BirthTimer - 6.2) / 1.6;
+                  const curDest = d.destPos;
+                  const blastR = lerp(0.04, 1.0, eo(blastP));
+                  d.ang += dt * d.speed * 2.5;
+                  const px = curDest.x * blastR + (hash(idx) - 0.5) * 0.15 * (1.0 - blastP);
+                  const py = curDest.y * blastR + (hash(idx + 2) - 0.5) * 0.15 * (1.0 - blastP);
+                  const pz = curDest.z * blastR + (hash(idx + 3) - 0.5) * 0.15 * (1.0 - blastP);
+                  accPosAttr.setXYZ(idx, px, py, pz);
+                  accOpAttr.setX(idx, 0.95 * (1.0 - blastP * 0.3));
+                } else if (ls1BirthTimer < 9.0) {
+                  // Phase D: Nucleosynthesis condensation onto crystal nodes
+                  const condP = Math.min(1.0, (ls1BirthTimer - 7.8) / 1.2);
+                  d.ang += dt * d.speed * (1.0 + (1.0 - condP) * 3.0);
+                  const swirlR = lerp(0.12, 0.002, Math.pow(condP, 1.5));
+                  const px = d.destPos.x + Math.cos(d.ang) * swirlR;
+                  const py = d.destPos.y + Math.sin(d.ang) * swirlR * 0.8;
+                  const pz = d.destPos.z + (hash(idx) - 0.5) * swirlR;
+                  accPosAttr.setXYZ(idx, px, py, pz);
+                  accOpAttr.setX(idx, (1.0 - condP) * 0.85);
+                } else {
+                  accOpAttr.setX(idx, 0.0);
                 }
-                accOpAttr.setX(idx, op);
               }
             }
             accPosAttr.needsUpdate = true;
             accOpAttr.needsUpdate = true;
           }
 
-          if (ls1BirthTimer >= 1.8) {
+          // 3F. Nucleosynthesis & Crystalline Condensation of the 8 Gems
+          // CRITICAL: Gems DO NOT form before the process ends (strictly hidden until T >= 7.8s)
+          for (let i = 0; i < ls1Crystals.length; i++) {
+            const cGroup = ls1Crystals[i];
+            const tStart = 7.8 + i * 0.12; // Strictly delayed until nucleosynthesis phase!
+            if (ls1BirthTimer < tStart) {
+              cGroup.visible = false;
+              cGroup.scale.setScalar(0.0001);
+            } else if (ls1BirthTimer < 9.0) {
+              cGroup.visible = true;
+              const p = Math.min(1.0, (ls1BirthTimer - tStart) / 0.85);
+              // Spectacular elastic crystal condensation overshoot
+              const gemScale = eo(p) * (1.0 + 0.28 * Math.sin(p * Math.PI));
+              cGroup.scale.setScalar(gemScale);
+            } else {
+              cGroup.visible = true;
+              cGroup.scale.setScalar(1.0);
+            }
+          }
+
+          // SFX Audio Cue at Thermonuclear Flash & Harmonic Resonance
+          if (ls1BirthTimer >= 6.2 && !ls1FlashSfxPlayed) {
+            ls1FlashSfxPlayed = true;
+            sfx.beam();
+            sfx.spark();
+          }
+
+          if (ls1BirthTimer >= 7.8 && !ls1HarmonicPlayed) {
+            ls1HarmonicPlayed = true;
+            sfx.play('crystal.harmonic');
+          }
+
+          // ── 4. Sequence Completion -> Transition to 'active' State (12.5s) ──
+          // Sequence: LS1 empty -> Button -> Dark -> Universe/Star -> Gems -> Universe fades -> Hologram forms (10.5-12.5s) -> Active
+          if (ls1BirthTimer >= 12.5) {
             ls1StationState = 'active';
             if (ls1AccretionMesh) ls1AccretionMesh.visible = false;
+            if (ls1StellarCoreMesh) ls1StellarCoreMesh.visible = false;
+            if (ls1AccretionDiscMesh) ls1AccretionDiscMesh.visible = false;
+            if (ls1PolarJetsMesh) ls1PolarJetsMesh.visible = false;
+            if (ls1ShockwaveMesh) ls1ShockwaveMesh.visible = false;
             for (let i = 0; i < ls1Crystals.length; i++) {
               ls1Crystals[i].scale.setScalar(1.0);
               ls1Crystals[i].visible = true;
+            }
+            if (ls1CosmicMat && ls1CosmicMesh) {
+              ls1CosmicMat.uniforms.uCosmic.value = 0.0;
+              ls1CosmicMat.uniforms.uStars.value = 0.0;
+              ls1CosmicMesh.visible = false;
+            }
+            ls1FigureGroup.visible = true;
+            ls1FigureGroup.scale.set(1.0, 1.0, 1.0);
+            ls1FigureGroup.rotation.y = 0.0;
+            for (let i = 0; i < ls1HoloMats.length; i++) {
+              ls1HoloMats[i].uniforms.uOpacity.value = 0.95;
             }
             sfx.relay();
           }
         }
 
         // ── Active Hologram & Particle Updates ──
-        if (ls1StationState === 'active' || ls1StationState === 'crystal_birth') {
-          // Idle breathing and subtle parallax response
-          const breath = 1.0 + 0.004 * Math.sin(t * 1.8);
-          ls1FigureGroup.scale.set(1.0 + 0.002 * Math.sin(t * 1.8), breath, 1.0 + 0.002 * Math.sin(t * 1.8));
-          ls1FigureGroup.rotation.y = Math.sin(t * 0.28) * 0.05;
+        // Strictly flat 2D hologram portrait (zero wobble, zero breathing scale)
+        if (ls1StationState === 'active' || (ls1StationState === 'crystal_birth' && ls1BirthTimer >= 10.5)) {
+          if (ls1CosmicMat && ls1CosmicMesh && ls1StationState === 'active') {
+            ls1CosmicMat.uniforms.uTime.value = t;
+            ls1CosmicMat.uniforms.uCosmic.value = 0.0;
+            ls1CosmicMat.uniforms.uStars.value = 0.0;
+            ls1CosmicMesh.visible = false;
+          }
+          // Flat 2D portrait: stationary scale and zero rotational wobble
+          ls1FigureGroup.scale.set(1.0, 1.0, 1.0);
+          ls1FigureGroup.rotation.y = 0.0;
 
           // Update shader uniforms
           for (let i = 0; i < ls1HoloMats.length; i++) {
@@ -8472,16 +12087,23 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
           }
         }
 
-        // ── Suction Traversal Animation ──
+        // ── Clean Aperture Bezier Traversal Animation ──
         if (ls1Traversal && ls1Traversal.active) {
           ls1Traversal.t += dt;
           const p = Math.min(1.0, ls1Traversal.t / ls1Traversal.duration);
-          const easeP = p * p * (3.0 - 2.0 * p);
-          cam.position.lerpVectors(ls1Traversal.fromPos, ls1Traversal.targetPos, easeP);
-          const pWorld = ls1PortalMesh.getWorldPosition(new THREE.Vector3());
-          cam.lookAt(pWorld);
+          // Ease in-out quadratic
+          const easeP = p < 0.5 ? 2.0 * p * p : 1.0 - Math.pow(-2.0 * p + 2.0, 2.0) / 2.0;
 
-          cam.fov = THREE.MathUtils.lerp(50, 36, easeP);
+          // Quadratic Bezier interpolation: (1-t)^2 * p0 + 2(1-t)t * p1 + t^2 * p2
+          const inv = 1.0 - easeP;
+          const curPos = new THREE.Vector3()
+            .addScaledVector(ls1Traversal.p0, inv * inv)
+            .addScaledVector(ls1Traversal.p1, 2.0 * inv * easeP)
+            .addScaledVector(ls1Traversal.p2, easeP * easeP);
+          cam.position.copy(curPos);
+          cam.lookAt(ls1Traversal.lookTarget);
+
+          cam.fov = THREE.MathUtils.lerp(50, 72, easeP);
           cam.updateProjectionMatrix();
 
           if (p >= 1.0) {
@@ -8489,81 +12111,169 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
             cam.fov = 50;
             cam.updateProjectionMatrix();
             sessionStorage.setItem('vault_ls1_return', ls1Traversal.dest.id);
-            window.open(ls1Traversal.dest.url, '_blank');
+            if (ls1Traversal.dest.url) {
+              if (ls1Traversal.dest.url.startsWith('http')) {
+                window.open(ls1Traversal.dest.url, '_blank');
+              } else {
+                window.location.href = ls1Traversal.dest.url;
+              }
+            }
           }
         }
 
-        // ── Return Reverse Suction Collapse ──
+        // ── Return Explosive Outward Ejection Animation ──
         if (ls1ReturnAnim && ls1ReturnAnim.active) {
           ls1ReturnAnim.t += dt;
           const r = Math.min(1.0, ls1ReturnAnim.t / ls1ReturnAnim.duration);
-          if (ls1ActivePortal) {
-            ls1ActivePortal.state = 'closing';
-            ls1ActivePortal.t = Math.max(0.0, 1.0 - r);
-          }
+          // Explosive fast outward ease-out cubic: launched out rapidly then settling smoothly onto bench
+          const easeR = 1.0 - Math.pow(1.0 - r, 3.0);
+          cam.position.lerpVectors(ls1ReturnAnim.fromPos, ls1ReturnAnim.toPos, easeR);
+
+          // Dynamic camera recoil & FOV elastic spring to simulate deceleration after ejection
+          const recoil = Math.sin(r * Math.PI) * 0.04;
+          cam.position.y += recoil;
+          cam.lookAt(ls1ReturnAnim.lookTarget);
+
+          cam.fov = THREE.MathUtils.lerp(68, 50, easeR);
+          cam.updateProjectionMatrix();
+
           if (r >= 1.0) {
             ls1ReturnAnim.active = false;
-            closePortal(true);
+            cam.fov = 50;
+            cam.updateProjectionMatrix();
           }
         }
 
-        // ── Portal Smoke + Electric Energy + Recirculating Throat Update ──
+        // ── Canonical Physical 3D Spatial Portal System ──
         if (ls1ActivePortal) {
-          if (ls1ActivePortal.state === 'opening') {
-            ls1ActivePortal.t = Math.min(1.0, ls1ActivePortal.t + dt / 1.35);
-            if (ls1ActivePortal.t >= 1.0) ls1ActivePortal.state = 'open';
-          } else if (ls1ActivePortal.state === 'closing') {
-            ls1ActivePortal.t = Math.max(0.0, ls1ActivePortal.t - dt / 0.90);
-            if (ls1ActivePortal.t <= 0.0) {
+          ls1ActivePortal.seqTime = (ls1ActivePortal.seqTime || 0.0) + dt;
+          const seqT = ls1ActivePortal.seqTime;
+
+          let rawT = 0.0;
+          let tearScale = 1.0;
+
+          if (ls1ActivePortal.state === 'closing') {
+            ls1ActivePortal.closeT = Math.max(0.0, (ls1ActivePortal.closeT !== undefined ? ls1ActivePortal.closeT : 1.0) - dt * 1.0);
+            rawT = ls1ActivePortal.closeT;
+            tearScale = Math.max(0.01, rawT);
+            if (ls1ActivePortal.closeT <= 0.0) {
               closePortal(true);
+            }
+          } else {
+            // Forward timeline:
+            // 0.0s – 0.28s: Inception (tiny spatial tear puncturing reality)
+            // 0.28s – 1.80s: Growth & Toroidal Flow (tear opens to full size, dense connected smoke forms toroidal circulation)
+            // 1.80s+: Stabilized (PERSISTENT! Does not auto-close!)
+            if (seqT < 0.28) {
+              ls1ActivePortal.state = 'inception';
+              const pInc = seqT / 0.28;
+              rawT = pInc * 0.25;
+              tearScale = 0.06 + 0.19 * pInc;
+            } else if (seqT < 1.80) {
+              ls1ActivePortal.state = 'growth';
+              const pGrow = (seqT - 0.28) / 1.52;
+              rawT = 0.25 + 0.75 * THREE.MathUtils.smoothstep(pGrow, 0.0, 1.0);
+              tearScale = 0.25 + 0.75 * THREE.MathUtils.smoothstep(pGrow, 0.0, 1.0);
+            } else {
+              ls1ActivePortal.state = 'stabilized';
+              rawT = 1.0;
+              tearScale = 1.0;
             }
           }
 
           if (ls1ActivePortal) {
-            const rawT = ls1ActivePortal.t;
-            const isClosing = ls1ActivePortal.state === 'closing';
+            ls1ActivePortal.t = rawT;
 
-            // 1. Nonlinear Portal Scale & Breathing Silhouette
-            const openEase = eo(Math.min(1.0, rawT * 1.15));
-            const portalScale = isClosing 
-              ? 0.06 + 0.64 * Math.pow(rawT, 1.4) 
-              : 0.06 + 0.64 * openEase;
-            ls1PortalMesh.scale.setScalar(portalScale);
+            // Align portal aperture facing camera strictly along authoritative portal axis
+            ls1PortalMesh.scale.setScalar(0.70);
             ls1PortalMesh.lookAt(cam.position);
 
-            // 2. Dark Spatial Void Throat Update
+            // 1. Reality Tear Opening & Singularity Perimeter
             if (ls1ThroatMat) {
-              const uOpen = Math.min(1.0, rawT * 2.0);
-              ls1ThroatMat.uniforms.uOpen.value = uOpen;
-              ls1ThroatMat.uniforms.uTear.value = isClosing ? rawT * 0.8 : Math.min(1.0, rawT * 1.2);
+              ls1ThroatMat.uniforms.uTime.value = t;
+              ls1ThroatMat.uniforms.uSeqTime.value = seqT;
+              ls1ThroatMat.uniforms.uOpen.value = rawT;
             }
 
-            // 3. Deep Destination Preview Differential Parallax
-            if (ls1PreviewMesh && ls1PreviewMesh.visible) {
-              const pWorld = ls1PortalMesh.getWorldPosition(new THREE.Vector3());
-              const relCam = cam.position.clone().sub(pWorld);
-              const parX = THREE.MathUtils.clamp(-relCam.x * 0.012, -0.015, 0.015);
-              const parY = THREE.MathUtils.clamp(-relCam.y * 0.012, -0.015, 0.015);
-              ls1PreviewMesh.position.set(parX, parY, -0.095);
-              ls1PreviewMesh.material.opacity = Math.min(1.0, rawT * 1.5);
+            // 2. Conical Abyss Deep-Space Throat Tunnel
+            if (ls1AbyssTunnelMat) {
+              ls1AbyssTunnelMat.uniforms.uTime.value = t;
+              ls1AbyssTunnelMat.uniforms.uOpen.value = rawT;
             }
 
-            // 4. Physical Black Smoke / Dust Particulate Circulation (280 particles)
+            // 3. True 3D Destination Diorama inside the Abyss (positioned on authoritative portal axis at Z = -1.35m)
+            if (ls1Destination3DGroup) {
+              let destReveal = 0.0;
+              if (ls1ActivePortal.state === 'closing') {
+                destReveal = Math.max(0.0, rawT);
+              } else if (seqT >= 1.40) {
+                // Controlled reveal curve: 0% -> 15% -> 40% -> 70% -> 100%
+                const p = Math.min(1.0, (seqT - 1.40) / 0.80);
+                if (p <= 0.0) destReveal = 0.0;
+                else if (p < 0.25) destReveal = (p / 0.25) * 0.15;
+                else if (p < 0.50) destReveal = 0.15 + ((p - 0.25) / 0.25) * 0.25;
+                else if (p < 0.75) destReveal = 0.40 + ((p - 0.50) / 0.25) * 0.30;
+                else destReveal = 0.70 + ((p - 0.75) / 0.25) * 0.30;
+              }
+
+              ls1Destination3DGroup.visible = destReveal > 0.005;
+
+              // Authoritative portal-local axis placement: portalCenter (0,0,0) + portalForward (0,0,-1) * depth (1.35m)
+              const destDepth = 1.35;
+              ls1Destination3DGroup.position.set(0, Math.sin(t * 1.5) * 0.008, -destDepth);
+              ls1Destination3DGroup.rotation.y = Math.sin(t * 0.8) * 0.03;
+
+              // Scale reduction at depth: small and deep inside the void
+              const curScale = 0.42 + 0.10 * destReveal; // 0.52 when stabilized
+              ls1Destination3DGroup.scale.setScalar(curScale);
+
+              // Diminishing brightness and controlled reveal across destination materials
+              ls1Destination3DGroup.traverse(child => {
+                if (child.material) {
+                  if (child.userData.baseEmissive === undefined && child.material.emissiveIntensity !== undefined) {
+                    child.userData.baseEmissive = child.material.emissiveIntensity;
+                  }
+                  if (child.material.emissiveIntensity !== undefined && child.userData.baseEmissive !== undefined) {
+                    child.material.emissiveIntensity = child.userData.baseEmissive * destReveal;
+                  }
+                  if (child.userData.baseOpacity === undefined) {
+                    child.userData.baseOpacity = child.material.opacity !== undefined ? child.material.opacity : 1.0;
+                  }
+                  child.material.transparent = true;
+                  child.material.opacity = child.userData.baseOpacity * destReveal;
+                }
+              });
+            }
+
+            // 4. Authentic Volumetric Smoke Advection (960 billows in continuous 3-way fluid flow)
+            // Driven by 3 simultaneous continuous physical movements:
+            // a. Radial expansion from event horizon tear (s < 0.32)
+            // b. Tangential perimeter circulation along vortex boundary (0.32 <= s < 0.72)
+            // c. Inward gravitational return plunging back into the throat (s >= 0.72)
             if (ls1SmokeMesh && ls1SmokeData.length > 0) {
-              if (ls1SmokeMat) ls1SmokeMat.uniforms.uTime.value = t;
+              if (ls1SmokeMat) {
+                ls1SmokeMat.uniforms.uTime.value = t;
+                ls1SmokeMat.uniforms.uLightningFlash.value = Math.max(0.0, ls1SmokeMat.uniforms.uLightningFlash.value - dt * 14.0);
+              }
+              if (ls1SleeveMats && ls1SleeveMats.length > 0) {
+                for (let s = 0; s < ls1SleeveMats.length; s++) {
+                  ls1SleeveMats[s].uniforms.uTime.value = t;
+                  ls1SleeveMats[s].uniforms.uOpen.value = rawT;
+                  ls1SleeveMats[s].uniforms.uLightningFlash.value = Math.max(0.0, ls1SleeveMats[s].uniforms.uLightningFlash.value - dt * 14.0);
+                }
+              }
+
               const sPos = ls1SmokeMesh.geometry.attributes.position;
               const sOpacities = ls1SmokeMesh.geometry.attributes.aOpacity;
-
-              // Speed multiplier: during traversal or reverse collapse, flow accelerates
-              const speedMult = ls1Traversal?.active ? 3.5 : (isClosing ? 1.85 : 1.0);
-              const smokeReach = isClosing ? Math.max(0.12, rawT) : Math.min(1.0, 0.10 + rawT * 1.35);
+              const speedMult = ls1Traversal?.active ? 3.8 : (ls1ActivePortal.state === 'closing' ? 2.2 : 1.0);
+              const smokeReach = ls1ActivePortal.state === 'closing' ? Math.max(0.10, rawT) : Math.min(1.0, 0.12 + rawT * 1.35);
 
               for (let i = 0; i < ls1SmokeData.length; i++) {
                 const sp = ls1SmokeData[i];
                 sp.phase = (sp.phase + sp.speed * speedMult * dt) % 1.0;
                 const s = sp.phase;
 
-                // Asymmetric living boundary lobes
+                // Asymmetric turbulent boundary lobes
                 const lobe = 0.22 * Math.sin(3.0 * sp.angle0 + t * 1.25)
                            + 0.15 * Math.cos(2.0 * sp.angle0 - t * 0.85)
                            + sp.lobeBias * 0.16;
@@ -8573,126 +12283,286 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
                 let ang = sp.angle0;
                 let density = sp.baseDensity;
 
-                if (s < 0.35) {
-                  // Phase A: Throat Escape (s < 0.35)
-                  const u = s / 0.35;
-                  rad = (0.095 + 0.165 * Math.pow(u, 1.25)) * smokeReach;
-                  z = -0.015 + 0.035 * u;
-                  ang = sp.angle0 + sp.swirlDir * (0.42 * u);
-                  density = sp.baseDensity * Math.pow(u, 0.85);
+                if (s < 0.32) {
+                  // Phase 1: Radial Expansion from Event Horizon Tear (tight collar around throat)
+                  const u = s / 0.32;
+                  rad = (0.16 + 0.06 * Math.pow(u, 1.10)) * smokeReach;
+                  z = -0.16 + 0.16 * u + sp.zDepth * 0.3;
+                  ang = sp.angle0 + sp.swirlDir * (0.45 * u);
+                  density = sp.baseDensity * Math.pow(u, 0.75);
                 } else if (s < 0.72) {
-                  // Phase B: Outward Expansion & Tangential Perimeter Curl (0.35 <= s < 0.72)
-                  const u = (s - 0.35) / 0.37;
-                  const maxR = (0.26 + 0.15 * u + sp.radialJitter) * (1.0 + lobe) * smokeReach;
+                  // Phase 2: Tangential Perimeter Circulation along vortex collar
+                  const u = (s - 0.32) / 0.40;
+                  const maxR = (0.22 + 0.08 * u + sp.radialJitter * 0.5) * (1.0 + lobe * 0.5) * smokeReach;
                   rad = maxR;
-                  z = 0.020 + 0.014 * Math.sin(u * Math.PI) + sp.zDepth;
-                  ang = sp.angle0 + sp.swirlDir * (0.42 + 1.35 * u + 0.20 * Math.sin(t * 1.6 + sp.seed));
-                  density = sp.baseDensity * (0.95 + 0.15 * Math.sin(t * 2.2 + sp.seed));
+                  z = 0.015 + 0.015 * Math.sin(u * Math.PI) + sp.zDepth * 0.3;
+                  ang = sp.angle0 + sp.swirlDir * (0.45 + 1.85 * u + 0.20 * Math.sin(t * 1.5 + sp.seed));
+                  density = sp.baseDensity * (0.92 + 0.15 * Math.sin(t * 2.0 + sp.seed));
                 } else {
-                  // Phase C: Inward Return & Throat Absorption (s >= 0.72)
+                  // Phase 3: Inward Gravitational Return plunging deep into Throat
                   const u = (s - 0.72) / 0.28;
-                  const startR = (0.41 + sp.radialJitter) * (1.0 + lobe) * smokeReach;
-                  rad = THREE.MathUtils.lerp(startR, 0.095 * smokeReach, Math.pow(u, 1.35));
-                  z = THREE.MathUtils.lerp(0.020, -0.048, Math.pow(u, 1.15));
-                  ang = sp.angle0 + sp.swirlDir * (1.77 + 0.85 * u);
-                  density = sp.baseDensity * Math.max(0.0, 1.0 - Math.pow(u, 1.3));
+                  const startR = (0.30 + sp.radialJitter * 0.5) * (1.0 + lobe * 0.5) * smokeReach;
+                  rad = THREE.MathUtils.lerp(startR, 0.17 * smokeReach, Math.pow(u, 1.30));
+                  // Plunge backwards deep into the throat
+                  z = THREE.MathUtils.lerp(0.015, -0.30, Math.pow(u, 1.25));
+                  ang = sp.angle0 + sp.swirlDir * (2.30 + 1.20 * u);
+                  density = sp.baseDensity * Math.max(0.0, 1.0 - Math.pow(u, 1.2));
                 }
 
-                // Reverse suction behavior when closing
-                if (isClosing) {
-                  rad *= Math.max(0.05, Math.pow(rawT, 0.65));
-                  z = THREE.MathUtils.lerp(-0.045, z, rawT);
-                  density *= Math.pow(rawT, 1.2);
+                // Ragged oval conformation (1.22:1 ratio)
+                const px = rad * Math.cos(ang);
+                const py = rad * Math.sin(ang) * 1.22;
+
+                // Closing suction
+                if (ls1ActivePortal.state === 'closing') {
+                  density *= Math.pow(rawT, 1.3);
+                  z = THREE.MathUtils.lerp(-0.25, z, rawT);
                 }
 
                 // Global emergence envelope
                 let globalAlpha = 1.0;
-                if (rawT < 0.06) {
-                  globalAlpha = Math.min(1.0, rawT * 12.0) * 0.70;
-                  if (s > 0.15) globalAlpha = 0.0;
-                } else if (rawT < 0.30) {
-                  globalAlpha = THREE.MathUtils.lerp(0.55, 0.95, (rawT - 0.06) / 0.24);
-                  if (s > 0.50) globalAlpha *= Math.max(0.0, 1.0 - (s - 0.50) / 0.18);
+                if (rawT < 0.10) {
+                  globalAlpha = (rawT / 0.10) * 0.45;
+                  if (s > 0.20) globalAlpha = 0.0;
+                } else if (rawT < 0.35) {
+                  globalAlpha = THREE.MathUtils.lerp(0.45, 0.95, (rawT - 0.10) / 0.25);
                 } else {
-                  globalAlpha = isClosing ? rawT : Math.min(1.0, 0.85 + (rawT - 0.30) * 0.25);
+                  globalAlpha = ls1ActivePortal.state === 'closing' ? rawT : 1.0;
                 }
 
-                const px = rad * Math.cos(ang);
-                const py = rad * Math.sin(ang);
                 sPos.setXYZ(i, px, py, z);
                 sOpacities.setX(i, Math.max(0.0, Math.min(0.98, density * globalAlpha)));
-
                 sp.pos.set(px, py, z);
               }
               sPos.needsUpdate = true;
               sOpacities.needsUpdate = true;
             }
 
-            // 5. Electric Energy Filaments (24 active filaments)
+            // 5. Embedded Dielectric Lightning inside Cloud Density (8 Billboard Ribbon Channels)
+            // Arcs strike inside the cloud volume and illuminate the smoke from within via uLightningFlash
             if (ls1ElectricGroup && ls1ElectricData.length > 0) {
               let maxActiveAllowed = 0;
-              if (rawT > 0.08 && rawT <= 0.28) maxActiveAllowed = 2;
-              else if (rawT > 0.28 && rawT <= 0.60) maxActiveAllowed = 4;
-              else if (rawT > 0.60) maxActiveAllowed = isClosing ? Math.ceil(rawT * 4) : (ls1Traversal?.active ? 8 : 6);
+              if (ls1ActivePortal.state === 'inception') maxActiveAllowed = 1; // Needle flash spark leaking from tear
+              else if (ls1ActivePortal.state === 'growth') maxActiveAllowed = (seqT < 0.9) ? 2 : 2; // Growing internal arcs
+              else if (ls1ActivePortal.state === 'stabilized') maxActiveAllowed = 1; // Persistent internal arcs restriking inside cloud
+              else maxActiveAllowed = 1; // Closing dissipation
 
               let currentActive = 0;
               for (let k = 0; k < ls1ElectricData.length; k++) {
                 if (ls1ElectricData[k].active) currentActive++;
               }
 
+              const TRUNK_SEGS = 16;
+              const BRANCH_COUNT = 3;
+              const BRANCH_SEGS = 6;
+              const TOTAL_VERTS = (TRUNK_SEGS + BRANCH_COUNT * BRANCH_SEGS) * 4; // 136 vertices
+
               for (let k = 0; k < ls1ElectricData.length; k++) {
                 const ed = ls1ElectricData[k];
                 if (ed.active) {
-                  ed.life -= dt;
-                  if (ed.life <= 0 || (isClosing && rawT <= 0.05)) {
+                  ed.timer += dt;
+                  const progress = ed.timer / ed.lifetime;
+                  if (progress >= 1.0) {
                     ed.active = false;
-                    ed.mat.opacity = 0.0;
-                    ed.cooldown = 0.08 + Math.random() * 0.22;
+                    if (ed.mat && ed.mat.uniforms && ed.mat.uniforms.uFlash) ed.mat.uniforms.uFlash.value = 0.0;
+                    ed.cooldown = 0.40 + Math.random() * 0.70;
                   } else {
-                    const progress = 1.0 - (ed.life / ed.maxLife);
-                    const flash = Math.sin(progress * Math.PI);
-                    const jitter = 0.80 + 0.20 * Math.sin(t * 35.0 + k * 5.0);
-                    ed.mat.opacity = flash * jitter * (isClosing ? rawT : Math.min(1.0, rawT * 1.5));
+                    // Multi-stroke re-strike micro-stutter
+                    let flashFactor = 1.0;
+                    if (progress < 0.18) flashFactor = 1.0;
+                    else if (progress < 0.32) flashFactor = 0.15;
+                    else if (progress < 0.50) flashFactor = 0.95;
+                    else if (progress < 0.65) flashFactor = 0.25;
+                    else if (progress < 0.82) flashFactor = 0.70;
+                    else flashFactor = Math.max(0.0, (1.0 - progress) * 5.0);
+
+                    if (ed.mat && ed.mat.uniforms) {
+                      if (ed.mat.uniforms.uFlash) ed.mat.uniforms.uFlash.value = flashFactor;
+                      if (ed.mat.uniforms.uGlobalAlpha) ed.mat.uniforms.uGlobalAlpha.value = rawT;
+                    }
+
+                    if (flashFactor > 0.4) {
+                      const posAttr = ed.geo.attributes.position;
+                      for (let v = 0; v < TOTAL_VERTS; v++) {
+                        posAttr.setXYZ(v,
+                          posAttr.getX(v) + (Math.random() - 0.5) * 0.002,
+                          posAttr.getY(v) + (Math.random() - 0.5) * 0.002,
+                          posAttr.getZ(v) + (Math.random() - 0.5) * 0.001
+                        );
+                      }
+                      posAttr.needsUpdate = true;
+                    }
                   }
                 } else {
                   ed.cooldown -= dt;
-                  if (ed.cooldown <= 0 && currentActive < maxActiveAllowed && rawT > 0.08) {
+                  if (ed.cooldown <= 0 && currentActive < maxActiveAllowed && rawT > 0.1) {
                     ed.active = true;
                     currentActive++;
-                    ed.life = ed.maxLife;
-                    ed.sourceSmokeIdx = Math.floor(Math.random() * ls1SmokeData.length);
+                    ed.timer = 0;
+                    ed.lifetime = 0.055 + Math.random() * 0.045;
 
-                    const sourceP = ls1SmokeData[ed.sourceSmokeIdx];
-                    const posAttr = ed.geo.attributes.position;
-                    const segs = ed.segCount;
-                    let curX = sourceP.pos.x;
-                    let curY = sourceP.pos.y;
-                    let curZ = sourceP.pos.z;
-
-                    const curAng = Math.atan2(curY, curX);
-                    const tangentAng = curAng + sourceP.swirlDir * (Math.PI * 0.45);
-                    const stepLen = 0.022 + Math.random() * 0.016;
-
-                    for (let s = 0; s < segs; s++) {
-                      posAttr.setXYZ(s, curX, curY, curZ);
-                      const jagX = (Math.random() - 0.5) * 0.022;
-                      const jagY = (Math.random() - 0.5) * 0.022;
-                      const jagZ = (Math.random() - 0.5) * 0.015;
-                      curX += Math.cos(tangentAng) * stepLen + jagX;
-                      curY += Math.sin(tangentAng) * stepLen + jagY;
-                      curZ += jagZ;
+                    // Trigger internal sheet lightning in the storm clouds!
+                    if (ls1SmokeMat) {
+                      ls1SmokeMat.uniforms.uLightningFlash.value = Math.min(1.0, ls1SmokeMat.uniforms.uLightningFlash.value + 0.45);
                     }
+                    if (ls1SleeveMats && ls1SleeveMats.length > 0) {
+                      for (let s = 0; s < ls1SleeveMats.length; s++) {
+                        ls1SleeveMats[s].uniforms.uLightningFlash.value = Math.min(1.0, ls1SleeveMats[s].uniforms.uLightningFlash.value + 0.45);
+                      }
+                    }
+                    if (Math.random() < 0.70) {
+                      sfx.blip(2600 + Math.random() * 1200, 0.030, 0.020);
+                    }
+
+                    // ── GENERATE JAGGED DIELECTRIC BREAKDOWN BOLT GEOMETRY EMBEDDED IN SMOKE ──
+                    let ax = 0, ay = 0, az = 0, bx = 0, by = 0, bz = 0;
+                    if (ls1SmokeData.length > 0) {
+                      const sIdx = Math.floor(Math.random() * ls1SmokeData.length);
+                      const sp = ls1SmokeData[sIdx];
+                      ax = sp.pos.x;
+                      ay = sp.pos.y;
+                      az = sp.pos.z;
+
+                      const curAng = Math.atan2(ay, ax);
+                      const tang = curAng + sp.swirlDir * (0.25 + Math.random() * 0.40);
+                      const curR = Math.hypot(ax, ay);
+                      const nextR = THREE.MathUtils.clamp(curR + (Math.random() - 0.5) * 0.03, 0.18 * tearScale, 0.32 * tearScale);
+                      bx = Math.cos(tang) * nextR;
+                      by = Math.sin(tang) * nextR * 1.22;
+                      bz = az + (Math.random() - 0.5) * 0.025;
+                    } else {
+                      const angA = Math.random() * Math.PI * 2.0;
+                      const radA = (0.20 + Math.random() * 0.08) * tearScale;
+                      ax = Math.cos(angA) * radA;
+                      ay = Math.sin(angA) * radA * 1.22;
+                      az = (Math.random() * 0.06 - 0.03) * tearScale;
+
+                      const angB = angA + (Math.random() - 0.5) * 0.8;
+                      const radB = (0.20 + Math.random() * 0.08) * tearScale;
+                      bx = Math.cos(angB) * radB;
+                      by = Math.sin(angB) * radB * 1.22;
+                      bz = az + (Math.random() - 0.5) * 0.025;
+                    }
+
+                    const trunkPoints = [];
+                    trunkPoints.push(new THREE.Vector3(ax, ay, az));
+
+                    const dirAB = new THREE.Vector3(bx - ax, by - ay, bz - az);
+                    const normAB = dirAB.clone().normalize();
+                    const perpAB = new THREE.Vector3(-normAB.y, normAB.x, (Math.random() - 0.5) * 0.3).normalize();
+
+                    for (let s = 1; s < TRUNK_SEGS; s++) {
+                      const u = s / TRUNK_SEGS;
+                      const envelope = Math.sin(u * Math.PI);
+                      const jagDist = (Math.random() - 0.5) * 0.016 * envelope * tearScale;
+                      const zJag = (Math.random() - 0.5) * 0.010 * envelope * tearScale;
+
+                      const pt = new THREE.Vector3(
+                        ax + dirAB.x * u + perpAB.x * jagDist,
+                        ay + dirAB.y * u + perpAB.y * jagDist,
+                        az + dirAB.z * u + zJag
+                      );
+                      trunkPoints.push(pt);
+                    }
+                    trunkPoints.push(new THREE.Vector3(bx, by, bz));
+
+                    // 3 Branching Forks
+                    const branchOrigins = [
+                      { idx: 4, sign: Math.random() < 0.5 ? 1 : -1 },
+                      { idx: 8, sign: Math.random() < 0.5 ? 1 : -1 },
+                      { idx: 12, sign: Math.random() < 0.5 ? 1 : -1 }
+                    ];
+
+                    const branches = [];
+                    for (let b = 0; b < branchOrigins.length; b++) {
+                      const bo = branchOrigins[b];
+                      const rootPt = trunkPoints[bo.idx] || trunkPoints[0];
+                      const bAngle = Math.atan2(normAB.y, normAB.x) + bo.sign * (0.65 + Math.random() * 0.45);
+                      const bDir = new THREE.Vector3(Math.cos(bAngle), Math.sin(bAngle), (Math.random() - 0.5) * 0.35).normalize();
+                      const bStepLen = (0.014 + Math.random() * 0.012) * tearScale;
+
+                      const bPoints = [rootPt.clone()];
+                      let prevPt = rootPt.clone();
+                      for (let bs = 0; bs < BRANCH_SEGS; bs++) {
+                        const bJag = (Math.random() - 0.5) * 0.012 * tearScale;
+                        const nextPt = new THREE.Vector3(
+                          prevPt.x + bDir.x * bStepLen - bDir.y * bJag,
+                          prevPt.y + bDir.y * bStepLen + bDir.x * bJag,
+                          prevPt.z + bDir.z * bStepLen + (Math.random() - 0.5) * 0.008 * tearScale
+                        );
+                        bPoints.push(nextPt);
+                        prevPt = nextPt;
+                      }
+                      branches.push(bPoints);
+                    }
+
+                    const posAttr = ed.geo.attributes.position;
+                    const otherAttr = ed.geo.attributes.aOther;
+                    const progAttr = ed.geo.attributes.aProgress;
+                    const widthAttr = ed.geo.attributes.aWidth;
+
+                    let segIdx = 0;
+                    function writeSegment(p0, p1, u0, u1, w) {
+                      const v = segIdx * 4;
+                      posAttr.setXYZ(v, p0.x, p0.y, p0.z);
+                      otherAttr.setXYZ(v, p1.x, p1.y, p1.z);
+                      progAttr.setX(v, u0);
+                      widthAttr.setX(v, w);
+
+                      posAttr.setXYZ(v + 1, p0.x, p0.y, p0.z);
+                      otherAttr.setXYZ(v + 1, p1.x, p1.y, p1.z);
+                      progAttr.setX(v + 1, u0);
+                      widthAttr.setX(v + 1, w);
+
+                      posAttr.setXYZ(v + 2, p1.x, p1.y, p1.z);
+                      otherAttr.setXYZ(v + 2, p0.x, p0.y, p0.z);
+                      progAttr.setX(v + 2, u1);
+                      widthAttr.setX(v + 2, w);
+
+                      posAttr.setXYZ(v + 3, p1.x, p1.y, p1.z);
+                      otherAttr.setXYZ(v + 3, p0.x, p0.y, p0.z);
+                      progAttr.setX(v + 3, u1);
+                      widthAttr.setX(v + 3, w);
+
+                      segIdx++;
+                    }
+
+                    for (let s = 0; s < TRUNK_SEGS; s++) {
+                      const p0 = trunkPoints[s];
+                      const p1 = trunkPoints[s + 1];
+                      const u0 = s / TRUNK_SEGS;
+                      const u1 = (s + 1) / TRUNK_SEGS;
+                      const w = (0.0016 + Math.sin(u0 * Math.PI) * 0.0010) * tearScale;
+                      writeSegment(p0, p1, u0, u1, w);
+                    }
+
+                    for (let b = 0; b < branches.length; b++) {
+                      const pts = branches[b];
+                      for (let bs = 0; bs < BRANCH_SEGS; bs++) {
+                        const p0 = pts[bs];
+                        const p1 = pts[bs + 1];
+                        const bu0 = bs / BRANCH_SEGS;
+                        const bu1 = (bs + 1) / BRANCH_SEGS;
+                        const w = THREE.MathUtils.lerp(0.0010, 0.0004, bu0) * tearScale;
+                        writeSegment(p0, p1, bu0, bu1, w);
+                      }
+                    }
+
                     posAttr.needsUpdate = true;
+                    otherAttr.needsUpdate = true;
+                    progAttr.needsUpdate = true;
+                    widthAttr.needsUpdate = true;
                   }
                 }
               }
             }
 
-            // Keep anchored crystal attached at portal perimeter as energy anchor
             if (ls1ActivePortal.node) {
               const anchorOffset = new THREE.Vector3(0.26, -0.20, 0).applyQuaternion(ls1PortalMesh.quaternion);
               ls1ActivePortal.node.position.copy(ls1PortalMesh.position).add(anchorOffset);
             }
+          } else if (ls1Destination3DGroup) {
+            ls1Destination3DGroup.visible = false;
           }
         }
       }
@@ -8700,7 +12570,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     // wet-floor reflections: mirror clones follow transforms, visibility and glow of their sources (during power-on)
     if (t < T.ready) {
       for (const [a, b, root] of mirrorPairs) { b.visible = a.visible; if (root) { b.matrix.copy(a.matrixWorld); b.matrixWorldNeedsUpdate = true; } else { b.position.copy(a.position); b.quaternion.copy(a.quaternion); b.scale.copy(a.scale); }
-        const ma = a.material, mb = b.material; if (!ma) continue; if (ma.isShaderMaterial) { for (const k in ma.uniforms) if (k !== 'uA') mb.uniforms[k].value = ma.uniforms[k].value; mb.uniforms.uA.value = ma.uniforms.uA.value * MIR; } else { if (mb.opacity !== undefined) mb.opacity = ma.opacity * MIR; if (mb.emissiveIntensity !== undefined) mb.emissiveIntensity = ma.emissiveIntensity * MIR; } }
+        const ma = a.material, mb = b.material; if (!ma) continue; if (ma.isShaderMaterial) { for (const k in ma.uniforms) if (k !== 'uA') mb.uniforms[k].value = ma.uniforms[k].value; if (ma.uniforms.uA && mb.uniforms.uA) mb.uniforms.uA.value = ma.uniforms.uA.value * MIR; } else { if (mb.opacity !== undefined) mb.opacity = ma.opacity * MIR; if (mb.emissiveIntensity !== undefined) mb.emissiveIntensity = ma.emissiveIntensity * MIR; } }
     }
     // camera: approach walk → orbit around the bench → (S0) walk through the bay to the inner floor and face the entity
     { const walk = sm(ph(t, T.approach)), approaching = t > T.approach[0] && walk < 1;
@@ -8709,33 +12579,74 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
       if (S.magnet !== null && !FOCUS.active) { const d = S.magnet - S.theta; S.theta += d * (1 - Math.exp(-2.6 * dt)); if (Math.abs(d) < .0006) { S.theta = S.magnet; S.magnet = null; S.lastInput = -9; } }
       const k = ((Math.round(S.theta / SEC) % NSEC) + NSEC) % NSEC; if (k !== S.sector && t >= T.power[0]) { S.sector = k; sfx.blip(1100, .05, .025); dispatchEvent(new CustomEvent('lab:sector', { detail: SECTORS[k] })); }
       const spd = approaching ? .55 : Math.max(Math.abs(S.vel) * CAM_R, inSpd); S.stride += spd * dt * 3.4; const bw = clamp(spd / .6, 0, 1), th = S.theta, r = lerp(lerp(PZ + .5, CAM_R, eo(walk)), IN_R, w);
-      const F = FOCUS.active ? Math.min(1, FOCUS.t += dt * 1.8) : Math.max(0, (FOCUS.t -= dt * 2.2));
-      const e = sm(F);
-      fA.copy(polar(th, 3.98, DK_Y + .45)).lerp(tmp.set(0, EMIT_Y + 1.4, 0), .35); fA.lerp(tmp.set(0, entY - .1, 0), w);
-      const fy = 1.3 + sm(ph(t, T.beam)) * .9 + S.entF * 1.2 + sm(ph(t, T.map)) * .3 * (1 - sm(ph(t, T.retract))); fA.lerp(tmp.set(0, fy, 0), 1 - sm(ph(t, [T.power[0] + 1.5, T.power[0] + 4])));
-      if (!S.fInit) { fB.copy(fA); S.fInit = true; } else fB.lerp(fA, 1 - Math.exp(-dt * 3.2));
-      if (!FOCUS.active && F <= 0) {
-        cam.position.copy(polar(th, r, EYE + Math.sin(S.stride * 2) * .012 * bw)); cam.position.add(tmp.set(Math.cos(th), 0, -Math.sin(th)).multiplyScalar(Math.sin(S.stride) * .009 * bw));
-        S.look.x += (S.look.tx - S.look.x) * (1 - Math.exp(-dt * 4)); S.look.y += (S.look.ty - S.look.y) * (1 - Math.exp(-dt * 4));
-        cam.lookAt(fB); cam.rotateY(S.look.x * (1 - .6 * w)); cam.rotateX(S.look.y * (1 - .6 * w));
-      } else {
-        if (FOCUS.id === 'LS1' && ls1Traversal && ls1Traversal.active) {
-          // Camera position and lookAt are driven directly by ls1Traversal suction animation
+      // Camera state resolution: note camera -> sector focus -> unfocusing -> workbench navigation
+      if (FOCUS.noteCam && FOCUS.noteCam.active) {
+        FOCUS.noteCam.t = Math.min(1.0, (FOCUS.noteCam.t || 0) + dt * 2.4);
+        const ne = sm(FOCUS.noteCam.t);
+        cam.position.lerpVectors(FOCUS.noteCam.fromPos, FOCUS.noteCam.toPos, ne);
+        cam.quaternion.slerpQuaternions(FOCUS.noteCam.fromQ, FOCUS.noteCam.toQ, ne);
+        S.focusE = 1.0;
+      } else if (FOCUS.noteCam && FOCUS.noteCam.unfocusing) {
+        FOCUS.noteCam.unfocusT = Math.min(1.0, (FOCUS.noteCam.unfocusT || 0) + dt * 2.8);
+        const ne = sm(FOCUS.noteCam.unfocusT);
+        cam.position.lerpVectors(FOCUS.noteCam.returnFromPos, FOCUS.toPos, ne);
+        cam.quaternion.slerpQuaternions(FOCUS.noteCam.returnFromQ, FOCUS.toQ, ne);
+        if (FOCUS.noteCam.unfocusT >= 1.0) FOCUS.noteCam.unfocusing = false;
+        S.focusE = 1.0;
+      } else if (FOCUS.active) {
+        FOCUS.t = Math.min(1.0, FOCUS.t + dt * 1.8);
+        const e = sm(FOCUS.t);
+        if (FOCUS.id === 'LS1' && ((ls1Traversal && ls1Traversal.active) || (ls1ReturnAnim && ls1ReturnAnim.active))) {
+          // Camera position and lookAt driven by portal traversal or reverse return
         } else if (FOCUS.id === 'LS1' && ls1ActivePortal && ls1ActivePortal.t > 0.05) {
           const g = sectorGroups['LS1'];
-          const biasAmt = sm(Math.min(1.0, ls1ActivePortal.t)) * 0.22;
-          const localShift = new THREE.Vector3(biasAmt * 0.15, 0, -biasAmt * 0.15).applyQuaternion(g.quaternion);
+          const biasAmt = sm(Math.min(1.0, ls1ActivePortal.t)) * 0.16;
+          const localShift = new THREE.Vector3(biasAmt * 0.12, 0, -biasAmt * 0.12).applyQuaternion(g.quaternion);
           const targetPos = FOCUS.toPos.clone().add(localShift);
-          const localLookShift = new THREE.Vector3(biasAmt * 0.30, 0, biasAmt * 0.40).applyQuaternion(g.quaternion);
-          const targetLook = FOCUS.toLook.clone().add(localLookShift);
           cam.position.lerpVectors(FOCUS.from, targetPos, e);
-          cam.lookAt(targetLook.clone().lerp(cam.position.clone().add(fB.clone().sub(cam.position)), 1 - e));
+          cam.quaternion.slerpQuaternions(FOCUS.fromQ, FOCUS.toQ, e);
         } else {
           cam.position.lerpVectors(FOCUS.from, FOCUS.toPos, e);
-          cam.lookAt(FOCUS.toLook.clone().lerp(cam.position.clone().add(fB.clone().sub(cam.position)), 1 - e));
+          cam.quaternion.slerpQuaternions(FOCUS.fromQ, FOCUS.toQ, e);
         }
+        S.focusE = e;
+      } else if (FOCUS.unfocusing) {
+        FOCUS.unfocusT = Math.min(1.0, (FOCUS.unfocusT || 0) + dt * 2.2);
+        const e = sm(FOCUS.unfocusT);
+        cam.position.lerpVectors(FOCUS.returnFromPos, FOCUS.returnToPos, e);
+        cam.quaternion.slerpQuaternions(FOCUS.returnFromQ, FOCUS.returnToQ, e);
+        S.focusE = 1.0 - e;
+        if (FOCUS.unfocusT >= 1.0) {
+          FOCUS.unfocusing = false;
+          S.navLocked = false;
+          if (FOCUS.benchPose) {
+            cam.position.copy(FOCUS.benchPose.pos);
+            cam.quaternion.copy(FOCUS.benchPose.quat);
+            cam.fov = FOCUS.benchPose.fov;
+            S.theta = FOCUS.benchPose.theta;
+            S.stride = FOCUS.benchPose.stride;
+            S.look.x = FOCUS.benchPose.lookX;
+            S.look.y = FOCUS.benchPose.lookY;
+            S.look.tx = FOCUS.benchPose.lookTx;
+            S.look.ty = FOCUS.benchPose.lookTy;
+            FOCUS.benchPose = null;
+          }
+        }
+      } else {
+        // Normal workbench walking & free camera orientation
+        fA.copy(polar(th, 3.98, DK_Y + .45)).lerp(tmp.set(0, EMIT_Y + 1.4, 0), .35); fA.lerp(tmp.set(0, entY - .1, 0), w);
+        const fy = 1.3 + sm(ph(t, T.beam)) * .9 + S.entF * 1.2 + sm(ph(t, T.map)) * .3 * (1 - sm(ph(t, T.retract))); fA.lerp(tmp.set(0, fy, 0), 1 - sm(ph(t, [T.power[0] + 1.5, T.power[0] + 4])));
+        if (!S.fInit) { fB.copy(fA); S.fInit = true; } else fB.lerp(fA, 1 - Math.exp(-dt * 3.2));
+
+        cam.position.copy(polar(th, r, EYE + Math.sin(S.stride * 2) * .012 * bw));
+        cam.position.add(tmp.set(Math.cos(th), 0, -Math.sin(th)).multiplyScalar(Math.sin(S.stride) * .009 * bw));
+        S.look.x += (S.look.tx - S.look.x) * (1 - Math.exp(-dt * 4));
+        S.look.y += (S.look.ty - S.look.y) * (1 - Math.exp(-dt * 4));
+        cam.lookAt(fB);
+        cam.rotateY(S.look.x * (1 - .6 * w));
+        cam.rotateX(S.look.y * (1 - .6 * w));
+        S.focusE = 0;
       }
-      S.focusE = e;
     }
 
     const camFwd = new THREE.Vector3();
@@ -8843,6 +12754,51 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
     renderer.toneMappingExposure = EXP0 * 1.32; lab.fog.density = 0.02; lab.fog.color.copy(fogB);
     for (const s of screens) s.m.emissiveIntensity = s.i;
     for (const h of holos) h.m.opacity = h.target;
+    if (sheetGroup) {
+      sheetGroup.visible = true;
+      sheets.forEach(s => { if (s.plane?.material) s.plane.material.emissiveIntensity = 0.45; });
+    }
+    if (globeGroup) {
+      globeGroup.visible = true;
+    }
+    if (ls1HoloGroup) {
+      ls1HoloGroup.visible = true;
+      if (ls1ChanE) ls1ChanE.emissiveIntensity = 0.45;
+      if (ls1CoreE) ls1CoreE.emissiveIntensity = 0.65;
+      if (ls1ActivatorRing) ls1ActivatorRing.material.opacity = 0.75;
+      if (ls1EmitterLight) ls1EmitterLight.intensity = 0.04;
+      if (ls1ActivatorMat) ls1ActivatorMat.emissiveIntensity = 0.32;
+    }
+    // LS1 station stays SLEEPING until the user presses the button at Sector LS1!
+    ls1StationState = 'sleeping';
+    ls1BirthTimer = 0.0;
+    if (ls1CosmicMesh) ls1CosmicMesh.visible = false;
+    if (ls1CosmicMat) {
+      ls1CosmicMat.uniforms.uCosmic.value = 0.0;
+      ls1CosmicMat.uniforms.uStars.value = 0.0;
+    }
+    if (ls1FigureGroup) {
+      ls1FigureGroup.visible = false;
+      if (ls1HoloMats) {
+        for (let i = 0; i < ls1HoloMats.length; i++) {
+          ls1HoloMats[i].uniforms.uOpacity.value = 0.0;
+        }
+      }
+    }
+    if (ls1Crystals) {
+      for (let i = 0; i < ls1Crystals.length; i++) {
+        ls1Crystals[i].visible = false;
+        ls1Crystals[i].scale.setScalar(0.0001);
+      }
+    }
+    if (ls1PortalMesh) ls1PortalMesh.visible = false;
+    if (ls1StellarCoreMesh) ls1StellarCoreMesh.visible = false;
+    if (ls1AccretionDiscMesh) ls1AccretionDiscMesh.visible = false;
+    if (ls1PolarJetsMesh) ls1PolarJetsMesh.visible = false;
+    if (ls1ShockwaveMesh) ls1ShockwaveMesh.visible = false;
+    if (ls1AccretionMesh) ls1AccretionMesh.visible = false;
+    if (ls1ActivatorMat) ls1ActivatorMat.emissiveIntensity = 0.35;
+    if (ls1ActivatorRing) ls1ActivatorRing.material.opacity = 0.75;
     for (const [a, b, root] of mirrorPairs) {
       b.visible = a.visible;
       if (root) { b.matrix.copy(a.matrixWorld); b.matrixWorldNeedsUpdate = true; }
@@ -8898,7 +12854,7 @@ export function createLab({ renderer, composer, env, LOW = false, rockMats, meta
   const stats = () => ({ t: +S.t.toFixed(2), theta: +S.theta.toFixed(3), sector: SECTORS[S.sector].id, ready: S.ready, active: S.active, inside: +S.insideT.toFixed(2), exposure: +renderer.toneMappingExposure.toFixed(3), calls: sceneCalls || renderer.info.render.calls, triangles: sceneTris || renderer.info.render.triangles, textures: renderer.info.memory.textures,
     camera: { p: cam.position.toArray().map(v => +v.toFixed(3)), q: cam.quaternion.toArray().map(v => +v.toFixed(4)) }, focus: FOCUS.id });
   const ai = { say, ask, get lines() { return AI.lines.slice(); }, get onAsk() { return AI.onAsk; }, set onAsk(f) { AI.onAsk = f; } };
-  return { scene: lab, camera: cam, entity: ent, composer, state: S, T, SECTORS, update, activate, skipToFinal, openReadMode, closeReadMode, get sheets() { return sheets; }, goTo, enter, exit, focusSector, unfocusSector, focus: focusSector, blurFocus: unfocusSector, ai, stats, fade, pick, api2, sectorGroups, bokeh, handlers: SECTOR_HANDLERS, FOCUS, FOCUS_CFG, get dragging() { return dragging; }, get readId() { return readId; }, get pendingPatch() { return null; }, resume: RESUME, calendar: CAL, globe: GLOBE, get globeGroup() { return globeGroup; }, setGlobeMode, triggerGenerateAndPrint, triggerPrint, buildResumePdf, get paperMesh() { return paperMesh; }, openLS3Taskbar, closeLS3Taskbar, openNewsDispatch, closeNewsDispatch: closeLS3News, pollLiveNews, updateHoloPyramids, toggleLiveNewsStream: (enable) => { window.ENABLE_LS3_STREAM = !!enable; console.log('[LS3] Live stream pipeline set to:', window.ENABLE_LS3_STREAM); }, isLiveStreamEnabled, get ls1Crystals() { return ls1Crystals; }, get ls1StationState() { return ls1StationState; }, wakeLS1, activatePortal, closePortal, traversePortal };
+  return { scene: lab, camera: cam, entity: ent, composer, state: S, T, SECTORS, update, activate, skipToFinal, startVisitTour, stopVisitTour, get isTourActive() { return tourActive; }, openReadMode, closeReadMode, get sheets() { return sheets; }, goTo, enter, exit, focusSector, unfocusSector, focus: focusSector, blurFocus: unfocusSector, ai, stats, fade, pick, api2, sectorGroups, bokeh, handlers: SECTOR_HANDLERS, FOCUS, FOCUS_CFG, get dragging() { return dragging; }, get readId() { return readId; }, get pendingPatch() { return null; }, resume: RESUME, calendar: CAL, globe: GLOBE, get globeGroup() { return globeGroup; }, setGlobeMode, triggerGenerateAndPrint, triggerPrint, buildResumePdf, get paperMesh() { return paperMesh; }, openLS3Taskbar, closeLS3Taskbar, openNewsDispatch, closeNewsDispatch: closeLS3News, pollLiveNews, updateHoloPyramids, toggleLiveNewsStream: (enable) => { window.ENABLE_LS3_STREAM = !!enable; console.log('[LS3] Live stream pipeline set to:', window.ENABLE_STREAM); }, isLiveStreamEnabled, get ls1Destinations() { return ls1DestinationsList || []; }, get ls1Crystals() { return ls1Crystals; }, get ls1FigureGroup() { return ls1FigureGroup; }, get ls1PortalMesh() { return ls1PortalMesh; }, get ls1ActivePortal() { return ls1ActivePortal; }, get ls1StationState() { return ls1StationState; }, get ls1BirthTimer() { return ls1BirthTimer; }, setBirthTimer: (val) => { ls1BirthTimer = val; }, freezeBirth: (f = true) => { ls1BirthFrozen = f; }, get isBirthFrozen() { return ls1BirthFrozen; }, get ls1Destination3DGroup() { return ls1Destination3DGroup; }, get ls1AbyssGroup() { return ls1AbyssGroup; }, get ls1AbyssTunnelMesh() { return ls1AbyssTunnelMesh; }, get ls1SmokeMesh() { return ls1SmokeMesh; }, get ls1SleeveGroup() { return ls1SleeveGroup; }, get ls1TorusSmokeMesh() { return ls1TorusSmokeMesh; }, get ls1InnerTorusMesh() { return ls1InnerTorusMesh; }, wakeLS1, activatePortal, closePortal, traversePortal, duplicateLS2Note, addLS2Note, saveLS2Session, loadLS2Session, get ls2Notes() { return LS2.notes; } };
 }
 
 /* ── install: one call from index.html; hooks the existing composer loop, listens for vault:entered ── */
@@ -8908,6 +12864,5 @@ export function installLab(opts) {
   addEventListener('vault:entered', () => api.activate(), { once: true });
   if (Array.isArray(opts.blackout)) addEventListener('lab:activated', () => setTimeout(() => opts.blackout.forEach(el => { el.style.transition = 'none'; el.style.opacity = '0'; el.style.pointerEvents = 'none'; }), 50), { once: true });
   if (q.has('lab')) requestAnimationFrame(() => api.activate()); if (q.has('inside')) addEventListener('lab:ready', () => api.enter(), { once: true });
-  if (window.__skipToFinalRequested) requestAnimationFrame(() => api.skipToFinal());
-  window.__lab = api; return api;
+  window.__lab = api; window.labApi = api; return api;
 }

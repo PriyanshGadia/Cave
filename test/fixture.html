@@ -1,0 +1,55 @@
+<!doctype html><meta charset="utf-8"><title>about harness fixture (TEST ONLY)</title><link rel="icon" href="data:,">
+<style>html,body{margin:0;background:#000;overflow:hidden}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","gsap":"/node_modules/gsap/index.js"}}</script>
+<script type="module">
+// ===== TEST-ONLY STAND-INS. In your repo these are your real GLBs / door / bench / pad. Never ship this file. =====
+import * as THREE from 'three';
+import { gsap } from 'gsap';
+import { createCinematic } from '/about-cinematic.js';
+
+const W = +new URLSearchParams(location.search).get('w') || 1280, H = +new URLSearchParams(location.search).get('h') || 720;
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, H); renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.1;
+document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x020203); scene.fog = new THREE.Fog(0x020203, 30, 90);
+const camera = new THREE.PerspectiveCamera(40, W / H, 0.05, 300); scene.add(camera);
+scene.add(new THREE.HemisphereLight(0x404860, 0x08080a, 0.35));
+const key = new THREE.SpotLight(0xbfd2ff, 90, 60, 0.7, 0.6, 1.4); key.position.set(0.5, 1.2, 1); key.target.position.set(0, 0, -10); camera.add(key, key.target); // rig light
+const mat = (c, e = 0, m = 0.85, r = 0.38) => new THREE.MeshStandardMaterial({ color: c, metalness: m, roughness: r, emissive: new THREE.Color(e), emissiveIntensity: e ? 1.5 : 0 });
+const box = (w, h, d, x, y, z, m) => { const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); o.position.set(x, y, z); return o; };
+const gm = mat(0x3a4048), red = mat(0x200406, 0xb01020, 0.2, 0.5);
+
+// six parts authored in a MICROSCOPIC shared assembly frame (~0.03 tall) to prove the one-time normalisation works
+const u = 0.001, G = (...c) => { const g = new THREE.Group(); c.forEach((x) => g.add(x)); return g; };
+const parts = {
+  BOOTS: G(box(4*u, 3*u, 8*u, -2.6*u, 1.5*u, 0, gm), box(4*u, 3*u, 8*u, 2.6*u, 1.5*u, 0, gm), box(4.2*u, .5*u, 8.2*u, -2.6*u, 3*u, 0, red), box(4.2*u, .5*u, 8.2*u, 2.6*u, 3*u, 0, red)),
+  LEGS: G(box(3.4*u, 12*u, 4*u, -2.6*u, 9*u, 0, gm), box(3.4*u, 12*u, 4*u, 2.6*u, 9*u, 0, gm), box(3.6*u, 1*u, 4.2*u, -2.6*u, 12*u, 0, red), box(3.6*u, 1*u, 4.2*u, 2.6*u, 12*u, 0, red)),
+  TORSO: G(box(10*u, 9*u, 5*u, 0, 19.5*u, 0, gm), box(3*u, 3*u, 1*u, 0, 20*u, 2.7*u, red)),
+  ARMS: G(box(2.8*u, 8*u, 3*u, -6.8*u, 19.5*u, 0, gm), box(2.8*u, 8*u, 3*u, 6.8*u, 19.5*u, 0, gm)),
+  GAUNTLETS: G(box(3*u, 3.2*u, 3.4*u, -6.8*u, 14.6*u, 0, red), box(3*u, 3.2*u, 3.4*u, 6.8*u, 14.6*u, 0, red)),
+  HELMET: G(box(5*u, 5.4*u, 5.2*u, 0, 27.2*u, 0, gm), box(4*u, 1*u, .4*u, 0, 27.6*u, 2.7*u, mat(0x100000, 0x00aaff, 0, 0.3))),
+};
+const optics = [parts.HELMET.children[1].material];
+
+const world = {};
+const addTo = (o) => { scene.add(o); return o; };
+const slab = (x) => { const m = box(6, 9, 0.8, x, 4.5, 8, gm); const stripe = box(0.2, 8, 0.9, x > 0 ? -2.9 : 2.9, 0, 0, red); m.add(stripe); return addTo(m); };
+world.doorL = slab(-3); world.doorR = slab(3);
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 120), mat(0x0d0e11, 0, 0.3, 0.8)); floor.rotation.x = -Math.PI / 2; floor.position.set(0, 0, -30); addTo(floor);
+addTo(box(9, 0.15, 2.2, 0, 0.95, -16, gm)); [-4, 4].forEach((x) => addTo(box(0.3, 0.9, 1.8, x, 0.45, -16, gm)));
+const pad = new THREE.Mesh(new THREE.CylinderGeometry(4, 4, 0.3, 48), mat(0x20242b)); pad.position.set(0, 0.15, -40); addTo(pad);
+world.irisBlades = []; for (let i = 0; i < 6; i++) { const b = box(4.2, 0.08, 2.6, 0, 0.32, 0, gm); const piv = new THREE.Group(); piv.position.set(0, 0, -40); piv.rotation.y = i * Math.PI / 3; b.position.x = 2.1; const hold = new THREE.Group(); hold.add(b); hold.userData.openZ = 0; piv.add(hold); scene.add(piv); world.irisBlades.push(hold); }
+world.button = addTo(new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.3, 24), mat(0xff1020, 0xff1020, 0.1, 0.4))); world.button.position.set(6.2, 0.6, -38);
+world.beam = addTo(new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 8, 12), new THREE.MeshBasicMaterial({ color: 0x9fd0ff }))); world.beam.position.set(0, 4, -39); world.beam.scale.set(0.001, 0.001, 0.001);
+world.vaultLight = new THREE.PointLight(0xff3a22, 0, 40, 1.4); world.vaultLight.position.set(0, 1, -43); world.vaultLight.userData.full = 60; addTo(world.vaultLight);
+const r1 = new THREE.PointLight(0xff2a1a, 0, 30, 1.6); r1.position.set(-4, 5, -14); r1.userData.full = 70;
+const r2 = new THREE.PointLight(0x4a7dff, 0, 30, 1.6); r2.position.set(4, 5, -14); r2.userData.full = 80;
+const pl = new THREE.PointLight(0xffffff, 0, 40, 1.4); pl.position.set(0, 7, -36); pl.userData.full = 90; // pad work light
+addTo(r1); addTo(r2); addTo(pl);
+world.roomLights = [r1, r2, pl]; world.optics = optics;
+
+const cine = createCinematic({ THREE, gsap, scene, camera, parts, world, onShowcase: (n) => (window.__focus = n), onVaultReady: (v) => (window.__vault = v) });
+window.setCinematicProgress = (p) => { cine.setCinematicProgress(p); renderer.render(scene, camera); };
+window.__about = { projectBBox: (n) => cine.projectBBox(n, W, H), setSubjectVisible: (n, v) => { cine.setSubjectVisible(n, v); renderer.render(scene, camera); }, scale: cine.scale };
+window.__aboutReady = true;
+</script>

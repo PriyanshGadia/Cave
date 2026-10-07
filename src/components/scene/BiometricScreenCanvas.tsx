@@ -207,7 +207,7 @@ export const BiometricScreenCanvas: React.FC<BiometricScreenCanvasProps> = ({
       ctx.textAlign = 'right';
       ctx.fillStyle = 'rgba(0, 243, 255, 0.6)';
       ctx.fillText(`NODES: 128-D`, canvas.width - 12, 20);
-      ctx.fillText(`FPS: 60`, canvas.width - 12, 34);
+      ctx.fillText(`MODE: SEC-ONLINE`, canvas.width - 12, 34);
 
       // Bottom Status Pill
       ctx.textAlign = 'center';

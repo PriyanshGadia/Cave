@@ -1,15 +1,36 @@
 name = "the-workshop"
-compatibility_date = "2026-08-01"
+compatibility_date = "2025-07-18"
 pages_build_output_dir = "dist"
 
 [vars]
 ENVIRONMENT = "production"
 AI_FALLBACK_MODEL = "@cf/meta/llama-3-8b-instruct"
+# Public origin for WebAuthn RP ID and cookie binding.
+# In production: set to your actual Pages domain.
+VAULT_ORIGIN = "https://the-workshop.pages.dev"
+
+# Required secrets — set via: wrangler secret put <NAME>
+# NEVER commit these values to source control.
+#
+#   wrangler secret put DEVICE_BINDING_SECRET
+#     → 32-byte random string, used for HMAC-SHA256 device binding hash
+#       and IP hash computation. Rotate = all devices must re-enroll.
+#
+#   wrangler secret put BIOMETRIC_KEK_V1
+#     → 32-byte random string, used as AES-GCM-256 Key Encryption Key
+#       for biometric face templates at rest. Rotate requires re-enroll.
+#       Increment suffix (V2, V3...) and implement key migration before
+#       retiring old versions.
+#
+# For local dev, add these to .dev.vars (already gitignored):
+#   DEVICE_BINDING_SECRET=<random string>
+#   BIOMETRIC_KEK_V1=<random string>
 
 [[d1_databases]]
 binding = "WORKSHOP_DB"
 database_name = "workshop_db"
 database_id = "local-workshop-db-id"
+migrations_dir = "migrations"
 
 [[kv_namespaces]]
 binding = "WORKSHOP_CACHE"

@@ -1,0 +1,13 @@
+{
+  "name": "about-cinematic-harness",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "serve": "node serve.mjs",
+    "verify": "node verify-about.mjs http://localhost:8765/test/fixture.html out",
+    "verify:mobile": "W=390 H=844 node verify-about.mjs http://localhost:8765/test/fixture.html out-mobile",
+    "determinism": "node determinism.mjs"
+  },
+  "dependencies": { "three": "0.160.0", "gsap": "3.12.5" },
+  "devDependencies": { "pngjs": "^7.0.0", "playwright-core": "^1.56.0" }
+}

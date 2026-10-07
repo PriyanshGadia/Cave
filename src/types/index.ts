@@ -78,4 +78,4 @@ export interface CalendarSlot {
   location: string;
 }
 
-export type DoorPanelMode = 'INITIAL' | 'REGISTER' | 'VERIFY' | 'CONSENT' | 'MAGIC_LINK' | 'SUCCESS';
+export type DoorPanelMode = 'INITIAL' | 'VISIT' | 'ENROLL' | 'SCAN' | 'CONSENT' | 'MAGIC_LINK' | 'SUCCESS';

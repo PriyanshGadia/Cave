@@ -5544,7 +5544,7 @@ export const GLOBAL_NEWS_CHANNELS: NewsChannel[] = [
 ];
 
 export async function onRequestGet(context?: { env?: Record<string, string> }): Promise<Response> {
-  const allowStreams = context?.env?.ALLOW_LIVE_NEWS_STREAMS === 'true';
+  const allowStreams = context?.env?.ALLOW_LIVE_NEWS_STREAMS !== 'false';
 
   const channels = GLOBAL_NEWS_CHANNELS.map(c => {
     if (!allowStreams) {

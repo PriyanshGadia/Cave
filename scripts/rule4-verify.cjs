@@ -5,6 +5,7 @@ const fs = require('fs');
 async function main() {
   console.log('=== [RULE 4 & 7 VERIFICATION GATE] ===');
   const browser = await chromium.launch({
+    channel: process.env.PLAYWRIGHT_CHANNEL || 'chrome',
     headless: true,
     args: ['--use-gl=angle', '--use-angle=gl', '--enable-webgl', '--ignore-gpu-blocklist'],
   });
@@ -35,7 +36,7 @@ async function main() {
   });
 
   try {
-    const port = process.env.PORT || '3000';
+    const port = process.env.PORT || '8788';
     console.log(`Navigating to http://localhost:${port}/index.html ...`);
     await page.goto(`http://localhost:${port}/index.html`, { waitUntil: 'load', timeout: 30000 });
 
@@ -80,10 +81,13 @@ async function main() {
       fs.mkdirSync(outDir, { recursive: true });
     }
 
+    const artDir = process.env.ARTIFACT_DIR || path.join(process.env.USERPROFILE || 'C:\\Users\\LENOVO', '.gemini', 'antigravity-ide', 'brain', '1f9f75f2-06a7-4d90-ade1-7018fdc9dadf');
+    if (!fs.existsSync(artDir)) fs.mkdirSync(artDir, { recursive: true });
     // Capture walk = 0
     const walk0Path = path.join(outDir, 'walk-0.png');
     await page.screenshot({ path: walk0Path });
-    console.log(`Saved walk=0 screenshot to: ${walk0Path}`);
+    fs.copyFileSync(walk0Path, path.join(artDir, 'walk-0.png'));
+    console.log(`Saved walk=0 screenshot to: ${walk0Path} & artifact dir`);
 
     const hudText0 = await page.locator('#dbg').innerText();
     console.log(`\nHUD at walk=0:\n${hudText0}\n`);
@@ -100,7 +104,8 @@ async function main() {
     // Capture walk = 1
     const walk1Path = path.join(outDir, 'walk-1.png');
     await page.screenshot({ path: walk1Path });
-    console.log(`Saved walk=1 screenshot to: ${walk1Path}`);
+    fs.copyFileSync(walk1Path, path.join(artDir, 'walk-1.png'));
+    console.log(`Saved walk=1 screenshot to: ${walk1Path} & artifact dir`);
 
     const hudText1 = await page.locator('#dbg').innerText();
     console.log(`\nHUD at walk=1:\n${hudText1}\n`);
@@ -108,7 +113,8 @@ async function main() {
     // Separate console screenshot
     const consolePath = path.join(outDir, 'console-audit.png');
     await page.screenshot({ path: consolePath });
-    console.log(`Saved console audit screenshot to: ${consolePath}`);
+    fs.copyFileSync(consolePath, path.join(artDir, 'console-audit.png'));
+    console.log(`Saved console audit screenshot to: ${consolePath} & artifact dir`);
 
     console.log('=== WEBGL CONSOLE AUDIT ===');
     const realWarnings = webglWarnings.filter(w => !w.includes('Download the Vue Devtools') && !w.includes('favicon'));

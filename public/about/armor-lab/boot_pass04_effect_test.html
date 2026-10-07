@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Vault MK-I - Pass 04 Effects Test</title>
+  <style>
+    body { margin: 0; overflow: hidden; background-color: #050505; font-family: monospace; color: white; }
+    #canvas-container { width: 100vw; height: 100vh; }
+    #ui { position: absolute; top: 10px; left: 10px; z-index: 10; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 5px; }
+    button { display: block; width: 100%; margin-bottom: 5px; padding: 8px; cursor: pointer; background: #333; color: white; border: 1px solid #555; }
+    button:hover { background: #555; }
+    #time-display { font-size: 1.5em; font-weight: bold; margin-top: 10px; color: #aaccff; }
+  </style>
+</head>
+<body>
+  <div id="ui">
+    <h3>PASS 04 THRUSTER SEQUENCE</h3>
+    <button id="btn-play">PLAY SEQUENCE</button>
+    <button id="btn-reset">RESET</button>
+    <div id="time-display">0.00s</div>
+  </div>
+  
+  <div id="canvas-container"></div>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module" src="./pass04_effects.js"></script>
+</body>
+</html>

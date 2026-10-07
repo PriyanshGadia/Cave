@@ -3,7 +3,7 @@ const { chromium } = require('playwright');
 const path = require('path');
 const fs = require('fs');
 
-const OUT_DIR = 'C:\\Users\\gadia\\.gemini\\antigravity-ide\\brain\\694bd3af-9386-4a86-8cb6-98cd73f0a84a';
+const OUT_DIR = 'C:\\Users\\gadia\\.gemini\\antigravity-ide\\brain\\475c253f-9db4-4c62-97b4-6d98a1bf3915';
 
 function save(name, buf) {
   const f = path.join(OUT_DIR, name);

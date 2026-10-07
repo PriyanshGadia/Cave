@@ -1,3 +1,9 @@
+/*
+ * VAULT-01
+ * Canonical interactive installation
+ * Owner: Priyansh Gadia
+ * Redistribution / derivative reproduction prohibited by owner.
+ */
 // cave3.js — v3 cavern for VAULT-01. Domain-warped rock, embedded lumps, stalactites, debris,
 // end wall with a real doorway hole, door pocket + dark vestibule. Zero image files.
 import * as THREE from 'three';

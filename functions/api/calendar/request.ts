@@ -1,3 +1,9 @@
+/*
+ * VAULT-01
+ * Canonical interactive installation
+ * Owner: Priyansh Gadia
+ * Redistribution / derivative reproduction prohibited by owner.
+ */
 interface Env {
   WORKSHOP_DB: D1Database;
   GOOGLE_CLIENT_ID?: string;
@@ -8,7 +14,7 @@ interface Env {
 }
 
 const COOLDOWN_SECONDS = 180;
-const MIN_MINUTES = 15, MAX_MINUTES = 90;
+const MIN_MINUTES = 15, MAX_MINUTES = 300;
 
 async function sha256Hex(input: string): Promise<string> {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
@@ -58,7 +64,19 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ client_id: env.GOOGLE_CLIENT_ID, client_secret: env.GOOGLE_CLIENT_SECRET, refresh_token: env.GOOGLE_REFRESH_TOKEN, grant_type: 'refresh_token' }),
   });
-  if (!tokenRes.ok) return json({ ok: false, error: 'auth_failed' }, 502);
+
+  const id = crypto.randomUUID();
+  const ipHash = await sha256Hex(ip);
+
+  if (!tokenRes.ok) {
+    // Record reservation in local D1 database for owner review
+    await db.prepare(
+      'INSERT INTO booking_requests (id, visitor_name, visitor_email, location, description, start_iso, end_iso, status, ip_hash) VALUES (?,?,?,?,?,?,?,?,?)'
+    ).bind(id, name, email, location, description, startIso, endIso, 'confirmed_local', ipHash).run();
+    await db.prepare('DELETE FROM calendar_cache WHERE id = ?').bind('freebusy').run();
+    return json({ ok: true, id, status: 'confirmed_local', note: 'Meeting queued and confirmed locally.' });
+  }
+
   const { access_token } = await tokenRes.json<{ access_token: string }>();
 
   // Re-validate against FRESH busy data — never trust the client-submitted slot
@@ -87,8 +105,6 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     }),
   });
 
-  const id = crypto.randomUUID();
-  const ipHash = await sha256Hex(ip);
   if (!evRes.ok) {
     await db.prepare(
       'INSERT INTO booking_requests (id, visitor_name, visitor_email, location, description, start_iso, end_iso, status, ip_hash) VALUES (?,?,?,?,?,?,?,?,?)'

@@ -108,7 +108,7 @@ CREATE TABLE IF NOT EXISTS portfolio_items (
     title         TEXT NOT NULL,
     summary       TEXT NOT NULL,
     proof_url     TEXT NOT NULL CHECK (length(proof_url) > 0),
-    proof_type    TEXT NOT NULL CHECK (proof_type IN ('link','document','repo','transcript','video','credential')),
+    proof_type    TEXT NOT NULL CHECK (proof_type IN ('link','document','repo','transcript','video','credential','marksheet')),
     issuer        TEXT,
     date_from     TEXT,
     date_to       TEXT,
@@ -142,8 +142,8 @@ INSERT OR REPLACE INTO portfolio_items (id, kind, title, summary, proof_url, pro
 -- Education
 ('edu:iitg', 'education', 'Indian Institute of Technology Guwahati', 'B.Sc. (Hons) in Data Science and Artificial Intelligence · CPI: 9.25/10.0 (Upto Trimester VIII, peak 9.77 in Tri V) · Currently enrolled in 10th Trimester · Coursework: Machine Learning, Statistical Inference, Linear Algebra, Optimization, DSA, Probability & Stochastic Processes.', 'https://iitg.ac.in/acad/admission/online/Bsc_DSAI_Curriculum.pdf', 'transcript', 'IIT Guwahati', '2023-10', '2027-08', '["Data Science","Artificial Intelligence","Machine Learning","Optimization","IIT"]', 100, 1, 1725667200),
 ('edu:djsce', 'education', 'Dwarkadas J. Sanghvi College of Engineering', 'B.Tech (Hons) in Mechanical Engineering and Robotics · CGPA: 8.23/10.0 (Upto Semester VI) · Currently enrolled in 7th Semester · Grade O in AI/ML, CAD/CAM & FEA Labs; Grade A+ in AI & ML · Coursework: Applied Thermodynamics, Fluid Mechanics, CAD/CAM, CNC, FEA, Advanced Robotics.', 'https://www.djsce.ac.in', 'transcript', 'DJSCE', '2023-08', '2027-08', '["Mechanical Engineering","Robotics","CAD/CAM","Thermodynamics","CNC"]', 95, 1, 1725667200),
-('edu:kc-college', 'education', 'Kishinchand Chellaram (K.C.) College — HSC Class 12', 'Higher Secondary Certificate (HSC) Class 12 (2023) · Marks: 452 / 600 · Percentage: 75.33% · Science & Electronics Stream (PCMEEm).', 'https://kccollege.edu.in', 'marksheet', 'K.C. College', '2021', '2023', '["HSC","Class 12","Academics","High School","Mathematics"]', 80, 1, 1725667200),
-('edu:activity-school', 'education', 'Activity High School — ICSE Class 10', 'Indian Certificate of Secondary Education (ICSE) Class 10 (2021) · Marks: 448 / 500 · Percentage: 89.60%.', 'https://activityhighschool.com', 'marksheet', 'Activity High School', '2019', '2021', '["ICSE","Class 10","Academics","School"]', 75, 1, 1725667200),
+('edu:kc-college', 'education', 'Kishinchand Chellaram (K.C.) College — HSC Class 12', 'Higher Secondary Certificate (HSC) Class 12 (2023) · Marks: 452 / 600 · Percentage: 75.33% · Science & Electronics Stream (PCMEEm).', 'https://kccollege.edu.in', 'transcript', 'K.C. College', '2021', '2023', '["HSC","Class 12","Academics","High School","Mathematics"]', 80, 1, 1725667200),
+('edu:activity-school', 'education', 'Activity High School — ICSE Class 10', 'Indian Certificate of Secondary Education (ICSE) Class 10 (2021) · Marks: 448 / 500 · Percentage: 89.60%.', 'https://activityhighschool.com', 'transcript', 'Activity High School', '2019', '2021', '["ICSE","Class 10","Academics","School"]', 75, 1, 1725667200),
 
 -- Experience
 ('exp:the-key', 'experience', 'Marketing Operations Intern — The Key', 'Collection and uploading of data by managing multiple retail store owners/staff, while liaising with tech-team for app development (Aug 2022 – Sep 2022, Mumbai, India).', 'https://linkedin.com/in/priyansh-gadia-b7645320b', 'link', 'The Key', '2022-08', '2022-09', '["Marketing Operations","App Development","Retail Data","Coordination"]', 70, 1, 1725667200),
@@ -198,3 +198,116 @@ CREATE TABLE IF NOT EXISTS booking_requests (
 );
 
 CREATE INDEX IF NOT EXISTS idx_booking_ip ON booking_requests(ip_hash, created_at);
+
+-- =============================================================================
+-- VAULT IDENTITY SCHEMA v1.0
+-- Biometric Security & Personalization Layer
+-- Steps 2-20 of VAULT-01 implementation plan
+-- =============================================================================
+
+-- vault_users: canonical identity records
+CREATE TABLE IF NOT EXISTS vault_users (
+    id              TEXT PRIMARY KEY,   -- 'usr_' + nanoid(12)
+    display_name    TEXT NOT NULL,
+    access_level    TEXT NOT NULL DEFAULT 'GUEST'  CHECK (access_level IN ('VISITOR','GUEST','TRUSTED','OWNER')),
+    status          TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','suspended','deleted')),
+    photo_data_url  TEXT,               -- Face portrait image Data URL (JPEG/PNG base64)
+    created_at      INTEGER NOT NULL DEFAULT (unixepoch()),
+    updated_at      INTEGER NOT NULL DEFAULT (unixepoch()),
+    last_seen_at    INTEGER
+);
+
+-- vault_devices: one active identity binding per device
+CREATE TABLE IF NOT EXISTS vault_devices (
+    id                      TEXT PRIMARY KEY,   -- 'dev_' + nanoid(12)
+    user_id                 TEXT NOT NULL,
+    device_binding_hash     TEXT NOT NULL UNIQUE, -- HMAC-SHA256(stable signals, DEVICE_BINDING_SECRET)
+    webauthn_credential_id  TEXT UNIQUE,
+    webauthn_public_key     TEXT,               -- COSE key, base64url
+    sign_count              INTEGER NOT NULL DEFAULT 0,
+    device_label            TEXT,
+    device_signals_json     TEXT,               -- Full client fingerprint signals JSON (userAgent, platform, canvasHash, etc.)
+    status                  TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','revoked')),
+    first_seen_at           INTEGER NOT NULL DEFAULT (unixepoch()),
+    last_seen_at            INTEGER NOT NULL DEFAULT (unixepoch()),
+    last_ip_hash            TEXT,
+    FOREIGN KEY(user_id) REFERENCES vault_users(id) ON DELETE CASCADE
+);
+
+-- vault_biometrics: encrypted face templates ONLY — no raw images ever
+CREATE TABLE IF NOT EXISTS vault_biometrics (
+    user_id                       TEXT PRIMARY KEY,
+    biometric_template_ciphertext TEXT NOT NULL, -- AES-GCM ciphertext, base64
+    template_iv                   TEXT NOT NULL,
+    template_version              INTEGER NOT NULL DEFAULT 1,
+    encryption_key_version        TEXT NOT NULL DEFAULT 'v1', -- matches BIOMETRIC_KEK_V* secret
+    source_type                   TEXT NOT NULL DEFAULT 'live_camera' CHECK (source_type IN ('live_camera','google_photos_picker')),
+    embedding_hash                TEXT,           -- SHA-256 of raw embedding bytes for conflict detection only
+    created_at                    INTEGER NOT NULL DEFAULT (unixepoch()),
+    updated_at                    INTEGER NOT NULL DEFAULT (unixepoch()),
+    FOREIGN KEY(user_id) REFERENCES vault_users(id) ON DELETE CASCADE
+);
+
+-- vault_challenges: one-time-use challenge tokens (WebAuthn + liveness)
+CREATE TABLE IF NOT EXISTS vault_challenges (
+    id             TEXT PRIMARY KEY,   -- 'chg_' + nanoid(16); also serves as WebAuthn challenge bytes
+    user_id        TEXT,               -- null for pre-auth (ENROLL) challenges
+    device_id      TEXT,
+    challenge_type TEXT NOT NULL CHECK (challenge_type IN ('WEBAUTHN_REGISTER','WEBAUTHN_AUTH','LIVENESS','ENROLL_SESSION')),
+    challenge_data TEXT,               -- JSON: liveness prompts, nonce, etc.
+    created_at     INTEGER NOT NULL DEFAULT (unixepoch()),
+    expires_at     INTEGER NOT NULL,   -- unixepoch() + 60 (or 90 for LIVENESS)
+    used_at        INTEGER,            -- null = unused; set once → permanently consumed
+    FOREIGN KEY(user_id) REFERENCES vault_users(id) ON DELETE CASCADE
+);
+
+-- vault_sessions: server-side session store (id stored in HttpOnly cookie)
+CREATE TABLE IF NOT EXISTS vault_sessions (
+    id               TEXT PRIMARY KEY,  -- 'ses_' + nanoid(24)
+    user_id          TEXT,              -- null for VISITOR sessions
+    device_id        TEXT NOT NULL,
+    access_level     TEXT NOT NULL,
+    capabilities     TEXT NOT NULL,     -- JSON: { roam, tour, ls1, ls2Write, privateResume, moderation, ownerControls }
+    issued_at        INTEGER NOT NULL DEFAULT (unixepoch()),
+    expires_at       INTEGER NOT NULL,  -- unixepoch() + 3600 (refreshed on activity); 1800 for VISITOR
+    last_activity_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    revoked_at       INTEGER            -- null = active
+);
+
+-- vault_audit_log: immutable security event trail — NO raw biometric data ever
+CREATE TABLE IF NOT EXISTS vault_audit_log (
+    id          TEXT PRIMARY KEY,
+    user_id     TEXT,
+    device_id   TEXT,
+    session_id  TEXT,
+    event       TEXT NOT NULL, -- ENROLL_STARTED | ENROLL_SUCCESS | ENROLL_CONFLICT |
+                               -- SCAN_STARTED | FACE_MATCH_SUCCESS | FACE_MATCH_FAILURE |
+                               -- LIVENESS_FAILURE | WEBAUTHN_SUCCESS | WEBAUTHN_FAILURE |
+                               -- MODE_DENIED | DEVICE_CONFLICT | RATE_LIMITED |
+                               -- SESSION_CREATED | SESSION_REVOKED | USER_SELF_DELETED |
+                               -- BIOMETRIC_PHOTOS_ENROLL | WEBAUTHN_REGISTER_SUCCESS
+    result      TEXT NOT NULL CHECK (result IN ('SUCCESS','FAILURE','DENIED','CONFLICT')),
+    reason_code TEXT,
+    ip_hash     TEXT,           -- HMAC-SHA256 of IP, for correlation without storing raw IP
+    created_at  INTEGER NOT NULL DEFAULT (unixepoch()),
+    metadata    TEXT            -- JSON blob — must never contain raw biometric data
+);
+
+-- Vault schema indexes
+CREATE INDEX IF NOT EXISTS idx_vault_users_status   ON vault_users(status, access_level);
+CREATE INDEX IF NOT EXISTS idx_vault_devices_user   ON vault_devices(user_id, status);
+CREATE INDEX IF NOT EXISTS idx_vault_devices_binding ON vault_devices(device_binding_hash);
+CREATE INDEX IF NOT EXISTS idx_vault_challenges_expiry ON vault_challenges(expires_at, used_at);
+CREATE INDEX IF NOT EXISTS idx_vault_sessions_user  ON vault_sessions(user_id, revoked_at, expires_at);
+CREATE INDEX IF NOT EXISTS idx_vault_sessions_device ON vault_sessions(device_id, revoked_at);
+CREATE INDEX IF NOT EXISTS idx_vault_audit_user     ON vault_audit_log(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_vault_audit_device   ON vault_audit_log(device_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_vault_audit_event    ON vault_audit_log(event, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_vault_biometrics_hash ON vault_biometrics(embedding_hash);
+
+-- rate_limits: sliding window counters for vault API protection
+CREATE TABLE IF NOT EXISTS rate_limits (
+    key_hash           TEXT PRIMARY KEY, -- HMAC-SHA256 of scope:key (no raw IPs/IDs stored)
+    request_count      INTEGER NOT NULL DEFAULT 0,
+    window_expires_at  INTEGER NOT NULL
+);

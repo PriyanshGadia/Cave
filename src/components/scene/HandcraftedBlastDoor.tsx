@@ -222,7 +222,20 @@ export const HandcraftedBlastDoor: React.FC<HandcraftedBlastDoorProps> = ({
   }, []);
 
   // Handcrafted Interactive Button Handlers
-  const handleRegisterClick = (e: any) => {
+  const handleVisitClick = (e: any) => {
+    e.stopPropagation();
+    soundFx.playClickBeep();
+    setTerminalStatus('VISITOR SESSION // EPHEMERAL CLEARANCE');
+    setIsScanning(true);
+    setTimeout(() => {
+      soundFx.playAccessGranted();
+      setIsScanning(false);
+      setTerminalStatus('VISITOR CLEARANCE GRANTED');
+      if (onActivate) onActivate();
+    }, 1200);
+  };
+
+  const handleEnrollClick = (e: any) => {
     e.stopPropagation();
     soundFx.playClickBeep();
     setTerminalStatus('ENROLLING OPERATIVE (128-D)...');
@@ -230,12 +243,12 @@ export const HandcraftedBlastDoor: React.FC<HandcraftedBlastDoorProps> = ({
     setTimeout(() => {
       soundFx.playAccessGranted();
       setIsScanning(false);
-      setTerminalStatus('ENROLLMENT RECORDED // TIER 2');
+      setTerminalStatus('ENROLLMENT COMPLETE // READY');
       if (onActivate) onActivate();
     }, 1400);
   };
 
-  const handleVerifyClick = (e: any) => {
+  const handleScanClick = (e: any) => {
     e.stopPropagation();
     soundFx.playScannerSweep();
     setTerminalStatus('SCANNING VECTOR MATRIX...');
@@ -403,54 +416,49 @@ export const HandcraftedBlastDoor: React.FC<HandcraftedBlastDoorProps> = ({
 
         {/* 3D Physical Interactive Control Buttons (Raycast-Targetable in World) */}
         <group position={[0, -0.28, 0.06]}>
-          {/* 1. REGISTER Button */}
+          {/* 1. VISIT Button */}
           <mesh
             position={[-0.14, 0, 0]}
-            material={hoveredBtn === 'REG' ? materials.emissiveCyan : materials.brushedTitanium}
+            material={hoveredBtn === 'VIS' ? materials.emissiveCyan : materials.brushedTitanium}
             onPointerOver={e => {
               e.stopPropagation();
-              setHoveredBtn('REG');
+              setHoveredBtn('VIS');
               soundFx.playHoverBlip();
             }}
             onPointerOut={() => setHoveredBtn(null)}
-            onClick={handleRegisterClick}
+            onClick={handleVisitClick}
             castShadow
           >
             <boxGeometry args={[0.12, 0.05, 0.03]} />
           </mesh>
 
-          {/* 2. VERIFY Button */}
+          {/* 2. ENROLL Button */}
           <mesh
             position={[0, 0, 0]}
-            material={hoveredBtn === 'VER' ? materials.emissiveCyan : materials.brushedTitanium}
+            material={hoveredBtn === 'ENR' ? materials.emissiveCyan : materials.brushedTitanium}
             onPointerOver={e => {
               e.stopPropagation();
-              setHoveredBtn('VER');
+              setHoveredBtn('ENR');
               soundFx.playHoverBlip();
             }}
             onPointerOut={() => setHoveredBtn(null)}
-            onClick={handleVerifyClick}
+            onClick={handleEnrollClick}
             castShadow
           >
             <boxGeometry args={[0.12, 0.05, 0.03]} />
           </mesh>
 
-          {/* 3. RESET Button */}
+          {/* 3. SCAN Button */}
           <mesh
             position={[0.14, 0, 0]}
-            material={hoveredBtn === 'RST' ? materials.emissiveAmber : materials.brushedTitanium}
+            material={hoveredBtn === 'SCN' ? materials.emissiveCyan : materials.brushedTitanium}
             onPointerOver={e => {
               e.stopPropagation();
-              setHoveredBtn('RST');
+              setHoveredBtn('SCN');
               soundFx.playHoverBlip();
             }}
             onPointerOut={() => setHoveredBtn(null)}
-            onClick={e => {
-              e.stopPropagation();
-              soundFx.playClickBeep();
-              setTerminalStatus('STANDBY // 128-D READY');
-              setIsScanning(false);
-            }}
+            onClick={handleScanClick}
             castShadow
           >
             <boxGeometry args={[0.12, 0.05, 0.03]} />

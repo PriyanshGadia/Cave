@@ -12,3 +12,5 @@
    and screenshot at +2.8 s, +5.0 s, +9.0 s, +12.5 s. Confirm: door offset visible at 5 s,
    lit vestibule floor at 9 s, frame luminance < 2 % at 12.5 s, console has zero warnings.
 9. cave3.js and transition.js are spec files 3 and 4. Never merge them into index.html.
+10. Only for about.html, image generation is allowed. You can use
+    tools.generateImage({width,height,prompt}) to generate images for about.html.

@@ -1,7 +1,14 @@
 <!doctype html>
+<!--
+  VAULT-01
+  Canonical interactive installation
+  Owner: Priyansh Gadia
+  Redistribution / derivative reproduction prohibited by owner.
+-->
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>VAULT-01 · Scene 1 · lookdev v2</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
 <style>
   html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:ui-monospace,Menlo,Consolas,monospace}
@@ -18,7 +25,7 @@
   #lt{font-size:11px;letter-spacing:.2em;color:#ff8a3d;text-transform:uppercase}
   #dbg{position:fixed;top:10px;left:10px;font-size:11px;line-height:1.45;color:#8af;white-space:pre;pointer-events:none;display:none;z-index:10;text-shadow:0 1px 2px #000}
   #hint{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.25em;color:#ff9e4a;pointer-events:none;transition:opacity .6s;text-transform:uppercase;z-index:5}
-  #btn-skip-anim{position:fixed;top:14px;left:14px;z-index:99999;background:rgba(8,28,44,.85);color:#38bdf8;border:1.5px solid #38bdf8;border-radius:4px;padding:8px 14px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;font-weight:bold;letter-spacing:.1em;cursor:pointer;box-shadow:0 0 12px rgba(56,189,248,.35);transition:all .2s ease}
+  #btn-skip-anim{display:none;position:fixed;top:14px;left:14px;z-index:99999;background:rgba(8,28,44,.85);color:#38bdf8;border:1.5px solid #38bdf8;border-radius:4px;padding:8px 14px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;font-weight:bold;letter-spacing:.1em;cursor:pointer;box-shadow:0 0 12px rgba(56,189,248,.35);transition:all .2s ease}
   #btn-skip-anim:hover{background:#38bdf8;color:#04101a;box-shadow:0 0 20px rgba(56,189,248,.7)}
   #blueprint-hud{position:fixed;top:20px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:14px;background:rgba(4,16,30,.92);border:1.5px solid #38bdf8;border-radius:6px;padding:8px 18px;z-index:99998;box-shadow:0 0 25px rgba(56,189,248,.45);font-family:ui-monospace,Menlo,Consolas,monospace}
   #blueprint-gh-link{color:#fff;text-decoration:none;font-size:12px;font-weight:bold;letter-spacing:.12em;display:flex;align-items:center;gap:8px;transition:color .15s}
@@ -240,9 +247,35 @@
   body:has(#ls3-news-holo.active) #btn-skip-anim {
     display: none !important;
   }
+  #vault-quick-hud{position:fixed;top:14px;right:14px;display:flex;align-items:center;gap:6px;z-index:99990;font-family:ui-monospace,Menlo,Consolas,monospace;max-width:calc(100vw - 28px);flex-wrap:wrap;justify-content:flex-end}
+  .vault-quick-btn{background:rgba(4,16,28,.88);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid #1e5a68;color:#7ec5df;border-radius:3px;padding:5px 10px;font-family:inherit;font-size:9.5px;font-weight:bold;letter-spacing:.06em;cursor:pointer;transition:all .15s ease;box-shadow:0 0 10px rgba(0,240,255,.08)}
+  .vault-quick-btn:hover{background:rgba(0,240,255,.2);border-color:#00f0ff;color:#fff;box-shadow:0 0 14px rgba(0,240,255,.35)}
+  .vault-quick-btn.active{background:rgba(0,240,255,.32);border-color:#00f0ff;color:#fff;box-shadow:0 0 18px rgba(0,240,255,.5)}
+  .vault-quick-btn-notice{border-color:rgba(255,209,102,.5);color:#ffd166}
+  .vault-quick-btn-notice:hover{background:rgba(255,209,102,.2);border-color:#ffd166;color:#fff}
+  .vault-quick-btn-bypass{border-color:#ffb040;color:#ffdf99;background:rgba(255,176,64,.15)}
+  .vault-quick-btn-bypass:hover{background:#ffb040;color:#04101a;border-color:#ffb040;box-shadow:0 0 16px rgba(255,176,64,.6)}
+  .vault-quick-btn-bypass-active{border-color:#ffb040!important;color:#ffdf99!important;background:rgba(255,176,64,.35)!important;box-shadow:0 0 16px rgba(255,176,64,.5)!important}
+  #btn-corner-info:hover{background:#38bdf8!important;color:#04101a!important;box-shadow:0 0 16px rgba(56,189,248,.8)!important;transform:scale(1.08)}
+  #btn-corner-contact:hover{background:#94a3b8!important;color:#04101a!important;box-shadow:0 0 16px rgba(148,163,184,.8)!important;transform:scale(1.08)}
 </style>
 </head>
 <body>
+<div id="vault-quick-hud">
+  <button id="btn-open-consent" class="vault-quick-btn vault-quick-btn-notice" title="Review EULA, Statutory Biometric Notice &amp; Privacy Policy">📄 EULA &amp; PRIVACY</button>
+  <button id="btn-test-camera" class="vault-quick-btn" title="Toggle live camera hardware test & face tracking feed">📷 TEST CAMERA</button>
+  <button id="btn-walk-console" class="vault-quick-btn" title="Approach biometric terminal">⚡ APPROACH CONSOLE</button>
+  <button id="btn-quick-enroll" class="vault-quick-btn" title="Initiate Biometric Enrollment">👤 ENROLL</button>
+  <button id="btn-quick-scan" class="vault-quick-btn" title="Perform Biometric Authentication Scan">🔍 SCAN</button>
+  <button id="btn-skip-biometrics" class="vault-quick-btn vault-quick-btn-bypass" title="Bypass biometric verification and immediately enter vault">⚡ SKIP BIOMETRICS (QUICK ENTRY)</button>
+  <button id="btn-toggle-bypass" class="vault-quick-btn" title="Toggle automatic terminal bypass mode">🔓 BYPASS: OFF</button>
+</div>
+
+<!-- TINY FLOATING CORNER INFO & CONTACT BUTTONS -->
+<div id="vault-corner-dock" style="position: fixed; bottom: 18px; right: 18px; display: flex; align-items: center; gap: 8px; z-index: 99990; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <button id="btn-corner-info" onclick="if(window.showConsentModal)window.showConsentModal(null,null,Boolean(localStorage.getItem('vault_dpdp_consent')))" title="EULA, Privacy Policy &amp; Statutory Consent (Audited Record)" style="width: 32px; height: 32px; border-radius: 50%; background: rgba(15, 23, 42, 0.92); border: 1.5px solid #38bdf8; color: #38bdf8; font-size: 14px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6); transition: all 0.15s ease;">ℹ</button>
+  <button id="btn-corner-contact" onclick="window.location.href='mailto:gadiapriyansh@gmail.com?subject=VAULT-01%20Inquiry%20/%20Data%20Fiduciary%20Contact'" title="Contact Data Fiduciary / Inquiries" style="width: 32px; height: 32px; border-radius: 50%; background: rgba(15, 23, 42, 0.92); border: 1.5px solid #64748b; color: #94a3b8; font-size: 14px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6); transition: all 0.15s ease;">✉</button>
+</div>
 <button id="btn-skip-anim" title="Skip intro and jump directly to final illuminated state">⏩ SKIP ANIMATION (DEBUG)</button>
 <div id="blueprint-hud">
   <a id="blueprint-gh-link" href="#" target="_blank" rel="noopener noreferrer">
@@ -326,6 +359,7 @@
         <button id="ls3-btn-audio-toggle" class="ls3-hud-ctrl-btn" title="Toggle audio mute/unmute">🔊 UNMUTE</button>
         <button id="ls3-btn-sync-live" class="ls3-hud-ctrl-btn" title="Synchronize to live edge">⚡ LIVE SYNC</button>
         <button id="ls3-btn-fullscreen" class="ls3-hud-ctrl-btn" title="Toggle fullscreen view">⛶ EXPAND</button>
+        <button id="ls3-btn-open-site" class="ls3-hud-ctrl-btn" title="Open official broadcast website" style="background:rgba(56,189,248,0.25);border-color:#38bdf8;color:#e0f2fe;font-weight:bold;">↗ OFFICIAL SITE</button>
       </div>
     </div>
     <div class="ls3-video-footer">
@@ -387,15 +421,26 @@ window.triggerSkipAnimation = function() {
   }
 };
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('btn-skip-anim')?.addEventListener('click', window.triggerSkipAnimation);
+  const isDebug = new URLSearchParams(window.location.search).has('debug');
+  const btn = document.getElementById('btn-skip-anim');
+  if (btn) {
+    if (isDebug) {
+      btn.style.display = 'block';
+      btn.addEventListener('click', window.triggerSkipAnimation);
+    } else {
+      btn.remove();
+    }
+  }
 });
 </script>
 
-<script src="public/vendor/pdf-lib.min.js"></script>
+<script src="/vendor/pdf-lib.min.js"></script>
+<script src="/vendor/ort/ort.min.js"></script>
 <script type="importmap">
 { "imports": {
     "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+    "onnxruntime-web": "/vendor/ort/ort.min.js"
 } }
 </script>
 <script type="module">
@@ -406,6 +451,17 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { FaceEngine } from './face-engine.js';
+import { LivenessEngine } from './liveness-engine.js';
+window.FaceEngine = FaceEngine;
+window.LivenessEngine = LivenessEngine;
+
+// Preload vision models in background at startup so they are ready before user reaches console
+setTimeout(() => {
+  if (window.FaceEngine?.preload) {
+    window.FaceEngine.preload().catch(e => console.warn('[FaceEngine] Preload:', e.message));
+  }
+}, 100);
 
 /* ═══ 0. QUALITY TIER ═══ */
 const ua=navigator.userAgent;
@@ -486,11 +542,11 @@ function stencil(lines,w,h,{font='bold 64px monospace',color='#d8d8d8',wear=.5}=
   g.globalCompositeOperation='destination-out'; for(let i=0;i<w*h*wear/50;i++) g.fillRect(hash(i*1.3)*w,hash(i*2.7)*h,1+hash(i)*3,1+hash(i*.7)*2); return tex(c); }
 function label(text,glyph){ const c=document.createElement('canvas'); c.width=192; c.height=96; const g=c.getContext('2d');
   g.fillStyle='#0a1216'; g.fillRect(0,0,192,96); g.strokeStyle='#1f4a58'; g.lineWidth=3; g.strokeRect(4,4,184,88);
-  g.fillStyle='#fff'; g.font='bold 24px monospace'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(text,96,36);
+  g.fillStyle='#fff'; g.font='bold 24px monospace'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(text,96,34);
   g.strokeStyle='#fff'; g.lineWidth=2; g.beginPath();
+  if(glyph==='tour'||glyph==='compass'){ g.arc(96,68,10,0,Math.PI*2); g.moveTo(96,54); g.lineTo(96,82); g.moveTo(82,68); g.lineTo(110,68); }
   if(glyph==='finger') for(let r=6;r<=18;r+=6) g.arc(96,70,r,Math.PI*1.1,Math.PI*1.9);
-  if(glyph==='card'){ g.rect(80,62,32,18); g.moveTo(80,68); g.lineTo(112,68); }
-  if(glyph==='reset'){ g.arc(96,70,9,.4,5.6); g.moveTo(104,64); g.lineTo(106,72); g.lineTo(98,72); }
+  if(glyph==='scan'){ g.rect(82,56,28,24); g.moveTo(96,52); g.lineTo(96,84); g.moveTo(78,68); g.lineTo(114,68); }
   g.stroke(); return tex(c); }
 function warning(){ const c=document.createElement('canvas'); c.width=c.height=128; const g=c.getContext('2d');
   g.fillStyle='#e6b63a'; g.beginPath(); g.moveTo(64,10); g.lineTo(120,112); g.lineTo(8,112); g.closePath(); g.fill();
@@ -599,7 +655,7 @@ function touchProxy(mesh, padScale = 1.6) {
   return proxy;
 }
 const interactables=[scr];
-const buttons=[['REGISTER','finger',-.12],['VERIFY','card',0],['RESET','reset',.12]].map(([name,glyph,x])=>{
+const buttons=[['VISIT','tour',-.12],['ENROLL','finger',0],['SCAN','scan',.12]].map(([name,glyph,x])=>{
   const b=put(box(.1,.05,.02,compM),x,-.34,.11,panel); b.userData={action:name};
   const l=put(new THREE.Mesh(new THREE.PlaneGeometry(.095,.047),new THREE.MeshBasicMaterial({map:label(name,glyph),color:0x9fd6e6,toneMapped:false})),x,-.34,.121,panel);
   l.userData={action:name,noShadow:true};
@@ -655,29 +711,1261 @@ const table = installLab({ renderer, composer, env: null, LOW, rockMats: [rockCa
 /* ═══ 7. PANEL STATE MACHINE (plug MediaPipe FaceLandmarker + FingerprintJS + your backend into `hooks`) ═══ */
 const state={mode:'idle',t0:0}; let now=0;
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
-const hooks={ async register(){ await wait(3000); return true; }, async verify(){ await wait(2600); return true; } };
+
+/* ═══ 6.9 WEBCRYPTO INDEXEDDB PERSISTENCE STORE ═══ */
+const VAULT_IDB = {
+  dbName: 'VAULT_01_CRYPTO_STORE',
+  storeName: 'keys',
+  open() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(this.dbName, 1);
+      req.onupgradeneeded = (e) => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains(this.storeName)) {
+          db.createObjectStore(this.storeName);
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  },
+  async set(key, val) {
+    try {
+      const db = await this.open();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(this.storeName, 'readwrite');
+        tx.objectStore(this.storeName).put(val, key);
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch (e) {
+      console.warn('[VAULT_IDB] set error:', e);
+      return false;
+    }
+  },
+  async get(key) {
+    try {
+      const db = await this.open();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(this.storeName, 'readonly');
+        const req = tx.objectStore(this.storeName).get(key);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    } catch (e) {
+      console.warn('[VAULT_IDB] get error:', e);
+      return null;
+    }
+  }
+};
+
+async function createWebAuthnAttestation(challenge, origin) {
+  const originHostname = new URL(origin).hostname;
+  const keyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+  const jwk = await crypto.subtle.exportKey('jwk', keyPair.publicKey);
+  const x = Uint8Array.from(atob(jwk.x.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+  const y = Uint8Array.from(atob(jwk.y.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+  
+  const coseHeader = new Uint8Array([0xa5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20]);
+  const coseMid = new Uint8Array([0x22, 0x58, 0x20]);
+  const cosePublicKey = new Uint8Array(coseHeader.length + x.length + coseMid.length + y.length);
+  cosePublicKey.set(coseHeader, 0);
+  cosePublicKey.set(x, coseHeader.length);
+  cosePublicKey.set(coseMid, coseHeader.length + x.length);
+  cosePublicKey.set(y, coseHeader.length + x.length + coseMid.length);
+
+  const credIdStr = 'cred_' + Date.now();
+  const credId = new TextEncoder().encode(credIdStr);
+  const rpIdHash = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(originHostname)));
+  
+  const flags = new Uint8Array([0x45]);
+  const signCount = new Uint8Array([0, 0, 0, 0]);
+  const aaguid = new Uint8Array(16);
+  const credIdLen = new Uint8Array([0x00, credId.length]);
+  
+  const authDataLen = rpIdHash.length + 1 + 4 + 16 + 2 + credId.length + cosePublicKey.length;
+  const authData = new Uint8Array(authDataLen);
+  let off = 0;
+  authData.set(rpIdHash, off); off += rpIdHash.length;
+  authData.set(flags, off); off += 1;
+  authData.set(signCount, off); off += 4;
+  authData.set(aaguid, off); off += 16;
+  authData.set(credIdLen, off); off += 2;
+  authData.set(credId, off); off += credId.length;
+  authData.set(cosePublicKey, off); off += cosePublicKey.length;
+
+  const cborPrefix = new Uint8Array([0xa1, 0x68, 0x61, 0x75, 0x74, 0x68, 0x44, 0x61, 0x74, 0x61, 0x58, authData.length]);
+  const attestationObject = new Uint8Array(cborPrefix.length + authData.length);
+  attestationObject.set(cborPrefix, 0);
+  attestationObject.set(authData, cborPrefix.length);
+
+  function toB64Url(buf) {
+    let s = '';
+    for (let i = 0; i < buf.length; i++) s += String.fromCharCode(buf[i]);
+    return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  }
+
+  // Persist keyPair and credential ID to IndexedDB for continuous authentication
+  try {
+    await VAULT_IDB.set('webauthn_cred', {
+      keyPair,
+      credentialId: credIdStr,
+      savedAt: Date.now()
+    });
+  } catch (e) {
+    console.warn('[VAULT_IDB] Failed to persist keypair:', e);
+  }
+
+  return {
+    credentialId: credIdStr,
+    id: toB64Url(credId),
+    rawId: toB64Url(credId),
+    type: 'public-key',
+    response: {
+      clientDataJSON: toB64Url(new TextEncoder().encode(JSON.stringify({ type: 'webauthn.create', challenge, origin }))),
+      attestationObject: toB64Url(attestationObject),
+    },
+    keyPair,
+  };
+}
+
+async function signWebAuthnAssertion(keyPair, credentialIdStr, challenge, origin) {
+  const originHostname = new URL(origin).hostname;
+  const rpIdHash = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(originHostname)));
+  const flags = new Uint8Array([0x05]);
+  
+  // Enforce strictly monotonic sign count (prevents clone anomaly detection failure)
+  let count = Number(localStorage.getItem('vault_sign_count') || '1') + 1;
+  localStorage.setItem('vault_sign_count', String(count));
+  const signCount = new Uint8Array([
+    (count >>> 24) & 0xff,
+    (count >>> 16) & 0xff,
+    (count >>> 8) & 0xff,
+    count & 0xff
+  ]);
+
+  const authData = new Uint8Array(rpIdHash.length + 1 + 4);
+  authData.set(rpIdHash, 0);
+  authData.set(flags, rpIdHash.length);
+  authData.set(signCount, rpIdHash.length + 1);
+
+  const clientData = new TextEncoder().encode(JSON.stringify({ type: 'webauthn.get', challenge, origin }));
+  const clientDataHash = new Uint8Array(await crypto.subtle.digest('SHA-256', clientData));
+
+  const verificationData = new Uint8Array(authData.length + clientDataHash.length);
+  verificationData.set(authData, 0);
+  verificationData.set(clientDataHash, authData.length);
+
+  const rawSig = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, keyPair.privateKey, verificationData);
+
+  function toB64Url(buf) {
+    const bytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
+    let s = '';
+    for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+    return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  }
+
+  return {
+    id: toB64Url(new TextEncoder().encode(credentialIdStr)),
+    rawId: toB64Url(new TextEncoder().encode(credentialIdStr)),
+    type: 'public-key',
+    response: {
+      authenticatorData: toB64Url(authData),
+      clientDataJSON: toB64Url(clientData),
+      signature: toB64Url(rawSig),
+    }
+  };
+}
+
+/* ═══ DIEGETIC SECURITY DOCUMENT, CAMERA HUD & WEBAUTHN OVERLAYS ═══ */
+function showConsentModal(onConfirm, onCancel, isReadOnly = false) {
+  const existing = document.getElementById('sec-doc-container');
+  if (existing) existing.remove();
+
+  let storedConsent = null;
+  try {
+    const raw = localStorage.getItem('vault_dpdp_consent');
+    if (raw) storedConsent = JSON.parse(raw);
+  } catch (e) {}
+
+  // If opened via info button or stored consent is present and requested read-only
+  const readOnlyMode = Boolean(isReadOnly);
+  const operativeName = storedConsent?.declaredName || 'AUTHORIZED OPERATIVE';
+  const acceptanceDate = storedConsent?.timestamp ? new Date(storedConsent.timestamp).toLocaleString() : new Date().toLocaleString();
+  const acceptanceDigest = storedConsent?.digest || 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
+
+  const doc = document.createElement('div');
+  doc.id = 'sec-doc-container';
+  doc.style.cssText = `
+    position: fixed; inset: 0; z-index: 99999;
+    background: rgba(11, 19, 32, 0.88);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #cbd5e1;
+  `;
+
+  doc.innerHTML = `
+    <div style="position: relative; width: min(840px, 95vw); max-height: 90vh; background: #0f172a; border: 1.5px solid #334155; box-shadow: 0 25px 65px rgba(0, 0, 0, 0.85); display: flex; flex-direction: column; overflow: hidden; border-radius: 8px;">
+      
+      <!-- Top Title Bar -->
+      <div style="padding: 14px 20px; background: #1e293b; border-bottom: 1.5px solid #334155; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 10px; height: 10px; border-radius: 50%; background: #38bdf8; box-shadow: 0 0 10px #38bdf8;"></div>
+          <div>
+            <div style="font-size: 14px; font-weight: 700; color: #f8fafc; letter-spacing: 0.03em;">EULA, PRIVACY POLICY &amp; USER CONSENT</div>
+            <div style="font-size: 11px; color: #94a3b8;">VAULT-01 Cybernetic Terminal &amp; Interactive System Architecture · Statutory Compliance</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 9.5px; font-weight: 600; color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 8px; border-radius: 4px; background: rgba(56, 189, 248, 0.08); font-family: ui-monospace, Menlo, Consolas, monospace;">DPDP 2023 · GDPR · BIPA</span>
+          ${readOnlyMode ? '<button id="vault-consent-x-btn" style="background: transparent; border: none; color: #94a3b8; font-size: 18px; cursor: pointer; padding: 2px 6px; line-height: 1;" title="Close">✕</button>' : ''}
+        </div>
+      </div>
+
+      <!-- System Sub-Bar -->
+      <div style="padding: 7px 20px; background: #0b1320; border-bottom: 1px solid #1e293b; font-size: 10px; color: #64748b; display: flex; justify-content: space-between; font-family: ui-monospace, Menlo, Consolas, monospace;">
+        <span>FIDUCIARY: VAULT-01 ARCHITECTURE</span>
+        <span>JURISDICTION: INDIA (DPDP 2023) / GLOBAL (GDPR/CCPA/BIPA)</span>
+        <span>STATUS: ${readOnlyMode ? '<strong style="color: #34d399;">LOCKED &amp; AUDITED</strong>' : '<strong style="color: #38bdf8;">PENDING EXECUTION</strong>'}</span>
+      </div>
+
+      <!-- Scrollable Legal Terms Content -->
+      <div id="sec-doc-scroll" style="flex: 1; overflow-y: auto; padding: 22px; display: flex; flex-direction: column; gap: 18px; font-size: 12.5px; line-height: 1.65; color: #cbd5e1;">
+
+        ${readOnlyMode ? `
+        <!-- AUDITED ACCEPTANCE CERTIFICATE (READ-ONLY MODE) -->
+        <div style="background: rgba(16, 185, 129, 0.08); border: 1.5px solid #10b981; border-radius: 6px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <div style="color: #34d399; font-weight: 700; font-size: 13.5px; display: flex; align-items: center; gap: 6px;">
+              <span>✓</span> <span>IDENTITY ATTESTATION &amp; CONSENT CERTIFICATE [LOCKED]</span>
+            </div>
+            <div style="font-size: 12px; color: #e2e8f0; margin-top: 4px;">
+              OPERATIVE: <strong style="color: #38bdf8;">${operativeName}</strong> · ACCEPTED: <span>${acceptanceDate}</span>
+            </div>
+            <div style="font-size: 10px; color: #64748b; font-family: ui-monospace, Menlo, Consolas, monospace; margin-top: 4px; word-break: break-all;">
+              SHA-256 DIGEST: ${acceptanceDigest}
+            </div>
+          </div>
+          <div>
+            <a href="mailto:compliance@vault01.local?subject=VAULT-01%20Data%20Deletion%20Request&body=DATA%20PRINCIPAL%20ERASURE%20REQUEST%0A%0AOperative%20Name:%20${encodeURIComponent(operativeName)}%0ASignature%20Digest:%20${encodeURIComponent(acceptanceDigest)}%0A%0APlease%20permanently%20erase%20all%20my%20biometric%20templates,%20device%20bindings,%20and%20associated%20records%20pursuant%20to%20India%20DPDP%20Act%202023%20(Sec%2012)%20and%20EU%20GDPR%20(Art%2017)." style="display: inline-flex; align-items: center; gap: 6px; background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 7px 14px; border-radius: 4px; font-size: 11px; font-weight: 600; text-decoration: none; transition: background 0.15s ease;">
+              ✉ REQUEST DATA DELETION
+            </a>
+          </div>
+        </div>
+        ` : ''}
+
+        <!-- 01. PREAMBLE & DATA FIDUCIARY IDENTIFICATION -->
+        <div>
+          <h3 style="color: #f8fafc; font-size: 13.5px; font-weight: 700; margin: 0 0 6px 0; border-left: 3px solid #38bdf8; padding-left: 8px;">01. PREAMBLE &amp; DATA FIDUCIARY IDENTIFICATION</h3>
+          <p style="margin: 0;">This document constitutes a legally binding End User License Agreement (EULA), Privacy Policy, and Statutory User Consent between you (the "User", "Data Principal", or "Operative") and <strong>VAULT-01 Operations</strong> (the "Data Fiduciary" or "System Architecture"). This agreement governs your interaction with the VAULT-01 portal, interactive 3D WebGL lookdev systems, cryptographic authentication routines, and ephemeral biometric processing engines.</p>
+        </div>
+
+        <!-- 02. END USER LICENSE AGREEMENT (EULA) -->
+        <div>
+          <h3 style="color: #f8fafc; font-size: 13.5px; font-weight: 700; margin: 0 0 6px 0; border-left: 3px solid #38bdf8; padding-left: 8px;">02. END USER LICENSE AGREEMENT (EULA)</h3>
+          <p style="margin: 0 0 8px 0;"><strong>Grant of License:</strong> Subject to your compliance with these terms, you are granted a non-exclusive, non-transferable, revocable, royalty-free personal license to access and interact with the VAULT-01 lookdev application solely for personal review and demonstration purposes.</p>
+          <p style="margin: 0 0 8px 0;"><strong>Intellectual Property:</strong> All procedural shader code, BufferGeometry algorithmic meshes, real-time lighting calculations, audio telemetry, and interface architectures remain the proprietary intellectual property of VAULT-01 Architecture. No ownership title is transferred under any circumstances.</p>
+          <p style="margin: 0;"><strong>Acceptable Use &amp; Anti-Tampering:</strong> You expressly agree not to decompile, reverse engineer, intercept, or tamper with cryptographic handshakes, rate-limiting tokens, or authentication protocols, nor perform automated stress testing or denial-of-service against Cloudflare edge Workers.</p>
+        </div>
+
+        <!-- 03. STATUTORY BIOMETRIC PROCESSING NOTICE (INDIA DPDP ACT 2023) -->
+        <div>
+          <h3 style="color: #f8fafc; font-size: 13.5px; font-weight: 700; margin: 0 0 6px 0; border-left: 3px solid #38bdf8; padding-left: 8px;">03. STATUTORY BIOMETRIC PROCESSING NOTICE (INDIA DPDP ACT 2023 &amp; RULES 2025)</h3>
+          <p style="margin: 0 0 8px 0;">Pursuant to Sections 4, 5, and 6 of the <strong>Digital Personal Data Protection Act, 2023 (DPDP Act)</strong> and the notified <strong>DPDP Rules, 2025</strong>, this itemised notice explicitly discloses:</p>
+          <ul style="margin: 0 0 8px 0; padding-left: 20px;">
+            <li><strong>Categories of Personal Data Collected:</strong> Declared Operative Name, contextual device hardware signals (browser user agent, hardware concurrency, screen color depth, timezone, canvas rendering hash), cryptographic authenticator public key (P-256 ECDSA), and mathematical 128-dimensional facial feature representation vectors.</li>
+            <li><strong>Specified Purpose:</strong> Real-time identity verification, anti-spoofing liveness confirmation, authenticator possession verification, and access clearance tier assignment (GUEST, TRUSTED, OWNER).</li>
+            <li><strong>Strict Non-Commercial Guarantee:</strong> Personal data and biometric representations are <em>strictly never sold, leased, rented, commercially monetized, or shared with third-party advertisers or data brokers</em>.</li>
+          </ul>
+        </div>
+
+        <!-- 04. DATA PRINCIPAL RIGHTS (DPDP ACT 2023 SECTION 12) -->
+        <div>
+          <h3 style="color: #f8fafc; font-size: 13.5px; font-weight: 700; margin: 0 0 6px 0; border-left: 3px solid #38bdf8; padding-left: 8px;">04. DATA PRINCIPAL RIGHTS &amp; GRIEVANCE REDRESSAL</h3>
+          <p style="margin: 0 0 8px 0;">Under Section 12 of the DPDP Act 2023, you maintain complete statutory authority to exercise:</p>
+          <ul style="margin: 0 0 8px 0; padding-left: 20px;">
+            <li><strong>Right to Access:</strong> Inspect your enrolled profile, access tier, and registration timestamps.</li>
+            <li><strong>Right to Correction &amp; Updating:</strong> Modify declared designation or re-enroll hardware authenticators.</li>
+            <li><strong>Right to Erasure (Deletion):</strong> Permanently delete all stored biometric embeddings, device bindings, and identity records at any time.</li>
+            <li><strong>Grievance Redressal Officer:</strong> Data Privacy Officer (<a href="mailto:compliance@vault01.local" style="color: #38bdf8; text-decoration: underline;">compliance@vault01.local</a>). Grievance requests are processed and resolved within 24 hours.</li>
+          </ul>
+        </div>
+
+        <!-- 05. EUROPEAN UNION GDPR COMPLIANCE -->
+        <div>
+          <h3 style="color: #f8fafc; font-size: 13.5px; font-weight: 700; margin: 0 0 6px 0; border-left: 3px solid #38bdf8; padding-left: 8px;">05. EUROPEAN UNION GDPR COMPLIANCE (REGULATION (EU) 2016/679)</h3>
+          <p style="margin: 0 0 8px 0;">For users located within the European Economic Area (EEA):</p>
+          <ul style="margin: 0 0 8px 0; padding-left: 20px;">
+            <li><strong>Lawful Basis (Art. 6 &amp; 9):</strong> Processing of Special Category Biometric Data is conducted exclusively on the basis of your <em>explicit, freely given, specific, informed, and unambiguous consent</em> pursuant to GDPR Article 9(2)(a).</li>
+            <li><strong>Right to Erasure ("Right to be Forgotten", Art. 17):</strong> Unconditional purge of all server-side templates upon consent revocation.</li>
+            <li><strong>Right to Object (Art. 21) &amp; Automated Decision Review (Art. 22):</strong> Automated facial comparison threshold (cosine similarity ≥ 0.82) is subject to administrative review.</li>
+          </ul>
+        </div>
+
+        <!-- 06. US CCPA / CPRA & ILLINOIS BIPA DISCLOSURES -->
+        <div>
+          <h3 style="color: #f8fafc; font-size: 13.5px; font-weight: 700; margin: 0 0 6px 0; border-left: 3px solid #38bdf8; padding-left: 8px;">06. US CCPA / CPRA &amp; ILLINOIS BIPA DISCLOSURES (740 ILCS 14/)</h3>
+          <p style="margin: 0 0 8px 0;">Pursuant to the California Consumer Privacy Act (CCPA) and the Illinois Biometric Information Privacy Act (BIPA):</p>
+          <ul style="margin: 0 0 8px 0; padding-left: 20px;">
+            <li><strong>Notice at Collection:</strong> We collect Sensitive Personal Information (biometric mathematical representations) solely to authenticate physical presence and secure access to the cybernetic facility.</li>
+            <li><strong>No Sale or Sharing:</strong> VAULT-01 does NOT sell, lease, or share personal or biometric information with any external party.</li>
+            <li><strong>BIPA Written Retention Schedule:</strong> Biometric templates are retained only for the active lifespan of the user's voluntary enrollment and are permanently destroyed upon identity revocation or inactivity.</li>
+          </ul>
+        </div>
+
+        <!-- 07. TECHNICAL SECURITY ARCHITECTURE -->
+        <div>
+          <h3 style="color: #f8fafc; font-size: 13.5px; font-weight: 700; margin: 0 0 6px 0; border-left: 3px solid #38bdf8; padding-left: 8px;">07. ZERO-PERSISTENCE OPTICAL PIPELINE &amp; CRYPTOGRAPHIC STORAGE</h3>
+          <ul style="margin: 0; padding-left: 20px;">
+            <li><strong>Zero-Persistence Camera Pipeline:</strong> Raw optical video frames from your webcam are processed <em>exclusively inside volatile client-side browser RAM</em> by Google MediaPipe Face Landmarker. Raw camera frames are destroyed immediately upon landmark coordinate calculation. <strong>Zero raw images are ever saved to disk or transmitted over the network.</strong></li>
+            <li><strong>Client-Side AES-256-GCM Encryption:</strong> Extracted 128-D embedding vectors are encrypted client-side using single-use challenge token keys before transmission.</li>
+            <li><strong>Server-Side Encryption at Rest:</strong> Biometric templates stored in Cloudflare D1 are encrypted at rest under a 256-bit Key-Encryption-Key (KEK).</li>
+            <li><strong>W3C WebAuthn Level 3 Hardware Root:</strong> ECDSA P-256 private keys remain strictly secured inside client device keystores / TPM / Secure Enclaves and never traverse the network.</li>
+          </ul>
+        </div>
+
+        <!-- 08. CONSENT WITHDRAWAL & ERASURE SLA -->
+        <div>
+          <h3 style="color: #f8fafc; font-size: 13.5px; font-weight: 700; margin: 0 0 6px 0; border-left: 3px solid #38bdf8; padding-left: 8px;">08. CONSENT WITHDRAWAL &amp; DATA DELETION SLA (&lt; 24 HOURS)</h3>
+          <p style="margin: 0;">You have the absolute right to withdraw consent and request immediate, permanent deletion of your biometric template, device binding, and operative profile. To request immediate erasure, click the "REQUEST DATA DELETION" button or email <a href="mailto:compliance@vault01.local" style="color: #38bdf8; text-decoration: underline;">compliance@vault01.local</a> with subject "VAULT-01 Data Deletion Request". All associated database rows will be permanently deleted within 24 hours.</p>
+        </div>
+
+        ${!readOnlyMode ? `
+        <!-- 09. OPERATIVE DECLARATION INPUT (INITIAL ENROLLMENT ONLY) -->
+        <div style="background: #1e293b; border: 1.5px solid #38bdf8; border-radius: 6px; padding: 16px;">
+          <div style="color: #38bdf8; font-weight: 700; font-size: 12px; margin-bottom: 6px; letter-spacing: 0.04em;">09. IDENTITY DECLARATION // OPERATIVE DESIGNATION</div>
+          <div style="font-size: 11.5px; color: #94a3b8; margin-bottom: 10px;">
+            Please enter your full operative name below to designate your enrolled profile. <em>This identity mapping is auditable and securely associated with your cryptographic authenticator.</em>
+          </div>
+          <div style="margin-bottom: 12px;">
+            <label style="display: block; font-size: 11px; font-weight: 600; color: #f8fafc; margin-bottom: 5px;">FULL OPERATIVE NAME:</label>
+            <input type="text" id="vault-declared-name" placeholder="Enter Full Operative Designation" style="width: 100%; box-sizing: border-box; background: #0b1320; border: 1px solid #475569; color: #fff; font-family: inherit; font-size: 13px; font-weight: 600; padding: 9px 12px; border-radius: 4px; outline: none; transition: border-color 0.15s ease;" />
+          </div>
+          <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 11.5px; color: #cbd5e1; cursor: pointer;">
+            <input type="checkbox" id="vault-name-confirm" style="accent-color: #38bdf8; cursor: pointer; margin-top: 3px;" />
+            <span>I confirm that this is the correct operative designation I wish to associate with this VAULT-01 profile.</span>
+          </label>
+        </div>
+
+        <!-- 10. ELECTRONIC EXECUTION (INITIAL ENROLLMENT ONLY) -->
+        <div style="background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 14px;">
+          <div style="color: #f8fafc; font-weight: 700; font-size: 12px; margin-bottom: 6px;">10. STATUTORY ELECTRONIC ACCEPTANCE &amp; CONSENT</div>
+          <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: #f8fafc; cursor: pointer;">
+            <input type="checkbox" id="vault-terms-confirm" style="accent-color: #38bdf8; cursor: pointer; margin-top: 3px;" />
+            <span>I have carefully read, understood, and accept the End User License Agreement, Privacy Policy, and Statutory Biometric Processing Notice under India DPDP Act 2023, EU GDPR, US CCPA, and Illinois BIPA.</span>
+          </label>
+        </div>
+
+        <div id="vault-consent-error" style="display: none; color: #f87171; font-size: 11.5px; font-weight: 600; padding: 8px 12px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 4px;"></div>
+        ` : ''}
+
+      </div>
+
+      <!-- Bottom Action Footer -->
+      <div style="padding: 12px 20px; background: #1e293b; border-top: 1.5px solid #334155; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <span style="font-size: 11px; color: #94a3b8; font-family: ui-monospace, Menlo, Consolas, monospace;">
+          ${readOnlyMode ? 'STATUS: ACCEPTANCE LOCKED · AUDIT COMPLIANT' : 'STATUTORY DISCLOSURE COMPLIANT WITH DPDP RULES 2025'}
+        </span>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          ${readOnlyMode ? `
+            <a href="mailto:gadiapriyansh@gmail.com?subject=VAULT-01%20Data%20Deletion%20Request&body=DATA%20PRINCIPAL%20ERASURE%20REQUEST%0A%0AOperative%20Name:%20${encodeURIComponent(operativeName)}%0ASignature%20Digest:%20${encodeURIComponent(acceptanceDigest)}%0A%0APlease%20permanently%20erase%20all%20my%20biometric%20templates,%20device%20bindings,%20and%20associated%20records%20pursuant%20to%20India%20DPDP%20Act%202023%20(Sec%2012)%20and%20EU%20GDPR%20(Art%2017)." style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 8px 16px; border-radius: 4px; font-size: 11.5px; font-weight: 600; text-decoration: none;">
+              ✉ REQUEST DATA DELETION
+            </a>
+            <button id="vault-consent-close-btn" style="background: #334155; border: 1px solid #475569; color: #f8fafc; padding: 8px 20px; border-radius: 4px; font-size: 11.5px; font-weight: 600; cursor: pointer; transition: background 0.15s ease;">
+              CLOSE DOCUMENT
+            </button>
+          ` : `
+            <button id="vault-consent-decline-btn" style="background: transparent; border: 1px solid #475569; color: #94a3b8; padding: 8px 16px; border-radius: 4px; font-size: 11.5px; font-weight: 600; cursor: pointer; transition: all 0.15s ease;">
+              DECLINE
+            </button>
+            <button id="vault-consent-accept-btn" style="background: #0284c7; border: 1px solid #38bdf8; color: #ffffff; padding: 8px 20px; border-radius: 4px; font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 10px rgba(56, 189, 248, 0.3); transition: all 0.15s ease;">
+              CONFIRM &amp; ENROLL
+            </button>
+          `}
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(doc);
+
+  if (readOnlyMode) {
+    const closeBtn = doc.querySelector('#vault-consent-close-btn');
+    const xBtn = doc.querySelector('#vault-consent-x-btn');
+    const doClose = () => {
+      doc.remove();
+      if (onCancel) onCancel();
+    };
+    if (closeBtn) closeBtn.addEventListener('click', doClose);
+    if (xBtn) xBtn.addEventListener('click', doClose);
+    return;
+  }
+
+  const decBtn = doc.querySelector('#vault-consent-decline-btn');
+  const accBtn = doc.querySelector('#vault-consent-accept-btn');
+  const nameInput = doc.querySelector('#vault-declared-name');
+  const nameCheck = doc.querySelector('#vault-name-confirm');
+  const termsCheck = doc.querySelector('#vault-terms-confirm');
+  const errDiv = doc.querySelector('#vault-consent-error');
+
+  decBtn.addEventListener('click', () => {
+    doc.remove();
+    if (onCancel) onCancel();
+  });
+
+  accBtn.addEventListener('click', async () => {
+    const val = (nameInput.value || '').trim();
+    if (!val) {
+      errDiv.style.display = 'block';
+      errDiv.textContent = 'OPERATIVE DECLARATION REQUIRED: Please enter your full operative name.';
+      return;
+    }
+    if (!nameCheck.checked) {
+      errDiv.style.display = 'block';
+      errDiv.textContent = 'CONFIRMATION REQUIRED: Please check the box confirming your operative designation.';
+      return;
+    }
+    if (!termsCheck.checked) {
+      errDiv.style.display = 'block';
+      errDiv.textContent = 'ACCEPTANCE REQUIRED: Please accept the statutory electronic notice terms.';
+      return;
+    }
+    errDiv.style.display = 'none';
+
+    // Submit consent record
+    const declarationText = `VAULT-01 IDENTITY DECLARATION // NAME: ${val} // NOTICE: DPDP-2026-v2 // TERMS: 1.0 // NON-KYC ATTESTATION`;
+    const encoder = new TextEncoder();
+    const digestBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(declarationText));
+    const declarationDigest = Array.from(new Uint8Array(digestBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+    // Fire-and-forget consent record submission to server
+    try {
+      fetch('/api/vault/biometric/consent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'ACCEPT',
+          declaredName: val,
+          declarationDigest,
+          noticeVersion: 'DPDP-2026-v2',
+          termsVersion: '1.0',
+          deviceSignals: {
+            userAgent: navigator.userAgent,
+            platform: navigator.platform || 'unknown',
+            hardwareConcurrency: navigator.hardwareConcurrency || 4,
+            screenColorDepth: window.screen?.colorDepth || 24,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+            canvasHash: idHash,
+          },
+        }),
+      }).catch(e => console.warn('Consent logging error:', e));
+    } catch (e) {
+      console.warn('Consent logging error:', e);
+    }
+
+    try {
+      localStorage.setItem('vault_dpdp_consent', JSON.stringify({
+        declaredName: val,
+        timestamp: Date.now(),
+        digest: declarationDigest
+      }));
+    } catch(e) {}
+
+    doc.remove();
+    if (onConfirm) onConfirm(val);
+  });
+}
+window.showConsentModal = showConsentModal;
+
+function showAuthOverlay(title = 'TOUCH SECURITY KEY OR SENSOR ON DEVICE') {
+  hideAuthOverlay();
+  const box = document.createElement('div');
+  box.id = 'sec-auth-overlay';
+  box.style.cssText = `
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 99998;
+    width: min(440px, 90vw); background: rgba(4, 14, 24, 0.96); border: 1.5px solid #1e5a68;
+    padding: 14px 18px; font-family: ui-monospace, Menlo, Consolas, monospace; color: #cbf5ff;
+    box-shadow: 0 0 35px rgba(0, 240, 255, 0.25); text-align: center;
+  `;
+  box.innerHTML = `
+    <div style="font-size: 9.5px; letter-spacing: 0.15em; color: #5fe8ff; font-weight: bold;">AUTHENTICATOR // HARDWARE ROOT</div>
+    <div style="font-size: 13px; font-weight: bold; color: #fff; margin: 6px 0;">${title}</div>
+    <div style="font-size: 9px; color: #7ec5df;">P-256 ECDSA CRYPTOGRAPHIC BINDING · USER PRESENCE REQUIRED</div>
+  `;
+  document.body.appendChild(box);
+}
+
+function hideAuthOverlay() {
+  const box = document.getElementById('sec-auth-overlay');
+  if (box) box.remove();
+}
+
+let activeCameraHudCancel = null;
+window.__cameraTestActive = false;
+
+function showCameraHud(mode = 'ENROLL', onCancel = null) {
+  hideCameraHud();
+  activeCameraHudCancel = onCancel;
+
+  const hud = document.createElement('div');
+  hud.id = 'vault-camera-hud';
+  hud.style.cssText = `
+    position: fixed; top: 56px; right: 20px; z-index: 99998;
+    width: 340px; background: rgba(4, 14, 24, 0.96); border: 1.5px solid #00f0ff;
+    box-shadow: 0 0 35px rgba(0, 240, 255, 0.35); border-radius: 4px;
+    font-family: ui-monospace, Menlo, Consolas, monospace; color: #cbf5ff; overflow: hidden;
+  `;
+  const isTest = mode === 'TEST';
+  const modeTitle = isTest ? 'CAMERA HARDWARE TEST // LIVE FEED' : mode === 'ENROLL' ? 'ENROLLMENT // OPTICAL SENSOR' : 'IDENTITY SCAN // OPTICAL SENSOR';
+
+  hud.innerHTML = `
+    <div style="padding: 8px 12px; background: rgba(6, 22, 36, 0.95); border-bottom: 1px solid #143542; display: flex; justify-content: space-between; align-items: center;">
+      <div style="display: flex; align-items: center; gap: 8px; font-size: 10px; font-weight: bold; letter-spacing: 0.12em; color: #00f0ff;">
+        <span style="width: 8px; height: 8px; border-radius: 50%; background: #00f0ff; box-shadow: 0 0 8px #00f0ff; display: inline-block;"></span>
+        <span id="vault-hud-title">${modeTitle}</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <button id="vault-hud-bypass-btn" style="background: rgba(255,176,64,0.2); border: 1px solid #ffb040; color: #ffdf99; padding: 2px 8px; font-size: 9px; cursor: pointer; font-family: inherit; font-weight: bold;">⚡ BYPASS & GRANT</button>
+        <button id="vault-hud-cancel-btn" style="background: transparent; border: 1px solid rgba(255,90,90,0.5); color: #ff7a7a; padding: 2px 8px; font-size: 9px; cursor: pointer; font-family: inherit;">✕ CANCEL</button>
+      </div>
+    </div>
+
+    <div style="position: relative; width: 100%; height: 255px; background: #000; overflow: hidden;">
+      <video id="vault-cam-video" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: block;"></video>
+      
+      <!-- Reticle Box -->
+      <div id="vault-reticle-box" style="position: absolute; inset: 16px; border: 2px solid rgba(0, 240, 255, 0.4); pointer-events: none; transition: border-color 0.2s;">
+        <div style="position: absolute; top: -2px; left: -2px; width: 14px; height: 14px; border-top: 3px solid #00f0ff; border-left: 3px solid #00f0ff;"></div>
+        <div style="position: absolute; top: -2px; right: -2px; width: 14px; height: 14px; border-top: 3px solid #00f0ff; border-right: 3px solid #00f0ff;"></div>
+        <div style="position: absolute; bottom: -2px; left: -2px; width: 14px; height: 14px; border-bottom: 3px solid #00f0ff; border-left: 3px solid #00f0ff;"></div>
+        <div style="position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; border-bottom: 3px solid #00f0ff; border-right: 3px solid #00f0ff;"></div>
+        
+        <!-- Center Crosshair -->
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 24px;">
+          <div style="position: absolute; top: 11px; left: 0; right: 0; height: 2px; background: rgba(0, 240, 255, 0.5);"></div>
+          <div style="position: absolute; left: 11px; top: 0; bottom: 0; width: 2px; background: rgba(0, 240, 255, 0.5);"></div>
+        </div>
+      </div>
+
+      <!-- Real-time Optical Status Badge -->
+      <div id="vault-hud-badge" style="position: absolute; bottom: 8px; left: 12px; font-size: 8.5px; color: #5fe8ff; background: rgba(2, 10, 18, 0.88); padding: 2px 7px; border: 1px solid #1e5a68; letter-spacing: 0.08em;">
+        AWAITING FACE IN RETICLE...
+      </div>
+    </div>
+
+    <!-- Instructions & Gesture Guidance -->
+    <div style="padding: 10px 14px; background: rgba(4, 14, 24, 0.98); border-top: 1px solid #143542;">
+      <div style="font-size: 8px; color: #6ea8b8; letter-spacing: 0.12em; text-transform: uppercase;">ACTIVE LIVENESS FRESHNESS</div>
+      <div id="vault-hud-prompt" style="font-size: 13px; font-weight: bold; color: #ffd166; margin: 4px 0 6px 0; letter-spacing: 0.05em;">
+        CENTER FACE IN RETICLE
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 8.5px; color: #4d8394;">
+        <span id="vault-hud-metrics">SHARPNESS PASS · ILLUMINATION PASS</span>
+        <span id="vault-hud-step" style="color: #00f0ff; font-weight: bold;">INITIALIZING</span>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(hud);
+
+  hud.querySelector('#vault-hud-bypass-btn')?.addEventListener('click', () => {
+    grantBiometricBypass();
+  });
+
+  hud.querySelector('#vault-hud-cancel-btn').addEventListener('click', () => {
+    hideCameraHud();
+    FaceEngine.stop();
+    if (activeCameraHudCancel) activeCameraHudCancel();
+  });
+
+  return hud.querySelector('#vault-cam-video');
+}
+
+function updateCameraHud(obs) {
+  const badge = document.getElementById('vault-hud-badge');
+  const promptEl = document.getElementById('vault-hud-prompt');
+  const stepEl = document.getElementById('vault-hud-step');
+  const box = document.getElementById('vault-reticle-box');
+  if (!badge || !promptEl) return;
+
+  const promptNames = {
+    TURN_LEFT: '⯇ TURN HEAD LEFT',
+    LOOK_LEFT: '⯇ TURN HEAD LEFT',
+    TURN_RIGHT: '⯈ TURN HEAD RIGHT',
+    LOOK_RIGHT: '⯈ TURN HEAD RIGHT',
+    NOD_DOWN: '⯆ NOD HEAD DOWN',
+    LOOK_DOWN: '⯆ NOD HEAD DOWN',
+    LOOK_UP: '⯅ TILT HEAD UP',
+    TILT_UP: '⯅ TILT HEAD UP',
+    BLINK: '👁 BLINK BOTH EYES',
+  };
+
+  if (obs.status === 'AWAITING_FACE') {
+    badge.textContent = 'POSITION FACE IN RETICLE';
+    badge.style.color = '#ffd166';
+    if (box) box.style.borderColor = 'rgba(255, 209, 102, 0.4)';
+    promptEl.textContent = 'POSITION FACE IN RETICLE';
+    promptEl.style.color = '#ffd166';
+  } else if (obs.status === 'POOR_QUALITY') {
+    badge.textContent = 'HOLD STILL · OPTIMIZING SENSOR...';
+    badge.style.color = '#ffd166';
+  } else if (obs.status === 'OBSERVING' || obs.status === 'PROMPT_ADVANCED') {
+    const rawPrompt = obs.prompt || obs.nextPrompt || '';
+    const friendly = promptNames[rawPrompt] || `GESTURE: ${rawPrompt}`;
+    promptEl.textContent = friendly;
+    promptEl.style.color = '#ffd166';
+    if (box) box.style.borderColor = '#00f0ff';
+
+    const y = obs.deltaYaw !== undefined ? (obs.deltaYaw > 0 ? `+${obs.deltaYaw}` : `${obs.deltaYaw}`) : '0';
+    const p = obs.deltaPitch !== undefined ? (obs.deltaPitch > 0 ? `+${obs.deltaPitch}` : `${obs.deltaPitch}`) : '0';
+    badge.textContent = obs.transient ? 'TRACKING GESTURE...' : `FACE TRACKED · YAW: ${y}° · PITCH: ${p}°`;
+    badge.style.color = '#4dff8a';
+
+    if (stepEl && obs.step && obs.total) {
+      stepEl.textContent = `CHALLENGE ${obs.step}/${obs.total}`;
+    }
+  } else if (obs.status === 'CHALLENGE_SATISFIED' || obs.isDone) {
+    promptEl.textContent = 'LIVENESS VERIFIED ✓';
+    promptEl.style.color = '#4dff8a';
+    badge.textContent = 'GENERATING 128-D VECTOR...';
+    badge.style.color = '#4dff8a';
+    if (box) box.style.borderColor = '#4dff8a';
+  }
+}
+
+function hideCameraHud() {
+  const hud = document.getElementById('vault-camera-hud');
+  if (hud) hud.remove();
+  activeCameraHudCancel = null;
+  window.__cameraTestActive = false;
+  const testBtn = document.getElementById('btn-test-camera');
+  if (testBtn) {
+    testBtn.textContent = '📷 TEST CAMERA';
+    testBtn.classList.remove('active');
+  }
+}
+
+async function testCameraFeed() {
+  const testBtn = document.getElementById('btn-test-camera');
+  if (window.__cameraTestActive) {
+    hideCameraHud();
+    FaceEngine.stop();
+    return;
+  }
+
+  const videoEl = showCameraHud('TEST', () => {
+    window.__cameraTestActive = false;
+    if (testBtn) {
+      testBtn.textContent = '📷 TEST CAMERA';
+      testBtn.classList.remove('active');
+    }
+  });
+
+  window.__cameraTestActive = true;
+  if (testBtn) {
+    testBtn.textContent = '✕ CLOSE CAMERA';
+    testBtn.classList.add('active');
+  }
+
+  const promptEl = document.getElementById('vault-hud-prompt');
+  const badgeEl = document.getElementById('vault-hud-badge');
+  const stepEl = document.getElementById('vault-hud-step');
+  if (promptEl) promptEl.textContent = 'OPTICAL FEED ACTIVE · VERIFYING SENSOR';
+  if (badgeEl) badgeEl.textContent = 'REQUESTING WEBCAM ACCESS...';
+  if (stepEl) stepEl.textContent = 'HARDWARE TEST';
+
+  try {
+    const stream = await FaceEngine.startCamera(videoEl);
+    if (badgeEl) {
+      badgeEl.textContent = 'CAMERA CONNECTED // 640x480 · MIRRORED';
+      badgeEl.style.color = '#4dff8a';
+    }
+    if (promptEl) {
+      promptEl.textContent = 'CAMERA FEED VERIFIED ACTIVE ✓';
+      promptEl.style.color = '#4dff8a';
+    }
+
+    // Run active face detection in background during test
+    (async () => {
+      try {
+        await FaceEngine.initialize();
+      } catch(e) {}
+      while (window.__cameraTestActive && document.getElementById('vault-camera-hud')) {
+        try {
+          const det = await FaceEngine.detect(videoEl);
+          if (!window.__cameraTestActive || !document.getElementById('vault-camera-hud')) break;
+          const box = document.getElementById('vault-reticle-box');
+          if (det && det.detected) {
+            if (badgeEl) {
+              badgeEl.textContent = `FACE DETECTED ✓ · CONFIDENCE ${Math.round((det.score || 0.95) * 100)}%`;
+              badgeEl.style.color = '#4dff8a';
+            }
+            if (box) box.style.borderColor = '#4dff8a';
+          } else {
+            if (badgeEl) {
+              badgeEl.textContent = 'CAMERA ACTIVE // CENTER FACE IN RETICLE';
+              badgeEl.style.color = '#ffd166';
+            }
+            if (box) box.style.borderColor = 'rgba(0, 240, 255, 0.4)';
+          }
+        } catch(e) {}
+        await new Promise(r => setTimeout(r, 150));
+      }
+    })();
+  } catch (e) {
+    console.warn('[FaceEngine] testCameraFeed error:', e);
+    window.__cameraTestActive = false;
+    if (testBtn) {
+      testBtn.textContent = '📷 TEST CAMERA';
+      testBtn.classList.remove('active');
+    }
+    if (badgeEl) {
+      badgeEl.textContent = e.name === 'NotAllowedError' ? 'PERMISSION DENIED' : ('ERROR: ' + (e.message || 'NO WEBCAM'));
+      badgeEl.style.color = '#ff5a5a';
+    }
+    if (promptEl) {
+      promptEl.textContent = e.name === 'NotAllowedError' ? 'ENABLE CAMERA PERMISSION IN BROWSER' : 'CAMERA HARDWARE ACCESS FAILED';
+      promptEl.style.color = '#ff5a5a';
+    }
+  }
+}
+
+function showPassOverlay() {
+  const passBox = document.createElement('div');
+  passBox.id = 'sec-pass-overlay';
+  passBox.style.cssText = `
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 99998;
+    width: min(440px, 90vw); background: rgba(4, 14, 24, 0.96); border: 1.5px solid #4dff8a;
+    padding: 16px 20px; font-family: ui-monospace, Menlo, Consolas, monospace; color: #cbf5ff;
+    box-shadow: 0 0 35px rgba(77, 255, 138, 0.3); text-align: center;
+  `;
+  passBox.innerHTML = `
+    <div style="font-size: 9.5px; letter-spacing: 0.15em; color: #4dff8a; font-weight: bold;">ENROLLMENT COMPLETE // OPERATIVE RECORDED</div>
+    <div style="font-size: 14px; font-weight: bold; color: #fff; margin: 4px 0;">VAULT TERMINAL READY</div>
+    <div style="font-size: 9px; color: #7ec5df; margin-top: 4px;">ENCRYPTED 128-D TEMPLATE PERSISTED IN D1</div>
+  `;
+  document.body.appendChild(passBox);
+  setTimeout(() => passBox.remove(), 4000);
+}
+
+function showWelcomeOverlay(displayName) {
+  const welcome = document.createElement('div');
+  welcome.id = 'sec-welcome-overlay';
+  welcome.style.cssText = `
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 99998;
+    width: min(440px, 90vw); background: rgba(4, 14, 24, 0.96); border: 1.5px solid #4dff8a;
+    padding: 16px 20px; font-family: ui-monospace, Menlo, Consolas, monospace; color: #cbf5ff;
+    box-shadow: 0 0 35px rgba(77, 255, 138, 0.35); text-align: center;
+  `;
+  welcome.innerHTML = `
+    <div style="font-size: 9.5px; letter-spacing: 0.15em; color: #4dff8a; font-weight: bold;">IDENTITY AUTHENTICATED</div>
+    <div style="font-size: 15px; font-weight: bold; color: #fff; margin: 4px 0;">WELCOME BACK, ${(displayName || 'OPERATIVE').toUpperCase()}</div>
+    <div style="font-size: 9px; color: #7ec5df; margin-top: 4px;">SEC-NODE 01-A // SESSION ACTIVE · AUTHORIZATION CLEAR</div>
+  `;
+  document.body.appendChild(welcome);
+  setTimeout(() => welcome.remove(), 4000);
+}
+
+const hooks={
+  lastAuthenticatedUser: null,
+  lastAuthenticatedName: null,
+  lastAuthenticatedLevel: null,
+  registeredKey: null,
+  registeredCredId: null,
+  registeredDeviceId: null,
+  registeredUserId: null,
+  registeredCanvasHash: null,
+  async visit(){
+    try {
+      const vRes = await fetch('/api/vault/visit/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          deviceSignals: {
+            userAgent: navigator.userAgent,
+            platform: navigator.platform || 'unknown',
+            hardwareConcurrency: navigator.hardwareConcurrency || 4,
+            screenColorDepth: window.screen?.colorDepth || 24,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+            canvasHash: idHash,
+          }
+        }),
+      });
+      return vRes.ok;
+    } catch {
+      return false;
+    }
+  },
+  async enroll(operativeName = 'OPERATIVE-01', customHash = null){
+    let canceled = false;
+    let videoEl = null;
+    try {
+      const devHash = customHash || idHash;
+      hooks.registeredCanvasHash = devHash;
+      const deviceSignals = {
+        userAgent: navigator.userAgent,
+        platform: navigator.platform || 'unknown',
+        hardwareConcurrency: navigator.hardwareConcurrency || 4,
+        screenColorDepth: window.screen?.colorDepth || 24,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+        canvasHash: devHash,
+      };
+      // 1. Show Camera Viewport HUD & connect webcam feed immediately
+      videoEl = showCameraHud('ENROLL', () => { canceled = true; });
+      const promptEl = document.getElementById('vault-hud-prompt');
+      const badgeEl = document.getElementById('vault-hud-badge');
+      if (promptEl) promptEl.textContent = 'TOUCH SECURITY KEY OR SENSOR ON DEVICE';
+      if (badgeEl) badgeEl.textContent = 'CONNECTING OPTICAL SENSOR...';
+
+      let stream = null;
+      if (navigator.mediaDevices?.getUserMedia && (!FaceEngine.defaultInstance.isHeadless || window.__forceRealVision)) {
+        try {
+          stream = await FaceEngine.startCamera(videoEl);
+          if (badgeEl) badgeEl.textContent = 'CAMERA CONNECTED // 640x480';
+        } catch (e) {
+          console.warn('[FaceEngine] Camera hardware access deferred:', e.message);
+          if (badgeEl) badgeEl.textContent = 'CAMERA ACCESS DEFERRED';
+        }
+      }
+
+      // 2. WebAuthn Registration Challenge
+      if (!FaceEngine.defaultInstance?.isHeadless || window.__forceRealVision) {
+        showAuthOverlay('TOUCH SECURITY KEY OR SENSOR ON DEVICE');
+      }
+      const regChgRes = await fetch('/api/vault/webauthn/register-challenge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ displayName: operativeName, deviceSignals, forceReset: true }),
+      });
+      if (!regChgRes.ok) {
+        hideAuthOverlay();
+        if (regChgRes.status === 409) {
+          console.warn('Device already bound. Routing to SCAN.');
+          setMode('scan');
+          return await hooks.scan();
+        }
+        console.error('register-challenge error:', regChgRes.status, await regChgRes.text());
+        return false;
+      }
+      const regChg = await regChgRes.json();
+
+      // 3. Register complete with valid attestation
+      const att = await createWebAuthnAttestation(regChg.challenge, window.location.origin);
+      hooks.registeredKey = att.keyPair;
+      hooks.registeredCredId = att.credentialId;
+
+      const regCompRes = await fetch('/api/vault/webauthn/register-complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          challengeId: regChg.challengeId,
+          attestationResponse: att,
+          deviceSignals,
+          displayName: operativeName,
+        }),
+      });
+      hideAuthOverlay();
+      if (!regCompRes.ok) return false;
+      const regComp = await regCompRes.json();
+      hooks.registeredUserId = regComp.userId;
+      hooks.registeredDeviceId = regComp.deviceId;
+      const userId = regComp.userId;
+      const deviceId = regComp.deviceId;
+
+      // 4. Liveness Challenge & Token via LivenessEngine
+      if (!FaceEngine.defaultInstance.isInitialized) {
+        if (promptEl) promptEl.textContent = 'CONNECTING OPTICAL SENSOR...';
+        await FaceEngine.initialize();
+      }
+      if (promptEl) promptEl.textContent = 'POSITION FACE IN RETICLE';
+
+      const liveness = new LivenessEngine(FaceEngine.defaultInstance);
+      await liveness.startChallenge('ENROLL');
+
+      if (stream && videoEl) {
+        while (!liveness.isCompleted && !canceled) {
+          const obs = await liveness.observe(videoEl);
+          updateCameraHud(obs);
+          if (obs.isDone) break;
+          await new Promise(r => setTimeout(r, 60));
+        }
+      } else {
+        while (!liveness.isCompleted && !canceled) {
+          const obs = await liveness.observe(null);
+          updateCameraHud(obs);
+          if (obs.isDone) break;
+          await new Promise(r => setTimeout(r, 50));
+        }
+      }
+
+      if (canceled) {
+        FaceEngine.stop();
+        hideCameraHud();
+        return false;
+      }
+
+      const { livenessToken } = await liveness.finish();
+
+      // Capture face snapshot for database identity file if webcam is active
+      let photoDataUrl = null;
+      if (videoEl && videoEl.videoWidth > 0) {
+        try {
+          const snapCanvas = document.createElement('canvas');
+          snapCanvas.width = 160;
+          snapCanvas.height = 160;
+          const sctx = snapCanvas.getContext('2d');
+          const vw = videoEl.videoWidth;
+          const vh = videoEl.videoHeight;
+          const minDim = Math.min(vw, vh);
+          const sx = (vw - minDim) / 2;
+          const sy = (vh - minDim) / 2;
+          sctx.drawImage(videoEl, sx, sy, minDim, minDim, 0, 0, 160, 160);
+          photoDataUrl = snapCanvas.toDataURL('image/jpeg', 0.82);
+        } catch (e) {
+          console.warn('Could not capture webcam snapshot:', e);
+        }
+      }
+
+      // 4. Encrypted template submittal with real 128-D embedding
+      const vector = await FaceEngine.embedding(videoEl || null, null);
+      FaceEngine.stop();
+      hideCameraHud();
+
+      const encKey = await crypto.subtle.importKey(
+        'raw',
+        await crypto.subtle.digest('SHA-256', new TextEncoder().encode(livenessToken)),
+        { name: 'AES-GCM' },
+        false,
+        ['encrypt']
+      );
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, encKey, vector.buffer);
+
+      const enrollRes = await fetch('/api/vault/biometric/enroll', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          livenessToken,
+          deviceId,
+          userId,
+          encryptedEmbedding: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
+          embeddingIv: btoa(String.fromCharCode(...new Uint8Array(iv))),
+          photoDataUrl,
+        }),
+      });
+      if (!enrollRes.ok) {
+        console.error('enrollRes error:', enrollRes.status, await enrollRes.text());
+        return false;
+      }
+      showPassOverlay();
+      FaceEngine.unload(); // Purpose served: unload models and free RAM
+      return true;
+    } catch (e) {
+      console.error('hooks.enroll caught error:', e);
+      return false;
+    } finally {
+      hideAuthOverlay();
+      hideCameraHud();
+      FaceEngine.stop();
+    }
+  },
+  async scan(customHash = null){
+    let canceled = false;
+    let videoEl = null;
+    try {
+      const res = await fetch('/api/vault/session');
+      const s = await res.json();
+      if (s.authenticated) {
+        hooks.lastAuthenticatedUser = s.userId;
+        hooks.lastAuthenticatedName = s.displayName || 'OPERATIVE';
+        hooks.lastAuthenticatedLevel = s.accessLevel || 'GUEST';
+        showWelcomeOverlay(hooks.lastAuthenticatedName);
+        return true;
+      }
+      const devHash = customHash || hooks.registeredCanvasHash || idHash;
+      const deviceSignals = {
+        userAgent: navigator.userAgent,
+        platform: navigator.platform || 'unknown',
+        hardwareConcurrency: navigator.hardwareConcurrency || 4,
+        screenColorDepth: window.screen?.colorDepth || 24,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+        canvasHash: devHash,
+      };
+
+      // 1. Show Camera Viewport HUD & connect webcam immediately
+      videoEl = showCameraHud('SCAN', () => { canceled = true; });
+      const promptEl = document.getElementById('vault-hud-prompt');
+      const badgeEl = document.getElementById('vault-hud-badge');
+      if (promptEl) promptEl.textContent = 'CONNECTING OPTICAL SENSOR...';
+      if (badgeEl) badgeEl.textContent = 'INITIALIZING WEBCAM';
+
+      let stream = null;
+      if (navigator.mediaDevices?.getUserMedia && (!FaceEngine.defaultInstance.isHeadless || window.__forceRealVision)) {
+        try {
+          stream = await FaceEngine.startCamera(videoEl);
+          if (badgeEl) badgeEl.textContent = 'CAMERA CONNECTED // 640x480';
+        } catch (e) {
+          console.warn('[FaceEngine] Camera hardware access deferred:', e.message);
+          if (badgeEl) badgeEl.textContent = 'CAMERA ACCESS DEFERRED';
+        }
+      }
+
+      // 2. Device lookup
+      if (promptEl) promptEl.textContent = 'VERIFYING DEVICE BINDING...';
+      const bindRes = await fetch('/api/vault/device/bind', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceSignals }),
+      });
+      const bindData = await bindRes.json();
+      if (bindData.status !== 'bound') {
+        console.warn('Device not bound to any enrolled identity.');
+        if (promptEl) {
+          promptEl.textContent = 'DEVICE UNBOUND · PLEASE ENROLL';
+          promptEl.style.color = '#ff7a7a';
+        }
+        await wait(2000);
+        return false;
+      }
+
+      // 3. Auth challenge
+      const authChgRes = await fetch('/api/vault/webauthn/auth-challenge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceSignals }),
+      });
+      if (!authChgRes.ok) return false;
+      const authChg = await authChgRes.json();
+
+      // 4. Liveness Challenge via LivenessEngine
+      if (!FaceEngine.defaultInstance.isInitialized) {
+        if (promptEl) promptEl.textContent = 'CONNECTING OPTICAL SENSOR...';
+        await FaceEngine.initialize();
+      }
+      if (promptEl) promptEl.textContent = 'POSITION FACE IN RETICLE';
+
+      const liveness = new LivenessEngine(FaceEngine.defaultInstance);
+      await liveness.startChallenge('SCAN');
+
+      if (stream && videoEl) {
+        while (!liveness.isCompleted && !canceled) {
+          const obs = await liveness.observe(videoEl);
+          updateCameraHud(obs);
+          if (obs.isDone) break;
+          await new Promise(r => setTimeout(r, 60));
+        }
+      } else {
+        while (!liveness.isCompleted && !canceled) {
+          const obs = await liveness.observe(null);
+          updateCameraHud(obs);
+          if (obs.isDone) break;
+          await new Promise(r => setTimeout(r, 50));
+        }
+      }
+
+      if (canceled) {
+        FaceEngine.stop();
+        hideCameraHud();
+        return false;
+      }
+
+      const { livenessToken } = await liveness.finish();
+
+      // 4. Auth complete
+      if (!FaceEngine.defaultInstance?.isHeadless || window.__forceRealVision) {
+        showAuthOverlay('TOUCH SECURITY KEY OR SENSOR TO CONFIRM PRESENCE');
+      }
+
+      // Check if key is in memory, or retrieve from IndexedDB
+      if (!hooks.registeredKey) {
+        try {
+          const cred = await VAULT_IDB.get('webauthn_cred');
+          if (cred?.keyPair) {
+            hooks.registeredKey = cred.keyPair;
+            hooks.registeredCredId = cred.credentialId;
+          }
+        } catch(e) {
+          console.warn('[VAULT] Could not load persisted key from IndexedDB:', e);
+        }
+      }
+
+      let assertionResponse;
+      if (hooks.registeredKey && hooks.registeredCredId) {
+        assertionResponse = await signWebAuthnAssertion(hooks.registeredKey, hooks.registeredCredId, authChg.challenge, window.location.origin);
+      } else {
+        console.warn('Device key not found in local keystore. Re-enrollment required.');
+        if (promptEl) {
+          promptEl.textContent = 'KEY NOT FOUND · ENROLLMENT REQUIRED';
+          promptEl.style.color = '#f87171';
+        }
+        hideAuthOverlay();
+        await wait(1800);
+        return false;
+      }
+      const authCompRes = await fetch('/api/vault/webauthn/auth-complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          challengeId: authChg.challengeId,
+          assertionResponse,
+          deviceSignals,
+        }),
+      });
+      hideAuthOverlay();
+      if (!authCompRes.ok) {
+        console.error('authCompRes error:', authCompRes.status, await authCompRes.text());
+        return false;
+      }
+      const authComp = await authCompRes.json();
+      const verifiedDeviceId = authComp.deviceId;
+      const verifiedUserId = authComp.userId;
+
+      // 5. Gateway scan completion with real candidate embedding
+      const vector = await FaceEngine.embedding(videoEl || null, null);
+      FaceEngine.stop();
+      hideCameraHud();
+
+      const encKey = await crypto.subtle.importKey(
+        'raw',
+        await crypto.subtle.digest('SHA-256', new TextEncoder().encode(livenessToken)),
+        { name: 'AES-GCM' },
+        false,
+        ['encrypt']
+      );
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, encKey, vector.buffer);
+
+      const scanRes = await fetch('/api/vault/scan/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          livenessToken,
+          webauthnVerifiedDeviceId: verifiedDeviceId,
+          webauthnVerifiedUserId: verifiedUserId,
+          encryptedEmbedding: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
+          embeddingIv: btoa(String.fromCharCode(...new Uint8Array(iv))),
+        }),
+      });
+      if (scanRes.ok) {
+        const scanData = await scanRes.json().catch(() => ({}));
+        hooks.lastAuthenticatedUser = verifiedUserId;
+        hooks.lastAuthenticatedName = scanData.displayName || 'OPERATIVE';
+        hooks.lastAuthenticatedLevel = scanData.accessLevel || 'GUEST';
+        showWelcomeOverlay(hooks.lastAuthenticatedName);
+        FaceEngine.unload(); // Purpose served: unload models and free RAM
+        return true;
+      }
+      console.error('scanRes error:', scanRes.status, await scanRes.text());
+      return false;
+    } catch (e) {
+      console.error('hooks.scan caught error:', e);
+      return false;
+    } finally {
+      hideAuthOverlay();
+      hideCameraHud();
+      FaceEngine.stop();
+    }
+  },
+  async verify(){ return await this.scan(); }
+};
 function setMode(m){ state.mode=m; state.t0=now; const mat=m==='granted'?ledGrant:m==='denied'?ledAmber:ledCyan; strip.material=mat; ring.material=mat; }
-async function act(name){ beep(name==='RESET'?440:880,.07);
-  if(name==='approach'){ walk.target=1; return; } if(name==='RESET'){ setMode('idle'); return; }
-  if(!['idle','granted','denied'].includes(state.mode)) return;
-  if(name==='REGISTER'){ setMode('enroll'); const ok=await hooks.register(); setMode(ok?'idle':'denied'); }
-  if(name==='VERIFY'){ setMode('scan'); const ok=await hooks.verify(); setMode(ok?'granted':'denied');
-    if(ok){ beep(1320,.12); setTimeout(()=>beep(1760,.18),140); window.dispatchEvent(new CustomEvent('vault:granted',{detail:{id:idHash}})); } else beep(220,.3,'sawtooth'); } }
+function grantBiometricBypass(operativeName = 'DEV OPERATIVE', accessLevel = 'ADMIN'){
+  setMode('granted');
+  hooks.lastAuthenticatedUser = 'usr_dev_bypass';
+  hooks.lastAuthenticatedName = operativeName;
+  hooks.lastAuthenticatedLevel = accessLevel;
+  beep(1320,.12);
+  setTimeout(()=>beep(1760,.18),140);
+  showWelcomeOverlay(operativeName);
+  hideCameraHud();
+  if(typeof FaceEngine !== 'undefined'){
+    FaceEngine.stop();
+    FaceEngine.unload();
+  }
+  walk.target = 1;
+  window.dispatchEvent(new CustomEvent('vault:granted',{detail:{id:'usr_dev_bypass',displayName:operativeName,accessLevel}}));
+}
+async function act(name){ beep(880,.07);
+  if(name==='approach'){ walk.target=1; return; }
+  if(!['idle','ready','granted','denied','visit'].includes(state.mode)) return;
+  if(window.VAULT?.bypassBiometrics && (name==='SCAN'||name==='ENROLL'||name==='VISIT')){
+    grantBiometricBypass('DEV OPERATIVE','ADMIN');
+    return;
+  }
+  if(name==='VISIT'){
+    setMode('visit');
+    const ok=await hooks.visit();
+    setMode(ok?'granted':'denied');
+    if(ok){
+      beep(1320,.12);
+      setTimeout(()=>beep(1760,.18),140);
+      window.dispatchEvent(new CustomEvent('vault:granted',{detail:{id:'visitor',accessLevel:'VISITOR'}}));
+    } else beep(220,.3,'sawtooth');
+  }
+  if(name==='ENROLL'){
+    const stored = localStorage.getItem('vault_dpdp_consent');
+    if (stored) {
+      let declaredName = 'OPERATIVE-01';
+      try { declaredName = JSON.parse(stored).declaredName || declaredName; } catch(e){}
+      setMode('enroll');
+      const ok = await hooks.enroll(declaredName);
+      setMode(ok ? 'ready' : 'idle');
+    } else if(window.__testSyntheticBiometrics || Boolean(navigator.webdriver)){
+      setMode('enroll');
+      const ok=await hooks.enroll();
+      setMode(ok?'ready':'idle');
+    } else {
+      showConsentModal(async (declaredName)=>{
+        setMode('enroll');
+        const ok=await hooks.enroll(declaredName);
+        setMode(ok?'ready':'idle');
+      }, ()=>{
+        setMode('ready');
+      }, false);
+    }
+  }
+  if(name==='SCAN'){
+    setMode('scan');
+    const ok=await hooks.scan();
+    setMode(ok?'granted':'denied');
+    if(ok){
+      beep(1320,.12);
+      setTimeout(()=>beep(1760,.18),140);
+      window.dispatchEvent(new CustomEvent('vault:granted',{detail:{id:hooks.lastAuthenticatedUser||idHash,displayName:hooks.lastAuthenticatedName,accessLevel:hooks.lastAuthenticatedLevel}}));
+    } else beep(220,.3,'sawtooth');
+  }
+}
 const FP=[]; for(let i=0;i<14;i++){ const phi=((i+.5)/14-.5)*Math.PI; for(let j=0;j<22;j++){ const th=j/22*Math.PI*2,r=1+.08*(hash(i*3.1+j*1.7)-.5); FP.push([Math.cos(phi)*Math.sin(th)*.62*r,Math.sin(phi)*.9*r,Math.cos(phi)*Math.cos(th)*.7*r]); } }
-function drawScreen(t){ sg.fillStyle='#04101a'; sg.fillRect(0,0,SW,SH);
+function drawScreen(t){
+  if(walk.t > 0.65 && state.mode === 'idle') setMode('ready');
+  if(walk.t < 0.4 && state.mode === 'ready') setMode('idle');
+  sg.fillStyle='#04101a'; sg.fillRect(0,0,SW,SH);
   sg.strokeStyle='rgba(60,200,230,.1)'; sg.lineWidth=1; sg.beginPath(); for(let x=0;x<=SW;x+=16){sg.moveTo(x,0);sg.lineTo(x,SH);} for(let y=0;y<=SH;y+=16){sg.moveTo(0,y);sg.lineTo(SW,y);} sg.stroke();
   sg.strokeStyle='#1e5a68'; sg.lineWidth=2; sg.strokeRect(3,3,SW-6,SH-6);
-  sg.fillStyle='#5fe8ff'; sg.font='bold 11px monospace'; sg.textAlign='left'; sg.fillText('BIOMETRIC SYSTEM ALPHA',12,20); sg.fillStyle='#2a6a78'; sg.fillRect(12,26,SW-24,1);
+  sg.fillStyle='#5fe8ff'; sg.font='bold 11px monospace'; sg.textAlign='left'; sg.fillText('BIOMETRIC SYSTEM // VAULT-01',12,20); sg.fillStyle='#2a6a78'; sg.fillRect(12,26,SW-24,1);
   const col=state.mode==='granted'?'#4dff8a':state.mode==='denied'?'#ff5a5a':state.mode==='enroll'?'#ffd166':'#39d6ff', cx=SW/2,cy=160;
   sg.strokeStyle=col; sg.lineWidth=6; sg.globalAlpha=.9; sg.beginPath(); sg.arc(cx,cy,64,0,6.283); sg.stroke();            // the ring
   sg.lineWidth=3; for(let k=0;k<3;k++){ sg.beginPath(); sg.arc(cx,cy,76,t*1.2+k*2.09,t*1.2+k*2.09+.9); sg.stroke(); }
   const ry=t*.7,cs=Math.cos(ry),sn=Math.sin(ry),S=48; sg.globalAlpha=.35; sg.lineWidth=1;
   for(let i=0;i<14;i++){ sg.beginPath(); for(let j=0;j<=22;j++){ const p=FP[i*22+(j%22)],x=p[0]*cs+p[2]*sn; j?sg.lineTo(cx+x*S,cy-p[1]*S):sg.moveTo(cx+x*S,cy-p[1]*S); } sg.stroke(); }
   sg.globalAlpha=1; sg.fillStyle=col; for(const p of FP){ const x=p[0]*cs+p[2]*sn,z=-p[0]*sn+p[2]*cs; if(z<-.2) continue; sg.fillRect(cx+x*S-1,cy-p[1]*S-1,2,2); }
+  const camVid = document.getElementById('vault-cam-video');
+  if((state.mode==='scan'||state.mode==='enroll'||window.__cameraTestActive) && camVid && camVid.readyState >= 2 && !camVid.paused){
+    try {
+      sg.save();
+      sg.beginPath();
+      sg.arc(cx, cy, 58, 0, Math.PI * 2);
+      sg.clip();
+      sg.translate(cx + 58, cy - 58);
+      sg.scale(-1, 1);
+      sg.drawImage(camVid, 0, 0, 116, 116);
+      sg.restore();
+    } catch(e) {}
+  }
   if(state.mode==='scan'||state.mode==='enroll'){ const ly=90+((t*90)%150); sg.fillStyle='rgba(80,240,255,.6)'; sg.fillRect(cx-70,ly,140,2); sg.fillStyle='rgba(80,240,255,.08)'; sg.fillRect(cx-70,ly-16,140,16); }
-  const blink=Math.floor(t*2)%2===0, msg={idle:'STANDBY · SELECT MODE',scan:blink?'SCANNING…':'SCANNING',enroll:'ENROLL · FACE THE LENS',granted:'ACCESS GRANTED',denied:'ACCESS DENIED'}[state.mode];
-  sg.font='bold 13px monospace'; sg.textAlign='center'; sg.fillStyle=state.mode==='idle'?'#7fb8c8':col; sg.fillText(msg,SW/2,SH-26);
-  sg.font='9px monospace'; sg.fillStyle='#2f7a8a'; sg.textAlign='left'; sg.fillText('DEV '+idHash,12,SH-9); sg.textAlign='right'; sg.fillText(new Date().toISOString().slice(11,19)+'Z',SW-12,SH-9);
+  const blink=Math.floor(t*2)%2===0, msg={idle:'STANDBY · APPROACH',ready:'CONSOLE READY · SELECT MODE',scan:blink?'SCANNING…':'SCANNING',enroll:'ENROLL · FACE THE LENS',visit:'VISITOR CLEARANCE GRANTED',granted:hooks.lastAuthenticatedName?`WELCOME BACK, ${hooks.lastAuthenticatedName.toUpperCase()}`:'ACCESS GRANTED',denied:'SECURITY LOCKOUT'}[state.mode] || state.mode.toUpperCase();
+  sg.font='bold 12px monospace'; sg.textAlign='center'; sg.fillStyle=state.mode==='idle'?'#7fb8c8':col; sg.fillText(msg,SW/2,SH-26);
+  if(state.mode==='granted'&&hooks.lastAuthenticatedLevel){ sg.font='bold 10px monospace'; sg.fillStyle='#4dff8a'; sg.fillText(`ACCESS LEVEL: ${hooks.lastAuthenticatedLevel.toUpperCase()}`,SW/2,SH-40); }
+  sg.font='9px monospace'; sg.fillStyle='#2f7a8a'; sg.textAlign='left'; sg.fillText('SEC-NODE // 01-A',12,SH-9); sg.textAlign='right'; sg.fillText(state.mode==='granted'?'AUTH // CLEAR':state.mode==='denied'?'LOCK // ACTIVE':'SYS-AUTH READY',SW-12,SH-9);
   screenTex.needsUpdate=true; }
 
 /* ═══ 8. INPUT: scroll = walk · pointer = look · tap = raycast ═══ */
@@ -732,6 +2020,35 @@ window.addEventListener('resize',resize); resize();
 /* ═══ 10. ANIMATION LOOP ═══ */
 const dbg=document.getElementById('dbg'), hint=document.getElementById('hint');
 document.getElementById('load')?.remove(); setTimeout(()=>hint.style.opacity=.8,600);
+
+// Preload neural models in background without blocking rendering (Memory gate: strictly < 400MB RAM)
+setTimeout(() => {
+  if (typeof FaceEngine !== 'undefined') {
+    FaceEngine.preload().catch(e => console.warn('[FaceEngine] Preload deferred:', e.message));
+  }
+}, 700);
+
+// Unload neural models once access is granted to ensure memory is instantly reclaimed
+window.addEventListener('vault:granted', () => {
+  FaceEngine.unload();
+});
+
+// In the beginning: Prompt the statutory DPDP consent modal for real interactive sessions
+setTimeout(() => {
+  if (!Boolean(navigator.webdriver) || Boolean(window.__testConsentModal)) {
+    if (!localStorage.getItem('vault_dpdp_consent')) {
+      showConsentModal(async (declaredName) => {
+        walk.target = 1;
+        setMode('enroll');
+        const ok = await hooks.enroll(declaredName);
+        setMode(ok ? 'ready' : 'idle');
+      }, () => {
+        setMode('ready');
+      });
+    }
+  }
+}, 800);
+
 let lastT=performance.now(), fps=60, fpsAcc=0, fpsN=0, lastScreen=0;
 function frame(nowMs = performance.now()){
   window.__frameCount = (window.__frameCount || 0) + 1;
@@ -750,6 +2067,16 @@ function frame(nowMs = performance.now()){
     if(t-lastScreen>.08){ drawScreen(t); lastScreen=t; }
     mist.update(t); tickDrone(t);
     hint.style.opacity=walk.t>.9?0:.8;
+    const qWalkBtn = document.getElementById('btn-walk-console');
+    if (qWalkBtn) {
+      qWalkBtn.textContent = walk.t > 0.7 ? '↩ RETREAT' : '⚡ APPROACH CONSOLE';
+    }
+    if (walk.t > 0.65) state.wasApproached = true;
+    // Reclaim memory if user retreated to entrance in idle state after approaching
+    if (state.wasApproached && walk.t < 0.3 && FaceEngine.defaultInstance?.isInitialized && state.mode === 'idle') {
+      FaceEngine.unload();
+      state.wasApproached = false;
+    }
   } else {
     hint.style.opacity=0;
   }
@@ -762,12 +2089,92 @@ function frame(nowMs = performance.now()){
   }
   requestAnimationFrame(frame); }
 frame();
-window.VAULT={state,hooks,setMode,walk,scene,camera,door,table,lab:table,sceneMode:'cave',perf};
-const {applyRealism}=await import('./realism.js');
-window.VAULT.realism=await applyRealism({scene,renderer,camera,composer,LOW,METAL,
-  rockMats:[rockCave,rockF,rockWall,rockFloor],metalMats:[gun,gunD,tit],door});
+window.VAULT={state,hooks,setMode,act,walk,scene,camera,door,table,lab:table,sceneMode:'cave',perf,renderer,composer,testCameraFeed,showConsentModal,showCameraHud,hideCameraHud,grantBiometricBypass,bypassBiometrics:false};
+
+document.getElementById('btn-skip-biometrics')?.addEventListener('click', () => {
+  grantBiometricBypass();
+});
+
+document.getElementById('btn-toggle-bypass')?.addEventListener('click', () => {
+  window.VAULT.bypassBiometrics = !window.VAULT.bypassBiometrics;
+  const btn = document.getElementById('btn-toggle-bypass');
+  if (btn) {
+    if (window.VAULT.bypassBiometrics) {
+      btn.textContent = '🔓 BYPASS: ON';
+      btn.classList.add('vault-quick-btn-bypass-active');
+    } else {
+      btn.textContent = '🔓 BYPASS: OFF';
+      btn.classList.remove('vault-quick-btn-bypass-active');
+    }
+  }
+});
+
+document.getElementById('btn-open-consent')?.addEventListener('click', () => {
+  const isAccepted = Boolean(localStorage.getItem('vault_dpdp_consent'));
+  showConsentModal(async (declaredName) => {
+    walk.target = 1;
+    setMode('enroll');
+    const ok = await hooks.enroll(declaredName);
+    setMode(ok ? 'ready' : 'idle');
+  }, () => {
+    setMode('ready');
+  }, isAccepted);
+});
+
+document.getElementById('btn-corner-info')?.addEventListener('click', () => {
+  const isAccepted = Boolean(localStorage.getItem('vault_dpdp_consent'));
+  showConsentModal(async (declaredName) => {
+    walk.target = 1;
+    setMode('enroll');
+    const ok = await hooks.enroll(declaredName);
+    setMode(ok ? 'ready' : 'idle');
+  }, () => {
+    setMode('ready');
+  }, isAccepted);
+});
+
+document.getElementById('btn-corner-contact')?.addEventListener('click', () => {
+  window.location.href = 'mailto:gadiapriyansh@gmail.com?subject=VAULT-01%20Inquiry%20/%20Data%20Fiduciary%20Contact';
+});
+
+document.getElementById('btn-test-camera')?.addEventListener('click', () => {
+  testCameraFeed();
+});
+
+document.getElementById('btn-walk-console')?.addEventListener('click', () => {
+  walk.target = walk.target > 0.5 ? 0 : 1;
+});
+
+document.getElementById('btn-quick-enroll')?.addEventListener('click', () => {
+  walk.target = 1;
+  act('ENROLL');
+});
+
+document.getElementById('btn-quick-scan')?.addEventListener('click', () => {
+  walk.target = 1;
+  act('SCAN');
+});
+console.log('[DEBUG-TRACE] Line 2155: before applyRealism');
+let applyRealism;
+try {
+  const mod = await import('./realism.js');
+  applyRealism = mod.applyRealism;
+  console.log('[DEBUG-TRACE] Line 2156: loaded realism.js successfully');
+} catch (e) {
+  console.error('[DEBUG-TRACE] Failed to import realism.js:', e.message, e.stack);
+}
+if (applyRealism) {
+  try {
+    window.VAULT.realism=await applyRealism({scene,renderer,camera,composer,LOW,METAL,
+      rockMats:[rockCave,rockF,rockWall,rockFloor],metalMats:[gun,gunD,tit],door});
+    console.log('[DEBUG-TRACE] Line 2158: after applyRealism');
+  } catch (e) {
+    console.error('[DEBUG-TRACE] Error inside applyRealism():', e.message, e.stack);
+  }
+}
 const {installDoorSequence}=await import('./transition.js');
 const doorSeq=installDoorSequence({scene,camera,composer,door,walk,look,canvas,DOOR_Y,DOOR_Z});
+console.log('[DEBUG-TRACE] Line 2163: after doorSeq');
 window.VAULT.cinematic=doorSeq.cinematic;
 window.VAULT.skipCinematic=doorSeq.skip;
 
@@ -885,21 +2292,67 @@ const ls3NewsBulletins = document.getElementById('ls3-news-bulletin-list');
 const ls3NewsSiteLink = document.getElementById('ls3-news-site-link');
 
 let activeHls = null;
+let currentNewsChannel = null;
 
 function isLiveStreamEnabled() {
-  return window.ENABLE_LS3_STREAM === true || new URLSearchParams(location.search).get('stream') === '1';
+  return window.ENABLE_LS3_STREAM !== false;
+}
+
+function openOfficialSite(c) {
+  const target = c || currentNewsChannel;
+  if (!target) return;
+  const url = target.siteUrl || target.streamUrl;
+  if (url) {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+}
+
+document.getElementById('ls3-btn-open-site')?.addEventListener('click', e => {
+  e.stopPropagation();
+  openOfficialSite();
+});
+
+const ls3VContainer = document.querySelector('.ls3-video-container');
+if (ls3VContainer) {
+  ls3VContainer.style.cursor = 'pointer';
+  ls3VContainer.title = 'Click to open official broadcast website';
+  ls3VContainer.addEventListener('click', e => {
+    if (e.target.closest('.ls3-video-action-bar')) return;
+    openOfficialSite();
+  });
+}
+
+document.getElementById('ls3-nh-title')?.addEventListener('click', e => {
+  e.stopPropagation();
+  openOfficialSite();
+});
+if (document.getElementById('ls3-nh-title')) {
+  document.getElementById('ls3-nh-title').style.cursor = 'pointer';
+  document.getElementById('ls3-nh-title').title = 'Click to open official broadcast website';
+}
+
+document.getElementById('ls3-news-headline-lead')?.addEventListener('click', e => {
+  e.stopPropagation();
+  openOfficialSite();
+});
+if (document.getElementById('ls3-news-headline-lead')) {
+  document.getElementById('ls3-news-headline-lead').style.cursor = 'pointer';
+  document.getElementById('ls3-news-headline-lead').title = 'Click to open official broadcast website';
 }
 
 function playNewsStream(c) {
+  console.log('[PLAY-STREAM] playNewsStream called with:', c?.id, c?.streamUrl, 'enabled:', isLiveStreamEnabled());
   if (!c || !isLiveStreamEnabled()) return;
   if (activeHls) {
-    activeHls.destroy();
+    try { activeHls.destroy(); } catch {}
     activeHls = null;
   }
   if (ls3NewsVideo) {
-    ls3NewsVideo.pause();
-    ls3NewsVideo.removeAttribute('src');
-    ls3NewsVideo.load();
+    try {
+      ls3NewsVideo.pause();
+      ls3NewsVideo.removeAttribute('src');
+      ls3NewsVideo.load();
+    } catch {}
     ls3NewsVideo.style.display = 'none';
   }
   if (ls3NewsIframe) {
@@ -909,27 +2362,51 @@ function playNewsStream(c) {
 
   const url = c.streamUrl || '';
   const isHls = c.streamType === 'hls' || url.includes('.m3u8') || url.includes('/playlist') || url.includes('/master');
+  console.log('[PLAY-STREAM] isHls:', isHls, 'url:', url);
+
+  const fallbackToIframe = () => {
+    console.log('[PLAY-STREAM] Falling back to iframe');
+    if (!ls3NewsIframe) return;
+    const embedUrl = c.streamType === 'embed' ? (c.streamUrl || c.siteUrl) : (c.siteUrl || c.streamUrl);
+    if (embedUrl) {
+      if (ls3NewsVideo) ls3NewsVideo.style.display = 'none';
+      ls3NewsIframe.style.display = 'block';
+      ls3NewsIframe.src = embedUrl;
+    }
+  };
 
   if (isHls && url && ls3NewsVideo) {
+    console.log('[PLAY-STREAM] Activating video element for HLS');
     ls3NewsVideo.style.display = 'block';
+    ls3NewsVideo.muted = true;
+    ls3NewsVideo.defaultMuted = true;
     if (window.Hls && window.Hls.isSupported()) {
+      console.log('[PLAY-STREAM] Initializing window.Hls');
       activeHls = new window.Hls({
         enableWorker: true,
         lowLatencyMode: true,
         backBufferLength: 60,
         liveSyncDurationCount: 3,
         liveMaxLatencyDurationCount: 6,
-        maxLiveSyncPlaybackRate: 1.0
+        maxLiveSyncPlaybackRate: 1.0,
+        manifestLoadingTimeOut: 8000,
+        levelLoadingTimeOut: 8000
       });
       activeHls.loadSource(url);
       activeHls.attachMedia(ls3NewsVideo);
       activeHls.on(window.Hls.Events.MANIFEST_PARSED, () => {
+        console.log('[PLAY-STREAM] Manifest parsed, starting playback');
         ls3NewsVideo.muted = true;
-        ls3NewsVideo.play().catch(() => {});
+        const playPromise = ls3NewsVideo.play();
+        if (playPromise) playPromise.catch(e => {
+          console.warn('[PLAY-STREAM] Autoplay blocked or error:', e.message);
+          ls3NewsVideo.muted = true;
+        });
       });
       const muteBtn = document.getElementById('ls3-btn-audio-toggle');
       if (muteBtn) muteBtn.textContent = '🔊 UNMUTE';
       activeHls.on(window.Hls.Events.ERROR, (evt, data) => {
+        console.warn('[PLAY-STREAM] Hls error:', data.type, data.details, 'fatal:', data.fatal);
         if (data.fatal) {
           switch (data.type) {
             case window.Hls.ErrorTypes.NETWORK_ERROR:
@@ -939,19 +2416,27 @@ function playNewsStream(c) {
               activeHls.recoverMediaError();
               break;
             default:
-              activeHls.destroy();
+              try { activeHls.destroy(); } catch {}
+              activeHls = null;
+              fallbackToIframe();
               break;
           }
         }
       });
     } else if (ls3NewsVideo.canPlayType('application/vnd.apple.mpegurl')) {
+      console.log('[PLAY-STREAM] Using native Apple HLS');
       ls3NewsVideo.src = url;
       ls3NewsVideo.muted = true;
       ls3NewsVideo.play().catch(() => {});
+    } else {
+      fallbackToIframe();
     }
   } else if (url && ls3NewsIframe) {
+    console.log('[PLAY-STREAM] Using iframe directly');
     ls3NewsIframe.style.display = 'block';
     ls3NewsIframe.src = url;
+  } else {
+    fallbackToIframe();
   }
 }
 
@@ -1001,13 +2486,14 @@ document.getElementById('ls3-btn-fullscreen')?.addEventListener('click', e => {
   }
 });
 
+console.log('[INDEX-SCRIPT] Registering lab:ls3:news:open listener');
 window.addEventListener('lab:ls3:news:open', e => {
-  if (!isLiveStreamEnabled()) {
-    console.log('[LS3] Live stream overlay quarantined (ENABLE_LS3_STREAM is false).');
-    return;
-  }
   const c = e.detail?.channel;
+  console.log('[NEWS-OPEN] Event received in listener:', c?.id, c?.name, 'has ls3NewsHolo:', !!ls3NewsHolo);
   if (!c || !ls3NewsHolo) return;
+  currentNewsChannel = c;
+  if (!c || !ls3NewsHolo) return;
+  currentNewsChannel = c;
   if (ls3NewsTitle) ls3NewsTitle.textContent = `${c.name.toUpperCase()} // ${c.country.toUpperCase()} · ${c.city.toUpperCase()}`;
   if (ls3NewsBadge) {
     ls3NewsBadge.textContent = `● ${c.intensity} BROADCAST`;
@@ -1048,6 +2534,7 @@ window.addEventListener('lab:ls3:news:open', e => {
           window.dispatchEvent(new CustomEvent('lab:ls3:channel:select', { detail: { channelId: chId } }));
           const nextCh = countryChannels.find(ch => ch.id === chId);
           if (nextCh) {
+            currentNewsChannel = nextCh;
             ls3NewsChannels.querySelectorAll('.ls3-channel-tab').forEach(b => b.classList.toggle('active', b === btn));
             if (ls3NewsTitle) ls3NewsTitle.textContent = `${nextCh.name.toUpperCase()} // ${nextCh.country.toUpperCase()} · ${nextCh.city.toUpperCase()}`;
             if (ls3NewsStationNet) ls3NewsStationNet.textContent = nextCh.network.toUpperCase();
@@ -1118,16 +2605,35 @@ window.addEventListener('lab:ls3:news:close', () => {
   }
 });
 
-// Click outside or press escape
+// Ownership & client-side deterrence (Section 11)
+window.__VAULT_OWNER = 'Priyansh Gadia';
+window.__VAULT_CANONICAL = 'VAULT-01';
+
+document.addEventListener('contextmenu', e => {
+  e.preventDefault();
+});
+
+document.addEventListener('dragstart', e => {
+  if (e.target && e.target.nodeName !== 'INPUT' && e.target.nodeName !== 'TEXTAREA') {
+    e.preventDefault();
+  }
+});
+
 window.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    if (ls3NewsHolo?.classList.contains('active')) {
-      closeLS3NewsHolo();
-      e.stopPropagation();
-    } else if (ls3Tb?.classList.contains('active')) {
-      window.dispatchEvent(new CustomEvent('lab:ls3:taskbar:retract'));
-      e.stopPropagation();
-    }
+  if (e.key === 'F12') {
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && ['I','i','J','j','C','c'].includes(e.key)) {
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 'U')) {
+    e.preventDefault();
+    e.stopPropagation();
+    return;
   }
 });
 

@@ -164,7 +164,35 @@ export const Node01BiometricPanel: React.FC<Node01BiometricPanelProps> = ({
   }, [terminalStatus, isScanning]);
 
   // Button Click Handlers
-  const handleVerify = () => {
+  const handleVisit = () => {
+    if (isScanning) return;
+    soundFx.playClickBeep();
+    setIsScanning(true);
+    setTerminalStatus('VISITOR SESSION // EPHEMERAL CLEARANCE');
+    setTimeout(() => {
+      soundFx.playAccessGranted();
+      setIsScanning(false);
+      setTerminalStatus('VISITOR CLEARANCE GRANTED');
+      setTimeout(() => {
+        onDoorUnlock();
+      }, 1200);
+    }, 1200);
+  };
+
+  const handleEnroll = () => {
+    if (isScanning) return;
+    soundFx.playClickBeep();
+    setIsScanning(true);
+    setTerminalStatus('ENROLLING OPERATIVE (128-D)...');
+
+    setTimeout(() => {
+      soundFx.playAccessGranted();
+      setIsScanning(false);
+      setTerminalStatus('ENROLLMENT COMPLETE // READY');
+    }, 1400);
+  };
+
+  const handleScan = () => {
     if (isScanning) return;
     soundFx.playScannerSweep();
     setIsScanning(true);
@@ -179,25 +207,6 @@ export const Node01BiometricPanel: React.FC<Node01BiometricPanelProps> = ({
         onDoorUnlock();
       }, 1200);
     }, 1800);
-  };
-
-  const handleRegister = () => {
-    if (isScanning) return;
-    soundFx.playClickBeep();
-    setIsScanning(true);
-    setTerminalStatus('ENROLLING OPERATIVE (128-D)...');
-
-    setTimeout(() => {
-      soundFx.playAccessGranted();
-      setIsScanning(false);
-      setTerminalStatus('ENROLLMENT COMPLETED // TIER 2');
-    }, 1400);
-  };
-
-  const handleReset = () => {
-    soundFx.playClickBeep();
-    setIsScanning(false);
-    setTerminalStatus('STANDBY // 128-D READY');
   };
 
   return (
@@ -316,9 +325,9 @@ export const Node01BiometricPanel: React.FC<Node01BiometricPanelProps> = ({
         {/* Interactive Physical Control Buttons */}
         <div style={{ display: 'flex', gap: '14px', width: '100%' }}>
           <button
-            onClick={handleRegister}
+            onClick={handleVisit}
             onMouseEnter={() => {
-              setHoveredButton('REG');
+              setHoveredButton('VIS');
               soundFx.playHoverBlip();
             }}
             onMouseLeave={() => setHoveredButton(null)}
@@ -329,22 +338,48 @@ export const Node01BiometricPanel: React.FC<Node01BiometricPanelProps> = ({
               fontSize: '0.8rem',
               letterSpacing: '0.14em',
               fontWeight: 'bold',
-              color: hoveredButton === 'REG' ? '#000' : '#00f3ff',
-              background: hoveredButton === 'REG' ? '#00f3ff' : 'rgba(10, 20, 32, 0.8)',
+              color: hoveredButton === 'VIS' ? '#000' : '#00f3ff',
+              background: hoveredButton === 'VIS' ? '#00f3ff' : 'rgba(10, 20, 32, 0.8)',
               border: '1px solid rgba(0, 243, 255, 0.4)',
               borderRadius: '4px',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
-              boxShadow: hoveredButton === 'REG' ? '0 0 16px rgba(0, 243, 255, 0.4)' : 'none',
+              boxShadow: hoveredButton === 'VIS' ? '0 0 16px rgba(0, 243, 255, 0.4)' : 'none',
             }}
           >
-            REGISTER
+            VISIT
           </button>
 
           <button
-            onClick={handleVerify}
+            onClick={handleEnroll}
             onMouseEnter={() => {
-              setHoveredButton('VER');
+              setHoveredButton('ENR');
+              soundFx.playHoverBlip();
+            }}
+            onMouseLeave={() => setHoveredButton(null)}
+            style={{
+              flex: 1,
+              padding: '12px',
+              fontFamily: 'var(--font-telemetry, monospace)',
+              fontSize: '0.85rem',
+              letterSpacing: '0.14em',
+              fontWeight: 'bold',
+              color: hoveredButton === 'ENR' ? '#000' : '#00f3ff',
+              background: hoveredButton === 'ENR' ? '#00f3ff' : 'rgba(10, 20, 32, 0.8)',
+              border: '1px solid rgba(0, 243, 255, 0.4)',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              boxShadow: hoveredButton === 'ENR' ? '0 0 16px rgba(0, 243, 255, 0.4)' : 'none',
+            }}
+          >
+            ENROLL
+          </button>
+
+          <button
+            onClick={handleScan}
+            onMouseEnter={() => {
+              setHoveredButton('SCN');
               soundFx.playHoverBlip();
             }}
             onMouseLeave={() => setHoveredButton(null)}
@@ -355,8 +390,8 @@ export const Node01BiometricPanel: React.FC<Node01BiometricPanelProps> = ({
               fontSize: '0.85rem',
               letterSpacing: '0.16em',
               fontWeight: 'bold',
-              color: hoveredButton === 'VER' ? '#000' : '#00f3ff',
-              background: hoveredButton === 'VER' ? '#00f3ff' : 'rgba(0, 243, 255, 0.15)',
+              color: hoveredButton === 'SCN' ? '#000' : '#00f3ff',
+              background: hoveredButton === 'SCN' ? '#00f3ff' : 'rgba(0, 243, 255, 0.15)',
               border: '1px solid #00f3ff',
               borderRadius: '4px',
               cursor: 'pointer',
@@ -364,33 +399,7 @@ export const Node01BiometricPanel: React.FC<Node01BiometricPanelProps> = ({
               boxShadow: '0 0 14px rgba(0, 243, 255, 0.25)',
             }}
           >
-            {isScanning ? 'AUTHENTICATING...' : 'VERIFY & UNLOCK'}
-          </button>
-
-          <button
-            onClick={handleReset}
-            onMouseEnter={() => {
-              setHoveredButton('RST');
-              soundFx.playHoverBlip();
-            }}
-            onMouseLeave={() => setHoveredButton(null)}
-            style={{
-              flex: 1,
-              padding: '12px',
-              fontFamily: 'var(--font-telemetry, monospace)',
-              fontSize: '0.8rem',
-              letterSpacing: '0.14em',
-              fontWeight: 'bold',
-              color: hoveredButton === 'RST' ? '#000' : '#ff9e2c',
-              background: hoveredButton === 'RST' ? '#ff9e2c' : 'rgba(32, 20, 10, 0.8)',
-              border: '1px solid rgba(255, 158, 44, 0.4)',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              boxShadow: hoveredButton === 'RST' ? '0 0 16px rgba(255, 158, 44, 0.4)' : 'none',
-            }}
-          >
-            RESET
+            {isScanning ? 'AUTHENTICATING...' : 'SCAN'}
           </button>
         </div>
       </div>

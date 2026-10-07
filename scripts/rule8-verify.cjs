@@ -5,6 +5,7 @@ const fs = require('fs');
 async function main() {
   console.log('=== [PROJECT RULES 4, 7 & 8 VERIFICATION GATE] ===');
   const browser = await chromium.launch({
+    channel: process.env.PLAYWRIGHT_CHANNEL || 'chrome',
     headless: true,
     args: ['--use-gl=angle', '--use-angle=gl', '--enable-webgl', '--ignore-gpu-blocklist'],
   });
@@ -35,7 +36,7 @@ async function main() {
   });
 
   try {
-    const port = process.env.PORT || '3000';
+    const port = process.env.PORT || '8788';
     console.log(`1. Navigating to http://localhost:${port}/index.html ...`);
     await page.goto(`http://localhost:${port}/index.html`, { waitUntil: 'load', timeout: 30000 });
 
@@ -121,11 +122,15 @@ async function main() {
       }
     };
 
+    const artDir = process.env.ARTIFACT_DIR || path.join(process.env.USERPROFILE || 'C:\\Users\\LENOVO', '.gemini', 'antigravity-ide', 'brain', '1f9f75f2-06a7-4d90-ade1-7018fdc9dadf');
+    if (!fs.existsSync(artDir)) fs.mkdirSync(artDir, { recursive: true });
+
     // +2.8 s
     await waitTo(2.8);
     await updateConsoleAudit();
     const sc28Path = path.join(outDir, 'cinematic-2.8s.png');
     await page.screenshot({ path: sc28Path });
+    fs.copyFileSync(sc28Path, path.join(artDir, 'cinematic-2.8s.png'));
     console.log(`   -> Captured +2.8s screenshot to: ${sc28Path}`);
 
     // +5.0 s
@@ -133,6 +138,7 @@ async function main() {
     await updateConsoleAudit();
     const sc50Path = path.join(outDir, 'cinematic-5.0s.png');
     await page.screenshot({ path: sc50Path });
+    fs.copyFileSync(sc50Path, path.join(artDir, 'cinematic-5.0s.png'));
     const doorPos50 = await page.evaluate(() => {
       const d = window.VAULT.door;
       return { x: d.position.x, y: d.position.y, z: d.position.z };
@@ -145,6 +151,7 @@ async function main() {
     await updateConsoleAudit();
     const sc90Path = path.join(outDir, 'cinematic-9.0s.png');
     await page.screenshot({ path: sc90Path });
+    fs.copyFileSync(sc90Path, path.join(artDir, 'cinematic-9.0s.png'));
     const camPos90 = await page.evaluate(() => {
       const c = window.VAULT.camera;
       return { x: c.position.x, y: c.position.y, z: c.position.z };
@@ -157,6 +164,7 @@ async function main() {
     await updateConsoleAudit();
     const sc125Path = path.join(outDir, 'cinematic-12.5s.png');
     await page.screenshot({ path: sc125Path });
+    fs.copyFileSync(sc125Path, path.join(artDir, 'cinematic-12.5s.png'));
     console.log(`   -> Captured +12.5s screenshot to: ${sc125Path}`);
 
     // Compute luminance at 12.5s directly from canvas pixels in browser

@@ -1,0 +1,8 @@
+{
+  "helmet": "COMPONENT: HELMET\n\nMeshes: 4\nSkinned meshes: 0\nVertices: 12720\nTriangles: 20013\nMaterials: 4\nTextures: 0\n\nBounding Box:\nWidth: 0.010\nHeight: 0.010\nDepth: 0.009",
+  "arms": "COMPONENT: ARMS\n\nMeshes: 4\nSkinned meshes: 0\nVertices: 42426\nTriangles: 68889\nMaterials: 4\nTextures: 0\n\nBounding Box:\nWidth: 0.036\nHeight: 0.019\nDepth: 0.008",
+  "torso": "COMPONENT: TORSO\n\nMeshes: 6\nSkinned meshes: 0\nVertices: 176526\nTriangles: 234107\nMaterials: 6\nTextures: 0\n\nBounding Box:\nWidth: 0.020\nHeight: 0.026\nDepth: 0.013",
+  "gauntlets": "COMPONENT: GAUNTLETS\n\nMeshes: 4\nSkinned meshes: 0\nVertices: 56175\nTriangles: 73712\nMaterials: 4\nTextures: 0\n\nBounding Box:\nWidth: 0.039\nHeight: 0.010\nDepth: 0.007",
+  "legs": "COMPONENT: LEGS\n\nMeshes: 3\nSkinned meshes: 0\nVertices: 50224\nTriangles: 84864\nMaterials: 3\nTextures: 0\n\nBounding Box:\nWidth: 0.015\nHeight: 0.032\nDepth: 0.011",
+  "boots": "COMPONENT: BOOTS\n\nMeshes: 3\nSkinned meshes: 0\nVertices: 111808\nTriangles: 158268\nMaterials: 3\nTextures: 0\n\nBounding Box:\nWidth: 0.015\nHeight: 0.006\nDepth: 0.012"
+}

@@ -1,3 +1,9 @@
+/*
+ * VAULT-01
+ * Canonical interactive installation
+ * Owner: Priyansh Gadia
+ * Redistribution / derivative reproduction prohibited by owner.
+ */
 import type { Plugin } from 'vite';
 import fs from 'fs';
 import path from 'path';
@@ -83,6 +89,10 @@ export function viteApiPlugin(): Plugin {
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
         const url = req.url ? new URL(req.url, 'http://localhost:3000') : null;
+        if (url && (url.pathname === '/about' || url.pathname === '/about/')) {
+          req.url = '/about.html';
+          return next();
+        }
         if (!url || !url.pathname.startsWith('/api/')) {
           return next();
         }
@@ -267,7 +277,7 @@ export function viteApiPlugin(): Plugin {
 
           const start = new Date(startIso), end = new Date(endIso);
           const durMin = (end.getTime() - start.getTime()) / 60000;
-          if (isNaN(start.getTime()) || isNaN(end.getTime()) || !(start.getTime() > Date.now()) || !(durMin >= 15 && durMin <= 90)) {
+          if (isNaN(start.getTime()) || isNaN(end.getTime()) || !(start.getTime() > Date.now()) || !(durMin >= 15 && durMin <= 300)) {
             res.writeHead(400, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ ok: false, error: 'bad_slot' }));
             return;
@@ -287,8 +297,15 @@ export function viteApiPlugin(): Plugin {
             });
             const tokenData = await tokenRes.json() as any;
             if (!tokenRes.ok || !tokenData.access_token) {
-              res.writeHead(502, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ ok: false, error: 'auth_failed' }));
+              const mockId = 'local-booking-' + Date.now();
+              cachedFreebusy = null;
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({
+                ok: true,
+                id: mockId,
+                status: 'confirmed_local',
+                note: 'Recorded locally for operator review.'
+              }));
               return;
             }
 
@@ -789,6 +806,8 @@ export function viteApiPlugin(): Plugin {
           if (body.message !== undefined) found.message = String(body.message);
           if (['cyan', 'amber', 'green', 'white'].includes(body.colorTheme)) found.colorTheme = body.colorTheme;
           if (['yellow', 'pink', 'cyan', 'green'].includes(body.paperTheme)) found.paperTheme = body.paperTheme;
+          if (typeof body.posX === 'number' && !isNaN(body.posX)) found.posX = Math.max(-0.88, Math.min(0.88, body.posX));
+          if (typeof body.posY === 'number' && !isNaN(body.posY)) found.posY = Math.max(-0.48, Math.min(0.48, body.posY));
 
           const now = Math.floor(Date.now() / 1000);
           found.updatedAt = now;

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Armor Lab - Component Verification</title>
+  <style>
+    body { margin: 0; overflow: hidden; background-color: #888888; font-family: monospace; color: white; }
+    #canvas-container { width: 100vw; height: 100vh; }
+    #ui { position: absolute; top: 10px; left: 10px; z-index: 10; background: rgba(0,0,0,0.7); padding: 15px; border-radius: 5px; }
+    #stats { position: absolute; top: 10px; right: 10px; z-index: 10; background: rgba(0,0,0,0.7); padding: 15px; border-radius: 5px; min-width: 250px; }
+    button { display: block; width: 100%; margin-bottom: 5px; padding: 8px; cursor: pointer; background: #333; color: white; border: 1px solid #555; }
+    button:hover { background: #555; }
+    button.active { background: #00aa00; font-weight: bold; }
+    hr { border-color: #555; }
+  </style>
+</head>
+<body>
+  <div id="ui">
+    <h3>COMPONENTS</h3>
+    <button id="btn-helmet">HELMET</button>
+    <button id="btn-arms">ARMS</button>
+    <button id="btn-torso">TORSO</button>
+    <button id="btn-gauntlets">GAUNTLETS</button>
+    <button id="btn-legs">LEGS</button>
+    <button id="btn-boots">BOOTS</button>
+    <hr>
+    <button id="btn-assembly">FULL ASSEMBLY</button>
+    <button id="btn-exploded">EXPLODED</button>
+    <hr>
+    <button id="btn-wireframe">TOGGLE WIREFRAME (OFF)</button>
+  </div>
+  
+  <div id="stats">
+    <h3>STATISTICS</h3>
+    <div id="stats-content">Select a component...</div>
+  </div>
+
+  <div id="canvas-container"></div>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module" src="./components.js"></script>
+</body>
+</html>

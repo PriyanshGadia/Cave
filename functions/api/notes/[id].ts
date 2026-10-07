@@ -1,3 +1,9 @@
+/*
+ * VAULT-01
+ * Canonical interactive installation
+ * Owner: Priyansh Gadia
+ * Redistribution / derivative reproduction prohibited by owner.
+ */
 interface Env {
   WORKSHOP_DB: D1Database;
 }
@@ -179,6 +185,8 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
     if (inkJson !== undefined) { updates.push('ink_strokes_json = ?'); params.push(inkJson); }
     if (colorTheme !== undefined) { updates.push('color_theme = ?'); params.push(colorTheme); }
     if (paperTheme !== undefined) { updates.push('paper_theme = ?'); params.push(paperTheme); }
+    if (body.posX !== undefined && !isNaN(Number(body.posX))) { updates.push('pos_x = ?'); params.push(Number(body.posX)); }
+    if (body.posY !== undefined && !isNaN(Number(body.posY))) { updates.push('pos_y = ?'); params.push(Number(body.posY)); }
 
     params.push(id);
 
@@ -204,3 +212,52 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
     });
   }
 };
+
+// DELETE /api/notes/:id (Strictly restricted to OWNER only)
+export const onRequestDelete: PagesFunction<Env & { DEVICE_BINDING_SECRET?: string }> = async (context) => {
+  try {
+    const db = context.env.WORKSHOP_DB;
+    const id = context.params.id as string;
+    if (!db || !id) {
+      return new Response(JSON.stringify({ error: 'DATABASE_UNAVAILABLE' }), { status: 503, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    // Owner authorization validation
+    const ownerKey = context.request.headers.get('x-owner-key');
+    const cookieHeader = context.request.headers.get('Cookie') || '';
+    const sessionMatch = cookieHeader.match(/vault_session=([^;]+)/);
+    const sessionId = sessionMatch ? sessionMatch[1] : '';
+
+    let isOwner = false;
+    if (ownerKey && context.env.DEVICE_BINDING_SECRET && ownerKey === context.env.DEVICE_BINDING_SECRET) {
+      isOwner = true;
+    } else if (sessionId) {
+      const sess = await db.prepare(
+        'SELECT access_level FROM vault_sessions WHERE id = ? AND revoked_at IS NULL AND expires_at > unixepoch()'
+      ).bind(sessionId).first<{ access_level: string }>();
+      if (sess && sess.access_level === 'OWNER') {
+        isOwner = true;
+      }
+    }
+
+    if (!isOwner) {
+      return new Response(JSON.stringify({
+        error: 'OWNER_PERMISSIONS_REQUIRED',
+        message: 'Notes once posted stay up for every visitor and can only be removed by the owner.'
+      }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Mark as hidden (or delete)
+    await db.prepare('UPDATE guestbook_entries SET is_hidden = 1, updated_at = unixepoch() WHERE id = ?').bind(id).run();
+
+    return new Response(JSON.stringify({ success: true, id, removed: true }), {
+      headers: { 'Content-Type': 'application/json' }
+    });
+  } catch (err: any) {
+    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+  }
+};
+

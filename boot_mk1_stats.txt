@@ -1,0 +1,10 @@
+VAULT MK-I: BOOTS
+
+Meshes: 14
+Vertices: 98294
+Triangles: 135531
+Materials: 14
+
+Width: 0.015
+Height: 0.007
+Depth: 0.012

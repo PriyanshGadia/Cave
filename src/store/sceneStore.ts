@@ -21,6 +21,34 @@ export type ScenePhase = 'cinematic' | 'orbit';
 
 export type DoorState = 'closed' | 'approaching' | 'unlocking' | 'open';
 
+export type TerminalState =
+  | 'PANEL_IDLE'
+  | 'PANEL_READY'
+  | 'MODE_VISIT'
+  | 'MODE_ENROLL'
+  | 'MODE_SCAN'
+  | 'SECURITY_VERIFICATION'
+  | 'SECURITY_LOCKED'
+  | 'AUTHENTICATED';
+
+export type VaultAccessLevel = 'VISITOR' | 'GUEST' | 'TRUSTED' | 'OWNER';
+
+export interface VaultUserSession {
+  authenticated: boolean;
+  userId?: string | null;
+  displayName?: string;
+  accessLevel: VaultAccessLevel;
+  capabilities: {
+    roam: boolean;
+    tour: boolean;
+    ls1: boolean;
+    ls2Write: boolean;
+    privateResume: boolean;
+    moderation: boolean;
+    ownerControls: boolean;
+  };
+}
+
 interface SceneStore {
   // --- Scene navigation ---
   currentScene: SceneId;
@@ -37,6 +65,14 @@ interface SceneStore {
   // --- Visitor ---
   visitorTier: VisitorTier;
   setVisitorTier: (tier: VisitorTier) => void;
+
+  // --- Terminal State Machine ---
+  terminalState: TerminalState;
+  setTerminalState: (state: TerminalState) => void;
+  vaultSession: VaultUserSession | null;
+  setVaultSession: (session: VaultUserSession | null) => void;
+  rebootAiPrompt: boolean;
+  setRebootAiPrompt: (show: boolean) => void;
 
   // --- Debug ---
   debugSkeletonVisible: boolean;
@@ -76,6 +112,14 @@ export const useSceneStore = create<SceneStore>((set) => ({
   // Visitor
   visitorTier: 0,
   setVisitorTier: (tier) => set({ visitorTier: tier }),
+
+  // Terminal State Machine
+  terminalState: 'PANEL_IDLE',
+  setTerminalState: (state) => set({ terminalState: state }),
+  vaultSession: null,
+  setVaultSession: (session) => set({ vaultSession: session }),
+  rebootAiPrompt: false,
+  setRebootAiPrompt: (show) => set({ rebootAiPrompt: show }),
 
   // Debug — initialized from URL params in App.tsx
   debugSkeletonVisible: false,

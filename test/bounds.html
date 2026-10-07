@@ -1,0 +1,41 @@
+
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <script type="importmap">
+          {
+            "imports": {
+              "three": "../node_modules/three/build/three.module.js",
+              "three/addons/": "../node_modules/three/examples/jsm/"
+            }
+          }
+        </script>
+      </head>
+      <body>
+        <script type="module">
+          import * as THREE from 'three';
+          import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+          window.processGLBs = async (paths) => {
+            const loader = new GLTFLoader();
+            const results = [];
+            
+            for (const p of paths) {
+              const base64 = await window.readGLB(p);
+              const dataUrl = "data:model/gltf-binary;base64," + base64;
+              
+              const gltf = await loader.loadAsync(dataUrl);
+              const box = new THREE.Box3().setFromObject(gltf.scene);
+              
+              results.push({
+                path: p,
+                min: [box.min.x, box.min.y, box.min.z],
+                max: [box.max.x, box.max.y, box.max.z]
+              });
+            }
+            return results;
+          };
+        </script>
+      </body>
+    </html>
+  

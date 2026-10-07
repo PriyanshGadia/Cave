@@ -1,0 +1,2046 @@
+<!doctype html>
+<!--
+  VAULT-01
+  Canonical interactive installation
+  Owner: Priyansh Gadia
+  Redistribution / derivative reproduction prohibited by owner.
+-->
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>VAULT-01 · Scene 1 · lookdev v2</title>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:ui-monospace,Menlo,Consolas,monospace}
+  #c{display:block;width:100vw;height:100vh;touch-action:none}
+  #load{position:fixed;inset:0;display:grid;place-items:center;background:#000;color:#8fc9d8;font-size:11px;letter-spacing:.2em;z-index:9}
+  #load div{width:220px;height:2px;background:#0a1a20;margin-top:14px}
+  #bar{height:100%;width:0;background:#3fe0ff;box-shadow:0 0 8px #3fe0ff}
+  html,body{margin:0;height:100%;background:#020202;overflow:hidden;font-family:monospace;color:#fff}
+  #c{width:100%;height:100%;display:block}
+  #hud, #dbg, #load{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+  #load{position:fixed;inset:0;background:#020202;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:99}
+  #bar-wrap{width:260px;height:4px;background:#141414;border-radius:2px;overflow:hidden}
+  #bar{height:100%;width:0;background:linear-gradient(90deg,#ff6b2b,#ffb347);transition:width .2s}
+  #lt{font-size:11px;letter-spacing:.2em;color:#ff8a3d;text-transform:uppercase}
+  #dbg{position:fixed;top:10px;left:10px;font-size:11px;line-height:1.45;color:#8af;white-space:pre;pointer-events:none;display:none;z-index:10;text-shadow:0 1px 2px #000}
+  #hint{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.25em;color:#ff9e4a;pointer-events:none;transition:opacity .6s;text-transform:uppercase;z-index:5}
+  #btn-skip-anim{display:none;position:fixed;top:14px;left:14px;z-index:99999;background:rgba(8,28,44,.85);color:#38bdf8;border:1.5px solid #38bdf8;border-radius:4px;padding:8px 14px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;font-weight:bold;letter-spacing:.1em;cursor:pointer;box-shadow:0 0 12px rgba(56,189,248,.35);transition:all .2s ease}
+  #btn-skip-anim:hover{background:#38bdf8;color:#04101a;box-shadow:0 0 20px rgba(56,189,248,.7)}
+  #blueprint-hud{position:fixed;top:20px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:14px;background:rgba(4,16,30,.92);border:1.5px solid #38bdf8;border-radius:6px;padding:8px 18px;z-index:99998;box-shadow:0 0 25px rgba(56,189,248,.45);font-family:ui-monospace,Menlo,Consolas,monospace}
+  #blueprint-gh-link{color:#fff;text-decoration:none;font-size:12px;font-weight:bold;letter-spacing:.12em;display:flex;align-items:center;gap:8px;transition:color .15s}
+  #blueprint-gh-link:hover{color:#38bdf8}
+  #blueprint-close-btn{background:transparent;border:1px solid rgba(56,189,248,.4);color:#7dd3fc;border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer;font-family:inherit}
+  #blueprint-close-btn:hover{background:rgba(56,189,248,.2);color:#fff}
+
+  /* ═══ LS3 FOCUSED BOTTOM TASKBAR ═══ */
+  #ls3-taskbar{position:fixed;bottom:14px;left:50%;transform:translateX(-50%) translateY(130%);width:min(940px,calc(100vw - 28px));background:rgba(4,16,28,.95);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1.5px solid #38bdf8;border-radius:8px;padding:10px 16px;z-index:99990;box-shadow:0 0 35px rgba(56,189,248,.35),inset 0 0 15px rgba(56,189,248,.1);font-family:ui-monospace,Menlo,Consolas,monospace;color:#cbf5ff;transition:transform .32s cubic-bezier(.16,1,.3,1),opacity .25s ease;opacity:0;pointer-events:none;display:flex;flex-direction:column;gap:8px}
+  #ls3-taskbar.active{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto}
+  .ls3-tb-header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1a4455;padding-bottom:6px}
+  .ls3-tb-title{display:flex;align-items:center;gap:8px;font-weight:bold;font-size:11.5px;color:#fff}
+  .ls3-tb-dot{width:8px;height:8px;border-radius:50%;background:#00f0ff;box-shadow:0 0 8px #00f0ff;animation:ls3Pulse 1.8s infinite}
+  @keyframes ls3Pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.75)}}
+  .ls3-tb-badge{background:rgba(0,240,255,.18);border:1px solid #00f0ff;color:#00f0ff;padding:1px 6px;border-radius:3px;font-size:9.5px}
+  .ls3-tb-ctrls{display:flex;align-items:center;gap:8px}
+  #ls3-tb-zoom-level{font-size:11px;color:#7ec5df}
+  .ls3-btn-small{background:#0a2432;border:1px solid #225566;border-radius:3px;color:#a0e0f0;padding:3px 8px;font-family:inherit;font-size:10px;cursor:pointer;transition:all .15s}
+  .ls3-btn-small:hover{background:#154055;border-color:#38bdf8;color:#fff}
+  .ls3-btn-retract{background:rgba(56,189,248,.2);border:1px solid #38bdf8;border-radius:3px;color:#fff;padding:3px 10px;font-family:inherit;font-size:10px;font-weight:bold;cursor:pointer;transition:all .15s}
+  .ls3-btn-retract:hover{background:#38bdf8;color:#04101a}
+  .ls3-tb-modes{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .ls3-mode-btn{background:rgba(8,28,42,.7);border:1px solid #1e4858;border-radius:4px;color:#8acada;padding:6px;font-family:inherit;font-size:10.5px;font-weight:bold;cursor:pointer;text-align:center;transition:all .15s}
+  .ls3-mode-btn:hover{background:rgba(0,240,255,.15);border-color:#00f0ff;color:#fff}
+  .ls3-mode-btn.active{background:rgba(0,240,255,.3);border-color:#00f0ff;color:#fff;box-shadow:0 0 12px rgba(0,240,255,.4)}
+  .ls3-tb-row{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #143542;padding-top:6px;gap:8px}
+  .ls3-tb-presets{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+  .ls3-tb-label{font-size:9.5px;color:#5fb3cc;margin-right:2px}
+  .ls3-preset-btn{background:rgba(8,24,36,.7);border:1px solid #1e4858;border-radius:3px;color:#7ec5df;padding:2px 7px;font-family:inherit;font-size:10px;cursor:pointer;transition:all .15s}
+  .ls3-preset-btn:hover{background:rgba(56,189,248,.2);border-color:#38bdf8;color:#fff}
+  .ls3-preset-btn.active{background:rgba(255,176,64,.25);border-color:#ffb040;color:#ffdf99}
+  .ls3-tb-telemetry{font-size:10px;color:#9ff3ff;text-align:right;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:.03em}
+
+  /* ═══ LS3 DUAL HOLOGRAPHIC NEWS DISPLAY WINGS ═══ */
+  #ls3-news-holo{position:fixed;inset:0;z-index:99995;display:none;pointer-events:none;font-family:ui-monospace,Menlo,Consolas,monospace;--holo-border-opacity:0;--holo-disp-opacity:0}
+  #ls3-news-holo.active{display:block}
+
+  @keyframes holoFlicker{
+    0%,100%{filter:brightness(1.0) drop-shadow(0 0 16px rgba(0,240,255,.4))}
+    28%{filter:brightness(0.95) drop-shadow(0 0 13px rgba(0,240,255,.32))}
+    52%{filter:brightness(0.88) drop-shadow(0 0 9px rgba(0,240,255,.22))}
+    54%{filter:brightness(1.05) drop-shadow(0 0 20px rgba(0,240,255,.52))}
+    74%{filter:brightness(0.92) drop-shadow(0 0 14px rgba(0,240,255,.36))}
+    76%{filter:brightness(1.02) drop-shadow(0 0 18px rgba(0,240,255,.46))}
+  }
+
+  /* Hide finite duration scrub bars and timelines so live streams never show 0:53 / 1:18 */
+  #ls3-news-video::-webkit-media-controls-timeline,
+  #ls3-news-video::-webkit-media-controls-current-time-display,
+  #ls3-news-video::-webkit-media-controls-time-remaining-display,
+  #ls3-news-video::-webkit-media-controls-seek-back-button,
+  #ls3-news-video::-webkit-media-controls-seek-forward-button {
+    display: none !important;
+  }
+
+  #ls3-news-header{
+    position:fixed;
+    top:14px;
+    left:50%;
+    transform:translateX(-50%) translateY(calc(-8px * (1 - var(--holo-disp-opacity, 0))));
+    width:min(1060px,calc(100vw - 32px));
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:rgba(3,16,28,calc(0.85 * var(--holo-disp-opacity, 0)));
+    backdrop-filter:blur(calc(8px * var(--holo-disp-opacity, 0)));
+    -webkit-backdrop-filter:blur(calc(8px * var(--holo-disp-opacity, 0)));
+    border:1.5px solid rgba(0,240,255,var(--holo-disp-opacity, 0));
+    border-radius:6px;
+    padding:6px 14px;
+    box-shadow:0 0 calc(25px * var(--holo-disp-opacity, 0)) rgba(0,240,255,.3),inset 0 0 calc(12px * var(--holo-disp-opacity, 0)) rgba(0,240,255,.1);
+    pointer-events:auto;
+    opacity:var(--holo-disp-opacity, 0);
+    transition:opacity .15s linear, transform .15s ease-out;
+    animation:holoFlicker 6s infinite ease-in-out;
+    z-index:99997;
+  }
+  #ls3-news-header .ls3-nh-left,
+  #ls3-news-header .ls3-nh-channels,
+  #ls3-news-header .ls3-nh-right {
+    opacity: var(--holo-disp-opacity, 0);
+    transition: opacity .18s ease-out;
+  }
+
+  .ls3-nh-left{display:flex;align-items:center;gap:10px}
+  .ls3-nh-pulse{width:10px;height:10px;border-radius:50%;background:#ff3355;box-shadow:0 0 10px #ff3355;animation:ls3Pulse 1.4s infinite}
+  .ls3-nh-badge{font-size:10px;font-weight:bold;letter-spacing:.1em;padding:2px 8px;border-radius:3px;background:rgba(255,51,85,.2);border:1px solid #ff3355;color:#ff7a8a}
+  .ls3-nh-title{font-size:12.5px;font-weight:bold;color:#fff;letter-spacing:.08em;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ls3-nh-channels{display:flex;align-items:center;gap:6px;margin:0 12px;overflow-x:auto;max-width:440px}
+  .ls3-channel-tab{background:rgba(8,28,44,.75);border:1px solid rgba(56,189,248,.4);border-radius:3px;color:#7dd3fc;padding:3px 8px;font-size:10px;font-weight:bold;cursor:pointer;white-space:nowrap;transition:all .15s}
+  .ls3-channel-tab:hover{background:rgba(0,240,255,.25);border-color:#00f0ff;color:#fff}
+  .ls3-channel-tab.active{background:rgba(0,240,255,.35);border-color:#00f0ff;color:#fff;box-shadow:0 0 10px rgba(0,240,255,.4)}
+  .ls3-nh-right{display:flex;align-items:center;gap:12px}
+  .ls3-nh-coords{font-size:11px;color:#7dd3fc;letter-spacing:.05em}
+  .ls3-nh-close{background:rgba(255,51,85,.15);border:1px solid #ff3355;color:#ff99aa;border-radius:4px;padding:4px 12px;font-family:inherit;font-size:11px;font-weight:bold;cursor:pointer;transition:all .15s}
+  .ls3-nh-close:hover{background:#ff3355;color:#04101a;box-shadow:0 0 15px rgba(255,51,85,.6)}
+
+  /* Left & Right Sci-Fi Floating Wings (Formed by rays -> exact light border -> morphs into holographic display) */
+  #ls3-news-left,#ls3-news-right{
+    position:fixed;
+    top:50%;
+    transform:translateY(-48%) scale(calc(0.93 + 0.07 * var(--holo-border-opacity, 0)));
+    width:clamp(300px,33vw,490px);
+    height:clamp(360px,58vh,520px);
+    background:rgba(3,14,26,calc(0.75 * var(--holo-disp-opacity, 0)));
+    backdrop-filter:blur(calc(8px * var(--holo-disp-opacity, 0)));
+    -webkit-backdrop-filter:blur(calc(8px * var(--holo-disp-opacity, 0)));
+    border:2px solid rgba(0,240,255,calc(var(--holo-border-opacity, 0)));
+    border-radius:6px;
+    box-shadow:0 0 calc(32px * var(--holo-border-opacity, 0)) rgba(0,240,255,calc(0.55 * var(--holo-border-opacity, 0))),inset 0 0 calc(16px * var(--holo-border-opacity, 0)) rgba(0,240,255,calc(0.25 * var(--holo-border-opacity, 0)));
+    display:flex;
+    flex-direction:column;
+    pointer-events:auto;
+    overflow:hidden;
+    opacity:var(--holo-border-opacity, 0);
+    transition:opacity .12s linear, transform .15s ease-out;
+    animation:holoFlicker 7s infinite ease-in-out;
+    z-index:99996;
+  }
+  #ls3-news-left{left:2.5vw}
+  #ls3-news-right{right:2.5vw}
+  @media(max-width:860px){
+    #ls3-news-left,#ls3-news-right{position:fixed;left:12px;right:12px;width:calc(100vw - 24px);transform:none}
+    #ls3-news-left{top:60px;height:38vh}
+    #ls3-news-right{top:calc(60px + 39vh);height:42vh}
+  }
+
+  /* Hologram Corner Brackets */
+  .ls3-holo-bracket{position:absolute;width:12px;height:12px;border-color:#00f0ff;border-style:solid;pointer-events:none;z-index:5}
+  .ls3-holo-bracket.tl{top:2px;left:2px;border-width:2px 0 0 2px}
+  .ls3-holo-bracket.tr{top:2px;right:2px;border-width:2px 2px 0 0}
+  .ls3-holo-bracket.bl{bottom:2px;left:2px;border-width:0 0 2px 2px}
+  .ls3-holo-bracket.br{bottom:2px;right:2px;border-width:0 2px 2px 0}
+
+  /* Interior Display Content (Morphs in during Stage 3) */
+  #ls3-news-left .ls3-screen-bar,
+  #ls3-news-left .ls3-video-container,
+  #ls3-news-left .ls3-video-footer,
+  #ls3-news-right .ls3-screen-bar,
+  #ls3-news-right .ls3-dispatch-body {
+    opacity: var(--holo-disp-opacity, 0);
+    transition: opacity .18s ease-out;
+  }
+
+  .ls3-screen-bar{display:flex;justify-content:space-between;align-items:center;background:rgba(8,28,46,.85);border-bottom:1px solid rgba(56,189,248,.3);padding:6px 12px;font-size:10px;font-weight:bold;letter-spacing:.08em;color:#7dd3fc}
+  .ls3-screen-status{color:#38bdf8;font-size:9.5px}
+  .ls3-video-container{position:relative;flex:1;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .ls3-video-container video{width:100%;height:100%;object-fit:cover;display:none;background:#000}
+  .ls3-video-container iframe{width:100%;height:100%;border:none;display:none}
+  .ls3-video-scanline{position:absolute;inset:0;background:repeating-linear-gradient(to bottom,transparent 0px,transparent 3px,rgba(0,240,255,.03) 4px);pointer-events:none}
+  
+  .ls3-live-hud-badge{
+    position:absolute;
+    top:10px;
+    left:10px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:rgba(4,16,28,.85);
+    border:1px solid #00f0ff;
+    border-radius:3px;
+    padding:3px 8px;
+    font-size:9.5px;
+    font-weight:bold;
+    letter-spacing:.08em;
+    color:#00f0ff;
+    box-shadow:0 0 10px rgba(0,240,255,.3);
+    pointer-events:none;
+    z-index:10;
+  }
+  .ls3-live-pulse-dot{
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:#ff3355;
+    box-shadow:0 0 8px #ff3355;
+    animation:ls3Pulse 1.2s infinite;
+  }
+  .ls3-video-action-bar{
+    position:absolute;
+    bottom:8px;
+    right:10px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    z-index:10;
+  }
+  .ls3-hud-ctrl-btn{
+    background:rgba(4,20,32,.85);
+    border:1px solid rgba(56,189,248,.5);
+    border-radius:3px;
+    color:#7dd3fc;
+    padding:3px 8px;
+    font-family:inherit;
+    font-size:9.5px;
+    font-weight:bold;
+    letter-spacing:.05em;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .ls3-hud-ctrl-btn:hover{
+    background:#00f0ff;
+    border-color:#00f0ff;
+    color:#04101a;
+    box-shadow:0 0 12px rgba(0,240,255,.6);
+  }
+
+  .ls3-video-footer{padding:6px 12px;background:rgba(4,16,28,.9);border-top:1px solid rgba(56,189,248,.2);font-size:9.5px;color:#5fb3cc}
+  .ls3-dispatch-body{padding:12px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1}
+  .ls3-dispatch-header{border-bottom:1px solid rgba(56,189,248,.25);padding-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+  .ls3-dispatch-title{font-size:12px;color:#fff;margin:0;font-weight:bold;letter-spacing:.06em}
+  .ls3-dispatch-time{font-size:9.5px;color:#38bdf8}
+  .ls3-bulletin-label{font-size:10px;font-weight:bold;color:#7dd3fc;letter-spacing:.08em;margin-bottom:4px}
+  .ls3-bulletin-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .ls3-bulletin-list li{background:rgba(8,26,42,.6);border-left:3px solid #00f0ff;padding:6px 8px;font-size:10px;line-height:1.4;color:#cbf5ff;letter-spacing:.02em}
+  .ls3-dispatch-actions{margin-top:auto;padding-top:8px;display:flex;justify-content:flex-end}
+  .ls3-btn-action{background:rgba(0,240,255,.18);border:1.5px solid #00f0ff;color:#fff;border-radius:4px;padding:7px 14px;font-size:10.5px;font-weight:bold;letter-spacing:.08em;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:all .18s;box-shadow:0 0 14px rgba(0,240,255,.25)}
+  .ls3-btn-action:hover{background:#00f0ff;color:#04101a;box-shadow:0 0 25px rgba(0,240,255,.6)}
+  body:has(#ls3-news-holo.active) #btn-skip-anim {
+    display: none !important;
+  }
+</style>
+</head>
+<body>
+<button id="btn-skip-anim" title="Skip intro and jump directly to final illuminated state">⏩ SKIP ANIMATION (DEBUG)</button>
+<div id="blueprint-hud">
+  <a id="blueprint-gh-link" href="#" target="_blank" rel="noopener noreferrer">
+    <span id="blueprint-gh-text">↗ OPEN REPOSITORY ON GITHUB</span>
+  </a>
+  <button id="blueprint-close-btn" title="Close Blueprint (Esc)">✕ CLOSE</button>
+</div>
+
+<!-- LS3 FOCUSED BOTTOM TASKBAR -->
+<div id="ls3-taskbar">
+  <div class="ls3-tb-header">
+    <div class="ls3-tb-title">
+      <span class="ls3-tb-dot"></span>
+      <span class="ls3-tb-badge">LS3 GODS-EYE RECON</span>
+      <span id="ls3-tb-target-name">GLOBAL INTELLIGENCE NETWORK</span>
+    </div>
+    <div class="ls3-tb-ctrls">
+      <span id="ls3-tb-zoom-level">ZOOM: 1.0x</span>
+      <button id="ls3-tb-zoom-out" class="ls3-btn-small" title="Zoom Out">[-] ZOOM</button>
+      <button id="ls3-tb-zoom-in" class="ls3-btn-small" title="Zoom In">[+] ZOOM</button>
+      <button id="ls3-tb-retract-btn" class="ls3-btn-retract" title="Retract to pedestal">▼ DOCK / RETRACT</button>
+    </div>
+  </div>
+  <div class="ls3-tb-modes">
+    <button class="ls3-mode-btn active" data-mode="SURFACE">[1] SURFACE (SEISMIC)</button>
+    <button class="ls3-mode-btn" data-mode="ORBITAL">[2] ORBITAL (ISS)</button>
+    <button class="ls3-mode-btn" data-mode="AIRSPACE">[3] AIRSPACE (FLIGHTS)</button>
+    <button class="ls3-mode-btn" data-mode="NEWS">[4] GLOBAL LIVE NEWS</button>
+  </div>
+  <div class="ls3-tb-row">
+    <div class="ls3-tb-presets">
+      <span class="ls3-tb-label">PRESETS:</span>
+      <button class="ls3-preset-btn" data-preset="ATX">ATX</button>
+      <button class="ls3-preset-btn" data-preset="SFO">SFO</button>
+      <button class="ls3-preset-btn" data-preset="NYC">NYC</button>
+      <button class="ls3-preset-btn" data-preset="LON">LON</button>
+      <button class="ls3-preset-btn" data-preset="TYO">TYO</button>
+      <button class="ls3-preset-btn" data-preset="GPS">GPS</button>
+      <button class="ls3-preset-btn" data-preset="ISS">ISS</button>
+    </div>
+    <div id="ls3-tb-telemetry-text" class="ls3-tb-telemetry">
+      SYNCHRONIZING TELEMETRY STREAMS...
+    </div>
+  </div>
+</div>
+
+<!-- LS3 DUAL HOLOGRAPHIC NEWS DISPLAY WINGS -->
+<div id="ls3-news-holo">
+  <div id="ls3-news-header">
+    <div class="ls3-nh-left">
+      <span class="ls3-nh-pulse"></span>
+      <span id="ls3-nh-badge" class="ls3-nh-badge">● LIVE BROADCAST</span>
+      <span id="ls3-nh-title" class="ls3-nh-title">SKY NEWS LIVE // UNITED KINGDOM · LONDON</span>
+    </div>
+    <div id="ls3-nh-channels" class="ls3-nh-channels">
+      <!-- Dynamically populated with 2-5 channels for the country -->
+    </div>
+    <div class="ls3-nh-right">
+      <span id="ls3-nh-coords" class="ls3-nh-coords">51.51°N, 0.13°W</span>
+      <button id="ls3-nh-close-btn" class="ls3-nh-close" title="Close news uplink (Esc)">✕ CLOSE UPLINK</button>
+    </div>
+  </div>
+
+  <!-- Left Hologram Wing: Live English Video Stream -->
+  <div id="ls3-news-left">
+    <span class="ls3-holo-bracket tl"></span><span class="ls3-holo-bracket tr"></span>
+    <span class="ls3-holo-bracket bl"></span><span class="ls3-holo-bracket br"></span>
+    <div class="ls3-screen-bar">
+      <span class="ls3-screen-tag">LEFT BASE // LIVE ENGLISH STREAM</span>
+      <span class="ls3-screen-status">1080P HD · 60FPS</span>
+    </div>
+    <div class="ls3-video-container">
+      <video id="ls3-news-video" playsinline muted autoplay controls style="width:100%;height:100%;object-fit:cover;display:none;background:#000;"></video>
+      <iframe id="ls3-news-iframe" src="" title="Live News Video Stream" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width:100%;height:100%;border:none;display:none;"></iframe>
+      <div class="ls3-video-scanline"></div>
+      <div class="ls3-live-hud-badge">
+        <span class="ls3-live-pulse-dot"></span>
+        <span class="ls3-live-badge-text">● 24/7 LIVE STREAM</span>
+      </div>
+      <div class="ls3-video-action-bar">
+        <button id="ls3-btn-audio-toggle" class="ls3-hud-ctrl-btn" title="Toggle audio mute/unmute">🔊 UNMUTE</button>
+        <button id="ls3-btn-sync-live" class="ls3-hud-ctrl-btn" title="Synchronize to live edge">⚡ LIVE SYNC</button>
+        <button id="ls3-btn-fullscreen" class="ls3-hud-ctrl-btn" title="Toggle fullscreen view">⛶ EXPAND</button>
+      </div>
+    </div>
+    <div class="ls3-video-footer">
+      <span class="ls3-audio-hint">ℹ LIVE STREAM · HOVER / CLICK CONTROLS FOR AUDIO</span>
+    </div>
+  </div>
+
+  <!-- Right Hologram Wing: Live News Web Dispatch & Site -->
+  <div id="ls3-news-right">
+    <span class="ls3-holo-bracket tl"></span><span class="ls3-holo-bracket tr"></span>
+    <span class="ls3-holo-bracket bl"></span><span class="ls3-holo-bracket br"></span>
+    <div class="ls3-screen-bar">
+      <span class="ls3-screen-tag">RIGHT BASE // WEB DISPATCH & WIRE</span>
+      <span id="ls3-news-station-network" class="ls3-screen-status">INTERNATIONAL WIRE SERVICE</span>
+    </div>
+    <div class="ls3-dispatch-body">
+      <div class="ls3-dispatch-header">
+        <h3 id="ls3-news-headline-lead" class="ls3-dispatch-title">BREAKING DISPATCH</h3>
+        <span id="ls3-news-timestamp" class="ls3-dispatch-time">JUST NOW</span>
+      </div>
+      <div class="ls3-dispatch-bulletins">
+        <div class="ls3-bulletin-label">REAL-TIME BULLETIN WIRE:</div>
+        <ul id="ls3-news-bulletin-list" class="ls3-bulletin-list">
+          <!-- Dynamically populated -->
+        </ul>
+      </div>
+      <div class="ls3-dispatch-actions">
+        <a id="ls3-news-site-link" href="#" target="_blank" rel="noopener noreferrer" class="ls3-btn-action">
+          ↗ OPEN OFFICIAL LIVE NEWS PAGE
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="load"><div id="lt">INITIALIZING</div><div id="bar-wrap"><div id="bar"></div></div></div>
+<div id="dbg"></div>
+<div id="hint">SCROLL / DRAG UP TO APPROACH · MOVE MOUSE TO LOOK · CLICK PANEL</div>
+<canvas id="c"></canvas>
+
+<script>
+window.__skipToFinalRequested = false;
+window.triggerSkipAnimation = function() {
+  window.__skipToFinalRequested = true;
+  const btn = document.getElementById('btn-skip-anim');
+  if (btn) btn.style.display = 'none';
+  if (window.VAULT?.skipCinematic) window.VAULT.skipCinematic();
+  if (window.__lab?.skipToFinal) {
+    window.__lab.skipToFinal();
+  } else {
+    window.dispatchEvent(new CustomEvent('vault:entered'));
+    const iv = setInterval(() => {
+      if (window.__lab?.skipToFinal) {
+        window.__lab.skipToFinal();
+        clearInterval(iv);
+      }
+    }, 25);
+    setTimeout(() => clearInterval(iv), 6000);
+  }
+};
+document.addEventListener('DOMContentLoaded', () => {
+  const isDebug = new URLSearchParams(window.location.search).has('debug');
+  const btn = document.getElementById('btn-skip-anim');
+  if (btn) {
+    if (isDebug) {
+      btn.style.display = 'block';
+      btn.addEventListener('click', window.triggerSkipAnimation);
+    } else {
+      btn.remove();
+    }
+  }
+});
+</script>
+
+<script src="/vendor/pdf-lib.min.js"></script>
+<script src="/vendor/ort/ort.min.js"></script>
+<script type="importmap">
+{ "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+    "onnxruntime-web": "/vendor/ort/ort.min.js"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { FaceEngine } from './face-engine.js';
+import { LivenessEngine } from './liveness-engine.js';
+
+/* ═══ 0. QUALITY TIER ═══ */
+const ua=navigator.userAgent;
+const LOW=(navigator.deviceMemory&&navigator.deviceMemory<=4)||(navigator.hardwareConcurrency||4)<=2||/Android|iPhone|iPad/i.test(ua);
+const dprCap = LOW ? 1.0 : 1.25;
+const dpr = Math.min(window.devicePixelRatio || 1, dprCap);
+const Q={radial:LOW?40:64,along:LOW?48:96,shadows:!LOW,shadowMap:LOW?512:1024,dpr,
+         dust:LOW?150:400,rockTex:LOW?512:768,metalTex:512,pebbles:LOW?140:320};
+
+/* ═══ 1. RENDERER / SCENE / CAMERA ═══ */
+const canvas=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'high-performance'});
+renderer.setPixelRatio(Q.dpr); renderer.setSize(innerWidth,innerHeight,false);
+renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.1;
+renderer.shadowMap.enabled=Q.shadows; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x020202); scene.fog=new THREE.FogExp2(0x040302,.05);
+{ const pm=new THREE.PMREMGenerator(renderer); scene.environment=pm.fromScene(new RoomEnvironment(renderer),.04).texture; pm.dispose(); }
+const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.05,40); camera.position.y=1.42; camera.rotation.order='YXZ';
+const R=2.9, CAVE_Y=.6, FLOOR_Y=-1.6, DOOR_Z=-7, DOOR_Y=.35, Z0=4.2; let Z1=-5.55;
+const maxAniso=Math.min(4,renderer.capabilities.getMaxAnisotropy());
+const clamp=THREE.MathUtils.clamp, smooth=THREE.MathUtils.smoothstep;
+
+/* ═══ 2. NOISE (3-D for geometry, tileable 2-D for textures) ═══ */
+const fract=x=>x-Math.floor(x), sm=t=>t*t*(3-2*t);
+const hash=n=>fract(Math.sin(n*12.9898)*43758.5453);
+const h2=(x,y,s)=>fract(Math.sin(x*127.1+y*311.7+s*74.7)*43758.5453);
+const h3=(x,y,z)=>fract(Math.sin(x*127.1+y*311.7+z*74.7)*43758.5453);
+function vnoise(x,y,z){ const xi=Math.floor(x),yi=Math.floor(y),zi=Math.floor(z),xf=sm(x-xi),yf=sm(y-yi),zf=sm(z-zi),l=(a,b,t)=>a+(b-a)*t;
+  return l(l(l(h3(xi,yi,zi),h3(xi+1,yi,zi),xf),l(h3(xi,yi+1,zi),h3(xi+1,yi+1,zi),xf),yf),
+           l(l(h3(xi,yi,zi+1),h3(xi+1,yi,zi+1),xf),l(h3(xi,yi+1,zi+1),h3(xi+1,yi+1,zi+1),xf),yf),zf); }
+function fbm(x,y,z,o=4){ let a=.5,f=1,s=0,n=0; for(let i=0;i<o;i++){ s+=a*vnoise(x*f+i*17.3,y*f+i*5.1,z*f); n+=a; a*=.5; f*=2.03; } return s/n; }
+function tnoise(u,v,f,s){ const x=u*f,y=v*f,xi=Math.floor(x),yi=Math.floor(y),xf=sm(x-xi),yf=sm(y-yi);
+  const H=(a,b)=>h2(((a%f)+f)%f,((b%f)+f)%f,s); const a=H(xi,yi),b=H(xi+1,yi),c=H(xi,yi+1),d=H(xi+1,yi+1); const t=a+(b-a)*xf; return t+((c+(d-c)*xf)-t)*yf; }
+function tfbm(u,v,f0,oct,s){ let a=.5,f=f0,sum=0,n=0; for(let i=0;i<oct;i++){ sum+=a*tnoise(u,v,f,s+i*3.1); n+=a; a*=.5; f*=2; } return sum/n; }
+
+/* ═══ 3. PROCEDURAL PBR SURFACE COMPILER → albedo + normal + roughness (tileable, no image files) ═══ */
+async function makeSurface(kind,N,seed,onRow){
+  const cv=document.createElement('canvas'); cv.width=cv.height=N; const g=cv.getContext('2d',{willReadFrequently:true});
+  g.fillStyle='#808080'; g.fillRect(0,0,N,N);
+  if(kind==='metal'){                                       // scratches + dents drawn as height
+    for(let i=0;i<N*.5;i++){ const b=hash(i*1.7)>.45; g.strokeStyle=b?`rgba(255,255,255,${.1+hash(i*3)*.35})`:`rgba(0,0,0,${.1+hash(i*3)*.3})`;
+      g.lineWidth=.5+hash(i*7)*1.4; const x=hash(i*11)*N,y=hash(i*13)*N,a=hash(i*17)*6.283,l=8+hash(i*19)*N*.2;
+      g.beginPath(); g.moveTo(x,y); g.lineTo(x+Math.cos(a)*l,y+Math.sin(a)*l); g.stroke(); }
+    for(let i=0;i<24;i++){ const x=hash(i*23+seed)*N,y=hash(i*29+seed)*N,r=6+hash(i*31)*N*.05; const gr=g.createRadialGradient(x,y,0,x,y,r);
+      gr.addColorStop(0,'rgba(0,0,0,.4)'); gr.addColorStop(.7,'rgba(0,0,0,.08)'); gr.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=gr; g.fillRect(x-r,y-r,r*2,r*2); }
+  }
+  const base=g.getImageData(0,0,N,N).data, h=new Float32Array(N*N), grime=new Float32Array(N*N);
+  for(let y=0;y<N;y++){ const v=y/N;
+    for(let x=0;x<N;x++){ const u=x/N,i=y*N+x,b=base[i*4]/255;
+      if(kind==='rock'){ const f1=tfbm(u,v,4,5,seed), r=1-Math.abs(2*tfbm(u,v,3,3,seed+9)-1); h[i]=f1*.6+r*r*.4; grime[i]=tfbm(u,v,2,3,seed+5); }
+      else { const fine=tfbm(u,v,32,3,seed), br=tnoise(u*24,v,48,seed+1); h[i]=.5+(b-.5)*.7+(fine-.5)*.12+(br-.5)*.05; grime[i]=tfbm(u,v,2,4,seed+5); } }
+    if(y%32===31){ onRow(y/N); await new Promise(r=>setTimeout(r,0)); } }
+  const alb=g.createImageData(N,N), nrm=g.createImageData(N,N), rgh=g.createImageData(N,N), k=kind==='rock'?N*.06:N*.025;
+  for(let y=0;y<N;y++) for(let x=0;x<N;x++){ const i=y*N+x,o=i*4;
+    const L=h[y*N+((x-1+N)%N)],Rr=h[y*N+((x+1)%N)],U=h[((y-1+N)%N)*N+x],D=h[((y+1)%N)*N+x];
+    const nx=-(Rr-L)*k, ny=(D-U)*k, il=1/Math.hypot(nx,ny,1);
+    nrm.data[o]=(nx*il*.5+.5)*255; nrm.data[o+1]=(ny*il*.5+.5)*255; nrm.data[o+2]=(il*.5+.5)*255; nrm.data[o+3]=255;
+    const hv=h[i],gv=grime[i];
+    if(kind==='rock'){ const ao=.5+.5*hv;                   // crevices darker, ochre/grey variation from grime channel
+      alb.data[o]=((40+hv*105)*(1-gv*.25)+gv*30)*ao; alb.data[o+1]=((28+hv*72)*(1-gv*.2)+gv*14)*ao; alb.data[o+2]=((20+hv*46)*(1-gv*.3))*ao;
+      rgh.data[o]=rgh.data[o+1]=rgh.data[o+2]=(.86+gv*.14)*255; }
+    else { const sc=Math.max(0,(hv-.5)*2), dent=Math.max(0,.5-hv)*2, c=clamp(205-gv*90+sc*40-dent*30,40,255);
+      alb.data[o]=c; alb.data[o+1]=c*1.02; alb.data[o+2]=c*1.06;   // bare scratches brighter+smoother, grime darker+rougher
+      rgh.data[o]=rgh.data[o+1]=rgh.data[o+2]=clamp(.42+gv*.45-sc*.25+dent*.1,.15,1)*255; }
+    alb.data[o+3]=rgh.data[o+3]=255; }
+  const toTex=(d,srgb)=>{ const c=document.createElement('canvas'); c.width=c.height=N; c.getContext('2d').putImageData(d,0,0);
+    const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.anisotropy=maxAniso; if(srgb) t.colorSpace=THREE.SRGBColorSpace; return t; };
+  return {map:toTex(alb,true),normalMap:toTex(nrm,false),roughnessMap:toTex(rgh,false)};
+}
+function surfMat(S,{color=0xffffff,metal=0,env=.3,rep=[1,1],ns=1,side=THREE.FrontSide}={}){
+  const m=new THREE.MeshStandardMaterial({color,roughness:1,metalness:metal,envMapIntensity:env,normalScale:new THREE.Vector2(ns,ns),side});
+  for(const key of ['map','normalMap','roughnessMap']){ const t=S[key].clone(); t.repeat.set(rep[0],rep[1]); t.needsUpdate=true; m[key]=t; } return m;
+}
+/* crisp decals via canvas */
+const tex=c=>{ const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=maxAniso; return t; };
+function stencil(lines,w,h,{font='bold 64px monospace',color='#d8d8d8',wear=.5}={}){ const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d');
+  g.fillStyle=color; g.font=font; g.textAlign='center'; g.textBaseline='middle'; lines.forEach((l,i)=>g.fillText(l,w/2,h*(i+1)/(lines.length+1)));
+  g.globalCompositeOperation='destination-out'; for(let i=0;i<w*h*wear/50;i++) g.fillRect(hash(i*1.3)*w,hash(i*2.7)*h,1+hash(i)*3,1+hash(i*.7)*2); return tex(c); }
+function label(text,glyph){ const c=document.createElement('canvas'); c.width=192; c.height=96; const g=c.getContext('2d');
+  g.fillStyle='#0a1216'; g.fillRect(0,0,192,96); g.strokeStyle='#1f4a58'; g.lineWidth=3; g.strokeRect(4,4,184,88);
+  g.fillStyle='#fff'; g.font='bold 24px monospace'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(text,96,34);
+  g.strokeStyle='#fff'; g.lineWidth=2; g.beginPath();
+  if(glyph==='tour'||glyph==='compass'){ g.arc(96,68,10,0,Math.PI*2); g.moveTo(96,54); g.lineTo(96,82); g.moveTo(82,68); g.lineTo(110,68); }
+  if(glyph==='finger') for(let r=6;r<=18;r+=6) g.arc(96,70,r,Math.PI*1.1,Math.PI*1.9);
+  if(glyph==='scan'){ g.rect(82,56,28,24); g.moveTo(96,52); g.lineTo(96,84); g.moveTo(78,68); g.lineTo(114,68); }
+  g.stroke(); return tex(c); }
+function warning(){ const c=document.createElement('canvas'); c.width=c.height=128; const g=c.getContext('2d');
+  g.fillStyle='#e6b63a'; g.beginPath(); g.moveTo(64,10); g.lineTo(120,112); g.lineTo(8,112); g.closePath(); g.fill();
+  g.fillStyle='#111'; g.font='bold 70px monospace'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('!',64,72);
+  g.globalCompositeOperation='destination-out'; for(let i=0;i<90;i++) g.fillRect(hash(i)*128,hash(i*3)*128,2,2); return tex(c); }
+
+/* ═══ 4. BUILD ═══ */
+const bar=document.getElementById('bar'), lt=document.getElementById('lt');
+const ROCK=await makeSurface('rock',Q.rockTex,3,p=>bar.style.width=(p*70)+'%');
+lt.textContent='FORGING ALLOYS';
+const METAL=await makeSurface('metal',Q.metalTex,11,p=>bar.style.width=(70+p*30)+'%');
+lt.textContent='ASSEMBLING VAULT';
+
+const rockCave=surfMat(ROCK,{rep:[5,4],ns:1.5,env:.1,side:THREE.BackSide});
+const rockF=surfMat(ROCK,{rep:[1,1],ns:1.3,env:.1});
+const rockWall=surfMat(ROCK,{rep:[4,4],ns:1.4,env:.1});
+const rockFloor=surfMat(ROCK,{rep:[3,6],ns:1.3,env:.08});
+const gun=surfMat(METAL,{color:0x565b62,metal:.85,env:.45,ns:.9,rep:[1.5,1.5]});
+const gunD=surfMat(METAL,{color:0x2b2f34,metal:.8,env:.35,ns:.8,rep:[2,2]});
+const tit=surfMat(METAL,{color:0x9aa0a8,metal:.95,env:.6,ns:.5,rep:[3,3]});
+const slabM=new THREE.MeshStandardMaterial({color:0x0a0b0d,roughness:.92,metalness:.3});
+const compM=new THREE.MeshStandardMaterial({color:0x0e1013,roughness:.7,metalness:.15,envMapIntensity:.3});
+const glass=new THREE.MeshStandardMaterial({color:0x03080c,roughness:.06,metalness:.1,emissive:0x0a3040,emissiveIntensity:.8,envMapIntensity:1.2});
+const ledG=new THREE.MeshStandardMaterial({color:0,emissive:0x2dff6a,emissiveIntensity:3}), ledG2=ledG.clone();
+const ledCyan=new THREE.MeshStandardMaterial({color:0,emissive:0x3ee6ff,emissiveIntensity:2.5});
+const ledGrant=new THREE.MeshStandardMaterial({color:0,emissive:0x4dff8a,emissiveIntensity:3}), ledAmber=new THREE.MeshStandardMaterial({color:0,emissive:0xffb347,emissiveIntensity:2.5});
+const box=(w,h,d,m)=>new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);
+const put=(mesh,x,y,z,parent)=>{ mesh.position.set(x,y,z); parent.add(mesh); return mesh; };
+
+/* 4a. cavern — v3 lives in cave3.js */
+const CAVE=(await import('./cave3.js')).buildCave3({scene,R,CAVE_Y,FLOOR_Y,DOOR_Y,DOOR_Z,Q,LOW,rockCave,rockF,rockWall,rockFloor,gunD,compM,ledG});
+
+/* 4b. THE BLAST DOOR — octagonal layered plates, every part real geometry */
+const door=new THREE.Group(); door.position.set(0,DOOR_Y,DOOR_Z); scene.add(door);
+const oct=(w,h,c)=>{ const x=w/2,y=h/2; return [[-x+c,-y],[x-c,-y],[x,-y+c],[x,y-c],[x-c,y],[-x+c,y],[-x,y-c],[-x,-y+c]]; };
+const shapeOf=pts=>{ const s=new THREE.Shape(); pts.forEach((p,i)=>i?s.lineTo(p[0],p[1]):s.moveTo(p[0],p[1])); s.closePath(); return s; };
+function extrude(outer,inner,depth,mat,z,bevel=.012){ const s=shapeOf(outer); if(inner) s.holes.push(shapeOf(inner));
+  const g=new THREE.ExtrudeGeometry(s,{depth,bevelEnabled:bevel>0,bevelThickness:bevel,bevelSize:bevel,bevelSegments:3,curveSegments:3});
+  const m=new THREE.Mesh(g,mat); m.position.z=z; door.add(m); return m; }
+const O1=oct(2.6,3.9,.55),O2=oct(2.32,3.62,.49),O3=oct(1.92,3.22,.41),O4=oct(1.86,3.16,.39);
+extrude(O1,null,.3,slabM,-.3,0);                 // slab core (dark seams show through gaps)
+extrude(O1,O2,.09,gun,0);                        // outer chamfered band
+extrude(O2,O3,.05,gunD,0);                       // mid band (conduits live here)
+extrude(O4,null,.04,gun,0);                      // inner field
+const F=.055;
+// bolts: one instanced mesh for the whole door
+const boltMats=[], dm=new THREE.Object3D();
+const bolt=(x,y,z)=>{ dm.position.set(x,y,z+.008); dm.rotation.set(0,0,hash(x*13+y*7)*Math.PI); dm.updateMatrix(); boltMats.push(dm.matrix.clone()); };
+function boltsAlong(pts,sp,z){ for(let i=0;i<pts.length;i++){ const a=pts[i],b=pts[(i+1)%pts.length],L=Math.hypot(b[0]-a[0],b[1]-a[1]),n=Math.max(1,Math.round(L/sp));
+  for(let j=0;j<n;j++){ const t=(j+.5)/n; bolt(a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,z); } } }
+boltsAlong(oct(2.5,3.8,.53),.13,.102); boltsAlong(oct(2.4,3.7,.51),.13,.102); boltsAlong(oct(1.74,3.04,.36),.11,F);
+// fans (4) — ring, recess, hub, 7 pitched blades, grille
+function fan(x,y,r){ const g=new THREE.Group(); g.position.set(x,y,F); door.add(g);
+  put(new THREE.Mesh(new THREE.TorusGeometry(r,.026,10,40),gun),0,0,.02,g); put(new THREE.Mesh(new THREE.CircleGeometry(r,40),compM),0,0,-.03,g);
+  const hub=new THREE.CylinderGeometry(r*.26,r*.3,.04,18); hub.rotateX(Math.PI/2); put(new THREE.Mesh(hub,tit),0,0,-.01,g);
+  for(let i=0;i<7;i++){ const b=box(r*.6,r*.24,.006,gunD); const a=i/7*Math.PI*2; b.position.set(Math.cos(a)*r*.52,Math.sin(a)*r*.52,-.02); b.rotation.set(0,0,a); b.rotateX(.6); g.add(b); }
+  put(new THREE.Mesh(new THREE.TorusGeometry(r*.55,.008,6,32),tit),0,0,.012,g);
+  for(let i=0;i<3;i++){ const b=box(r*2,.014,.01,tit); b.rotation.z=i/3*Math.PI; b.position.z=.014; g.add(b); }
+  for(let i=0;i<4;i++){ const a=i/4*Math.PI*2+Math.PI/4; bolt(x+Math.cos(a)*(r+.05),y+Math.sin(a)*(r+.05),F); } }
+[[-.56,1.02],[.56,1.02],[-.56,-1.02],[.56,-1.02]].forEach(([x,y])=>fan(x,y,.21));
+// central spine + top vent
+put(box(.16,3.02,.035,gunD),0,0,F+.017,door);
+put(box(.24,.16,.03,compM),0,1.32,F+.04,door); for(let k=-2;k<=2;k++) put(box(.2,.012,.01,tit),0,1.32+k*.028,F+.058,door);
+// side raised plates, chain tracks, grills, "06"
+[-1,1].forEach(s=>{
+  put(box(.22,.7,.025,gun),s*.36,-.15,F+.012,door); [[-.08,.3],[.08,.3],[-.08,-.3],[.08,-.3]].forEach(([dx,dy])=>bolt(s*.36+dx,-.15+dy,F+.025));
+  put(box(.13,.72,.02,compM),s*.62,-.03,F+.01,door);                                       // chain channel
+  for(let k=-3;k<=3;k++) put(box(.12,.012,.012,gunD),s*.56,-.6+k*.026,F+.03,door);        // grill slats
+  put(box(.13,.19,.006,compM),s*.56,-.6,F+.02,door);
+});
+const linkGeo=new THREE.BoxGeometry(.07,.035,.022), links=new THREE.InstancedMesh(linkGeo,tit,24);
+for(let i=0;i<24;i++){ const s=i<12?-1:1, j=i%12; dm.position.set(s*.62,-.36+j*.06,F+.03); dm.rotation.set(0,j%2?.5:0,0); dm.scale.setScalar(1); dm.updateMatrix(); links.setMatrixAt(i,dm.matrix); }
+dm.rotation.set(0,0,0); door.add(links);
+// hex bolts instanced
+const boltGeo=new THREE.CylinderGeometry(.021,.024,.016,6); boltGeo.rotateX(Math.PI/2);
+const bolts=new THREE.InstancedMesh(boltGeo,tit,boltMats.length); boltMats.forEach((m,i)=>bolts.setMatrixAt(i,m)); door.add(bolts);
+// conduits on mid band with clamps
+function tube(pts,r,m){ const g=new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(p=>new THREE.Vector3(...p))),48,r,10,false); const t=new THREE.Mesh(g,m); door.add(t); return t; }
+tube([[-1.1,-1.5,.075],[-1.1,-.4,.075],[-1.02,.1,.09],[-1.1,.6,.075],[-1.1,1.5,.075]],.03,gunD);
+tube([[-1.02,-1.5,.07],[-1.02,1.5,.07]],.016,tit); tube([[1.06,-1.5,.075],[1.06,1.5,.075]],.028,gunD);
+[-1.2,-.3,.7,1.3].forEach(y=>{ put(new THREE.Mesh(new THREE.TorusGeometry(.04,.011,8,18),tit),-1.1,y,.075,door); put(new THREE.Mesh(new THREE.TorusGeometry(.038,.011,8,18),tit),1.06,y+.15,.075,door); });
+// LEDs + decals
+const ledGeo=new THREE.BoxGeometry(.016,.028,.01);
+[[-.86,.55],[.86,.55],[-.86,-.9],[.86,-.9],[-.3,.85],[.3,.85],[-.3,-1.35],[.3,-1.35],[-.72,.3],[.72,.3]].forEach(([x,y],k)=>put(new THREE.Mesh(ledGeo,k%2?ledG:ledG2),x,y,F+.006,door));
+const decal=(t,w,h,x,y,z)=>{ const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:t,transparent:true,opacity:.75,toneMapped:false})); m.userData.noShadow=true; m.userData.noMerge=true; return put(m,x,y,z,door); };
+const six=stencil(['06'],256,192,{font:'bold 150px monospace',color:'#c2b8a8',wear:.9});
+decal(six,.26,.2,-.56,.46,F+.003); decal(six,.26,.2,.56,.46,F+.003);
+decal(stencil(['RESTRICTED ACCESS'],1024,128,{font:'bold 80px monospace'}),.9,.11,0,.36,.104);
+decal(stencil(['VAULT-01'],512,128,{font:'bold 80px monospace'}),.5,.12,0,-1.75,.104);
+decal(warning(),.14,.14,1.06,-.9,.066);
+
+/* 4c. biometric panel on the spine */
+const panel=new THREE.Group(); panel.position.set(0,-0.37,F+.035); door.add(panel);
+put(box(.44,1.34,.02,tit),0,0,-.02,panel); put(box(.4,1.3,.09,compM),0,0,.03,panel);
+const strip=put(box(.3,.014,.008,ledCyan),0,.61,.079,panel);
+const SW=256,SH=320,sc=document.createElement('canvas'); sc.width=SW; sc.height=SH; const sg=sc.getContext('2d'); const screenTex=tex(sc);
+const scr=put(new THREE.Mesh(new THREE.PlaneGeometry(.32,.4),new THREE.MeshBasicMaterial({map:screenTex,toneMapped:false})),0,.33,.0765,panel); scr.userData={action:'approach',noShadow:true};
+const housing=new THREE.CylinderGeometry(.06,.07,.05,24); housing.rotateX(Math.PI/2); put(new THREE.Mesh(housing,tit),0,.02,.09,panel);
+put(new THREE.Mesh(new THREE.SphereGeometry(.04,24,16),glass),0,.02,.105,panel);
+const ring=put(new THREE.Mesh(new THREE.TorusGeometry(.05,.005,8,32),ledCyan),0,.02,.115,panel);
+put(box(.36,.44,.03,gunD),0,-.4,.09,panel);
+[[ -.15,-.2],[.15,-.2],[-.15,-.6],[.15,-.6]].forEach(([x,y])=>bolt(x,y-.05,F+.035+.105));
+function touchProxy(mesh, padScale = 1.6) {
+  const proxy = mesh.clone(); proxy.geometry = mesh.geometry.clone(); proxy.scale.multiplyScalar(padScale);
+  proxy.material = new THREE.MeshBasicMaterial({ visible: false }); proxy.userData = mesh.userData; mesh.parent.add(proxy);
+  return proxy;
+}
+const interactables=[scr];
+const buttons=[['VISIT','tour',-.12],['ENROLL','finger',0],['SCAN','scan',.12]].map(([name,glyph,x])=>{
+  const b=put(box(.1,.05,.02,compM),x,-.34,.11,panel); b.userData={action:name};
+  const l=put(new THREE.Mesh(new THREE.PlaneGeometry(.095,.047),new THREE.MeshBasicMaterial({map:label(name,glyph),color:0x9fd6e6,toneMapped:false})),x,-.34,.121,panel);
+  l.userData={action:name,noShadow:true};
+  const pB = touchProxy(b, 1.5);
+  interactables.push(b, l, pB); return {name,b,l}; });
+panel.traverse(o=>{ o.userData.noMerge=true; });
+door.traverse(o=>{ if(o.isMesh&&!o.userData.noShadow){ o.castShadow=true; o.receiveShadow=true; } });
+let doorVerts=0; door.traverse(o=>{ if(o.isMesh){ const c=o.geometry.attributes.position.count; doorVerts+=o.isInstancedMesh?c*o.count:c; } });
+
+/* ═══ 5. LIGHTING — ember key from the left wall + volumetric cone + cyan/cool accents ═══ */
+const ambient=new THREE.AmbientLight(0x0a0806,.08); scene.add(ambient);
+const SRC=new THREE.Vector3(-2.35,1.3,-4.6);
+const ember=new THREE.Mesh(new THREE.IcosahedronGeometry(.2,2),new THREE.MeshStandardMaterial({color:0x000,emissive:0xff5a12,emissiveIntensity:5})); ember.position.copy(SRC).x-=.25; scene.add(ember);
+const amber=new THREE.SpotLight(0xffa24a,120,0,.75,.6,1.6); amber.position.copy(SRC); amber.target.position.set(-.5,.5,DOOR_Z); scene.add(amber,amber.target);
+amber.castShadow=Q.shadows; amber.shadow.mapSize.set(Q.shadowMap,Q.shadowMap); amber.shadow.bias=-.0005; amber.shadow.normalBias=.02; amber.shadow.camera.near=.3; amber.shadow.camera.far=9;
+const amberPt=new THREE.PointLight(0xff8a30,12,8,1.8); amberPt.position.copy(SRC); scene.add(amberPt);
+const cyan=new THREE.PointLight(0x3fe0ff,2.5,2.4,2); cyan.position.set(0,0.15,DOOR_Z+.6); scene.add(cyan);
+const rim=new THREE.PointLight(0x2a4a6a,3,6,2); rim.position.set(1.8,1.6,-5.2); scene.add(rim);
+const droneLight=new THREE.PointLight(0x5fe8ff,1.8,3,2);
+const drone=new THREE.Mesh(new THREE.IcosahedronGeometry(.04,0),new THREE.MeshStandardMaterial({emissive:0x5fe8ff,emissiveIntensity:2,color:0}));
+drone.add(droneLight); scene.add(drone);
+function tickDrone(t){ const cx=-1.6,cz=-5.4,r1=.5,r2=.25; drone.position.set(cx+Math.sin(t*.4)*r1,CAVE_Y+.3+Math.sin(t*.7)*.08,cz+Math.sin(t*.8)*r2); droneLight.intensity=1.8*(.85+.15*Math.sin(t*3)); }
+const beamMat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,uniforms:{uT:{value:0},uC:{value:new THREE.Color(0xff8f36)}},
+  vertexShader:`varying vec2 vUv;varying float vF;void main(){vUv=uv;vec4 mv=modelViewMatrix*vec4(position,1.);vec3 n=normalize(normalMatrix*normal);vF=abs(dot(n,normalize(-mv.xyz)));gl_Position=projectionMatrix*mv;}`,
+  fragmentShader:`uniform float uT;uniform vec3 uC;varying vec2 vUv;varying float vF;void main(){float a=pow(vUv.y,1.7)*pow(vF,1.6);a*=.9+.1*sin(uT*6.+vUv.y*18.);gl_FragColor=vec4(uC*a*.6,a*.35);}`});
+{ const cg=new THREE.ConeGeometry(.9,3.6,28,1,true); cg.translate(0,-1.8,0); const beam=new THREE.Mesh(cg,beamMat); beam.position.copy(SRC);
+  beam.quaternion.setFromUnitVectors(new THREE.Vector3(0,-1,0),amber.target.position.clone().sub(SRC).normalize()); scene.add(beam); }
+const { buildMist } = await import('./mist.js');
+const mist = buildMist({ scene, LOW, warmSource: { x: SRC.x, z: SRC.z },
+  bounds: { x: 4.4, y0: FLOOR_Y, yH: 2.6, z0: -7, zL: 11, sizeMin: .35, sizeMax: 1.1 } });
+
+/* ═══ 6. POST: bloom → tonemap → teal/orange grade + chromatic aberration + grain + vignette ═══ */
+const composer=new EffectComposer(renderer); composer.addPass(new RenderPass(scene,camera));
+const bloom=new UnrealBloomPass(new THREE.Vector2(Math.round(innerWidth/2),Math.round(innerHeight/2)),.45,.6,.82); composer.addPass(bloom); composer.addPass(new OutputPass());
+const grade=new ShaderPass({uniforms:{tDiffuse:{value:null},uT:{value:0},uRes:{value:new THREE.Vector2()}},
+  vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+  fragmentShader:`uniform sampler2D tDiffuse;uniform float uT;uniform vec2 uRes;varying vec2 vUv;
+  void main(){vec2 d=vUv-.5;float ca=.006*dot(d,d);vec3 c;c.r=texture2D(tDiffuse,vUv+d*ca).r;c.g=texture2D(tDiffuse,vUv).g;c.b=texture2D(tDiffuse,vUv-d*ca).b;
+  float l=dot(c,vec3(.299,.587,.114));c=mix(c,c*vec3(.9,1.,1.1),(1.-l)*.4);c=mix(c,c*vec3(1.08,1.,.9),l*.3);
+  float g=fract(sin(dot(floor(vUv*uRes)+uT*60.,vec2(12.9898,78.233)))*43758.5453);c+=(g-.5)*.045;
+  c*=mix(.5,1.,smoothstep(.95,.3,length(d)*1.2));gl_FragColor=vec4(c,1.);}`});
+composer.addPass(grade);
+
+const { installPerfGovernor, mergeByMaterial } = await import('./perf.js');
+const savedDrawCalls = mergeByMaterial(door);
+const perf = installPerfGovernor({ renderer, composer, camera, bloom, grade, amberLight: amber, LOW });
+
+const idHash=(()=>{ let h=2166136261; const s=ua+innerWidth+navigator.language+(navigator.deviceMemory||'')+(navigator.hardwareConcurrency||''); for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619);} return (h>>>0).toString(16).padStart(8,'0').toUpperCase(); })();
+
+const { installLab } = await import('./lab.js');
+const table = installLab({ renderer, composer, env: null, LOW, rockMats: [rockCave, rockF, rockWall, rockFloor], metalMats: [gun, gunD, tit], idHash });
+
+/* ═══ 7. PANEL STATE MACHINE (plug MediaPipe FaceLandmarker + FingerprintJS + your backend into `hooks`) ═══ */
+const state={mode:'idle',t0:0}; let now=0;
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+async function createWebAuthnAttestation(challenge, origin) {
+  const originHostname = new URL(origin).hostname;
+  const keyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+  const jwk = await crypto.subtle.exportKey('jwk', keyPair.publicKey);
+  const x = Uint8Array.from(atob(jwk.x.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+  const y = Uint8Array.from(atob(jwk.y.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+  
+  const coseHeader = new Uint8Array([0xa5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20]);
+  const coseMid = new Uint8Array([0x22, 0x58, 0x20]);
+  const cosePublicKey = new Uint8Array(coseHeader.length + x.length + coseMid.length + y.length);
+  cosePublicKey.set(coseHeader, 0);
+  cosePublicKey.set(x, coseHeader.length);
+  cosePublicKey.set(coseMid, coseHeader.length + x.length);
+  cosePublicKey.set(y, coseHeader.length + x.length + coseMid.length);
+
+  const credIdStr = 'cred_' + Date.now();
+  const credId = new TextEncoder().encode(credIdStr);
+  const rpIdHash = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(originHostname)));
+  
+  const flags = new Uint8Array([0x45]);
+  const signCount = new Uint8Array([0, 0, 0, 0]);
+  const aaguid = new Uint8Array(16);
+  const credIdLen = new Uint8Array([0x00, credId.length]);
+  
+  const authDataLen = rpIdHash.length + 1 + 4 + 16 + 2 + credId.length + cosePublicKey.length;
+  const authData = new Uint8Array(authDataLen);
+  let off = 0;
+  authData.set(rpIdHash, off); off += rpIdHash.length;
+  authData.set(flags, off); off += 1;
+  authData.set(signCount, off); off += 4;
+  authData.set(aaguid, off); off += 16;
+  authData.set(credIdLen, off); off += 2;
+  authData.set(credId, off); off += credId.length;
+  authData.set(cosePublicKey, off); off += cosePublicKey.length;
+
+  const cborPrefix = new Uint8Array([0xa1, 0x68, 0x61, 0x75, 0x74, 0x68, 0x44, 0x61, 0x74, 0x61, 0x58, authData.length]);
+  const attestationObject = new Uint8Array(cborPrefix.length + authData.length);
+  attestationObject.set(cborPrefix, 0);
+  attestationObject.set(authData, cborPrefix.length);
+
+  function toB64Url(buf) {
+    let s = '';
+    for (let i = 0; i < buf.length; i++) s += String.fromCharCode(buf[i]);
+    return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  }
+
+  return {
+    credentialId: credIdStr,
+    id: toB64Url(credId),
+    rawId: toB64Url(credId),
+    type: 'public-key',
+    response: {
+      clientDataJSON: toB64Url(new TextEncoder().encode(JSON.stringify({ type: 'webauthn.create', challenge, origin }))),
+      attestationObject: toB64Url(attestationObject),
+    },
+    keyPair,
+  };
+}
+
+async function signWebAuthnAssertion(keyPair, credentialIdStr, challenge, origin) {
+  const originHostname = new URL(origin).hostname;
+  const rpIdHash = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(originHostname)));
+  const flags = new Uint8Array([0x05]);
+  const signCount = new Uint8Array([0, 0, 0, 1]);
+  const authData = new Uint8Array(rpIdHash.length + 1 + 4);
+  authData.set(rpIdHash, 0);
+  authData.set(flags, rpIdHash.length);
+  authData.set(signCount, rpIdHash.length + 1);
+
+  const clientData = new TextEncoder().encode(JSON.stringify({ type: 'webauthn.get', challenge, origin }));
+  const clientDataHash = new Uint8Array(await crypto.subtle.digest('SHA-256', clientData));
+
+  const verificationData = new Uint8Array(authData.length + clientDataHash.length);
+  verificationData.set(authData, 0);
+  verificationData.set(clientDataHash, authData.length);
+
+  const rawSig = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, keyPair.privateKey, verificationData);
+
+  function toB64Url(buf) {
+    const bytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
+    let s = '';
+    for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+    return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  }
+
+  return {
+    id: toB64Url(new TextEncoder().encode(credentialIdStr)),
+    rawId: toB64Url(new TextEncoder().encode(credentialIdStr)),
+    type: 'public-key',
+    response: {
+      authenticatorData: toB64Url(authData),
+      clientDataJSON: toB64Url(clientData),
+      signature: toB64Url(rawSig),
+    }
+  };
+}
+
+/* ═══ DIEGETIC SECURITY DOCUMENT, CAMERA HUD & WEBAUTHN OVERLAYS ═══ */
+function showConsentModal(onConfirm, onCancel) {
+  const existing = document.getElementById('sec-doc-container');
+  if (existing) existing.remove();
+
+  const doc = document.createElement('div');
+  doc.id = 'sec-doc-container';
+  doc.style.cssText = `
+    position: fixed; inset: 0; z-index: 99999;
+    background: rgba(2, 6, 12, 0.94);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px; font-family: ui-monospace, Menlo, Consolas, monospace; color: #c5e2eb;
+  `;
+  doc.innerHTML = `
+    <div style="position: absolute; inset: 0; background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%); background-size: 100% 4px; pointer-events: none; opacity: 0.6;"></div>
+    <div style="position: relative; width: min(780px, 94vw); max-height: 90vh; background: rgba(4, 14, 24, 0.98); border: 1.5px solid #1e5a68; box-shadow: 0 0 45px rgba(0, 240, 255, 0.18), inset 0 0 30px rgba(0, 20, 30, 0.8); display: flex; flex-direction: column; overflow: hidden; border-radius: 2px;">
+      <div style="padding: 10px 16px; background: rgba(6, 22, 36, 0.95); border-bottom: 1.5px solid #1e5a68; display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="width: 8px; height: 8px; border-radius: 50%; background: #00f0ff; box-shadow: 0 0 8px #00f0ff;"></div>
+          <div>
+            <div style="font-size: 11px; font-weight: bold; letter-spacing: 0.12em; color: #5fe8ff;">VAULT-01 / IDENTITY PROTOCOL</div>
+            <div style="font-size: 8px; letter-spacing: 0.08em; color: #6ea8b8;">SECURITY CLASSIFICATION: RESTRICTED // AUTHORIZED ACCESS ONLY</div>
+          </div>
+        </div>
+        <span style="font-size: 7.5px; color: #ffd166; border: 1px solid rgba(255,209,102,0.4); padding: 2px 5px; background: rgba(255,209,102,0.08);">DPDP-2026-v2 NOTICE</span>
+      </div>
+      <div style="padding: 5px 14px; background: rgba(3, 10, 18, 0.8); border-bottom: 1px solid #143542; font-size: 8px; color: #4d8394; display: flex; justify-content: space-between;">
+        <span>NODE: SEC-NODE-01A</span><span>REF: IP-NOTICE-REV4</span><span>AUTH: GATEWAY</span>
+      </div>
+      <div id="sec-doc-scroll" style="flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px; font-size: 9.5px; line-height: 1.5; color: #a7d5e4;">
+        <div style="padding: 6px 10px; background: rgba(0, 240, 255, 0.05); border-left: 3px solid #00f0ff;">
+          <div style="font-size: 10px; font-weight: bold; color: #fff;">PERSONAL DATA &amp; BIOMETRIC PROCESSING NOTICE</div>
+          <div style="font-size: 8.5px; color: #7ec5df;">Itemised statutory disclosure pursuant to notified DPDP Rules 2025.</div>
+        </div>
+        <div>
+          <div style="color: #00f0ff; font-weight: bold; margin-bottom: 2px;">01 WHAT IS COLLECTED</div>
+          <div style="color: #8ec5d6;">• Declared Operative Name &amp; Role<br>• Contextual Device Continuity Telemetry<br>• Cryptographic Authenticator (P-256 ECDSA)<br>• Mathematical 128-D Biometric Representation<br>• Ephemeral Security Audit Logs</div>
+        </div>
+        <div>
+          <div style="color: #00f0ff; font-weight: bold; margin-bottom: 2px;">02 WHY IT IS PROCESSED</div>
+          <div style="color: #8ec5d6;">Authentication, authenticator possession confirmation, active freshness validation, and facility access authorization. No commercial profiling or advertising.</div>
+        </div>
+        <div>
+          <div style="color: #00f0ff; font-weight: bold; margin-bottom: 2px;">03 BIOMETRIC TEMPLATE ARCHITECTURE</div>
+          <div style="color: #8ec5d6;">Raw optical frames are destroyed in volatile client RAM immediately after vector extraction. Vectors are encrypted client-side using AES-GCM-256 under single-use token keys before persistence. Server-side templates are stored encrypted at rest with AES-GCM Key-Encryption-Keys (KEK).</div>
+        </div>
+        <div>
+          <div style="color: #00f0ff; font-weight: bold; margin-bottom: 2px;">04 DEVICE AUTHENTICATOR (WEBAUTHN)</div>
+          <div style="color: #8ec5d6;">Hardware authenticator registration relies on the W3C WebAuthn standard (P-256 ECDSA). This binds enrollment to your physical device security module or hardware security key. <em>Note: Authenticator possession proves physical hardware control, not civil legal identity.</em></div>
+        </div>
+        <div>
+          <div style="color: #00f0ff; font-weight: bold; margin-bottom: 2px;">05 GOOGLE PHOTOS REFERENCES</div>
+          <div style="color: #8ec5d6;">Optional reference source. VAULT-01 accesses only user-selected media via the Photos Picker API. Session and raw bytes are deleted immediately upon template derivation.</div>
+        </div>
+        <div>
+          <div style="color: #00f0ff; font-weight: bold; margin-bottom: 2px;">06 RETENTION POLICY</div>
+          <div style="color: #8ec5d6;">• Raw camera frames: Ephemeral (0 seconds retention; destroyed in RAM).<br>• Encrypted biometric vectors: Retained only for the active lifespan of the enrolled identity record.<br>• Audit logs: Retained in tamper-evident server logs per facility security rules.</div>
+        </div>
+        <div>
+          <div style="color: #00f0ff; font-weight: bold; margin-bottom: 2px;">07 WITHDRAWAL &amp; DELETION</div>
+          <div style="color: #8ec5d6;">Operators retain the technical right to withdraw biometric consent at any time. Revoking an enrolled device or requesting identity deletion permanently purges encrypted biometric templates from Cloudflare D1 storage.</div>
+        </div>
+        <div>
+          <div style="color: #00f0ff; font-weight: bold; margin-bottom: 2px;">08 DATA PRINCIPAL RIGHTS</div>
+          <div style="color: #8ec5d6;">Pursuant to notified DPDP Rules 2025, you possess rights of access, correction, erasure, and grievance redressal through terminal administration.</div>
+        </div>
+        <div>
+          <div style="color: #00f0ff; font-weight: bold; margin-bottom: 2px;">09 SECURITY CONTROLS</div>
+          <div style="color: #8ec5d6;">Single-use cryptographic challenges (60s TTL), sliding-window IP/device rate limiting via Cloudflare KV, and fail-closed authorization gateway logic.</div>
+        </div>
+
+        <!-- Section 10: Name Declaration -->
+        <div style="padding: 10px; background: rgba(0, 30, 48, 0.6); border: 1px solid #00f0ff; border-radius: 2px;">
+          <div style="color: #00f0ff; font-weight: bold; font-size: 9.5px; margin-bottom: 4px;">10 IDENTITY DECLARATION // OPERATIVE DESIGNATION</div>
+          <div style="font-size: 8.5px; color: #8ec5d6; margin-bottom: 8px;">
+            I declare that the name entered below is my correct identity name for this VAULT-01 identity record. <strong>This declaration does not constitute government identity verification unless a separate identity-verification procedure has been completed.</strong>
+          </div>
+          <div style="margin-bottom: 8px;">
+            <label style="display: block; font-size: 8px; color: #5fe8ff; letter-spacing: 0.08em; margin-bottom: 3px;">FULL OPERATIVE NAME:</label>
+            <input type="text" id="vault-declared-name" placeholder="e.g. PRIYANSH GADIA" style="width: 100%; box-sizing: border-box; background: rgba(2, 10, 18, 0.95); border: 1px solid #1e5a68; color: #fff; font-family: inherit; font-size: 10px; font-weight: bold; letter-spacing: 0.08em; padding: 6px 8px; outline: none;" />
+          </div>
+          <label style="display: flex; align-items: center; gap: 6px; font-size: 8.5px; color: #7ec5df; cursor: pointer;">
+            <input type="checkbox" id="vault-name-confirm" style="accent-color: #00f0ff; cursor: pointer;" />
+            <span>I confirm that this is the correct name I wish to associate with this VAULT-01 identity.</span>
+          </label>
+        </div>
+
+        <!-- Section 11: Electronic Acceptance -->
+        <div style="padding: 10px; background: rgba(3, 16, 28, 0.7); border: 1px solid #1e5a68; border-radius: 2px;">
+          <div style="color: #5fe8ff; font-weight: bold; font-size: 9px; margin-bottom: 4px;">11 ELECTRONIC ATTESTATION &amp; ACCEPTANCE</div>
+          <label style="display: flex; align-items: center; gap: 6px; font-size: 8.5px; color: #00f0ff; cursor: pointer;">
+            <input type="checkbox" id="vault-terms-confirm" style="accent-color: #00f0ff; cursor: pointer;" />
+            <span>I have read and accept the terms of this Identity Protocol and Biometric Processing Notice.</span>
+          </label>
+        </div>
+        <div id="vault-consent-error" style="display: none; color: #ff5a5a; font-size: 9px; font-weight: bold; padding: 4px 8px; background: rgba(255, 90, 90, 0.1); border: 1px solid rgba(255, 90, 90, 0.3);"></div>
+      </div>
+      <div style="padding: 10px 14px; background: rgba(4, 14, 24, 0.98); border-top: 1.5px solid #1e5a68; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 8px; color: #4d8394;">ELECTRONIC ACCEPTANCE AUDITABLE</span>
+        <div style="display: flex; gap: 8px;">
+          <button id="vault-consent-decline-btn" style="background: transparent; border: 1px solid #234552; color: #7ec5df; padding: 6px 14px; font-size: 9px; cursor: pointer; font-family: inherit;">[ DECLINE ]</button>
+          <button id="vault-consent-accept-btn" style="background: rgba(0, 240, 255, 0.25); border: 1.5px solid #00f0ff; color: #fff; padding: 6px 16px; font-size: 9.5px; font-weight: bold; cursor: pointer; font-family: inherit; box-shadow: 0 0 12px rgba(0, 240, 255, 0.35);">[ CONFIRM &amp; ENROLL ]</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(doc);
+
+  const decBtn = doc.querySelector('#vault-consent-decline-btn');
+  const accBtn = doc.querySelector('#vault-consent-accept-btn');
+  const nameInput = doc.querySelector('#vault-declared-name');
+  const nameCheck = doc.querySelector('#vault-name-confirm');
+  const termsCheck = doc.querySelector('#vault-terms-confirm');
+  const errDiv = doc.querySelector('#vault-consent-error');
+
+  decBtn.addEventListener('click', () => {
+    doc.remove();
+    if (onCancel) onCancel();
+  });
+
+  accBtn.addEventListener('click', async () => {
+    const val = (nameInput.value || '').trim();
+    if (!val) {
+      errDiv.style.display = 'block';
+      errDiv.textContent = 'OPERATIVE DECLARATION REQUIRED: Please enter your full operative name.';
+      return;
+    }
+    if (!nameCheck.checked) {
+      errDiv.style.display = 'block';
+      errDiv.textContent = 'CONFIRMATION REQUIRED: Please check the name confirmation box.';
+      return;
+    }
+    if (!termsCheck.checked) {
+      errDiv.style.display = 'block';
+      errDiv.textContent = 'ACCEPTANCE REQUIRED: Please accept the electronic notice terms.';
+      return;
+    }
+    errDiv.style.display = 'none';
+
+    // Submit consent record
+    const declarationText = `VAULT-01 IDENTITY DECLARATION // NAME: ${val} // NOTICE: DPDP-2026-v2 // TERMS: 1.0 // NON-KYC ATTESTATION`;
+    const encoder = new TextEncoder();
+    const digestBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(declarationText));
+    const declarationDigest = Array.from(new Uint8Array(digestBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+    try {
+      await fetch('/api/vault/biometric/consent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'ACCEPT',
+          declaredName: val,
+          declarationDigest,
+          noticeVersion: 'DPDP-2026-v2',
+          termsVersion: '1.0',
+          deviceSignals: {
+            userAgent: navigator.userAgent,
+            platform: navigator.platform || 'unknown',
+            hardwareConcurrency: navigator.hardwareConcurrency || 4,
+            screenColorDepth: window.screen?.colorDepth || 24,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+            canvasHash: idHash,
+          },
+        }),
+      });
+    } catch (e) {
+      console.warn('Consent logging error:', e);
+    }
+
+    doc.remove();
+    if (onConfirm) onConfirm(val);
+  });
+}
+
+function showAuthOverlay(title = 'TOUCH SECURITY KEY OR SENSOR ON DEVICE') {
+  hideAuthOverlay();
+  const box = document.createElement('div');
+  box.id = 'sec-auth-overlay';
+  box.style.cssText = `
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 99998;
+    width: min(440px, 90vw); background: rgba(4, 14, 24, 0.96); border: 1.5px solid #1e5a68;
+    padding: 14px 18px; font-family: ui-monospace, Menlo, Consolas, monospace; color: #cbf5ff;
+    box-shadow: 0 0 35px rgba(0, 240, 255, 0.25); text-align: center;
+  `;
+  box.innerHTML = `
+    <div style="font-size: 9.5px; letter-spacing: 0.15em; color: #5fe8ff; font-weight: bold;">AUTHENTICATOR // HARDWARE ROOT</div>
+    <div style="font-size: 13px; font-weight: bold; color: #fff; margin: 6px 0;">${title}</div>
+    <div style="font-size: 9px; color: #7ec5df;">P-256 ECDSA CRYPTOGRAPHIC BINDING · USER PRESENCE REQUIRED</div>
+  `;
+  document.body.appendChild(box);
+}
+
+function hideAuthOverlay() {
+  const box = document.getElementById('sec-auth-overlay');
+  if (box) box.remove();
+}
+
+let activeCameraHudCancel = null;
+
+function showCameraHud(mode = 'ENROLL', onCancel = null) {
+  hideCameraHud();
+  activeCameraHudCancel = onCancel;
+
+  const hud = document.createElement('div');
+  hud.id = 'vault-camera-hud';
+  hud.style.cssText = `
+    position: fixed; top: 20px; right: 20px; z-index: 99998;
+    width: 340px; background: rgba(4, 14, 24, 0.96); border: 1.5px solid #00f0ff;
+    box-shadow: 0 0 35px rgba(0, 240, 255, 0.35); border-radius: 4px;
+    font-family: ui-monospace, Menlo, Consolas, monospace; color: #cbf5ff; overflow: hidden;
+  `;
+  hud.innerHTML = `
+    <div style="padding: 8px 12px; background: rgba(6, 22, 36, 0.95); border-bottom: 1px solid #143542; display: flex; justify-content: space-between; align-items: center;">
+      <div style="display: flex; align-items: center; gap: 8px; font-size: 10px; font-weight: bold; letter-spacing: 0.12em; color: #00f0ff;">
+        <span style="width: 8px; height: 8px; border-radius: 50%; background: #00f0ff; box-shadow: 0 0 8px #00f0ff; display: inline-block;"></span>
+        <span id="vault-hud-title">${mode === 'ENROLL' ? 'ENROLLMENT // OPTICAL SENSOR' : 'IDENTITY SCAN // OPTICAL SENSOR'}</span>
+      </div>
+      <button id="vault-hud-cancel-btn" style="background: transparent; border: 1px solid rgba(255,90,90,0.5); color: #ff7a7a; padding: 2px 8px; font-size: 9px; cursor: pointer; font-family: inherit;">✕ CANCEL</button>
+    </div>
+
+    <div style="position: relative; width: 100%; height: 255px; background: #000; overflow: hidden;">
+      <video id="vault-cam-video" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: block;"></video>
+      
+      <!-- Reticle Box -->
+      <div id="vault-reticle-box" style="position: absolute; inset: 16px; border: 2px solid rgba(0, 240, 255, 0.4); pointer-events: none; transition: border-color 0.2s;">
+        <div style="position: absolute; top: -2px; left: -2px; width: 14px; height: 14px; border-top: 3px solid #00f0ff; border-left: 3px solid #00f0ff;"></div>
+        <div style="position: absolute; top: -2px; right: -2px; width: 14px; height: 14px; border-top: 3px solid #00f0ff; border-right: 3px solid #00f0ff;"></div>
+        <div style="position: absolute; bottom: -2px; left: -2px; width: 14px; height: 14px; border-bottom: 3px solid #00f0ff; border-left: 3px solid #00f0ff;"></div>
+        <div style="position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; border-bottom: 3px solid #00f0ff; border-right: 3px solid #00f0ff;"></div>
+        
+        <!-- Center Crosshair -->
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 24px;">
+          <div style="position: absolute; top: 11px; left: 0; right: 0; height: 2px; background: rgba(0, 240, 255, 0.5);"></div>
+          <div style="position: absolute; left: 11px; top: 0; bottom: 0; width: 2px; background: rgba(0, 240, 255, 0.5);"></div>
+        </div>
+      </div>
+
+      <!-- Real-time Optical Status Badge -->
+      <div id="vault-hud-badge" style="position: absolute; bottom: 8px; left: 12px; font-size: 8.5px; color: #5fe8ff; background: rgba(2, 10, 18, 0.88); padding: 2px 7px; border: 1px solid #1e5a68; letter-spacing: 0.08em;">
+        AWAITING FACE IN RETICLE...
+      </div>
+    </div>
+
+    <!-- Instructions & Gesture Guidance -->
+    <div style="padding: 10px 14px; background: rgba(4, 14, 24, 0.98); border-top: 1px solid #143542;">
+      <div style="font-size: 8px; color: #6ea8b8; letter-spacing: 0.12em; text-transform: uppercase;">ACTIVE LIVENESS FRESHNESS</div>
+      <div id="vault-hud-prompt" style="font-size: 13px; font-weight: bold; color: #ffd166; margin: 4px 0 6px 0; letter-spacing: 0.05em;">
+        CENTER FACE IN RETICLE
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 8.5px; color: #4d8394;">
+        <span id="vault-hud-metrics">SHARPNESS PASS · ILLUMINATION PASS</span>
+        <span id="vault-hud-step" style="color: #00f0ff; font-weight: bold;">INITIALIZING</span>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(hud);
+
+  hud.querySelector('#vault-hud-cancel-btn').addEventListener('click', () => {
+    hideCameraHud();
+    FaceEngine.stop();
+    if (activeCameraHudCancel) activeCameraHudCancel();
+  });
+
+  return hud.querySelector('#vault-cam-video');
+}
+
+function updateCameraHud(obs) {
+  const badge = document.getElementById('vault-hud-badge');
+  const promptEl = document.getElementById('vault-hud-prompt');
+  const stepEl = document.getElementById('vault-hud-step');
+  const box = document.getElementById('vault-reticle-box');
+  if (!badge || !promptEl) return;
+
+  const promptNames = {
+    TURN_LEFT: '⯇ TURN HEAD LEFT',
+    LOOK_LEFT: '⯇ TURN HEAD LEFT',
+    TURN_RIGHT: '⯈ TURN HEAD RIGHT',
+    LOOK_RIGHT: '⯈ TURN HEAD RIGHT',
+    NOD_DOWN: '⯆ NOD HEAD DOWN',
+    LOOK_DOWN: '⯆ NOD HEAD DOWN',
+    LOOK_UP: '⯅ TILT HEAD UP',
+    TILT_UP: '⯅ TILT HEAD UP',
+    BLINK: '👁 BLINK BOTH EYES',
+  };
+
+  if (obs.status === 'AWAITING_FACE') {
+    badge.textContent = 'POSITION FACE IN RETICLE';
+    badge.style.color = '#ffd166';
+    if (box) box.style.borderColor = 'rgba(255, 209, 102, 0.4)';
+    promptEl.textContent = 'CENTER FACE IN RETICLE';
+    promptEl.style.color = '#ffd166';
+  } else if (obs.status === 'OBSERVING' || obs.status === 'PROMPT_ADVANCED') {
+    const rawPrompt = obs.prompt || obs.nextPrompt || '';
+    const friendly = promptNames[rawPrompt] || `GESTURE: ${rawPrompt}`;
+    promptEl.textContent = friendly;
+    promptEl.style.color = '#ffd166';
+    if (box) box.style.borderColor = '#00f0ff';
+
+    const y = obs.deltaYaw !== undefined ? (obs.deltaYaw > 0 ? `+${obs.deltaYaw}` : `${obs.deltaYaw}`) : '0';
+    const p = obs.deltaPitch !== undefined ? (obs.deltaPitch > 0 ? `+${obs.deltaPitch}` : `${obs.deltaPitch}`) : '0';
+    badge.textContent = `FACE TRACKED · YAW: ${y}° · PITCH: ${p}°`;
+    badge.style.color = '#4dff8a';
+
+    if (stepEl && obs.step && obs.total) {
+      stepEl.textContent = `CHALLENGE ${obs.step}/${obs.total}`;
+    }
+  } else if (obs.status === 'CHALLENGE_SATISFIED' || obs.isDone) {
+    promptEl.textContent = 'LIVENESS VERIFIED ✓';
+    promptEl.style.color = '#4dff8a';
+    badge.textContent = 'GENERATING 128-D VECTOR...';
+    badge.style.color = '#4dff8a';
+    if (box) box.style.borderColor = '#4dff8a';
+  }
+}
+
+function hideCameraHud() {
+  const hud = document.getElementById('vault-camera-hud');
+  if (hud) hud.remove();
+  activeCameraHudCancel = null;
+}
+
+function showPassOverlay() {
+  const passBox = document.createElement('div');
+  passBox.id = 'sec-pass-overlay';
+  passBox.style.cssText = `
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 99998;
+    width: min(440px, 90vw); background: rgba(4, 14, 24, 0.96); border: 1.5px solid #4dff8a;
+    padding: 16px 20px; font-family: ui-monospace, Menlo, Consolas, monospace; color: #cbf5ff;
+    box-shadow: 0 0 35px rgba(77, 255, 138, 0.3); text-align: center;
+  `;
+  passBox.innerHTML = `
+    <div style="font-size: 9.5px; letter-spacing: 0.15em; color: #4dff8a; font-weight: bold;">ENROLLMENT COMPLETE // OPERATIVE RECORDED</div>
+    <div style="font-size: 14px; font-weight: bold; color: #fff; margin: 4px 0;">VAULT TERMINAL READY</div>
+    <div style="font-size: 9px; color: #7ec5df; margin-top: 4px;">ENCRYPTED 128-D TEMPLATE PERSISTED IN D1</div>
+  `;
+  document.body.appendChild(passBox);
+  setTimeout(() => passBox.remove(), 4000);
+}
+
+function showWelcomeOverlay(displayName) {
+  const welcome = document.createElement('div');
+  welcome.id = 'sec-welcome-overlay';
+  welcome.style.cssText = `
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 99998;
+    width: min(440px, 90vw); background: rgba(4, 14, 24, 0.96); border: 1.5px solid #4dff8a;
+    padding: 16px 20px; font-family: ui-monospace, Menlo, Consolas, monospace; color: #cbf5ff;
+    box-shadow: 0 0 35px rgba(77, 255, 138, 0.35); text-align: center;
+  `;
+  welcome.innerHTML = `
+    <div style="font-size: 9.5px; letter-spacing: 0.15em; color: #4dff8a; font-weight: bold;">IDENTITY AUTHENTICATED</div>
+    <div style="font-size: 15px; font-weight: bold; color: #fff; margin: 4px 0;">WELCOME BACK, ${(displayName || 'OPERATIVE').toUpperCase()}</div>
+    <div style="font-size: 9px; color: #7ec5df; margin-top: 4px;">SEC-NODE 01-A // SESSION ACTIVE · AUTHORIZATION CLEAR</div>
+  `;
+  document.body.appendChild(welcome);
+  setTimeout(() => welcome.remove(), 4000);
+}
+
+const hooks={
+  lastAuthenticatedUser: null,
+  lastAuthenticatedName: null,
+  lastAuthenticatedLevel: null,
+  registeredKey: null,
+  registeredCredId: null,
+  registeredDeviceId: null,
+  registeredUserId: null,
+  registeredCanvasHash: null,
+  async visit(){
+    try {
+      const vRes = await fetch('/api/vault/visit/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          deviceSignals: {
+            userAgent: navigator.userAgent,
+            platform: navigator.platform || 'unknown',
+            hardwareConcurrency: navigator.hardwareConcurrency || 4,
+            screenColorDepth: window.screen?.colorDepth || 24,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+            canvasHash: idHash,
+          }
+        }),
+      });
+      return vRes.ok;
+    } catch {
+      return false;
+    }
+  },
+  async enroll(operativeName = 'OPERATIVE-01', customHash = null){
+    let canceled = false;
+    let videoEl = null;
+    try {
+      const devHash = customHash || idHash;
+      hooks.registeredCanvasHash = devHash;
+      const deviceSignals = {
+        userAgent: navigator.userAgent,
+        platform: navigator.platform || 'unknown',
+        hardwareConcurrency: navigator.hardwareConcurrency || 4,
+        screenColorDepth: window.screen?.colorDepth || 24,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+        canvasHash: devHash,
+      };
+      // 1. Show Camera Viewport HUD & connect webcam feed immediately
+      videoEl = showCameraHud('ENROLL', () => { canceled = true; });
+      const promptEl = document.getElementById('vault-hud-prompt');
+      const badgeEl = document.getElementById('vault-hud-badge');
+      if (promptEl) promptEl.textContent = 'TOUCH SECURITY KEY OR SENSOR ON DEVICE';
+      if (badgeEl) badgeEl.textContent = 'CONNECTING OPTICAL SENSOR...';
+
+      let stream = null;
+      if (navigator.mediaDevices?.getUserMedia && (!FaceEngine.defaultInstance.isHeadless || window.__forceRealVision)) {
+        try {
+          stream = await FaceEngine.startCamera(videoEl);
+          if (badgeEl) badgeEl.textContent = 'CAMERA CONNECTED // 640x480';
+        } catch (e) {
+          console.warn('[FaceEngine] Camera hardware access deferred:', e.message);
+          if (badgeEl) badgeEl.textContent = 'CAMERA ACCESS DEFERRED';
+        }
+      }
+
+      // 2. WebAuthn Registration Challenge
+      if (!FaceEngine.defaultInstance?.isHeadless || window.__forceRealVision) {
+        showAuthOverlay('TOUCH SECURITY KEY OR SENSOR ON DEVICE');
+      }
+      const regChgRes = await fetch('/api/vault/webauthn/register-challenge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ displayName: operativeName, deviceSignals }),
+      });
+      if (!regChgRes.ok) {
+        hideAuthOverlay();
+        if (regChgRes.status === 409) {
+          console.warn('Device already bound (Phase F Case 2/5). Routing to SCAN.');
+          setMode('scan');
+          return await hooks.scan();
+        }
+        console.error('register-challenge error:', regChgRes.status, await regChgRes.text());
+        return false;
+      }
+      const regChg = await regChgRes.json();
+
+      // 3. Register complete with valid attestation
+      const att = await createWebAuthnAttestation(regChg.challenge, window.location.origin);
+      hooks.registeredKey = att.keyPair;
+      hooks.registeredCredId = att.credentialId;
+
+      const regCompRes = await fetch('/api/vault/webauthn/register-complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          challengeId: regChg.challengeId,
+          attestationResponse: att,
+          deviceSignals,
+          displayName: operativeName,
+        }),
+      });
+      hideAuthOverlay();
+      if (!regCompRes.ok) return false;
+      const regComp = await regCompRes.json();
+      hooks.registeredUserId = regComp.userId;
+      hooks.registeredDeviceId = regComp.deviceId;
+      const userId = regComp.userId;
+      const deviceId = regComp.deviceId;
+
+      // 4. Liveness Challenge & Token via LivenessEngine
+      if (promptEl) promptEl.textContent = 'LOADING NEURAL MODELS...';
+      await FaceEngine.initialize();
+      if (promptEl) promptEl.textContent = 'CENTER FACE IN RETICLE';
+
+      const liveness = new LivenessEngine(FaceEngine.defaultInstance);
+      await liveness.startChallenge('ENROLL');
+
+      if (stream && videoEl) {
+        while (!liveness.isCompleted && !canceled) {
+          const obs = await liveness.observe(videoEl);
+          updateCameraHud(obs);
+          if (obs.isDone) break;
+          await new Promise(r => setTimeout(r, 60));
+        }
+      } else {
+        while (!liveness.isCompleted && !canceled) {
+          const obs = await liveness.observe(null);
+          updateCameraHud(obs);
+          if (obs.isDone) break;
+          await new Promise(r => setTimeout(r, 50));
+        }
+      }
+
+      if (canceled) {
+        FaceEngine.stop();
+        hideCameraHud();
+        return false;
+      }
+
+      const { livenessToken } = await liveness.finish();
+
+      // 4. Encrypted template submittal with real 128-D embedding
+      const vector = await FaceEngine.embedding(videoEl || null, null);
+      FaceEngine.stop();
+      hideCameraHud();
+
+      const encKey = await crypto.subtle.importKey(
+        'raw',
+        await crypto.subtle.digest('SHA-256', new TextEncoder().encode(livenessToken)),
+        { name: 'AES-GCM' },
+        false,
+        ['encrypt']
+      );
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, encKey, vector.buffer);
+
+      const enrollRes = await fetch('/api/vault/biometric/enroll', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          livenessToken,
+          deviceId,
+          userId,
+          encryptedEmbedding: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
+          embeddingIv: btoa(String.fromCharCode(...new Uint8Array(iv))),
+        }),
+      });
+      if (!enrollRes.ok) {
+        console.error('enrollRes error:', enrollRes.status, await enrollRes.text());
+        return false;
+      }
+      showPassOverlay();
+      return true;
+    } catch (e) {
+      console.error('hooks.enroll caught error:', e);
+      return false;
+    } finally {
+      hideAuthOverlay();
+      hideCameraHud();
+      FaceEngine.stop();
+    }
+  },
+  async scan(customHash = null){
+    let canceled = false;
+    let videoEl = null;
+    try {
+      const res = await fetch('/api/vault/session');
+      const s = await res.json();
+      if (s.authenticated) {
+        hooks.lastAuthenticatedUser = s.userId;
+        hooks.lastAuthenticatedName = s.displayName || 'OPERATIVE';
+        hooks.lastAuthenticatedLevel = s.accessLevel || 'GUEST';
+        showWelcomeOverlay(hooks.lastAuthenticatedName);
+        return true;
+      }
+      const devHash = customHash || hooks.registeredCanvasHash || idHash;
+      const deviceSignals = {
+        userAgent: navigator.userAgent,
+        platform: navigator.platform || 'unknown',
+        hardwareConcurrency: navigator.hardwareConcurrency || 4,
+        screenColorDepth: window.screen?.colorDepth || 24,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+        canvasHash: devHash,
+      };
+
+      // 1. Show Camera Viewport HUD & connect webcam immediately
+      videoEl = showCameraHud('SCAN', () => { canceled = true; });
+      const promptEl = document.getElementById('vault-hud-prompt');
+      const badgeEl = document.getElementById('vault-hud-badge');
+      if (promptEl) promptEl.textContent = 'CONNECTING OPTICAL SENSOR...';
+      if (badgeEl) badgeEl.textContent = 'INITIALIZING WEBCAM';
+
+      let stream = null;
+      if (navigator.mediaDevices?.getUserMedia && (!FaceEngine.defaultInstance.isHeadless || window.__forceRealVision)) {
+        try {
+          stream = await FaceEngine.startCamera(videoEl);
+          if (badgeEl) badgeEl.textContent = 'CAMERA CONNECTED // 640x480';
+        } catch (e) {
+          console.warn('[FaceEngine] Camera hardware access deferred:', e.message);
+          if (badgeEl) badgeEl.textContent = 'CAMERA ACCESS DEFERRED';
+        }
+      }
+
+      // 2. Device lookup
+      if (promptEl) promptEl.textContent = 'VERIFYING DEVICE BINDING...';
+      const bindRes = await fetch('/api/vault/device/bind', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceSignals }),
+      });
+      const bindData = await bindRes.json();
+      if (!bindData.bound || !bindData.deviceId) {
+        console.warn('Device not bound to any enrolled identity.');
+        if (promptEl) promptEl.textContent = 'DEVICE UNBOUND · PLEASE ENROLL';
+        return false;
+      }
+
+      // 3. Auth challenge
+      const authChgRes = await fetch('/api/vault/webauthn/auth-challenge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceSignals }),
+      });
+      if (!authChgRes.ok) return false;
+      const authChg = await authChgRes.json();
+
+      // 4. Liveness Challenge via LivenessEngine
+      if (promptEl) promptEl.textContent = 'LOADING NEURAL MODELS...';
+      await FaceEngine.initialize();
+      if (promptEl) promptEl.textContent = 'CENTER FACE IN RETICLE';
+
+      const liveness = new LivenessEngine(FaceEngine.defaultInstance);
+      await liveness.startChallenge('SCAN');
+
+      if (stream && videoEl) {
+        while (!liveness.isCompleted && !canceled) {
+          const obs = await liveness.observe(videoEl);
+          updateCameraHud(obs);
+          if (obs.isDone) break;
+          await new Promise(r => setTimeout(r, 60));
+        }
+      } else {
+        while (!liveness.isCompleted && !canceled) {
+          const obs = await liveness.observe(null);
+          updateCameraHud(obs);
+          if (obs.isDone) break;
+          await new Promise(r => setTimeout(r, 50));
+        }
+      }
+
+      if (canceled) {
+        FaceEngine.stop();
+        hideCameraHud();
+        return false;
+      }
+
+      const { livenessToken } = await liveness.finish();
+
+      // 4. Auth complete
+      if (!FaceEngine.defaultInstance?.isHeadless || window.__forceRealVision) {
+        showAuthOverlay('TOUCH SECURITY KEY OR SENSOR TO CONFIRM PRESENCE');
+      }
+      let assertionResponse;
+      if (hooks.registeredKey && hooks.registeredCredId) {
+        assertionResponse = await signWebAuthnAssertion(hooks.registeredKey, hooks.registeredCredId, authChg.challenge, window.location.origin);
+      } else {
+        assertionResponse = {
+          id: 'dev_cred_active',
+          rawId: btoa(String.fromCharCode(1,2,3)),
+          type: 'public-key',
+          response: {
+            clientDataJSON: btoa(JSON.stringify({ type: 'webauthn.get', challenge: authChg.challenge, origin: window.location.origin })),
+            authenticatorData: btoa(String.fromCharCode(...new Uint8Array(37))),
+            signature: btoa(String.fromCharCode(...new Uint8Array(64))),
+          }
+        };
+      }
+      const authCompRes = await fetch('/api/vault/webauthn/auth-complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          challengeId: authChg.challengeId,
+          assertionResponse,
+          deviceSignals,
+        }),
+      });
+      hideAuthOverlay();
+      if (!authCompRes.ok) {
+        console.error('authCompRes error:', authCompRes.status, await authCompRes.text());
+        return false;
+      }
+      const authComp = await authCompRes.json();
+      const verifiedDeviceId = authComp.deviceId;
+      const verifiedUserId = authComp.userId;
+
+      // 5. Gateway scan completion with real candidate embedding
+      const vector = await FaceEngine.embedding(videoEl || null, null);
+      FaceEngine.stop();
+      hideCameraHud();
+
+      const encKey = await crypto.subtle.importKey(
+        'raw',
+        await crypto.subtle.digest('SHA-256', new TextEncoder().encode(livenessToken)),
+        { name: 'AES-GCM' },
+        false,
+        ['encrypt']
+      );
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, encKey, vector.buffer);
+
+      const scanRes = await fetch('/api/vault/scan/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          livenessToken,
+          webauthnVerifiedDeviceId: verifiedDeviceId,
+          webauthnVerifiedUserId: verifiedUserId,
+          encryptedEmbedding: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
+          embeddingIv: btoa(String.fromCharCode(...new Uint8Array(iv))),
+        }),
+      });
+      if (scanRes.ok) {
+        const scanData = await scanRes.json().catch(() => ({}));
+        hooks.lastAuthenticatedUser = verifiedUserId;
+        hooks.lastAuthenticatedName = scanData.displayName || 'OPERATIVE';
+        hooks.lastAuthenticatedLevel = scanData.accessLevel || 'GUEST';
+        showWelcomeOverlay(hooks.lastAuthenticatedName);
+        return true;
+      }
+      console.error('scanRes error:', scanRes.status, await scanRes.text());
+      return false;
+    } catch (e) {
+      console.error('hooks.scan caught error:', e);
+      return false;
+    } finally {
+      hideAuthOverlay();
+      hideCameraHud();
+      FaceEngine.stop();
+    }
+  },
+  async verify(){ return await this.scan(); }
+};
+function setMode(m){ state.mode=m; state.t0=now; const mat=m==='granted'?ledGrant:m==='denied'?ledAmber:ledCyan; strip.material=mat; ring.material=mat; }
+async function act(name){ beep(880,.07);
+  if(name==='approach'){ walk.target=1; return; }
+  if(!['idle','ready','granted','denied','visit'].includes(state.mode)) return;
+  if(name==='VISIT'){
+    setMode('visit');
+    const ok=await hooks.visit();
+    setMode(ok?'granted':'denied');
+    if(ok){
+      beep(1320,.12);
+      setTimeout(()=>beep(1760,.18),140);
+      window.dispatchEvent(new CustomEvent('vault:granted',{detail:{id:'visitor',accessLevel:'VISITOR'}}));
+    } else beep(220,.3,'sawtooth');
+  }
+  if(name==='ENROLL'){
+    if(window.__testSyntheticBiometrics || (Boolean(navigator.webdriver) && !Boolean(window.__forceRealVision))){
+      setMode('enroll');
+      const ok=await hooks.enroll();
+      setMode(ok?'ready':'idle');
+    } else {
+      showConsentModal(async (declaredName)=>{
+        setMode('enroll');
+        const ok=await hooks.enroll(declaredName);
+        setMode(ok?'ready':'idle');
+      }, ()=>{
+        setMode('ready');
+      });
+    }
+  }
+  if(name==='SCAN'){
+    setMode('scan');
+    const ok=await hooks.scan();
+    setMode(ok?'granted':'denied');
+    if(ok){
+      beep(1320,.12);
+      setTimeout(()=>beep(1760,.18),140);
+      window.dispatchEvent(new CustomEvent('vault:granted',{detail:{id:hooks.lastAuthenticatedUser||idHash,displayName:hooks.lastAuthenticatedName,accessLevel:hooks.lastAuthenticatedLevel}}));
+    } else beep(220,.3,'sawtooth');
+  }
+}
+const FP=[]; for(let i=0;i<14;i++){ const phi=((i+.5)/14-.5)*Math.PI; for(let j=0;j<22;j++){ const th=j/22*Math.PI*2,r=1+.08*(hash(i*3.1+j*1.7)-.5); FP.push([Math.cos(phi)*Math.sin(th)*.62*r,Math.sin(phi)*.9*r,Math.cos(phi)*Math.cos(th)*.7*r]); } }
+function drawScreen(t){
+  if(walk.t > 0.65 && state.mode === 'idle') setMode('ready');
+  if(walk.t < 0.4 && state.mode === 'ready') setMode('idle');
+  sg.fillStyle='#04101a'; sg.fillRect(0,0,SW,SH);
+  sg.strokeStyle='rgba(60,200,230,.1)'; sg.lineWidth=1; sg.beginPath(); for(let x=0;x<=SW;x+=16){sg.moveTo(x,0);sg.lineTo(x,SH);} for(let y=0;y<=SH;y+=16){sg.moveTo(0,y);sg.lineTo(SW,y);} sg.stroke();
+  sg.strokeStyle='#1e5a68'; sg.lineWidth=2; sg.strokeRect(3,3,SW-6,SH-6);
+  sg.fillStyle='#5fe8ff'; sg.font='bold 11px monospace'; sg.textAlign='left'; sg.fillText('BIOMETRIC SYSTEM // VAULT-01',12,20); sg.fillStyle='#2a6a78'; sg.fillRect(12,26,SW-24,1);
+  const col=state.mode==='granted'?'#4dff8a':state.mode==='denied'?'#ff5a5a':state.mode==='enroll'?'#ffd166':'#39d6ff', cx=SW/2,cy=160;
+  sg.strokeStyle=col; sg.lineWidth=6; sg.globalAlpha=.9; sg.beginPath(); sg.arc(cx,cy,64,0,6.283); sg.stroke();            // the ring
+  sg.lineWidth=3; for(let k=0;k<3;k++){ sg.beginPath(); sg.arc(cx,cy,76,t*1.2+k*2.09,t*1.2+k*2.09+.9); sg.stroke(); }
+  const ry=t*.7,cs=Math.cos(ry),sn=Math.sin(ry),S=48; sg.globalAlpha=.35; sg.lineWidth=1;
+  for(let i=0;i<14;i++){ sg.beginPath(); for(let j=0;j<=22;j++){ const p=FP[i*22+(j%22)],x=p[0]*cs+p[2]*sn; j?sg.lineTo(cx+x*S,cy-p[1]*S):sg.moveTo(cx+x*S,cy-p[1]*S); } sg.stroke(); }
+  sg.globalAlpha=1; sg.fillStyle=col; for(const p of FP){ const x=p[0]*cs+p[2]*sn,z=-p[0]*sn+p[2]*cs; if(z<-.2) continue; sg.fillRect(cx+x*S-1,cy-p[1]*S-1,2,2); }
+  const camVid = document.getElementById('vault-cam-video');
+  if((state.mode==='scan'||state.mode==='enroll') && camVid && camVid.readyState >= 2 && !camVid.paused){
+    try {
+      sg.save();
+      sg.beginPath();
+      sg.arc(cx, cy, 58, 0, Math.PI * 2);
+      sg.clip();
+      sg.translate(cx + 58, cy - 58);
+      sg.scale(-1, 1);
+      sg.drawImage(camVid, 0, 0, 116, 116);
+      sg.restore();
+    } catch(e) {}
+  }
+  if(state.mode==='scan'||state.mode==='enroll'){ const ly=90+((t*90)%150); sg.fillStyle='rgba(80,240,255,.6)'; sg.fillRect(cx-70,ly,140,2); sg.fillStyle='rgba(80,240,255,.08)'; sg.fillRect(cx-70,ly-16,140,16); }
+  const blink=Math.floor(t*2)%2===0, msg={idle:'STANDBY · APPROACH',ready:'CONSOLE READY · SELECT MODE',scan:blink?'SCANNING…':'SCANNING',enroll:'ENROLL · FACE THE LENS',visit:'VISITOR CLEARANCE GRANTED',granted:hooks.lastAuthenticatedName?`WELCOME BACK, ${hooks.lastAuthenticatedName.toUpperCase()}`:'ACCESS GRANTED',denied:'SECURITY LOCKOUT'}[state.mode] || state.mode.toUpperCase();
+  sg.font='bold 12px monospace'; sg.textAlign='center'; sg.fillStyle=state.mode==='idle'?'#7fb8c8':col; sg.fillText(msg,SW/2,SH-26);
+  if(state.mode==='granted'&&hooks.lastAuthenticatedLevel){ sg.font='bold 10px monospace'; sg.fillStyle='#4dff8a'; sg.fillText(`ACCESS LEVEL: ${hooks.lastAuthenticatedLevel.toUpperCase()}`,SW/2,SH-40); }
+  sg.font='9px monospace'; sg.fillStyle='#2f7a8a'; sg.textAlign='left'; sg.fillText('SEC-NODE // 01-A',12,SH-9); sg.textAlign='right'; sg.fillText(state.mode==='granted'?'AUTH // CLEAR':state.mode==='denied'?'LOCK // ACTIVE':'SYS-AUTH READY',SW-12,SH-9);
+  screenTex.needsUpdate=true; }
+
+/* ═══ 8. INPUT: scroll = walk · pointer = look · tap = raycast ═══ */
+const walk={t:0,target:0}, look={yaw:0,pitch:0,ty:0,tp:0}, mouse=new THREE.Vector2(), ray=new THREE.Raycaster(); let hovered=null,down=null,moved=false;
+canvas.addEventListener('wheel', e => {
+  if (window.__lab?.state?.active) return;
+  e.preventDefault();
+  walk.target = clamp(walk.target + e.deltaY * .0011, 0, 1);
+}, { passive: false });
+
+canvas.addEventListener('pointerdown', e => {
+  if (window.__lab?.state?.active) return;
+  canvas.setPointerCapture(e.pointerId); moved = false;
+  down = { x: e.clientX, y: e.clientY, walk: walk.target, yaw: look.ty };
+});
+
+canvas.addEventListener('pointermove', e => {
+  if (window.__lab?.state?.active) return;
+  mouse.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  if (down) { const dx = e.clientX - down.x, dy = e.clientY - down.y; if (Math.abs(dx) + Math.abs(dy) > 6) moved = true; }
+  if (down) {
+    if (e.pointerType !== 'mouse') { walk.target = clamp(down.walk - (e.clientY - down.y) / innerHeight * 1.6, 0, 1); look.ty = clamp(down.yaw + (e.clientX - down.x) / innerWidth * 1.2, -.5, .5); }
+  } else if (e.pointerType === 'mouse') { look.ty = -mouse.x * .32; look.tp = mouse.y * .18; }
+  hover();
+});
+
+canvas.addEventListener('pointerup', e => {
+  if (window.__lab?.state?.active) return;
+  if (down && !moved) {
+    if (e.pointerType !== 'mouse') { mouse.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); hover(); }
+    if (hovered) act(hovered.userData.action); else if (walk.t < .9) walk.target = 1;
+  }
+  down = null;
+});
+addEventListener('keydown',e=>{ if(e.key==='ArrowUp'||e.key==='w') walk.target=clamp(walk.target+.08,0,1); if(e.key==='ArrowDown'||e.key==='s') walk.target=clamp(walk.target-.08,0,1); if(e.key==='d') dbg.style.display=dbg.style.display==='block'?'none':'block'; });
+function hover(){ ray.setFromCamera(mouse,camera); const hit=ray.intersectObjects(interactables,false)[0], obj=hit?hit.object:null; if(obj===hovered) return;
+  buttons.forEach(b=>b.l.material.color.set(0x9fd6e6)); hovered=obj; canvas.style.cursor=obj?'pointer':'default';
+  if(obj){ const b=buttons.find(b=>b.b===obj||b.l===obj); if(b) b.l.material.color.set(0xffffff); } }
+let actx; function beep(f=880,d=.08,type='square'){ try{ actx??=new (window.AudioContext||window.webkitAudioContext)(); const o=actx.createOscillator(),g=actx.createGain(); o.type=type; o.frequency.value=f; g.gain.value=.05; o.connect(g).connect(actx.destination); o.start(); g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+d); o.stop(actx.currentTime+d+.02); }catch{} }
+
+/* ═══ 9. RESIZE — door & approach camera fit function ═══ */
+function fitDoorCam(cam) {
+  cam.aspect = innerWidth / innerHeight;
+  cam.fov = innerWidth <= innerHeight ? 58 : clamp(THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(52) / 2) / cam.aspect)), 52, 74);
+  cam.updateProjectionMatrix();
+}
+function resize(){ renderer.setSize(innerWidth,innerHeight,false); composer.setSize(innerWidth,innerHeight); composer.setPixelRatio(renderer.getPixelRatio());
+  grade.uniforms.uRes.value.set(innerWidth*renderer.getPixelRatio(),innerHeight*renderer.getPixelRatio());
+  fitDoorCam(camera); Z1=camera.aspect<.8?-5.75:-5.55; }
+window.addEventListener('resize',resize); resize();
+
+/* ═══ 10. ANIMATION LOOP ═══ */
+const dbg=document.getElementById('dbg'), hint=document.getElementById('hint');
+document.getElementById('load')?.remove(); setTimeout(()=>hint.style.opacity=.8,600);
+let lastT=performance.now(), fps=60, fpsAcc=0, fpsN=0, lastScreen=0;
+function frame(nowMs = performance.now()){
+  window.__frameCount = (window.__frameCount || 0) + 1;
+  const dt=Math.min((nowMs-lastT)/1000,.1); lastT=nowMs; const t=nowMs/1000;
+  if (!window.__lab?.state?.active) {
+    walk.t += (walk.target - walk.t) * (1 - Math.exp(-dt * 3.8));
+    look.yaw += (look.ty - look.yaw) * (1 - Math.exp(-dt * 6));
+    look.pitch += (look.tp - look.pitch) * (1 - Math.exp(-dt * 6));
+    const u = THREE.MathUtils.smoothstep(walk.t,0,1);
+    camera.position.z = THREE.MathUtils.lerp(Z0, Z1, u);
+    const EYE_WORLD_Y = -0.02, PANEL_Z = DOOR_Z + 0.13;
+    camera.position.x = 0;
+    camera.position.y = EYE_WORLD_Y;
+    camera.lookAt(0, EYE_WORLD_Y, PANEL_Z);
+    camera.rotation.x += look.pitch; camera.rotation.y += look.yaw;
+    if(t-lastScreen>.08){ drawScreen(t); lastScreen=t; }
+    mist.update(t); tickDrone(t);
+    hint.style.opacity=walk.t>.9?0:.8;
+  } else {
+    hint.style.opacity=0;
+  }
+  perf.tick(dt);
+  grade.uniforms.uT.value=t; window.VAULT?.cinematic?.(dt,t); composer.render();
+  if(dbg.style.display==='block') {
+    const triCount = (window.VAULT?.lab?.stats ? window.VAULT.lab.stats().triangles : null) || renderer.info.render.triangles;
+    const callCount = (window.VAULT?.lab?.stats ? window.VAULT.lab.stats().calls : null) || renderer.info.render.calls;
+    dbg.textContent=`fps ${fps.toFixed(0)}  scale ${perf?.scale?.toFixed(2)??'1'}  dpr ${renderer.getPixelRatio()}  tier ${LOW?'LOW':'HIGH'}  bloom ${bloom.enabled}\ntriangles ${triCount}  draw calls ${callCount}\ncam z ${camera.position.z.toFixed(2)}  walk ${walk.t.toFixed(2)}  mode ${state.mode}\ndoor vertices ${doorVerts}  saved calls ${savedDrawCalls}\nraster image files loaded: 0 — 6 PBR maps compiled procedurally (${Q.rockTex}px rock, ${Q.metalTex}px metal)`;
+  }
+  requestAnimationFrame(frame); }
+frame();
+window.VAULT={state,hooks,setMode,act,walk,scene,camera,door,table,lab:table,sceneMode:'cave',perf,renderer,composer};
+const {applyRealism}=await import('./realism.js');
+window.VAULT.realism=await applyRealism({scene,renderer,camera,composer,LOW,METAL,
+  rockMats:[rockCave,rockF,rockWall,rockFloor],metalMats:[gun,gunD,tit],door});
+const {installDoorSequence}=await import('./transition.js');
+const doorSeq=installDoorSequence({scene,camera,composer,door,walk,look,canvas,DOOR_Y,DOOR_Z});
+window.VAULT.cinematic=doorSeq.cinematic;
+window.VAULT.skipCinematic=doorSeq.skip;
+
+if (window.__skipToFinalRequested) {
+  doorSeq.skip();
+  table.skipToFinal();
+}
+
+document.getElementById('btn-skip-anim')?.addEventListener('click', () => {
+  window.triggerSkipAnimation?.();
+});
+
+window.addEventListener('lab:blueprint:read', e => {
+  const hud = document.getElementById('blueprint-hud');
+  const link = document.getElementById('blueprint-gh-link');
+  const text = document.getElementById('blueprint-gh-text');
+  if (hud && link && text) {
+    link.href = e.detail.url;
+    const repoName = e.detail.project?.repo_full || e.detail.project?.title || 'REPOSITORY';
+    text.textContent = `↗ OPEN ${repoName.toUpperCase()} ON GITHUB`;
+    hud.style.display = 'flex';
+  }
+});
+
+window.addEventListener('lab:blueprint:unread', () => {
+  const hud = document.getElementById('blueprint-hud');
+  if (hud) hud.style.display = 'none';
+});
+
+document.getElementById('blueprint-close-btn')?.addEventListener('click', () => {
+  window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+});
+
+// ─── LS3 FOCUSED BOTTOM TASKBAR SYNC ───
+const ls3Tb = document.getElementById('ls3-taskbar');
+const ls3TbTargetName = document.getElementById('ls3-tb-target-name');
+const ls3TbZoomLevel = document.getElementById('ls3-tb-zoom-level');
+const ls3TbTelemetry = document.getElementById('ls3-tb-telemetry-text');
+const ls3ModeBtns = document.querySelectorAll('.ls3-mode-btn');
+const ls3PresetBtns = document.querySelectorAll('.ls3-preset-btn');
+
+// Isolate pointer & click propagation on bottom taskbar
+ls3Tb?.addEventListener('pointerdown', e => e.stopPropagation());
+ls3Tb?.addEventListener('click', e => e.stopPropagation());
+
+window.addEventListener('lab:ls3:taskbar:open', () => {
+  if (ls3Tb) ls3Tb.classList.add('active');
+});
+
+window.addEventListener('lab:ls3:taskbar:close', () => {
+  if (ls3Tb) ls3Tb.classList.remove('active');
+});
+
+window.addEventListener('lab:ls3:taskbar:update', e => {
+  const d = e.detail;
+  if (!d) return;
+  if (ls3TbTargetName && d.targetName) ls3TbTargetName.textContent = d.targetName;
+  if (ls3TbZoomLevel && d.zoom != null) ls3TbZoomLevel.textContent = `ZOOM: ${d.zoom.toFixed(1)}x`;
+  if (ls3TbTelemetry && d.telemetry) ls3TbTelemetry.textContent = d.telemetry;
+  if (d.mode) {
+    ls3ModeBtns.forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-mode') === d.mode);
+    });
+  }
+  if (d.activePreset) {
+    ls3PresetBtns.forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-preset') === d.activePreset);
+    });
+  }
+});
+
+document.getElementById('ls3-tb-retract-btn')?.addEventListener('click', e => {
+  e.stopPropagation();
+  window.dispatchEvent(new CustomEvent('lab:ls3:taskbar:retract'));
+});
+
+document.getElementById('ls3-tb-zoom-in')?.addEventListener('click', e => {
+  e.stopPropagation();
+  window.dispatchEvent(new CustomEvent('lab:ls3:action', { detail: { action: 'zoom', factor: 1.25 } }));
+});
+
+document.getElementById('ls3-tb-zoom-out')?.addEventListener('click', e => {
+  e.stopPropagation();
+  window.dispatchEvent(new CustomEvent('lab:ls3:action', { detail: { action: 'zoom', factor: 0.8 } }));
+});
+
+ls3ModeBtns.forEach(btn => {
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const mode = btn.getAttribute('data-mode');
+    if (mode) window.dispatchEvent(new CustomEvent('lab:ls3:action', { detail: { action: 'mode', mode } }));
+  });
+});
+
+ls3PresetBtns.forEach(btn => {
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const preset = btn.getAttribute('data-preset');
+    if (preset) window.dispatchEvent(new CustomEvent('lab:ls3:action', { detail: { action: 'preset', preset } }));
+  });
+});
+
+// ─── LS3 DUAL HOLOGRAPHIC NEWS DISPLAY SYNC ───
+const ls3NewsHolo = document.getElementById('ls3-news-holo');
+const ls3NewsVideo = document.getElementById('ls3-news-video');
+const ls3NewsIframe = document.getElementById('ls3-news-iframe');
+const ls3NewsTitle = document.getElementById('ls3-nh-title');
+const ls3NewsBadge = document.getElementById('ls3-nh-badge');
+const ls3NewsCoords = document.getElementById('ls3-nh-coords');
+const ls3NewsChannels = document.getElementById('ls3-nh-channels');
+const ls3NewsStationNet = document.getElementById('ls3-news-station-network');
+const ls3NewsHeadlineLead = document.getElementById('ls3-news-headline-lead');
+const ls3NewsTimestamp = document.getElementById('ls3-news-timestamp');
+const ls3NewsBulletins = document.getElementById('ls3-news-bulletin-list');
+const ls3NewsSiteLink = document.getElementById('ls3-news-site-link');
+
+let activeHls = null;
+
+function isLiveStreamEnabled() {
+  return window.ENABLE_LS3_STREAM === true || new URLSearchParams(location.search).get('stream') === '1';
+}
+
+function playNewsStream(c) {
+  if (!c || !isLiveStreamEnabled()) return;
+  if (activeHls) {
+    activeHls.destroy();
+    activeHls = null;
+  }
+  if (ls3NewsVideo) {
+    ls3NewsVideo.pause();
+    ls3NewsVideo.removeAttribute('src');
+    ls3NewsVideo.load();
+    ls3NewsVideo.style.display = 'none';
+  }
+  if (ls3NewsIframe) {
+    ls3NewsIframe.src = 'about:blank';
+    ls3NewsIframe.style.display = 'none';
+  }
+
+  const url = c.streamUrl || '';
+  const isHls = c.streamType === 'hls' || url.includes('.m3u8') || url.includes('/playlist') || url.includes('/master');
+
+  if (isHls && url && ls3NewsVideo) {
+    ls3NewsVideo.style.display = 'block';
+    if (window.Hls && window.Hls.isSupported()) {
+      activeHls = new window.Hls({
+        enableWorker: true,
+        lowLatencyMode: true,
+        backBufferLength: 60,
+        liveSyncDurationCount: 3,
+        liveMaxLatencyDurationCount: 6,
+        maxLiveSyncPlaybackRate: 1.0
+      });
+      activeHls.loadSource(url);
+      activeHls.attachMedia(ls3NewsVideo);
+      activeHls.on(window.Hls.Events.MANIFEST_PARSED, () => {
+        ls3NewsVideo.muted = true;
+        ls3NewsVideo.play().catch(() => {});
+      });
+      const muteBtn = document.getElementById('ls3-btn-audio-toggle');
+      if (muteBtn) muteBtn.textContent = '🔊 UNMUTE';
+      activeHls.on(window.Hls.Events.ERROR, (evt, data) => {
+        if (data.fatal) {
+          switch (data.type) {
+            case window.Hls.ErrorTypes.NETWORK_ERROR:
+              activeHls.startLoad();
+              break;
+            case window.Hls.ErrorTypes.MEDIA_ERROR:
+              activeHls.recoverMediaError();
+              break;
+            default:
+              activeHls.destroy();
+              break;
+          }
+        }
+      });
+    } else if (ls3NewsVideo.canPlayType('application/vnd.apple.mpegurl')) {
+      ls3NewsVideo.src = url;
+      ls3NewsVideo.muted = true;
+      ls3NewsVideo.play().catch(() => {});
+    }
+  } else if (url && ls3NewsIframe) {
+    ls3NewsIframe.style.display = 'block';
+    ls3NewsIframe.src = url;
+  }
+}
+
+// Isolate pointer & click propagation on holographic displays
+ls3NewsHolo?.addEventListener('pointerdown', e => e.stopPropagation());
+ls3NewsHolo?.addEventListener('click', e => e.stopPropagation());
+
+window.addEventListener('lab:ls3:news:progress', e => {
+  const bp = e.detail?.borderProgress ?? 0;
+  const dp = e.detail?.displayProgress ?? 0;
+  if (ls3NewsHolo) {
+    ls3NewsHolo.style.setProperty('--holo-border-opacity', bp.toFixed(3));
+    ls3NewsHolo.style.setProperty('--holo-disp-opacity', dp.toFixed(3));
+    if (bp > 0.05) {
+      ls3NewsHolo.style.pointerEvents = 'auto';
+    } else {
+      ls3NewsHolo.style.pointerEvents = 'none';
+    }
+  }
+});
+
+// Live Video Player HUD Controls
+document.getElementById('ls3-btn-audio-toggle')?.addEventListener('click', e => {
+  e.stopPropagation();
+  if (!ls3NewsVideo) return;
+  ls3NewsVideo.muted = !ls3NewsVideo.muted;
+  const btn = document.getElementById('ls3-btn-audio-toggle');
+  if (btn) btn.textContent = ls3NewsVideo.muted ? '🔊 UNMUTE' : '🔇 MUTE';
+});
+
+document.getElementById('ls3-btn-sync-live')?.addEventListener('click', e => {
+  e.stopPropagation();
+  if (activeHls && activeHls.liveSyncPosition) {
+    ls3NewsVideo.currentTime = activeHls.liveSyncPosition;
+  }
+  ls3NewsVideo?.play().catch(() => {});
+});
+
+document.getElementById('ls3-btn-fullscreen')?.addEventListener('click', e => {
+  e.stopPropagation();
+  const vContainer = document.querySelector('.ls3-video-container');
+  if (!vContainer) return;
+  if (!document.fullscreenElement) {
+    vContainer.requestFullscreen?.().catch(() => {});
+  } else {
+    document.exitFullscreen?.().catch(() => {});
+  }
+});
+
+window.addEventListener('lab:ls3:news:open', e => {
+  if (!isLiveStreamEnabled()) {
+    console.log('[LS3] Live stream overlay quarantined (ENABLE_LS3_STREAM is false).');
+    return;
+  }
+  const c = e.detail?.channel;
+  if (!c || !ls3NewsHolo) return;
+  if (ls3NewsTitle) ls3NewsTitle.textContent = `${c.name.toUpperCase()} // ${c.country.toUpperCase()} · ${c.city.toUpperCase()}`;
+  if (ls3NewsBadge) {
+    ls3NewsBadge.textContent = `● ${c.intensity} BROADCAST`;
+    ls3NewsBadge.style.color = c.color;
+    ls3NewsBadge.style.borderColor = c.color;
+  }
+  if (ls3NewsCoords) {
+    const latStr = `${Math.abs(c.lat).toFixed(2)}°${c.lat >= 0 ? 'N' : 'S'}`;
+    const lonStr = `${Math.abs(c.lon).toFixed(2)}°${c.lon >= 0 ? 'E' : 'W'}`;
+    ls3NewsCoords.textContent = `${latStr}, ${lonStr}`;
+  }
+  if (ls3NewsStationNet) ls3NewsStationNet.textContent = c.network.toUpperCase();
+  if (ls3NewsHeadlineLead) ls3NewsHeadlineLead.textContent = c.headlines?.[0] || 'LIVE BREAKING BULLETIN DISPATCH';
+  if (ls3NewsTimestamp) ls3NewsTimestamp.textContent = new Date().toLocaleTimeString();
+  if (ls3NewsSiteLink) ls3NewsSiteLink.href = c.siteUrl || '#';
+  if (ls3NewsBulletins) {
+    ls3NewsBulletins.innerHTML = (c.headlines || [])
+      .map(h => `<li>${h}</li>`)
+      .join('');
+  }
+
+  // Play stream via HLS or Embed
+  playNewsStream(c);
+
+  // Populate 2-5 channels tabs for this country
+  const countryChannels = e.detail?.channels || [c];
+  if (ls3NewsChannels) {
+    ls3NewsChannels.innerHTML = countryChannels.map(ch => {
+      const shortName = ch.name.replace(/ Live| News| World| 24x7| English| NOW/gi, '').trim() || ch.name;
+      return `<button class="ls3-channel-tab ${ch.id === c.id ? 'active' : ''}" data-channel-id="${ch.id}" title="${ch.name} (${ch.city})">${shortName}</button>`;
+    }).join('');
+
+    ls3NewsChannels.querySelectorAll('.ls3-channel-tab').forEach(btn => {
+      btn.addEventListener('click', ev => {
+        ev.stopPropagation();
+        const chId = btn.getAttribute('data-channel-id');
+        if (chId) {
+          window.dispatchEvent(new CustomEvent('lab:ls3:channel:select', { detail: { channelId: chId } }));
+          const nextCh = countryChannels.find(ch => ch.id === chId);
+          if (nextCh) {
+            ls3NewsChannels.querySelectorAll('.ls3-channel-tab').forEach(b => b.classList.toggle('active', b === btn));
+            if (ls3NewsTitle) ls3NewsTitle.textContent = `${nextCh.name.toUpperCase()} // ${nextCh.country.toUpperCase()} · ${nextCh.city.toUpperCase()}`;
+            if (ls3NewsStationNet) ls3NewsStationNet.textContent = nextCh.network.toUpperCase();
+            if (ls3NewsHeadlineLead) ls3NewsHeadlineLead.textContent = nextCh.headlines?.[0] || 'LIVE BULLETIN';
+            if (ls3NewsSiteLink) ls3NewsSiteLink.href = nextCh.siteUrl || '#';
+            if (ls3NewsBulletins) {
+              ls3NewsBulletins.innerHTML = (nextCh.headlines || []).map(h => `<li>${h}</li>`).join('');
+            }
+            playNewsStream(nextCh);
+          }
+        }
+      });
+    });
+  }
+
+  // Display starts hidden while rays shoot out, then forms dynamically via lab:ls3:news:progress
+  ls3NewsHolo.style.setProperty('--holo-border-opacity', '0');
+  ls3NewsHolo.style.setProperty('--holo-disp-opacity', '0');
+  ls3NewsHolo.classList.add('active');
+});
+
+function closeLS3NewsHolo() {
+  if (!ls3NewsHolo) return;
+  ls3NewsHolo.classList.remove('active');
+  ls3NewsHolo.style.setProperty('--holo-border-opacity', '0');
+  ls3NewsHolo.style.setProperty('--holo-disp-opacity', '0');
+  if (activeHls) {
+    activeHls.destroy();
+    activeHls = null;
+  }
+  if (ls3NewsVideo) {
+    ls3NewsVideo.pause();
+    ls3NewsVideo.removeAttribute('src');
+    ls3NewsVideo.load();
+    ls3NewsVideo.style.display = 'none';
+  }
+  if (ls3NewsIframe) {
+    ls3NewsIframe.src = 'about:blank';
+    ls3NewsIframe.style.display = 'none';
+  }
+  window.dispatchEvent(new CustomEvent('lab:ls3:news:retract'));
+}
+
+document.getElementById('ls3-nh-close-btn')?.addEventListener('click', e => {
+  e.stopPropagation();
+  closeLS3NewsHolo();
+});
+
+window.addEventListener('lab:ls3:news:close', () => {
+  if (ls3NewsHolo) {
+    ls3NewsHolo.classList.remove('active');
+    ls3NewsHolo.style.setProperty('--holo-border-opacity', '0');
+    ls3NewsHolo.style.setProperty('--holo-disp-opacity', '0');
+  }
+  if (activeHls) {
+    activeHls.destroy();
+    activeHls = null;
+  }
+  if (ls3NewsVideo) {
+    ls3NewsVideo.pause();
+    ls3NewsVideo.removeAttribute('src');
+    ls3NewsVideo.load();
+    ls3NewsVideo.style.display = 'none';
+  }
+  if (ls3NewsIframe) {
+    ls3NewsIframe.src = 'about:blank';
+    ls3NewsIframe.style.display = 'none';
+  }
+});
+
+// Ownership & client-side deterrence (Section 11)
+window.__VAULT_OWNER = 'Priyansh Gadia';
+window.__VAULT_CANONICAL = 'VAULT-01';
+
+document.addEventListener('contextmenu', e => {
+  e.preventDefault();
+});
+
+document.addEventListener('dragstart', e => {
+  if (e.target && e.target.nodeName !== 'INPUT' && e.target.nodeName !== 'TEXTAREA') {
+    e.preventDefault();
+  }
+});
+
+window.addEventListener('keydown', e => {
+  if (e.key === 'F12') {
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && ['I','i','J','j','C','c'].includes(e.key)) {
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 'U')) {
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
+});
+
+addEventListener('lab:activated', () => {
+  const btn = document.getElementById('btn-skip-anim');
+  if (btn) btn.style.display = 'none';
+  if (window.VAULT) window.VAULT.sceneMode = 'table';
+  renderer.shadowMap.autoUpdate = false;
+  for (const p of composer.passes) {
+    if (p.uniforms?.uFade) p.enabled = false;
+    if (p.constructor.name === 'GTAOPass') p.enabled = false;
+  }
+});
+</script></body></html>

@@ -81,43 +81,68 @@ scene.add(roomGroup);
 scene.add(landingPadGroup);
 scene.add(assembledSuitGroup);
 
-// Position overrides for initial room state
-doorGroup.position.set(0, 0, 20); // Door is close to camera
-roomGroup.position.set(0, -1, 0);
-landingPadGroup.position.set(0, -5, -100);
-assembledSuitGroup.position.set(0, -5, -100);
-assembledSuitGroup.visible = false;
+// Materials
+const M_GUNMETAL = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.9, roughness: 0.3, side: THREE.DoubleSide });
+const M_BLOODRED = new THREE.MeshStandardMaterial({ color: 0x4a0000, metalness: 0.6, roughness: 0.4, side: THREE.DoubleSide });
+const M_GRAPHITE = new THREE.MeshStandardMaterial({ color: 0x050505, metalness: 0.8, roughness: 0.6, side: THREE.DoubleSide });
+const M_BLUE = new THREE.MeshStandardMaterial({ color: 0x0a33a0, metalness: 0.1, roughness: 0.2, emissive: 0x0a33a0, emissiveIntensity: 1.0, side: THREE.DoubleSide });
+const M_SILVER = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, metalness: 1.0, roughness: 0.2, side: THREE.DoubleSide });
+
+// Build the explicitly required static objects per step 1
+
+// 1. DOOR (Gigantic gunmetal steel door)
+const leftDoorGeo = new THREE.BoxGeometry(20, 40, 2);
+const rightDoorGeo = new THREE.BoxGeometry(20, 40, 2);
+const leftDoor = new THREE.Mesh(leftDoorGeo, M_GUNMETAL);
+const rightDoor = new THREE.Mesh(rightDoorGeo, M_GUNMETAL);
+leftDoor.position.set(-10, 0, 0); // closed seam at 0
+rightDoor.position.set(10, 0, 0); // closed seam at 0
+leftDoor.name = "leftDoor";
+rightDoor.name = "rightDoor";
+doorGroup.add(leftDoor);
+doorGroup.add(rightDoor);
+doorGroup.position.set(0, 0, 15); // Place door in front of the camera
+
+// 2. WORKSHOP (Dark futuristic room + workbench)
+const roomGeo = new THREE.BoxGeometry(60, 40, 80);
+const roomMat = M_GRAPHITE.clone();
+roomMat.side = THREE.BackSide; 
+const room = new THREE.Mesh(roomGeo, roomMat);
+room.position.set(0, 0, -25); // Behind the door
+roomGroup.add(room);
+
+const workbenchGeo = new THREE.BoxGeometry(10, 2, 6);
+const workbench = new THREE.Mesh(workbenchGeo, M_GUNMETAL);
+workbench.position.set(0, -5, -40); // distant workbench
+roomGroup.add(workbench);
+
+// 3. LANDING PAD & VAULT
+const padGeo = new THREE.CylinderGeometry(15, 15, 1, 32);
+const pad = new THREE.Mesh(padGeo, M_GRAPHITE);
+pad.position.set(0, -6, 0);
+landingPadGroup.add(pad);
+
+const buttonGeo = new THREE.CylinderGeometry(1, 1, 0.2, 16);
+const button = new THREE.Mesh(buttonGeo, M_BLOODRED);
+button.position.set(10, -5.4, 0);
+landingPadGroup.add(button);
+
+const vaultTunnelGeo = new THREE.CylinderGeometry(20, 20, 100, 32, 1, true);
+const vaultTunnel = new THREE.Mesh(vaultTunnelGeo, M_GUNMETAL);
+vaultTunnel.rotation.x = Math.PI / 2;
+vaultTunnel.position.set(0, 0, -50);
+landingPadGroup.add(vaultTunnel);
+
+landingPadGroup.position.set(0, 0, -150); // Far back in the scene
 
 // ==========================================
 // 4. MODEL LOADING (WITH GRACEFUL FAIL)
 // ==========================================
 const loader = new GLTFLoader();
 
-function loadModel(path, group, scale = 1, onLoaded = null) {
-  loader.load(
-    path,
-    (gltf) => {
-      const model = gltf.scene;
-      model.scale.setScalar(scale);
-      group.add(model);
-      if (onLoaded) onLoaded(gltf);
-    },
-    undefined,
-    (error) => {
-      console.warn(`Asset missing or failed to load: ${path}. Proceeding without it per AGENTS.md rule 5.`);
-    }
-  );
-}
-
-// We will load cavern explicitly inside iron_man_rig callback to ensure order
-
 import { initializeArmorEffects, updateArmorEffects } from './public/js/armor-effects.js';
 
-const M_GUNMETAL = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.9, roughness: 0.3, side: THREE.DoubleSide });
-const M_BLOODRED = new THREE.MeshStandardMaterial({ color: 0x4a0000, metalness: 0.6, roughness: 0.4, side: THREE.DoubleSide });
-const M_GRAPHITE = new THREE.MeshStandardMaterial({ color: 0x050505, metalness: 0.8, roughness: 0.6, side: THREE.DoubleSide });
-const M_BLUE = new THREE.MeshStandardMaterial({ color: 0x0a33a0, metalness: 0.1, roughness: 0.2, emissive: 0x0a33a0, emissiveIntensity: 1.0, side: THREE.DoubleSide });
-const M_SILVER = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, metalness: 1.0, roughness: 0.2, side: THREE.DoubleSide });
+
 
 function applyArmorMaterial(mesh) {
     const n = mesh.name.toLowerCase();
@@ -191,23 +216,10 @@ partsToLoad.forEach(partName => {
 });
 
 function onAllArmorLoaded() {
-  // 2. NORMALIZE/CENTER
+  // 2. EXPLICIT SCALE (Do not rely on bounding-box camera math)
+  ARMOR_ROOT.scale.setScalar(3.57); // Explicit scale known from previous runs
+  ARMOR_ROOT.position.set(0, -6, -40); // Base position centered in the workshop
   ARMOR_ROOT.updateMatrixWorld(true);
-  const bounds = new THREE.Box3().setFromObject(ARMOR_ROOT);
-  const size = new THREE.Vector3();
-  bounds.getSize(size);
-  
-  if (!isNaN(size.x) && size.x !== 0 && isFinite(size.x)) {
-    const scale = 3.0 / size.y;
-    ARMOR_ROOT.scale.setScalar(scale);
-    ARMOR_ROOT.updateMatrixWorld(true);
-    
-    const scaledBounds = new THREE.Box3().setFromObject(ARMOR_ROOT);
-    const scaledCenter = new THREE.Vector3();
-    scaledBounds.getCenter(scaledCenter);
-    ARMOR_ROOT.position.sub(scaledCenter);
-    ARMOR_ROOT.updateMatrixWorld(true);
-  }
 
   // 3. EXPLICIT VISIBILITY
   ARMOR_ROOT.visible = true;
@@ -220,73 +232,32 @@ function onAllArmorLoaded() {
     }
   });
 
-  // Setup ARMOR_ROOT final position
-  ARMOR_ROOT.position.set(0, -10, -100);
-  ARMOR_ROOT.updateMatrixWorld(true);
-
   // Set initial separated positions in local space (workbench)
   // LocalPos = (WorldPos - RootPos) / Scale
   const scale = ARMOR_ROOT.scale.x;
   Object.keys(workbenchOffsets).forEach(partName => {
     if (armorParts[partName]) {
       const off = workbenchOffsets[partName];
-      // original world pos: x: off.x, y: off.y - 1.0, z: off.z
       armorParts[partName].position.set(
         (off.x) / scale,
-        (off.y - 1.0 + 10) / scale,
-        (off.z + 100) / scale
+        (off.y) / scale,
+        (off.z) / scale
       );
     }
   });
 
   // 6. TELEMETRY
-  const finalBounds = new THREE.Box3().setFromObject(ARMOR_ROOT);
   console.log('[ARMOR PROD]');
   console.log(`loaded=true`);
   console.log(`components=${Object.values(armorParts).filter(p=>p).length}`);
   console.log(`meshes=${totalMeshesLoaded}`);
   console.log(`rootVisible=${ARMOR_ROOT.visible}`);
   console.log(`rootScale=${ARMOR_ROOT.scale.x}`);
-  console.log(`rootBounds=min(${finalBounds.min.x.toFixed(2)},${finalBounds.min.y.toFixed(2)},${finalBounds.min.z.toFixed(2)}) max(${finalBounds.max.x.toFixed(2)},${finalBounds.max.y.toFixed(2)},${finalBounds.max.z.toFixed(2)})`);
-  console.log(`stage=normalized`);
+  console.log(`stage=static`);
 
-  // Load Cavern Environment
-  loader.load(
-    '/models/cavern-environment.glb',
-    (cavernGltf) => {
-      const cavern = cavernGltf.scene;
-      cavern.position.set(0, -10, -100);
-      cavern.traverse(c => {
-        if (c.isMesh && c.material) {
-          const mats = Array.isArray(c.material) ? c.material : [c.material];
-          mats.forEach(m => {
-            m.transparent = true;
-            m.opacity = 0;
-            m.side = THREE.DoubleSide;
-          });
-        }
-      });
-      
-      const cavernLight = new THREE.PointLight(0xffffff, 50, 50);
-      cavernLight.position.set(0, 10, -95);
-      scene.add(cavernLight);
-      
-      const cavernAccent = new THREE.SpotLight(0x00f3ff, 100, 40, 0.5, 1, 1);
-      cavernAccent.position.set(5, 5, -95);
-      cavernAccent.target.position.set(0, -10, -100);
-      scene.add(cavernAccent);
-      scene.add(cavernAccent.target);
-
-      cavern.scale.setScalar(30);
-      cavern.position.y = -20;
-      scene.add(cavern);
-      window.cavernEnvironment = cavern;
-      
-      // 7. MARK READY
-      window.__ARMOR_READY = true;
-      requestAnimationFrame(() => requestAnimationFrame(() => initCinematic()));
-    }
-  );
+  // 7. MARK READY
+  window.__ARMOR_READY = true;
+  requestAnimationFrame(() => requestAnimationFrame(() => initCinematic()));
 }
 
 // ==========================================
@@ -353,45 +324,50 @@ function initCinematic() {
   // so that `.to(..., { duration: X }, Y)` exactly matches scroll percentage points!
   
   // ==========================================
-  // SHOT A: Intro Identity (0 -> 10)
+  // SHOT A: Intro Identity (0 -> 8)
   // ==========================================
-  // P and G are already visible at gap: 8rem
-  masterTimeline.to('.intro-name-container', { gap: '1rem', duration: 4, ease: 'power2.inOut' }, 2);
-  masterTimeline.to('.name-hidden', { opacity: 1, width: 'auto', duration: 4, ease: 'power2.out' }, 2);
-  masterTimeline.to('#intro-layer', { autoAlpha: 0, duration: 2, ease: 'power2.inOut' }, 8);
+  masterTimeline.to('.intro-name-container', { gap: '1rem', duration: 5, ease: 'power2.inOut' }, 2);
+  masterTimeline.to('.name-hidden', { opacity: 1, width: 'auto', duration: 5, ease: 'power2.out' }, 2);
+  masterTimeline.to('#intro-layer', { autoAlpha: 0, duration: 2, ease: 'power2.inOut' }, 6); // Fades out before 8
 
   // ==========================================
-  // SHOT B & C: Door opening / workshop reveal (10 -> 20)
+  // SHOT B: Door Reveal (8 -> 18)
   // ==========================================
-  masterTimeline.to(doorGroup.position, { x: -10, duration: 6, ease: 'power3.inOut' }, 10);
-  masterTimeline.to(ambientLight, { intensity: 1.5, duration: 4 }, 10);
-  masterTimeline.to(practicalLight, { intensity: 50, duration: 3 }, 12);
-  masterTimeline.to(cyanAccent, { intensity: 100, duration: 3 }, 14);
-  masterTimeline.to(cameraLight, { intensity: 5.0, duration: 3 }, 13);
+  const leftDoor = scene.getObjectByName('leftDoor');
+  const rightDoor = scene.getObjectByName('rightDoor');
+  if (leftDoor && rightDoor) {
+    masterTimeline.to(leftDoor.position, { x: -30, duration: 8, ease: 'power2.inOut' }, 10);
+    masterTimeline.to(rightDoor.position, { x: 30, duration: 8, ease: 'power2.inOut' }, 10);
+  }
+  
+  // ==========================================
+  // SHOT C: Workshop Reveal (18 -> 28)
+  // ==========================================
+  masterTimeline.to(camera.position, { x: 0, y: 5, z: -20, duration: 10, ease: 'power1.inOut' }, 18);
+  masterTimeline.to(ambientLight, { intensity: 1.5, duration: 4 }, 18);
+  masterTimeline.to(practicalLight, { intensity: 50, duration: 3 }, 18);
 
   // ==========================================
-  // SHOT D: Armor Activation (20 -> 25)
+  // SHOT D: Armor Power-Up (28 -> 36)
+  // ==========================================
+  masterTimeline.to(cyanAccent, { intensity: 100, duration: 3 }, 28);
+  masterTimeline.to(cameraLight, { intensity: 5.0, duration: 3 }, 28);
+
+  // ==========================================
+  // SHOT E: Launch Preparation (36 -> 42)
   // ==========================================
   const validParts = Object.values(armorParts).filter(p => p !== null);
   if (validParts.length > 0) {
     masterTimeline.to(validParts.map(p => p.position), { 
-      y: `+=${1.5 / scale}`, duration: 3, stagger: 0.5, ease: 'power2.inOut' 
-    }, 20);
+      y: `+=${2.0}`, duration: 6, ease: 'power2.inOut' 
+    }, 36);
   }
 
   // ==========================================
-  // SHOT E - K: Flight (Camera deliberate tracking) (25 -> 85)
+  // SHOT F - K: Flight sequence (42 -> 84)
   // ==========================================
-  // Camera moves out of workshop and starts following
-  // At 25, exit the workshop
-  masterTimeline.to(camera.position, { x: 0, y: 5, z: 0, ease: 'power1.inOut', duration: 10 }, 25);
-  // At 35, fly down path
-  masterTimeline.to(camera.position, { x: 0, y: 0, z: -50, ease: 'none', duration: 30 }, 35);
-  // At 65, final landing approach
-  masterTimeline.to(camera.position, { x: 0, y: -5, z: -85, ease: 'power2.out', duration: 20 }, 65);
-  
-  // Camera tilt
-  masterTimeline.to(camera.rotation, { x: 0.05, y: 0, z: 0, ease: 'power1.inOut', duration: 10 }, 25);
+  // Camera pans to follow flight
+  masterTimeline.to(camera.position, { x: 0, y: 5, z: -70, ease: 'none', duration: 40 }, 42);
 
   const components = [
     armorParts.boots,
@@ -403,13 +379,14 @@ function initCinematic() {
   ].filter(p => p !== null);
 
   components.forEach((comp, index) => {
-    const launchStart = 25 + (index * 4); // Launch at 25, 29, 33, 37, 41, 45
+    // 42, 50, 57, 64, 71, 78
+    const launchStart = index === 0 ? 42 : 50 + ((index - 1) * 7); 
     
-    // Launch off workbench and start flying down tunnel
+    // Launch towards camera/assembly area
     masterTimeline.to(comp.position, { 
-      x: (-2 + (Math.random() * 4 - 2)) / scale,
-      y: ((Math.random() * 4 - 2) + 5) / scale,
-      z: (-40 + 100) / scale, 
+      x: -5 + (Math.random() * 2), // occupy left
+      y: 5 + (Math.random() * 2),
+      z: -80, 
       ease: 'power1.in', 
       duration: 15
     }, launchStart);
@@ -420,54 +397,52 @@ function initCinematic() {
       duration: 15
     }, launchStart);
 
-    // Boost ahead to assembly area (75 -> 85)
-    // Assembly starts at 75
+    // Assembly path (84 -> 89 is ALL COMPONENTS flying together, so we just let them settle)
     masterTimeline.to(comp.position, {
-      x: 0, y: 15 / scale, z: 0, 
+      x: 0, y: 15, z: -100, 
       ease: 'power2.inOut', 
-      duration: 8
-    }, 70 + (index * 1));
+      duration: 5
+    }, 84);
     
     masterTimeline.to(comp.rotation, {
       y: 0, x: 0,
       ease: 'power2.inOut',
-      duration: 8
-    }, 70 + (index * 1));
+      duration: 5
+    }, 84);
   });
 
   // ==========================================
-  // SHOT L - N: Descent & Landing (85 -> 95)
+  // SHOT L: Descent (89 -> 94)
   // ==========================================
+  // Complete suit descends toward circular landing pad (pad is at z=-150)
+  masterTimeline.to(camera.position, { x: 0, y: -2, z: -110, ease: 'power2.inOut', duration: 5 }, 89);
+  
   if (validParts.length > 0) {
     masterTimeline.to(validParts.map(p => p.position), { 
-      y: 0, duration: 5, stagger: 0.5, ease: 'power2.in' 
-    }, 85);
+      x: 0, y: -5, z: -150, duration: 5, ease: 'power2.in' 
+    }, 89);
   }
 
   // ==========================================
-  // 95 -> 100: Final stand, UI reveal
+  // SHOT M: Assembly (94 -> 96.5)
   // ==========================================
   masterTimeline.call(() => {
-    console.log('[ARMOR PROD] stage=assembled');
-    if (window.cavernEnvironment) {
-       window.cavernEnvironment.traverse(c => {
-         if (c.isMesh && c.material) {
-           const mats = Array.isArray(c.material) ? c.material : [c.material];
-           mats.forEach(m => gsap.to(m, { opacity: 1, duration: 1 }));
-         }
-       });
-    }
-    
     if (suitAnimations['Landing']) {
       suitAnimations['Landing'].reset().play();
     }
-    
-    // Add strong light to illuminate the suit
+  }, null, 94);
+
+  // ==========================================
+  // SHOT N: Landing Pad (96.5 -> 98.5)
+  // ==========================================
+  // Camera reveals full pad and button
+  masterTimeline.to(camera.position, { x: 0, y: 0, z: -130, ease: 'power1.inOut', duration: 2 }, 96.5);
+  masterTimeline.call(() => {
     let finalLight = scene.getObjectByName('finalLight');
     if (!finalLight) {
        finalLight = new THREE.PointLight(0xffffff, 100, 300);
        finalLight.name = 'finalLight';
-       finalLight.position.set(0, -5, -95);
+       finalLight.position.set(0, 0, -140);
        scene.add(finalLight);
        
        const cavernAmbient = new THREE.AmbientLight(0xffffff, 2.0);
@@ -479,7 +454,7 @@ function initCinematic() {
       btn.classList.remove('hidden');
       gsap.fromTo(btn, { opacity: 0, scale: 0 }, { opacity: 1, scale: 1, duration: 0.5 });
     }
-  }, null, 95);
+  }, null, 96.5);
 
   // ==========================================
   // TEXT BLOCKS (Deterministic mapping)
@@ -493,59 +468,59 @@ function initCinematic() {
     '#chapter-06 .copy-block',
   ];
   
-  // They appear during flight phase: 35, 42, 49, 56, 63, 70
+  // They appear during flight phase
   chapters.forEach((sel, i) => {
      const block = document.querySelector(sel);
      if (block) {
-        masterTimeline.fromTo(block, { autoAlpha: 0, y: 50 }, { autoAlpha: 1, y: 0, duration: 4 }, 35 + (i * 7));
-        masterTimeline.to(block, { autoAlpha: 0, y: -50, duration: 3 }, 35 + (i * 7) + 5);
+        masterTimeline.fromTo(block, { autoAlpha: 0, y: 50 }, { autoAlpha: 1, y: 0, duration: 4 }, 42 + (i * 7));
+        masterTimeline.to(block, { autoAlpha: 0, y: -50, duration: 3 }, 42 + (i * 7) + 5);
      }
   });
 
   const finalBlock = document.querySelector('#chapter-final .copy-block');
   if (finalBlock) {
-     masterTimeline.fromTo(finalBlock, { autoAlpha: 0, y: 50 }, { autoAlpha: 1, y: 0, duration: 4 }, 95);
+     masterTimeline.fromTo(finalBlock, { autoAlpha: 0, y: 50 }, { autoAlpha: 1, y: 0, duration: 4 }, 96.5);
   }
+
+  // ==========================================
+  // SHOT O: VAULT ENTRY (98.5 -> 100)
+  // ==========================================
+  masterTimeline.call(() => {
+    if (suitAnimations['StepBack']) suitAnimations['StepBack'].reset().play();
+    isRepulsorActive = true;
+    repulsorTimer = 2.0;
+  }, null, 98.5);
+
+  masterTimeline.to(camera.position, { z: -120, duration: 0.5, ease: 'power2.inOut' }, 99);
+  
+  masterTimeline.call(() => {
+    if (suitAnimations['AimAndShoot']) suitAnimations['AimAndShoot'].reset().play();
+  }, null, 99.5);
+  
+  masterTimeline.to(cyanAccent, { intensity: 50, duration: 0.1 }, 99.6);
+  masterTimeline.to(cyanAccent, { intensity: 10, duration: 0.4 }, 99.7);
+  
+  // Open the aperture
+  masterTimeline.to(landingPadGroup.position, { y: -20, duration: 0.5, ease: 'power2.in' }, 99.5); // Pad drops away revealing tunnel
+  
+  // Show final CTA
+  masterTimeline.call(() => {
+    const cta = document.getElementById('vault-cta');
+    if (cta) {
+      cta.classList.remove('hidden');
+      gsap.fromTo(cta, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 });
+    }
+  }, null, 100);
 }
 
 // ==========================================
-// 7. REPULSOR INTERACTION
+// 7. REPULSOR INTERACTION (NOW TIMELINE DRIVEN)
 // ==========================================
 let isRepulsorActive = false;
 let repulsorTimer = 0;
 
-document.getElementById('repulsor-btn').addEventListener('click', () => {
-  // Hide button
-  document.getElementById('repulsor-btn').classList.add('hidden');
-
-  const btnTl = gsap.timeline();
-  
-  // Play StepBack and AimAndShoot animations if they exist
-  if (suitAnimations['StepBack']) {
-    suitAnimations['StepBack'].reset().play();
-  }
-  
-  isRepulsorActive = true;
-  repulsorTimer = 2.0; // throttle boost duration
-
-  btnTl.to(camera.position, { z: -85, duration: 2, ease: 'power2.inOut' }) // Zoom in slightly
-       .call(() => {
-         if (suitAnimations['AimAndShoot']) {
-           suitAnimations['AimAndShoot'].reset().play();
-         }
-       })
-       // Flash of cyan light from repulsor
-       .to(cyanAccent, { intensity: 50, duration: 0.1 })
-       .to(cyanAccent, { intensity: 10, duration: 0.5 })
-       // Show final CTA
-       .call(() => {
-         const cta = document.getElementById('vault-cta');
-         cta.classList.remove('hidden');
-         gsap.fromTo(cta, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 1 });
-       });
-});
-
-// Removed debug show armor
+// Repulsor is now purely driven by the master timeline.
+// We keep the variables for the render loop to process effects.
 
 // ==========================================
 // 8. RENDER LOOP

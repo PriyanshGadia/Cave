@@ -16,5 +16,17 @@ export default defineConfig({
     port: 3000,
     open: false,
   },
+  build: {
+    target: 'esnext',
+    rollupOptions: {
+      external: [
+        /^\/vendor\/.*/
+      ],
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+        about: path.resolve(__dirname, 'about.html')
+      }
+    }
+  },
 });
 
