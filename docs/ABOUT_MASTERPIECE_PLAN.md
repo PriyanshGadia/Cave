@@ -6,7 +6,7 @@ Rebuild `about.html`, `about.css`, and `about.js` as a cinematic, single-scroll 
 
 The target is not a conventional portfolio page. It is a controlled sequence of authored shots: void, identity, industrial emergence, workshop, armor activation, component study, formation flight, assembly, landing, observation, then a physical floor discovery that reveals the underground route into the Vault.
 
-The uploaded implementation brief establishes the single-scene, single-camera, deterministic direction and the no-clue floor discovery. fileciteturn230file0
+The implementation brief establishes the single-scene, single-camera, deterministic direction and the no-clue floor discovery.
 
 ## Non-negotiable boundaries
 
