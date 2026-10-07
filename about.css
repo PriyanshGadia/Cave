@@ -1,288 +1,79 @@
 :root {
-  --bg-color: #000000;
-  --gunmetal: #1a1a1a;
-  --gunmetal-light: #2a2a2a;
-  --blood-red: #8a0000;
-  --blood-red-glow: #ff0000;
-  --cyan: #00f3ff;
-  --cyan-glow: rgba(0, 243, 255, 0.6);
-  --text-main: #ffffff;
-  --text-muted: #888888;
-
-  --font-logo: 'Syncopate', sans-serif;
-  --font-heading: 'Inter Tight', sans-serif;
-  --font-body: 'Inter Tight', sans-serif;
-  --font-mono: 'IBM Plex Mono', monospace;
+  --void:#020202;
+  --black:#050505;
+  --gun-0:#080909;
+  --gun-1:#101214;
+  --gun-2:#181b1e;
+  --gun-3:#272c30;
+  --steel:#566068;
+  --blood-0:#220000;
+  --blood-1:#480000;
+  --blood-2:#790000;
+  --blood-3:#c20a0a;
+  --blood-hot:#ff2b20;
+  --white:#f3f5f6;
+  --silver:#aeb6bc;
+  --muted:#667078;
+  --cyan:#7deaf0;
+  --cyan-hot:#d9ffff;
+  --mono:"IBM Plex Mono",monospace;
+  --display:"Barlow Condensed",sans-serif;
+  --body:"Inter Tight",sans-serif;
 }
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#000;color:var(--white);font-family:var(--body);overscroll-behavior:none}
+body{overflow-x:hidden}
+body.is-cinematic-test{overflow:hidden}
+#about-experience{position:relative;min-height:1600vh;background:#000}
+#webgl-canvas{position:fixed;inset:0;width:100vw;height:100vh;display:block;z-index:1;outline:0}
+#cinema-grade,#scanline-layer,#grain-layer,#vignette-layer{position:fixed;inset:0;pointer-events:none;z-index:4}
+#cinema-grade{background:radial-gradient(ellipse at 50% 45%,rgba(90,0,0,.08),transparent 58%),linear-gradient(180deg,rgba(0,0,0,.12),rgba(0,0,0,.42))}
+#scanline-layer{opacity:.09;background:repeating-linear-gradient(180deg,transparent 0,transparent 2px,rgba(255,255,255,.035) 3px,transparent 4px);mix-blend-mode:screen}
+#grain-layer{opacity:.045;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E");mix-blend-mode:soft-light}
+#vignette-layer{background:radial-gradient(ellipse at center,transparent 42%,rgba(0,0,0,.55) 100%)}
+#identity-layer{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:#000;pointer-events:none;overflow:hidden}
+.identity-mark{position:absolute;top:50%;font-family:var(--display);font-size:clamp(6rem,18vw,16rem);font-weight:300;line-height:.75;color:#dfe4e7;opacity:0;transform:translateY(-50%);letter-spacing:-.08em}
+.identity-p{left:18vw}
+.identity-g{right:18vw}
+.identity-name{position:relative;display:flex;align-items:center;gap:clamp(1rem,2vw,2.5rem);font-family:var(--display);font-weight:600;letter-spacing:.08em;font-size:clamp(2rem,5.5vw,6rem);opacity:0;transform:scaleX(.82);white-space:nowrap}
+.identity-first,.identity-last{display:inline-block}
+.identity-first{color:var(--white)}
+.identity-last{color:var(--blood-hot)}
+.identity-rule{position:absolute;width:0;height:1px;background:linear-gradient(90deg,transparent,var(--blood-hot),transparent);bottom:34%;opacity:.65}
+.identity-sub{position:absolute;bottom:15vh;font:500 clamp(.52rem,1vw,.72rem) var(--mono);letter-spacing:.38em;color:#596168;opacity:0}
+#hud{position:fixed;inset:0;z-index:8;pointer-events:none;font:500 .62rem var(--mono);letter-spacing:.15em;color:#5f686e;opacity:0}
+.hud-corner{position:absolute;top:2.2rem;display:flex;flex-direction:column;gap:.45rem}
+.hud-top-left{left:2.4rem}.hud-top-right{right:2.4rem;text-align:right}
+.hud-kicker{color:#aeb6bc}.hud-readout{color:#6e0000}
+.hud-status i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--blood-hot);box-shadow:0 0 12px var(--blood-hot);margin-right:7px}
+.hud-bottom{position:absolute;left:2.4rem;right:2.4rem;bottom:2rem;display:flex;align-items:center;gap:1rem}
+.hud-line{height:1px;background:#30373b;flex:1;max-width:240px}
+#copy-layer{position:fixed;inset:0;z-index:9;pointer-events:none}
+.chapter-copy{position:absolute;left:58vw;top:50%;width:min(34vw,520px);transform:translateY(-50%) translateX(40px);opacity:0}
+.copy-index{font:500 .68rem var(--mono);letter-spacing:.22em;color:var(--blood-hot);display:block;margin-bottom:1.1rem}
+.chapter-copy h2,.chapter-assembly-copy h1{margin:0;font-family:var(--display);font-size:clamp(3rem,6.5vw,7rem);font-weight:500;line-height:.78;letter-spacing:-.025em}
+.chapter-copy h2 em,.chapter-assembly-copy h1 em{font-style:normal;color:#737d83}
+.chapter-copy p{font-size:clamp(.9rem,1.25vw,1.12rem);line-height:1.55;color:#7f898f;max-width:420px;margin:2rem 0}
+.copy-specs{display:flex;gap:1.1rem;font:500 .56rem var(--mono);letter-spacing:.16em;color:#424b50}
+.copy-specs span{padding-top:.7rem;border-top:1px solid #32383c}
+.chapter-assembly-copy{left:50%;top:52%;width:80vw;text-align:center;transform:translate(-50%,-50%) scale(.94)}
+.chapter-assembly-copy h1{font-size:clamp(4rem,10vw,11rem)}
+.assembly-rule{width:0;height:1px;margin:2.5rem auto;background:linear-gradient(90deg,transparent,var(--blood-hot),transparent)}
+#scroll-rail{position:fixed;right:1.7rem;top:15vh;height:70vh;width:1px;background:#24282b;z-index:10;opacity:.7}
+#scroll-rail-progress{width:3px;height:0;position:absolute;left:-1px;top:0;background:var(--blood-hot);box-shadow:0 0 12px rgba(255,43,32,.55)}
+#interaction-cursor{position:fixed;z-index:30;pointer-events:none;width:32px;height:32px;transform:translate(-50%,-50%);opacity:0}
+#interaction-cursor span{display:block;width:100%;height:100%;border:1px solid rgba(255,43,32,.65);border-radius:50%;box-shadow:0 0 18px rgba(194,10,10,.3)}
+#interaction-cursor.is-hot{transform:translate(-50%,-50%) scale(1.35)}
+#cinematic-end{position:fixed;inset:0;z-index:25;background:#000;opacity:0;pointer-events:none}
+#scroll-space{position:absolute;inset:0;pointer-events:none}
+.scroll-block{height:100vh}
+@media (max-width:900px){
+  #about-experience{min-height:1800vh}
+  .identity-p{left:8vw}.identity-g{right:8vw}
+  .chapter-copy{left:10vw;top:68%;width:80vw}
+  .chapter-copy h2{font-size:clamp(3rem,14vw,6rem)}
+  .hud-corner{top:1rem}.hud-top-left{left:1rem}.hud-top-right{right:1rem}
+  .hud-bottom{left:1rem;right:1rem;bottom:1rem}
+  #scroll-rail{right:.8rem}
 }
-
-/* Add canvas styling */
-#webgl-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 1;
-  pointer-events: none;
-}
-
-body {
-  background-color: var(--bg-color);
-  color: var(--text-main);
-  font-family: var(--font-body);
-  overflow-x: hidden;
-  /* Start hidden to avoid scrollbar before intro finishes */
-  overflow-y: hidden; 
-}
-
-/* ========================================================
-   INTRO LAYER
-======================================================== */
-#intro-layer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: var(--bg-color);
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  pointer-events: none;
-  transition: opacity 2s ease-in-out;
-}
-
-#intro-layer.fade-out {
-  opacity: 0;
-}
-
-.intro-name-container {
-  font-family: var(--font-logo);
-  font-size: 4rem; /* Scaled down slightly to fit full name */
-  font-weight: 700;
-  letter-spacing: 0.5rem;
-  display: flex;
-  gap: 8rem; /* Initially very far apart */
-  color: var(--text-main);
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-  align-items: center;
-}
-
-.word {
-  display: flex;
-  align-items: center;
-}
-
-.name-hidden {
-  opacity: 0;
-  width: 0;
-  overflow: hidden;
-  display: inline-block;
-  white-space: nowrap;
-  /* GSAP will animate width and opacity */
-}
-
-/* Optional cyan accent on the hidden letters */
-.name-hidden {
-  color: var(--cyan);
-  text-shadow: 0 0 15px var(--cyan-glow);
-}
-
-/* ========================================================
-   WEBGL CANVAS
-======================================================== */
-#webgl-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* ========================================================
-   SCROLL CONTENT
-======================================================== */
-#scroll-container {
-  position: relative;
-  z-index: 10;
-  width: 100%;
-  pointer-events: none; /* Let clicks pass through to canvas if needed, except on specific elements */
-}
-
-.chapter-spacer {
-  height: 100vh; /* gives room before first chapter */
-}
-
-#start-spacer {
-  height: 200vh; /* wait for launch sequence */
-}
-
-#end-spacer {
-  height: 150vh; /* breathing room at the bottom */
-}
-
-.chapter-content {
-  height: 150vh;
-  position: relative;
-  display: flex;
-  align-items: center;
-  padding: 0 10vw;
-}
-
-.copy-block {
-  width: 40%;
-  opacity: 0;
-  transform: translateY(30px);
-  /* GSAP will control opacity and transform */
-}
-
-.copy-block.right-side {
-  margin-left: auto; /* Push to right */
-  text-align: left;
-  border-left: 2px solid var(--cyan);
-  padding-left: 2rem;
-}
-
-.copy-block.center-bottom {
-  margin: 0 auto;
-  text-align: center;
-  width: 100%;
-  margin-top: 50vh;
-}
-
-.chapter-indicator {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  color: var(--cyan);
-  letter-spacing: 0.2rem;
-  margin-bottom: 1rem;
-}
-
-.chapter-content h2 {
-  font-family: var(--font-heading);
-  font-size: 2.5rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin-bottom: 1.5rem;
-  text-transform: uppercase;
-}
-
-.chapter-content p {
-  font-size: 1.1rem;
-  line-height: 1.6;
-  color: var(--text-muted);
-  max-width: 400px;
-}
-
-.technical-label {
-  font-family: var(--font-mono);
-  font-size: 1rem;
-  color: var(--blood-red-glow);
-  letter-spacing: 0.3rem;
-  margin-bottom: 1.5rem;
-}
-
-.final-statement {
-  font-family: var(--font-heading);
-  font-size: 4rem;
-  font-weight: 700;
-  line-height: 1.1;
-  text-transform: uppercase;
-  text-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
-}
-
-/* ========================================================
-   UI LAYER (BUTTONS / CTAS)
-======================================================== */
-#ui-layer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 20;
-  pointer-events: none;
-}
-
-/* The red glowing button next to the pad */
-#repulsor-btn {
-  position: absolute;
-  top: 60%;
-  right: 25%;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: transparent;
-  border: 2px solid var(--blood-red);
-  cursor: pointer;
-  pointer-events: auto;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 15px var(--blood-red);
-  transform: translate(-50%, -50%);
-}
-
-#repulsor-btn:hover {
-  box-shadow: 0 0 30px var(--blood-red-glow);
-  transform: translate(-50%, -50%) scale(1.1);
-}
-
-#repulsor-btn:active {
-  transform: translate(-50%, -50%) scale(0.95);
-}
-
-.btn-core {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background-color: var(--blood-red-glow);
-  box-shadow: 0 0 20px var(--blood-red-glow);
-}
-
-#repulsor-btn.hidden {
-  display: none;
-  opacity: 0;
-}
-
-/* The final CTA */
-#vault-cta {
-  position: absolute;
-  bottom: 10%;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: var(--font-mono);
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--cyan);
-  text-decoration: none;
-  letter-spacing: 0.2rem;
-  border: 1px solid var(--cyan);
-  padding: 1rem 3rem;
-  pointer-events: auto;
-  transition: all 0.3s ease;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(5px);
-}
-
-#vault-cta:hover {
-  background: var(--cyan);
-  color: #000;
-  box-shadow: 0 0 20px var(--cyan-glow);
-}
-
-#vault-cta.hidden {
-  display: none;
-  opacity: 0;
-}
+@media (prefers-reduced-motion:reduce){#scanline-layer,#grain-layer{display:none}}
