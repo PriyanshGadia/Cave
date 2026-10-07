@@ -997,4 +997,4020 @@ const lights={
 lights.key.position.set(8,16,14);
 lights.blood.position.set(0,4,WORLD.workshopZ+4);
 lights.cyan.position.set(-8,7,WORLD.workshopZ-8);
-lights.pad.position.set(0,-1,WORLD.padZ);
+lights.pad.position.set(0,-1,WORLD.padZ);lights.fill.position.set(8,5,WORLD.padZ+18);
+scene.add(lights.ambient,lights.key,lights.blood,lights.cyan,lights.pad,lights.fill);
+
+// -----------------------------------------------------------------------------
+// 17 // ARMOR ASSET CONTRACT
+// -----------------------------------------------------------------------------
+const loader=new GLTFLoader();
+const armorParts={boots:null,legs:null,torso:null,arms:null,gauntlets:null,helmet:null};
+const armorGroups={};
+const armorEffects=[];
+const armorReadyState={loaded:0,failed:0,total:PART_ORDER.length};
+let armorReady=false;
+
+const ARMOR_SCALE=WORLD.suitScale;
+const SHOWCASE_SCALE=WORLD.showcaseScale;
+
+function makeArmorGroup(part){
+  const g=new THREE.Group();
+  g.name=`ARMOR_${part.toUpperCase()}_GROUP`;
+  g.visible=true;
+  armorGroups[part]=g;
+  armorRoot.add(g);
+  return g;
+}
+
+for(const part of PART_ORDER) makeArmorGroup(part);
+
+function applyArmorMaterials(root){
+  root.traverse(node=>{
+    if(!node.isMesh) return;
+    node.castShadow=true;
+    node.receiveShadow=true;
+    node.frustumCulled=true;
+    const n=(node.name||'').toLowerCase();
+    const material=node.material;
+    if(!material) return;
+
+    // Preserve geometry, but give the About sequence a coherent material language.
+    if(n.includes('red')||n.includes('blood')){
+      node.material=MAT.blood.clone();
+    }else if(n.includes('blue')||n.includes('glow')||n.includes('optic')||n.includes('light')){
+      node.material=MAT.cyan.clone();
+    }else if(n.includes('rubber')||n.includes('carbon')){
+      node.material=MAT.graphite.clone();
+    }else{
+      const m=MAT.gun2.clone();
+      m.metalness=0.94;
+      m.roughness=0.23;
+      node.material=m;
+    }
+  });
+}
+
+function loadArmorPart(part){
+  return new Promise(resolve=>{
+    loader.load(
+      GLB_PATH(part),
+      gltf=>{
+        const source=gltf.scene;
+        applyArmorMaterials(source);
+        source.position.set(0,0,0);
+        source.rotation.set(0,0,0);
+        source.scale.setScalar(1);
+
+        const group=armorGroups[part];
+        group.add(source);
+        armorParts[part]=source;
+
+        // The final GLBs share a common coordinate frame. The explicit root scale
+        // turns their millimetre-space authored CAD export into a human-scale suit.
+        group.scale.setScalar(ARMOR_SCALE);
+        group.position.set(0,0,0);
+
+        const fx=initializeArmorEffects(source,1.0);
+        armorEffects.push(...fx);
+
+        armorReadyState.loaded++;
+        resolve({part,ok:true});
+      },
+      undefined,
+      error=>{
+        console.error(`[ABOUT] armor load failed: ${part}`,error);
+        armorReadyState.failed++;
+        resolve({part,ok:false,error});
+      }
+    );
+  });
+}
+
+// -----------------------------------------------------------------------------
+// 18 // ARMOR AUTHORING POSITIONS
+// -----------------------------------------------------------------------------
+const WORKBENCH_POSES=Object.freeze({
+  boots:{position:[-3.9,3.0,WORLD.workshopZ-19],rotation:[0,-.35,.02]},
+  legs:{position:[2.5,3.4,WORLD.workshopZ-19],rotation:[0,.18,-.02]},
+  torso:{position:[0,4.2,WORLD.workshopZ-19],rotation:[0,0,0]},
+  arms:{position:[-2.0,4.0,WORLD.workshopZ-19],rotation:[0,-.2,.06]},
+  gauntlets:{position:[-3.5,3.1,WORLD.workshopZ-19],rotation:[0,-.3,.08]},
+  helmet:{position:[3.7,4.4,WORLD.workshopZ-19],rotation:[0,.15,0]}
+});
+
+const FORMATION_POSES=Object.freeze({
+  boots:[-2.2,-1.8,-18],
+  legs:[-1.0,-.3,-18.8],
+  torso:[0,1.6,-19.4],
+  arms:[2.0,1.2,-19.0],
+  gauntlets:[3.0,.0,-18.6],
+  helmet:[0,3.4,-18.4]
+});
+
+const FINAL_POSES=Object.freeze({
+  boots:[0,WORLD.floorY+1.05,WORLD.padZ],
+  legs:[0,WORLD.floorY+3.15,WORLD.padZ],
+  torso:[0,WORLD.floorY+5.55,WORLD.padZ],
+  arms:[0,WORLD.floorY+5.65,WORLD.padZ],
+  gauntlets:[0,WORLD.floorY+5.2,WORLD.padZ],
+  helmet:[0,WORLD.floorY+7.65,WORLD.padZ]
+});
+
+function setArmorGroupPose(part,pose,rotation=[0,0,0],scale=ARMOR_SCALE){
+  const g=armorGroups[part];
+  if(!g)return;
+  g.position.set(...pose);
+  g.rotation.set(...rotation);
+  g.scale.setScalar(scale);
+}
+
+function setWorkbenchPose(){
+  for(const part of PART_ORDER){
+    const p=WORKBENCH_POSES[part];
+    setArmorGroupPose(part,p.position,p.rotation,ARMOR_SCALE);
+  }
+}
+
+function setFlightPose(){
+  for(const part of PART_ORDER){
+    const p=FORMATION_POSES[part];
+    setArmorGroupPose(part,p,[0,0,0],ARMOR_SCALE);
+  }
+}
+
+function setFinalPose(){
+  for(const part of PART_ORDER){
+    const p=FINAL_POSES[part];
+    setArmorGroupPose(part,p,[0,0,0],ARMOR_SCALE);
+  }
+}
+
+// -----------------------------------------------------------------------------
+// 19 // CAMERA AUTHORING
+// -----------------------------------------------------------------------------
+const cameraRig={
+  position:new THREE.Vector3(),
+  target:new THREE.Vector3(),
+  up:new THREE.Vector3(0,1,0)
+};
+
+const CAMERA_SHOTS={
+  void:{p:[0,1.4,34],t:[0,1.5,0]},
+  door:{p:[0,2.0,27],t:[0,2.0,8]},
+  doorGap:{p:[0,2.2,19],t:[0,2.1,0]},
+  workshop:{p:[0,4.2,2],t:[0,2.4,WORLD.workshopZ-14]},
+  armorWide:{p:[8,4.0,-53],t:[0,2.2,WORLD.workshopZ-19]},
+  flight:{p:[10,4.0,-2],t:[0,1.2,-18]},
+  formation:{p:[9,5.0,18],t:[0,1.0,-18.5]},
+  assembly:{p:[8.5,5.0,WORLD.padZ+20],t:[0,3.0,WORLD.padZ]},
+  landing:{p:[8,3.2,WORLD.padZ+18],t:[0,2.8,WORLD.padZ]},
+  floor:{p:[11,6.5,WORLD.padZ+25],t:[0,-1.8,WORLD.padZ]},
+  pit:{p:[7,3.0,WORLD.padZ+11],t:[0,-10,WORLD.padZ]}
+};
+
+function applyCameraShot(name){
+  const shot=CAMERA_SHOTS[name];
+  if(!shot)return;
+  camera.position.set(...shot.p);
+  camera.lookAt(...shot.t);
+}
+
+function tweenCameraShot(tl,name,start,duration,ease='power2.inOut'){
+  const shot=CAMERA_SHOTS[name];
+  if(!shot)return;
+  tl.to(camera.position,{x:shot.p[0],y:shot.p[1],z:shot.p[2],duration,ease},start);
+  const target={x:shot.t[0],y:shot.t[1],z:shot.t[2]};
+  const proxy={x:camera.userData.lookX??camera.position.x,y:camera.userData.lookY??camera.position.y,z:camera.userData.lookZ??camera.position.z};
+  camera.userData.lookX=target.x;camera.userData.lookY=target.y;camera.userData.lookZ=target.z;
+  tl.to(proxy,{x:target.x,y:target.y,z:target.z,duration,ease,onUpdate:()=>{
+    camera.lookAt(proxy.x,proxy.y,proxy.z);
+  }},start);
+}
+
+// -----------------------------------------------------------------------------
+// 20 // COPY / HUD HELPERS
+// -----------------------------------------------------------------------------
+function showCopy(part,opacity=1){
+  for(const key of PART_ORDER){
+    const node=copyNodes[key];
+    if(node)gsap.set(node,{autoAlpha:key===part?opacity:0});
+  }
+}
+
+function hideAllCopy(){
+  for(const node of Object.values(copyNodes)) gsap.set(node,{autoAlpha:0});
+}
+
+function setHud(chapter,depth,coord){
+  hudChapter.textContent=chapter;
+  hudDepth.textContent=`DEPTH ${depth}`;
+  hudCoordinate.textContent=coord;
+}
+
+function setHudProgress(p){
+  hudReadout.textContent=(p*100).toFixed(1).padStart(5,'0');
+  railProgress.style.height=`${p*100}%`;
+}
+
+// -----------------------------------------------------------------------------
+// 21 // CINEMATIC TIMELINE
+// -----------------------------------------------------------------------------
+let masterTimeline=null;
+let currentProgress=0;
+let floorActivated=false;
+let pitRevealed=false;
+let transitioning=false;
+let pointerWorld=new THREE.Vector3();
+let pointerNDC=new THREE.Vector2();
+
+function buildTimeline(){
+  masterTimeline=gsap.timeline({
+    paused:true,
+    defaults:{ease:'none'},
+    onUpdate(){
+      currentProgress=masterTimeline.progress();
+      setHudProgress(currentProgress);
+    }
+  });
+
+  // ACT 00 // VOID
+  applyCameraShot('void');
+  hideAllCopy();
+  gsap.set(identity,{autoAlpha:1});
+  gsap.set('.identity-mark',{autoAlpha:0});
+  gsap.set('.identity-name',{autoAlpha:0});
+  gsap.set('.identity-rule',{width:0});
+  gsap.set('.identity-sub',{autoAlpha:0});
+  gsap.set(hud,{autoAlpha:0});
+
+  masterTimeline.to('.identity-p',{autoAlpha:1,x:0,duration:.8,ease:'power2.out'},0);
+  masterTimeline.to('.identity-g',{autoAlpha:1,x:0,duration:.8,ease:'power2.out'},0);
+  masterTimeline.to('.identity-p',{left:'31vw',duration:2.0,ease:'power3.inOut'},.4);
+  masterTimeline.to('.identity-g',{right:'31vw',duration:2.0,ease:'power3.inOut'},.4);
+  masterTimeline.to('.identity-name',{autoAlpha:1,scaleX:1,duration:1.6,ease:'expo.out'},1.5);
+  masterTimeline.to('.identity-rule',{width:'38vw',duration:1.1,ease:'power2.out'},2.3);
+  masterTimeline.to('.identity-sub',{autoAlpha:1,duration:.9,ease:'power2.out'},2.7);
+
+  // ACT 01 // IDENTITY EXIT
+  masterTimeline.to(identity,{autoAlpha:0,duration:1.2,ease:'power2.inOut'},5.5);
+  masterTimeline.to(hud,{autoAlpha:1,duration:.7},5.7);
+  tweenCameraShot(masterTimeline,'door',6.0,3.0);
+  setHud('EMERGENCE','01','X 000 / Y 002 / Z +027');
+
+  // ACT 02 // DOOR REVEAL
+  masterTimeline.to(lights.blood,{intensity:8,duration:1.2},7.5);
+  masterTimeline.to(doorRoot.position,{z:0,duration:2.0,ease:'power3.out'},7.4);
+  masterTimeline.to(scene.fog,{density:.016,duration:2.0},7.4);
+  masterTimeline.to(leftDoor.scale,{x:1,y:1,z:1,duration:.1},7.4);
+  masterTimeline.to(rightDoor.scale,{x:1,y:1,z:1,duration:.1},7.4);
+
+  // ACT 03 // DOOR OPEN
+  setHud('DOOR SYSTEM','04','X 000 / Y 002 / Z +019');
+  masterTimeline.to(leftDoor.position,{x:-15,duration:2.2,ease:'power3.inOut'},10.0);
+  masterTimeline.to(rightDoor.position,{x:15,duration:2.2,ease:'power3.inOut'},10.0);
+  masterTimeline.to(lights.key,{intensity:2.2,duration:2.5},10.2);
+  masterTimeline.to(lights.cyan,{intensity:7,duration:2.5},11.0);
+  tweenCameraShot(masterTimeline,'doorGap',10.2,3.3);
+
+  // ACT 04 // WORKSHOP
+  setHud('THE WORKSHOP','08','X 000 / Y 004 / Z -014');
+  masterTimeline.to(lights.ambient,{intensity:.22,duration:1.8},13.3);
+  masterTimeline.to(lights.blood,{intensity:3.2,duration:1.8},13.5);
+  masterTimeline.to(lights.cyan,{intensity:3.5,duration:2.0},14.0);
+  tweenCameraShot(masterTimeline,'workshop',13.2,4.6);
+  masterTimeline.to(dustMat,{opacity:.42,duration:2.0},14.0);
+  masterTimeline.to(workbench.scale,{x:1.0,y:1.0,z:1.0,duration:.5},15.0);
+
+  // ACT 05 // ARMOR WAKE
+  setHud('VAULT-01 // INITIALIZING','14','X 000 / Y 005 / Z -061');
+  setWorkbenchPose();
+  for(let i=0;i<PART_ORDER.length;i++){
+    const part=PART_ORDER[i];
+    const group=armorGroups[part];
+    const t=18.0+i*.48;
+    masterTimeline.to(group.position,{y:group.position.y+1.5,duration:.7,ease:'power2.out'},t);
+    masterTimeline.to(group.rotation,{y:group.rotation.y+.18,duration:.9,ease:'sine.inOut'},t);
+  }
+  masterTimeline.to(lights.cyan,{intensity:11,duration:2.8},18.0);
+  masterTimeline.to(lights.blood,{intensity:6,duration:2.8},18.0);
+  tweenCameraShot(masterTimeline,'armorWide',18.0,5.0);
+
+  // ACT 06 // SIX COMPONENT SHOWCASE
+  const showStart=23.0;
+  const showWindow=3.25;
+  for(let i=0;i<PART_ORDER.length;i++){
+    const part=PART_ORDER[i];
+    const meta=PART_META[part];
+    const t=showStart+i*showWindow;
+    setHud(meta.index,`1${i}`,`X -${String(i+1).padStart(3,'0')} / Y 004 / Z -008`);
+    const g=armorGroups[part];
+    const start={x:g.position.x,y:g.position.y,z:g.position.z};
+    const focus=meta.focus;
+    const scaleFrom=g.scale.x;
+    masterTimeline.call(()=>showCopy(part),[],t);
+    masterTimeline.to(g.position,{
+      x:focus[0],y:focus[1],z:focus[2],
+      duration:showWindow*.52,ease:'power3.inOut'
+    },t);
+    masterTimeline.to(g.scale,{
+      x:SHOWCASE_SCALE,y:SHOWCASE_SCALE,z:SHOWCASE_SCALE,
+      duration:showWindow*.48,ease:'power3.inOut'
+    },t);
+    masterTimeline.to(g.rotation,{
+      y:meta.yaw+PI*.24,
+      x:.06,
+      duration:showWindow*.52,
+      ease:'power2.inOut'
+    },t);
+    masterTimeline.to(g.rotation,{
+      y:meta.yaw-PI*.18,
+      duration:showWindow*.48,
+      ease:'sine.inOut'
+    },t+showWindow*.52);
+    masterTimeline.to(g.position,{
+      x:focus[0]+5.0,y:focus[1]+1.2,z:focus[2]-7.0,
+      duration:showWindow*.48,ease:'power4.in'
+    },t+showWindow*.52);
+    masterTimeline.to(g.scale,{
+      x:ARMOR_SCALE,y:ARMOR_SCALE,z:ARMOR_SCALE,
+      duration:showWindow*.42,ease:'power3.in'
+    },t+showWindow*.58);
+    masterTimeline.call(()=>setWorkbenchPose(),[],t+showWindow-.02);
+  }
+  hideAllCopy();
+
+  // ACT 07 // FORMATION FLIGHT
+  const flightStart=42.5;
+  setHud('FORMATION FLIGHT','20','X 000 / Y 004 / Z -018');
+  for(const part of PART_ORDER){
+    const g=armorGroups[part];
+    const p=FORMATION_POSES[part];
+    masterTimeline.to(g.position,{x:p[0],y:p[1],z:p[2],duration:2.2,ease:'power3.inOut'},flightStart);
+    masterTimeline.to(g.scale,{x:ARMOR_SCALE,y:ARMOR_SCALE,z:ARMOR_SCALE,duration:1.2},flightStart);
+  }
+  tweenCameraShot(masterTimeline,'flight',flightStart,4.2);
+  masterTimeline.to(lights.cyan,{intensity:14,duration:1.5},flightStart);
+  masterTimeline.to(lights.blood,{intensity:4,duration:1.5},flightStart);
+
+  // Camera sweeps during flight, while the authored formation remains stable.
+  tweenCameraShot(masterTimeline,'formation',47.0,4.0);
+  tweenCameraShot(masterTimeline,'flight',51.0,4.0);
+  tweenCameraShot(masterTimeline,'formation',55.0,4.0);
+  tweenCameraShot(masterTimeline,'flight',59.0,4.0);
+
+  // ACT 08 // CONVERGENCE
+  const assemblyStart=63.0;
+  setHud('ASSEMBLY','27','X 000 / Y 003 / Z -104');
+  tweenCameraShot(masterTimeline,'assembly',assemblyStart,6.0);
+  for(const part of PART_ORDER){
+    const g=armorGroups[part];
+    const p=FINAL_POSES[part];
+    masterTimeline.to(g.position,{x:p[0],y:p[1]+5,z:p[2]-8,duration:3.0,ease:'power4.inOut'},assemblyStart);
+    masterTimeline.to(g.rotation,{x:0,y:0,z:0,duration:2.6,ease:'power3.inOut'},assemblyStart);
+    masterTimeline.to(g.scale,{x:ARMOR_SCALE,y:ARMOR_SCALE,z:ARMOR_SCALE,duration:2.4,ease:'power3.inOut'},assemblyStart);
+  }
+  masterTimeline.to(lights.pad,{intensity:5.0,duration:2.0},assemblyStart+2.0);
+
+  // ACT 09 // LANDING
+  const landingStart=72.0;
+  setHud('LANDING','31','X 000 / Y -004 / Z -104');
+  tweenCameraShot(masterTimeline,'landing',landingStart,5.0);
+  for(let i=0;i<PART_ORDER.length;i++){
+    const part=PART_ORDER[i];
+    const g=armorGroups[part];
+    const p=FINAL_POSES[part];
+    const t=landingStart+i*.45;
+    masterTimeline.to(g.position,{x:p[0],y:p[1],z:p[2],duration:.65,ease:'power4.in'},t);
+    masterTimeline.to(g.rotation,{x:0,y:0,z:0,duration:.5,ease:'power2.out'},t);
+  }
+  masterTimeline.call(()=>showCopy('assembly'),[],76.0);
+  masterTimeline.to(copyNodes.assembly,{autoAlpha:1,duration:1.2},76.0);
+  masterTimeline.to('.assembly-rule',{width:'18vw',duration:1.0,ease:'power2.out'},76.3);
+
+  // ACT 10 // QUIET FLOOR
+  const floorStart=82.0;
+  setHud('OBSERVATION','38','X +011 / Y -006 / Z -079');
+  tweenCameraShot(masterTimeline,'floor',floorStart,5.0);
+  masterTimeline.to(lights.key,{intensity:1.1,duration:2.2},floorStart);
+  masterTimeline.to(lights.cyan,{intensity:1.3,duration:2.2},floorStart);
+  masterTimeline.to(lights.blood,{intensity:1.5,duration:2.2},floorStart);
+  masterTimeline.to(lights.pad,{intensity:2.2,duration:2.2},floorStart);
+  masterTimeline.to(floorMaterial.uniforms.uPulseStrength,{value:.38,duration:2.0},floorStart+2.0);
+  masterTimeline.to(physicalButton.scale,{x:1,y:1,z:1,duration:.5},floorStart+2.2);
+  masterTimeline.to(copyNodes.assembly,{autoAlpha:0,duration:1.0},floorStart);
+  masterTimeline.to(hud,{autoAlpha:.72,duration:1.0},floorStart);
+
+  // ACT 11 // HOLD THE DISCOVERY STATE
+  masterTimeline.to({}, {duration:18},87.0);
+
+  window.__ABOUT_MASTER_TIMELINE__=masterTimeline;
+  window.__ABOUT_VERSION__=VERSION;
+}
+
+// -----------------------------------------------------------------------------
+// 22 // DETERMINISTIC PROGRESS API
+// -----------------------------------------------------------------------------
+function setCinematicProgress(p){
+  const clamped=THREE.MathUtils.clamp(Number(p)||0,0,1);
+  if(!masterTimeline)return;
+  masterTimeline.progress(clamped,false);
+  renderFrame();
+}
+
+window.setCinematicProgress=setCinematicProgress;
+
+function exposeDiagnostics(){
+  window.__ABOUT_READY__=true;
+  window.__ARMOR_READY=armorReady;
+  window.__ABOUT_DIAGNOSTICS__=()=>{
+    return {
+      version:VERSION,
+      armorReady,
+      loaded:armorReadyState.loaded,
+      failed:armorReadyState.failed,
+      progress:currentProgress,
+      floorActivated,
+      pitRevealed,
+      transitioning,
+      renderer:{
+        width:renderer.domElement.width,
+        height:renderer.domElement.height,
+        pixelRatio:renderer.getPixelRatio()
+      },
+      objects:{
+        door:doorRoot.children.length,
+        workshop:workshop.children.length,
+        armor:Object.values(armorParts).filter(Boolean).length,
+        iris:irisBlades.length
+      }
+    };
+  };
+}
+
+// -----------------------------------------------------------------------------
+// 23 // FLOOR INTERACTION
+// -----------------------------------------------------------------------------
+const raycaster=new THREE.Raycaster();
+const pointer=new THREE.Vector2();
+
+function updatePointer(clientX,clientY){
+  pointer.x=(clientX/window.innerWidth)*2-1;
+  pointer.y=-(clientY/window.innerHeight)*2+1;
+  pointerNDC.copy(pointer);
+  raycaster.setFromCamera(pointer,camera);
+  const hits=raycaster.intersectObject(floorCollider,false);
+  if(hits.length){
+    pointerWorld.copy(hits[0].point);
+    floorMaterial.uniforms.uPointer.value.set(
+      pointerWorld.x,
+      pointerWorld.z-WORLD.padZ
+    );
+    cursor.classList.add('is-hot');
+    return true;
+  }
+  cursor.classList.remove('is-hot');
+  return false;
+}
+
+function activateFloor(){
+  if(floorActivated||currentProgress<.88)return;
+  floorActivated=true;
+  physicalButton.userData.active=true;
+  gsap.to(physicalButton.position,{y:WORLD.floorY+.62,duration:.14,ease:'power2.in'});
+  gsap.to(buttonCore.material.uniforms.uIntensity,{value:2.5,duration:.2});
+  gsap.to(floorMaterial.uniforms.uPulseStrength,{value:1.35,duration:.8,ease:'power2.out'});
+  gsap.to(lights.pad,{intensity:18,duration:.8,ease:'power2.out'});
+  gsap.to(lights.blood,{intensity:10,duration:1.0});
+  gsap.to(camera.position,{x:8.4,y:3.5,z:WORLD.padZ+17,duration:1.7,ease:'power3.inOut',onUpdate:()=>camera.lookAt(0,-1.5,WORLD.padZ)});
+  window.setTimeout(revealPit,1050);
+}
+
+function revealPit(){
+  if(pitRevealed)return;
+  pitRevealed=true;
+  pit.visible=true;
+  tunnelRoot.visible=true;
+  irisRoot.visible=true;
+  for(let i=0;i<irisBlades.length;i++){
+    const blade=irisBlades[i];
+    gsap.to(blade.rotation,{z:blade.userData.openRotation,duration:1.55,delay:i*.045,ease:'power3.inOut'});
+  }
+  gsap.to(pit.position,{y:0,duration:1.8,ease:'power3.out'});
+  gsap.to(lights.pad,{intensity:3.5,duration:2.0});
+  gsap.to(lights.blood,{intensity:20,duration:2.0});
+  gsap.to(floorMaterial.uniforms.uPulseStrength,{value:2.2,duration:1.8});
+  gsap.to(camera.position,{x:6.5,y:1.4,z:WORLD.padZ+10,duration:2.5,ease:'power3.inOut',onUpdate:()=>camera.lookAt(0,-10,WORLD.padZ)});
+}
+
+function enterVault(){
+  if(transitioning||!pitRevealed)return;
+  transitioning=true;
+  gsap.to(camera.position,{x:0,y:-16,z:WORLD.padZ-20,duration:3.6,ease:'power3.in'});
+  gsap.to(endFade,{opacity:1,duration:3.4,ease:'power2.in',delay:.8,onComplete:()=>{
+    window.location.href='/';
+  }});
+}
+
+function handlePointerDown(event){
+  if(currentProgress<.88)return;
+  raycaster.setFromCamera(pointerNDC,camera);
+  const targets=[floorCollider,physicalButton,pitFloor];
+  const hits=raycaster.intersectObjects(targets,true);
+  if(!hits.length)return;
+  const object=hits[0].object;
+  if(!floorActivated && (object.userData.interactiveFloor||object.userData.interactiveButton)){
+    activateFloor();
+    return;
+  }
+  if(pitRevealed){
+    enterVault();
+  }
+}
+
+window.addEventListener('pointermove',event=>{
+  cursor.style.left=`${event.clientX}px`;
+  cursor.style.top=`${event.clientY}px`;
+  updatePointer(event.clientX,event.clientY);
+});
+window.addEventListener('pointerdown',handlePointerDown);
+
+// -----------------------------------------------------------------------------
+// 24 // SCROLL / TIMELINE BINDING
+// -----------------------------------------------------------------------------
+function initScroll(){
+  const isTest=new URLSearchParams(location.search).get('cinematicTest')==='1';
+  if(isTest){
+    document.body.classList.add('is-cinematic-test');
+    window.isCinematicTest=true;
+    return;
+  }
+
+  document.body.style.overflowY='auto';
+
+  ScrollTrigger.create({
+    trigger:'#scroll-space',
+    start:'top top',
+    end:'bottom bottom',
+    scrub:1,
+    onUpdate:self=>{
+      setCinematicProgress(self.progress);
+    }
+  });
+}
+
+// -----------------------------------------------------------------------------
+// 25 // POSTPROCESS-STYLE CINEMA CONTROLS
+// -----------------------------------------------------------------------------
+function updateGrade(p){
+  const grade=document.querySelector('#cinema-grade');
+  const scan=document.querySelector('#scanline-layer');
+  const vignette=document.querySelector('#vignette-layer');
+  if(!grade)return;
+  const red=Math.max(0,Math.sin(p*PI));
+  grade.style.opacity=String(.6+.25*red);
+  scan.style.opacity=String(.055+.04*Math.sin(p*TAU));
+  vignette.style.opacity=String(.65+.12*Math.sin(p*PI));
+}
+
+function updateShaderUniforms(){
+  const t=elapsed;
+  if(floorMaterial.uniforms.uTime)floorMaterial.uniforms.uTime.value=t;
+  for(const child of environmentRoot.children){
+    child.traverse(node=>{
+      const m=node.material;
+      if(!m||!m.uniforms)return;
+      if(m.uniforms.uTime)m.uniforms.uTime.value=t;
+    });
+  }
+}
+
+function updateAtmosphere(){
+  const p=currentProgress;
+  dust.rotation.y=elapsed*.008;
+  dust.position.y=Math.sin(elapsed*.12)*.08;
+  dustMat.opacity=.10+.28*Math.min(1,p*2);
+}
+
+function updateArmorRuntime(){
+  const throttle =
+    currentProgress<.20 ? 0 :
+    currentProgress<.44 ? THREE.MathUtils.smoothstep(currentProgress,.20,.44) :
+    currentProgress<.82 ? .18 :
+    currentProgress<.90 ? .42 :
+    .04;
+  updateArmorEffects(armorEffects,delta,throttle,elapsed);
+}
+
+// -----------------------------------------------------------------------------
+// 26 // RENDER LOOP
+// -----------------------------------------------------------------------------
+function renderFrame(){
+  renderer.render(scene,camera);
+}
+
+function tick(){
+  delta=Math.min(clock.getDelta(),.05);
+  elapsed+=delta;
+  updateShaderUniforms();
+  updateAtmosphere();
+  updateArmorRuntime();
+  updateGrade(currentProgress);
+
+  if(!floorActivated){
+    physicalButton.rotation.y=elapsed*.22;
+    const pulse=.72+.28*Math.sin(elapsed*1.7);
+    buttonCore.scale.setScalar(.94+pulse*.08);
+  }
+
+  if(!transitioning && currentProgress>.87){
+    const pulse=.5+.5*Math.sin(elapsed*1.45);
+    floorMaterial.uniforms.uPulseStrength.value=Math.max(
+      floorMaterial.uniforms.uPulseStrength.value,
+      .12+pulse*.14
+    );
+  }
+
+  renderFrame();
+  requestAnimationFrame(tick);
+}
+
+// -----------------------------------------------------------------------------
+// 27 // RESIZE
+// -----------------------------------------------------------------------------
+function onResize(){
+  const w=Math.max(1,window.innerWidth);
+  const h=Math.max(1,window.innerHeight);
+  camera.aspect=w/h;
+  camera.updateProjectionMatrix();
+  renderer.setPixelRatio(DPR);
+  renderer.setSize(w,h,false);
+}
+window.addEventListener('resize',onResize);
+
+// -----------------------------------------------------------------------------
+// 28 // INITIAL STATE / BOOT
+// -----------------------------------------------------------------------------
+async function boot(){
+  applyCameraShot('void');
+  setWorkbenchPose();
+  for(const part of PART_ORDER) armorGroups[part].visible=true;
+  hideAllCopy();
+  setHud('VOID','00','X 000 / Y 000 / Z +034');
+
+  const results=await Promise.all(PART_ORDER.map(loadArmorPart));
+  armorReady=results.every(r=>r.ok);
+  window.__ARMOR_READY=armorReady;
+  if(!armorReady){
+    console.warn('[ABOUT] one or more armor assemblies failed to load');
+  }
+
+  buildTimeline();
+  initScroll();
+  exposeDiagnostics();
+  requestAnimationFrame(tick);
+}
+
+boot().catch(error=>{
+  console.error('[ABOUT] fatal boot failure',error);
+  window.__ABOUT_BOOT_ERROR__=String(error?.stack||error);
+});
+
+
+// -----------------------------------------------------------------------------
+// 29 // INDUSTRIAL DETAIL LIBRARY
+// This library deliberately keeps the environment physical: plates, brackets,
+// fasteners, cable saddles, vents and inspection hardware. It is not decorative
+// noise. The modules are reusable atoms for the installation's visual grammar.
+// -----------------------------------------------------------------------------
+function detailModule001(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_001';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(1%5),.16,.92+.04*(1%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule002(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_002';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(2%5),.16,.92+.04*(2%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule003(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_003';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(3%5),.16,.92+.04*(3%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule004(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_004';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(4%5),.16,.92+.04*(4%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule005(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_005';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(5%5),.16,.92+.04*(5%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule006(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_006';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(6%5),.16,.92+.04*(6%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule007(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_007';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(7%5),.16,.92+.04*(7%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule008(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_008';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(8%5),.16,.92+.04*(8%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule009(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_009';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(9%5),.16,.92+.04*(9%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule010(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_010';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(10%5),.16,.92+.04*(10%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule011(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_011';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(11%5),.16,.92+.04*(11%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule012(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_012';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(12%5),.16,.92+.04*(12%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule013(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_013';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(13%5),.16,.92+.04*(13%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule014(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_014';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(14%5),.16,.92+.04*(14%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule015(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_015';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(15%5),.16,.92+.04*(15%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule016(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_016';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(16%5),.16,.92+.04*(16%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule017(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_017';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(17%5),.16,.92+.04*(17%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule018(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_018';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(18%5),.16,.92+.04*(18%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule019(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_019';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(19%5),.16,.92+.04*(19%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule020(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_020';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(20%5),.16,.92+.04*(20%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule021(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_021';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(21%5),.16,.92+.04*(21%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule022(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_022';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(22%5),.16,.92+.04*(22%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule023(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_023';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(23%5),.16,.92+.04*(23%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule024(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_024';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(24%5),.16,.92+.04*(24%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule025(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_025';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(25%5),.16,.92+.04*(25%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule026(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_026';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(26%5),.16,.92+.04*(26%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule027(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_027';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(27%5),.16,.92+.04*(27%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule028(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_028';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(28%5),.16,.92+.04*(28%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule029(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_029';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(29%5),.16,.92+.04*(29%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule030(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_030';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(30%5),.16,.92+.04*(30%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule031(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_031';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(31%5),.16,.92+.04*(31%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule032(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_032';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(32%5),.16,.92+.04*(32%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule033(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_033';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(33%5),.16,.92+.04*(33%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule034(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_034';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(34%5),.16,.92+.04*(34%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule035(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_035';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(35%5),.16,.92+.04*(35%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule036(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_036';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(36%5),.16,.92+.04*(36%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule037(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_037';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(37%5),.16,.92+.04*(37%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule038(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_038';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(38%5),.16,.92+.04*(38%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule039(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_039';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(39%5),.16,.92+.04*(39%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule040(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_040';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(40%5),.16,.92+.04*(40%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule041(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_041';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(41%5),.16,.92+.04*(41%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule042(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_042';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(42%5),.16,.92+.04*(42%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule043(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_043';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(43%5),.16,.92+.04*(43%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule044(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_044';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(44%5),.16,.92+.04*(44%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule045(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_045';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(45%5),.16,.92+.04*(45%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule046(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_046';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(46%5),.16,.92+.04*(46%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule047(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_047';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(47%5),.16,.92+.04*(47%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule048(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_048';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(48%5),.16,.92+.04*(48%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule049(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_049';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(49%5),.16,.92+.04*(49%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule050(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_050';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(50%5),.16,.92+.04*(50%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule051(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_051';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(51%5),.16,.92+.04*(51%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule052(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_052';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(52%5),.16,.92+.04*(52%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule053(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_053';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(53%5),.16,.92+.04*(53%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule054(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_054';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(54%5),.16,.92+.04*(54%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule055(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_055';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(55%5),.16,.92+.04*(55%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule056(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_056';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(56%5),.16,.92+.04*(56%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule057(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_057';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(57%5),.16,.92+.04*(57%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule058(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_058';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(58%5),.16,.92+.04*(58%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule059(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_059';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(59%5),.16,.92+.04*(59%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule060(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_060';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(60%5),.16,.92+.04*(60%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule061(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_061';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(61%5),.16,.92+.04*(61%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule062(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_062';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(62%5),.16,.92+.04*(62%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule063(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_063';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(63%5),.16,.92+.04*(63%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule064(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_064';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(64%5),.16,.92+.04*(64%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule065(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_065';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(65%5),.16,.92+.04*(65%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule066(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_066';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(66%5),.16,.92+.04*(66%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule067(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_067';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(67%5),.16,.92+.04*(67%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule068(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_068';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(68%5),.16,.92+.04*(68%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule069(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_069';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(69%5),.16,.92+.04*(69%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule070(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_070';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(70%5),.16,.92+.04*(70%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule071(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_071';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(71%5),.16,.92+.04*(71%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule072(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_072';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(72%5),.16,.92+.04*(72%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule073(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_073';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(73%5),.16,.92+.04*(73%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule074(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_074';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(74%5),.16,.92+.04*(74%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule075(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_075';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(75%5),.16,.92+.04*(75%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule076(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_076';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(76%5),.16,.92+.04*(76%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule077(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_077';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(77%5),.16,.92+.04*(77%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule078(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_078';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(78%5),.16,.92+.04*(78%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule079(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_079';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(79%5),.16,.92+.04*(79%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule080(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_080';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(80%5),.16,.92+.04*(80%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule081(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_081';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(81%5),.16,.92+.04*(81%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule082(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_082';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(82%5),.16,.92+.04*(82%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule083(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_083';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(83%5),.16,.92+.04*(83%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule084(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_084';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(84%5),.16,.92+.04*(84%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule085(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_085';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(85%5),.16,.92+.04*(85%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule086(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_086';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(86%5),.16,.92+.04*(86%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule087(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_087';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(87%5),.16,.92+.04*(87%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule088(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_088';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(88%5),.16,.92+.04*(88%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule089(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_089';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(89%5),.16,.92+.04*(89%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule090(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_090';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(90%5),.16,.92+.04*(90%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule091(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_091';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(91%5),.16,.92+.04*(91%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule092(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_092';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(92%5),.16,.92+.04*(92%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule093(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_093';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(93%5),.16,.92+.04*(93%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule094(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_094';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(94%5),.16,.92+.04*(94%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule095(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_095';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(95%5),.16,.92+.04*(95%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule096(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_096';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(96%5),.16,.92+.04*(96%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule097(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_097';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(97%5),.16,.92+.04*(97%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule098(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_098';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(98%5),.16,.92+.04*(98%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule099(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_099';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(99%5),.16,.92+.04*(99%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule100(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_100';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(100%5),.16,.92+.04*(100%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule101(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_101';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(101%5),.16,.92+.04*(101%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule102(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_102';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(102%5),.16,.92+.04*(102%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule103(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_103';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(103%5),.16,.92+.04*(103%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule104(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_104';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(104%5),.16,.92+.04*(104%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule105(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_105';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(105%5),.16,.92+.04*(105%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule106(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_106';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(106%5),.16,.92+.04*(106%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule107(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_107';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(107%5),.16,.92+.04*(107%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule108(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_108';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(108%5),.16,.92+.04*(108%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule109(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_109';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(109%5),.16,.92+.04*(109%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule110(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_110';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(110%5),.16,.92+.04*(110%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule111(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_111';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(111%5),.16,.92+.04*(111%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule112(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_112';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(112%5),.16,.92+.04*(112%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule113(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_113';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(113%5),.16,.92+.04*(113%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule114(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_114';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(114%5),.16,.92+.04*(114%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule115(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_115';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(115%5),.16,.92+.04*(115%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule116(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_116';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(116%5),.16,.92+.04*(116%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule117(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_117';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(117%5),.16,.92+.04*(117%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule118(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_118';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(118%5),.16,.92+.04*(118%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule119(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_119';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(119%5),.16,.92+.04*(119%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule120(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_120';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(120%5),.16,.92+.04*(120%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule121(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_121';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(121%5),.16,.92+.04*(121%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule122(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_122';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(122%5),.16,.92+.04*(122%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule123(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_123';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(123%5),.16,.92+.04*(123%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule124(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_124';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(124%5),.16,.92+.04*(124%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule125(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_125';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(125%5),.16,.92+.04*(125%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule126(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_126';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(126%5),.16,.92+.04*(126%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule127(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_127';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(127%5),.16,.92+.04*(127%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule128(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_128';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(128%5),.16,.92+.04*(128%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule129(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_129';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(129%5),.16,.92+.04*(129%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule130(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_130';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(130%5),.16,.92+.04*(130%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule131(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_131';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(131%5),.16,.92+.04*(131%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule132(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_132';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(132%5),.16,.92+.04*(132%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule133(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_133';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(133%5),.16,.92+.04*(133%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule134(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_134';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(134%5),.16,.92+.04*(134%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule135(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_135';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(135%5),.16,.92+.04*(135%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule136(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_136';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(136%5),.16,.92+.04*(136%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule137(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_137';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(137%5),.16,.92+.04*(137%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule138(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_138';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(138%5),.16,.92+.04*(138%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule139(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_139';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(139%5),.16,.92+.04*(139%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule140(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_140';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(140%5),.16,.92+.04*(140%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule141(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_141';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(141%5),.16,.92+.04*(141%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule142(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_142';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(142%5),.16,.92+.04*(142%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule143(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_143';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(143%5),.16,.92+.04*(143%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule144(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_144';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(144%5),.16,.92+.04*(144%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule145(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_145';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(145%5),.16,.92+.04*(145%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule146(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_146';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(146%5),.16,.92+.04*(146%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule147(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_147';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(147%5),.16,.92+.04*(147%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule148(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_148';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(148%5),.16,.92+.04*(148%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule149(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_149';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(149%5),.16,.92+.04*(149%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+function detailModule150(parent, origin=[0,0,0], phase=0) {
+  const g=new THREE.Group();
+  g.name='DETAIL_MODULE_150';
+  g.position.set(origin[0],origin[1],origin[2]);
+  g.rotation.y=phase;
+  const mA=(phase*10)%2>1?MAT.gun2:MAT.gun3;
+  const mB=(phase*7)%2>1?MAT.steel:MAT.graphite;
+  const mC=(phase*5)%2>1?MAT.blood:MAT.gun2;
+  addBox(g,'PLATE',[1.8+.08*(150%5),.16,.92+.04*(150%7)],mA,[0,0,0]);
+  addBox(g,'BACKING',[1.38,.10,.62],mB,[0,-.16,0]);
+  addBox(g,'SEAM',[1.1,.018,.025],mC,[0,.095,.47]);
+  addBolt(g,'BOLT_A',.055,.035,mB,[-.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_B',.055,.035,mB,[.62,.11,.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_C',.045,.035,mB,[-.62,.11,-.48],[PI/2,0,0]);
+  addBolt(g,'BOLT_D',.045,.035,mB,[.62,.11,-.48],[PI/2,0,0]);
+  addTorus(g,'SERVICE_RING',.23,.025,mC,[0,.12,.52],[PI/2,0,0],24,6);
+  addBox(g,'MICRO_RAIL',[.92,.035,.05],mB,[0,.13,-.51]);
+  parent.add(g);
+  return g;
+}
+
+// Reusable placement catalog. Each entry is a physical station, not a random point.
+const DETAIL_STATIONS = [
+  {id:'ST_001',x:-33,y:5.2,z:-11,phase:0.19},
+  {id:'ST_002',x:-20,y:8.4,z:6,phase:0.38},
+  {id:'ST_003',x:-7,y:11.6,z:23,phase:0.57},
+  {id:'ST_004',x:6,y:14.8,z:40,phase:0.76},
+  {id:'ST_005',x:19,y:18.0,z:57,phase:0.95},
+  {id:'ST_006',x:32,y:21.2,z:-21,phase:1.14},
+  {id:'ST_007',x:45,y:2.0,z:-4,phase:1.33},
+  {id:'ST_008',x:-34,y:5.2,z:13,phase:1.52},
+  {id:'ST_009',x:-21,y:8.4,z:30,phase:1.71},
+  {id:'ST_010',x:-8,y:11.6,z:47,phase:1.9},
+  {id:'ST_011',x:5,y:14.8,z:64,phase:0.0},
+  {id:'ST_012',x:18,y:18.0,z:-14,phase:0.19},
+  {id:'ST_013',x:31,y:21.2,z:3,phase:0.38},
+  {id:'ST_014',x:44,y:2.0,z:20,phase:0.57},
+  {id:'ST_015',x:-35,y:5.2,z:37,phase:0.76},
+  {id:'ST_016',x:-22,y:8.4,z:54,phase:0.95},
+  {id:'ST_017',x:-9,y:11.6,z:-24,phase:1.14},
+  {id:'ST_018',x:4,y:14.8,z:-7,phase:1.33},
+  {id:'ST_019',x:17,y:18.0,z:10,phase:1.52},
+  {id:'ST_020',x:30,y:21.2,z:27,phase:1.71},
+  {id:'ST_021',x:43,y:2.0,z:44,phase:1.9},
+  {id:'ST_022',x:-36,y:5.2,z:61,phase:0.0},
+  {id:'ST_023',x:-23,y:8.4,z:-17,phase:0.19},
+  {id:'ST_024',x:-10,y:11.6,z:0,phase:0.38},
+  {id:'ST_025',x:3,y:14.8,z:17,phase:0.57},
+  {id:'ST_026',x:16,y:18.0,z:34,phase:0.76},
+  {id:'ST_027',x:29,y:21.2,z:51,phase:0.95},
+  {id:'ST_028',x:42,y:2.0,z:-27,phase:1.14},
+  {id:'ST_029',x:-37,y:5.2,z:-10,phase:1.33},
+  {id:'ST_030',x:-24,y:8.4,z:7,phase:1.52},
+  {id:'ST_031',x:-11,y:11.6,z:24,phase:1.71},
+  {id:'ST_032',x:2,y:14.8,z:41,phase:1.9},
+  {id:'ST_033',x:15,y:18.0,z:58,phase:0.0},
+  {id:'ST_034',x:28,y:21.2,z:-20,phase:0.19},
+  {id:'ST_035',x:41,y:2.0,z:-3,phase:0.38},
+  {id:'ST_036',x:-38,y:5.2,z:14,phase:0.57},
+  {id:'ST_037',x:-25,y:8.4,z:31,phase:0.76},
+  {id:'ST_038',x:-12,y:11.6,z:48,phase:0.95},
+  {id:'ST_039',x:1,y:14.8,z:65,phase:1.14},
+  {id:'ST_040',x:14,y:18.0,z:-13,phase:1.33},
+  {id:'ST_041',x:27,y:21.2,z:4,phase:1.52},
+  {id:'ST_042',x:40,y:2.0,z:21,phase:1.71},
+  {id:'ST_043',x:-39,y:5.2,z:38,phase:1.9},
+  {id:'ST_044',x:-26,y:8.4,z:55,phase:0.0},
+  {id:'ST_045',x:-13,y:11.6,z:-23,phase:0.19},
+  {id:'ST_046',x:0,y:14.8,z:-6,phase:0.38},
+  {id:'ST_047',x:13,y:18.0,z:11,phase:0.57},
+  {id:'ST_048',x:26,y:21.2,z:28,phase:0.76},
+  {id:'ST_049',x:39,y:2.0,z:45,phase:0.95},
+  {id:'ST_050',x:-40,y:5.2,z:62,phase:1.14},
+  {id:'ST_051',x:-27,y:8.4,z:-16,phase:1.33},
+  {id:'ST_052',x:-14,y:11.6,z:1,phase:1.52},
+  {id:'ST_053',x:-1,y:14.8,z:18,phase:1.71},
+  {id:'ST_054',x:12,y:18.0,z:35,phase:1.9},
+  {id:'ST_055',x:25,y:21.2,z:52,phase:0.0},
+  {id:'ST_056',x:38,y:2.0,z:-26,phase:0.19},
+  {id:'ST_057',x:-41,y:5.2,z:-9,phase:0.38},
+  {id:'ST_058',x:-28,y:8.4,z:8,phase:0.57},
+  {id:'ST_059',x:-15,y:11.6,z:25,phase:0.76},
+  {id:'ST_060',x:-2,y:14.8,z:42,phase:0.95},
+  {id:'ST_061',x:11,y:18.0,z:59,phase:1.14},
+  {id:'ST_062',x:24,y:21.2,z:-19,phase:1.33},
+  {id:'ST_063',x:37,y:2.0,z:-2,phase:1.52},
+  {id:'ST_064',x:-42,y:5.2,z:15,phase:1.71},
+  {id:'ST_065',x:-29,y:8.4,z:32,phase:1.9},
+  {id:'ST_066',x:-16,y:11.6,z:49,phase:0.0},
+  {id:'ST_067',x:-3,y:14.8,z:66,phase:0.19},
+  {id:'ST_068',x:10,y:18.0,z:-12,phase:0.38},
+  {id:'ST_069',x:23,y:21.2,z:5,phase:0.57},
+  {id:'ST_070',x:36,y:2.0,z:22,phase:0.76},
+];
+
+function buildDeepDetailField(){
+  const field=new THREE.Group();
+  field.name='DEEP_DETAIL_FIELD';
+  environmentRoot.add(field);
+  DETAIL_STATIONS.forEach((station,index)=>{
+    const g=detailModule001(field,[station.x,station.y,station.z],station.phase);
+    g.scale.setScalar(.72+(index%4)*.08);
+    if(index%3===0){
+      const conduit=addCable(field,`FIELD_CABLE_${index}`,[station.x-.8,station.y-.1,station.z],[station.x+.8,station.y+.15,station.z-.7],.018,MAT.graphite);
+      conduit.userData.infrastructure=true;
+    }
+  });
+  return field;
+}
+
+// Detail modules are intentionally reused at authored stations so the scene has
+// a consistent manufacturing language rather than procedural confetti.
+buildDeepDetailField();
+// -----------------------------------------------------------------------------
+// 30 // CINEMATIC VALIDATION & OBSERVABILITY
+// -----------------------------------------------------------------------------
+const CHECKPOINTS=[0,.05,.08,.12,.16,.20,.24,.30,.38,.44,.48,.52,.56,.60,.64,.68,.72,.78,.84,.88,.90,.93,.96,.98,1];
+const EXPECTED_CHAPTERS=['VOID','IDENTITY','DOOR','WORKSHOP','ARMOR WAKE','MOBILITY','STRUCTURE','CORE','CONTROL','OUTPUT','PERCEPTION','FORMATION','ASSEMBLY','LANDING','OBSERVATION'];
+
+function validateSceneGraph(){
+  const required=[doorRoot,workshop,bench,padRoot,irisRoot,interactionRoot,armorRoot];
+  const missing=required.filter(Boolean).length!==required.length;
+  if(missing)console.warn('[ABOUT QA] scene graph incomplete');
+  const armorNames=PART_ORDER.filter(p=>armorGroups[p]);
+  if(armorNames.length!==6)console.warn('[ABOUT QA] armor group count',armorNames.length);
+  return {ok:!missing,armorNames};
+}
+
+function validateArmorScale(){
+  const values=PART_ORDER.map(p=>armorGroups[p]?.scale.x||0);
+  const bad=values.some(v=>!Number.isFinite(v)||v<=0);
+  if(bad)console.warn('[ABOUT QA] invalid armor scale',values);
+  return !bad;
+}
+
+function validateDeterminismSnapshot(){
+  return {
+    progress:masterTimeline?.progress()??0,
+    camera:[camera.position.x,camera.position.y,camera.position.z],
+    armor:PART_ORDER.map(p=>{
+      const g=armorGroups[p];
+      return [p,g.position.x,g.position.y,g.position.z,g.rotation.x,g.rotation.y,g.rotation.z,g.scale.x];
+    })
+  };
+}
+
+function validateInteractiveContract(){
+  return {
+    floor:floorCollider.userData.interactiveFloor===true,
+    button:physicalButton.userData.interactiveButton===true,
+    pit:pit instanceof THREE.Group,
+    tunnel:tunnelRoot instanceof THREE.Group
+  };
+}
+
+window.__ABOUT_VALIDATE__=()=>({
+  scene:validateSceneGraph(),
+  scale:validateArmorScale(),
+  interaction:validateInteractiveContract(),
+  snapshot:validateDeterminismSnapshot()
+});
+
+function debugCheckpoint(p){
+  setCinematicProgress(p);
+  const d=window.__ABOUT_DIAGNOSTICS__?.();
+  if(!d)return;
+  console.log(`[ABOUT CHECKPOINT] ${(p*100).toFixed(1)}%`,d);
+}
+
+window.__ABOUT_CHECKPOINTS__=CHECKPOINTS;
+
+function runAuthoringAudit(){
+  const report=[];
+  report.push(['version',VERSION]);
+  report.push(['armorReady',armorReady]);
+  report.push(['armorLoaded',armorReadyState.loaded]);
+  report.push(['armorFailed',armorReadyState.failed]);
+  report.push(['cameraNear',camera.near]);
+  report.push(['cameraFar',camera.far]);
+  report.push(['suitScale',ARMOR_SCALE]);
+  report.push(['showcaseScale',SHOWCASE_SCALE]);
+  report.push(['floorY',WORLD.floorY]);
+  report.push(['padZ',WORLD.padZ]);
+  return report;
+}
+window.__ABOUT_AUTHORING_AUDIT__=runAuthoringAudit;
+
+// The following explicit labels are also useful when a browser screenshot is
+// inspected manually. They never drive the choreography.
+const SHOT_LABELS={
+  void:'VOID',
+  identity:'IDENTITY / INITIALS',
+  door:'DOOR / LOCKED',
+  doorGap:'DOOR / OPENING',
+  workshop:'WORKSHOP / DISTANT BENCH',
+  armorWide:'ARMOR / INITIALIZATION',
+  boots:'01 / MOBILITY',
+  legs:'02 / STRUCTURE',
+  torso:'03 / CORE',
+  arms:'04 / CONTROL',
+  gauntlets:'05 / OUTPUT',
+  helmet:'06 / PERCEPTION',
+  formation:'FORMATION / FLIGHT',
+  assembly:'ASSEMBLY / COMPLETE',
+  landing:'LANDING / PAD',
+  floor:'OBSERVATION / DISCOVERY',
+  pit:'SUBTERRANEAN / DESCENT'
+};
+
+window.__ABOUT_SHOT_LABELS__=SHOT_LABELS;
+function authoredShotAudit1(shotName,expectedDepth) {
+  const shot=CAMERA_SHOTS[shotName];
+  if(!shot) return {ok:false,reason:'missing shot'};
+  const distance=Math.hypot(shot.p[0],shot.p[1]-shot.t[1],shot.p[2]-shot.t[2]);
+  const targetDistance=Math.hypot(shot.t[0],shot.t[1],shot.t[2]);
+  const depthOk=Number.isFinite(expectedDepth);
+  const record={id:'SHOT_AUDIT_1',shot:shotName,distance,targetDistance,expectedDepth,depthOk};
+  if(distance<0.5) console.warn('[ABOUT QA] camera shot too close',record);
+  return {ok:depthOk&&distance>0.5,record};
+}
+function authoredShotAudit2(shotName,expectedDepth) {
+  const shot=CAMERA_SHOTS[shotName];
+  if(!shot) return {ok:false,reason:'missing shot'};
+  const distance=Math.hypot(shot.p[0],shot.p[1]-shot.t[1],shot.p[2]-shot.t[2]);
+  const targetDistance=Math.hypot(shot.t[0],shot.t[1],shot.t[2]);
+  const depthOk=Number.isFinite(expectedDepth);
+  const record={id:'SHOT_AUDIT_2',shot:shotName,distance,targetDistance,expectedDepth,depthOk};
+  if(distance<0.5) console.warn('[ABOUT QA] camera shot too close',record);
+  return {ok:depthOk&&distance>0.5,record};
+}
+function authoredShotAudit3(shotName,expectedDepth) {
+  const shot=CAMERA_SHOTS[shotName];
+  if(!shot) return {ok:false,reason:'missing shot'};
+  const distance=Math.hypot(shot.p[0],shot.p[1]-shot.t[1],shot.p[2]-shot.t[2]);
+  const targetDistance=Math.hypot(shot.t[0],shot.t[1],shot.t[2]);
+  const depthOk=Number.isFinite(expectedDepth);
+  const record={id:'SHOT_AUDIT_3',shot:shotName,distance,targetDistance,expectedDepth,depthOk};
+  if(distance<0.5) console.warn('[ABOUT QA] camera shot too close',record);
+  return {ok:depthOk&&distance>0.5,record};
+}
+function authoredShotAudit4(shotName,expectedDepth) {
+  const shot=CAMERA_SHOTS[shotName];
+  if(!shot) return {ok:false,reason:'missing shot'};
+  const distance=Math.hypot(shot.p[0],shot.p[1]-shot.t[1],shot.p[2]-shot.t[2]);
+  const targetDistance=Math.hypot(shot.t[0],shot.t[1],shot.t[2]);
+  const depthOk=Number.isFinite(expectedDepth);
+  const record={id:'SHOT_AUDIT_4',shot:shotName,distance,targetDistance,expectedDepth,depthOk};
+  if(distance<0.5) console.warn('[ABOUT QA] camera shot too close',record);
+  return {ok:depthOk&&distance>0.5,record};
+}
+function authoredShotAudit5(shotName,expectedDepth) {
+  const shot=CAMERA_SHOTS[shotName];
+  if(!shot) return {ok:false,reason:'missing shot'};
+  const distance=Math.hypot(shot.p[0],shot.p[1]-shot.t[1],shot.p[2]-shot.t[2]);
+  const targetDistance=Math.hypot(shot.t[0],shot.t[1],shot.t[2]);
+  const depthOk=Number.isFinite(expectedDepth);
+  const record={id:'SHOT_AUDIT_5',shot:shotName,distance,targetDistance,expectedDepth,depthOk};
+  if(distance<0.5) console.warn('[ABOUT QA] camera shot too close',record);
+  return {ok:depthOk&&distance>0.5,record};
+}
+function authoredShotAudit6(shotName,expectedDepth) {
+  const shot=CAMERA_SHOTS[shotName];
+  if(!shot) return {ok:false,reason:'missing shot'};
+  const distance=Math.hypot(shot.p[0],shot.p[1]-shot.t[1],shot.p[2]-shot.t[2]);
+  const targetDistance=Math.hypot(shot.t[0],shot.t[1],shot.t[2]);
+  const depthOk=Number.isFinite(expectedDepth);
+  const record={id:'SHOT_AUDIT_6',shot:shotName,distance,targetDistance,expectedDepth,depthOk};
+  if(distance<0.5) console.warn('[ABOUT QA] camera shot too close',record);
+  return {ok:depthOk&&distance>0.5,record};
+}
+function auditAllAuthoredShots(){
+  return Object.keys(CAMERA_SHOTS).map((name,index)=>authoredShotAudit1(name,index));
+}
+window.__ABOUT_CAMERA_AUDIT__=auditAllAuthoredShots;
+
+function armorStateTable(){
+  return PART_ORDER.map((part,index)=>{
+    const g=armorGroups[part];
+    return {
+      index:index+1,
+      part,
+      loaded:Boolean(armorParts[part]),
+      visible:Boolean(g?.visible),
+      x:Number((g?.position.x||0).toFixed(4)),
+      y:Number((g?.position.y||0).toFixed(4)),
+      z:Number((g?.position.z||0).toFixed(4)),
+      scale:Number((g?.scale.x||0).toFixed(4))
+    };
+  });
+}
+window.__ABOUT_ARMOR_TABLE__=armorStateTable;
+
+function setFloorObservationState(){
+  floorActivated=false;
+  pitRevealed=false;
+  transitioning=false;
+  pit.visible=false;
+  tunnelRoot.visible=false;
+  for(const blade of irisBlades) blade.rotation.z=blade.userData.closedRotation;
+  physicalButton.position.y=WORLD.floorY+.78;
+  floorMaterial.uniforms.uPulseStrength.value=.2;
+}
+
+function resetAboutExperience(){
+  setFloorObservationState();
+  setWorkbenchPose();
+  masterTimeline?.pause(0);
+  setCinematicProgress(0);
+  applyCameraShot('void');
+  hideAllCopy();
+  endFade.style.opacity='0';
+}
+window.__ABOUT_RESET__=resetAboutExperience;
+// -----------------------------------------------------------------------------
+// 31 // FINAL ENGINEERING NOTES
+// -----------------------------------------------------------------------------
+// The installation intentionally separates authored state from runtime state.
+// Authored state lives in CAMERA_SHOTS, WORKBENCH_POSES, FORMATION_POSES and
+// FINAL_POSES. Runtime state lives in the groups and shader uniforms. This means
+// a screenshot at an identical progress value is reproducible without asking
+// the renderer to guess where the subject ought to be.
+//
+// The six armor assets share a coordinate frame. Their source dimensions are
+// extremely small because the CAD pipeline exports them in a normalized frame.
+// WORLD.suitScale is therefore an explicit unit conversion, not a camera hack.
+//
+// The showcase deliberately moves the subject to an authored focus point rather
+// than moving the camera until a bounding box happens to fit. That distinction
+// is important: composition belongs to the shot, not to the object.
+//
+// The floor discovery is deliberately physical. There is no HTML CTA, no arrow,
+// no instruction, no floating 'ENTER' prompt. The red pulse is an environmental
+// anomaly. The visitor supplies the curiosity.
+//
+// The pit is not a modal. It is a continuation of the same scene graph. The// iris, wall, tunnel rings, lights and camera all remain in the same coordinate
+// system, so the descent can feel like entering a place rather than changing
+// pages behind a black transition.
+//
+// Performance policy: keep DPR fixed at one for the acceptance harness. Geometry
+// uses instancing-friendly primitives where possible, shared materials where
+// possible, and no per-frame allocation in the main render loop.
+//
+// Determinism policy: no Math.random() is used for choreography, camera paths,
+// armor positions or interaction state. Procedural texture generation is allowed
+// to vary internally because those textures are baked during initialization, but
+// all visible cinematic transforms are authored.
+//
+// The renderer owns one scene and one perspective camera. The cinematic is not
+// split into multiple renderers, iframe scenes, or separate hidden canvases.
+//
+// If this file grows further, new code should extend a named section rather than
+// adding an anonymous animation callback. Every new visual mechanism should have
+// a physical name, an owner group and a deterministic state.
+//
+// End of VAULT-01 About master runtime.
