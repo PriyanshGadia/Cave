@@ -1,27 +1,40 @@
-:root {
-  --bg-color: #000000;
-  --gunmetal: #1a1a1a;
-  --gunmetal-light: #2a2a2a;
-  --blood-red: #8a0000;
-  --blood-red-glow: #ff0000;
-  --cyan: #00f3ff;
-  --cyan-glow: rgba(0, 243, 255, 0.6);
-  --text-main: #ffffff;
-  --text-muted: #888888;
+@charset "UTF-8";
 
-  --font-logo: 'Syncopate', sans-serif;
-  --font-heading: 'Inter Tight', sans-serif;
-  --font-body: 'Inter Tight', sans-serif;
+:root {
+  --color-bg: #030405;
+  --color-text: #f2f4f5;
+  --color-accent: #ff2b20;
+  --color-accent-dark: #b60000;
+  --color-hud: #7deaf0;
+  --color-hud-dim: rgba(125, 234, 240, 0.4);
+  --color-border: rgba(105, 116, 123, 0.2);
   --font-mono: 'IBM Plex Mono', monospace;
+  --font-condensed: 'Barlow Condensed', sans-serif;
+  --font-sans: 'Inter Tight', sans-serif;
 }
 
-* {
-  margin: 0;
-  padding: 0;
+*, *::before, *::after {
   box-sizing: border-box;
 }
 
-/* Add canvas styling */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  overscroll-behavior: none;
+}
+
+#monolith-experience {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
 #webgl-canvas {
   position: fixed;
   top: 0;
@@ -29,260 +42,217 @@
   width: 100vw;
   height: 100vh;
   z-index: 1;
-  pointer-events: none;
+  pointer-events: auto; /* allows raycasting for the floor puzzle */
 }
 
-body {
-  background-color: var(--bg-color);
-  color: var(--text-main);
-  font-family: var(--font-body);
-  overflow-x: hidden;
-  /* Start hidden to avoid scrollbar before intro finishes */
-  overflow-y: hidden; 
-}
-
-/* ========================================================
-   INTRO LAYER
-======================================================== */
-#intro-layer {
+/* Post Processing Overlay Layers */
+#cinema-grade, #scanline-layer, #grain-layer, #vignette-layer {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: var(--bg-color);
-  z-index: 1000;
+  z-index: 10;
+  pointer-events: none;
+}
+
+#cinema-grade {
+  background: radial-gradient(circle at center, transparent 30%, rgba(3, 4, 5, 0.6) 100%);
+  mix-blend-mode: overlay;
+}
+
+#scanline-layer {
+  background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.15));
+  background-size: 100% 4px;
+  opacity: 0.8;
+}
+
+#grain-layer {
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+#vignette-layer {
+  box-shadow: inset 0 0 150px rgba(0,0,0,0.9);
+}
+
+/* HUD elements */
+#hud {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 50;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 40px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--color-hud);
+  text-transform: uppercase;
+}
+
+.hud-corner {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: absolute;
+}
+
+.hud-top-left { top: 40px; left: 40px; }
+.hud-top-right { top: 40px; right: 40px; text-align: right; }
+
+.hud-status i {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--color-accent);
+  border-radius: 50%;
+  margin-right: 8px;
+  box-shadow: 0 0 8px var(--color-accent);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.hud-bottom {
+  position: absolute;
+  bottom: 40px;
+  left: 40px;
+  right: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hud-line {
+  flex-grow: 1;
+  height: 1px;
+  background: var(--color-hud-dim);
+  margin: 0 20px;
+}
+
+/* Content layer for scroll-triggered text */
+#copy-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 40;
+  pointer-events: none;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
-  pointer-events: none;
-  transition: opacity 2s ease-in-out;
+  align-items: flex-start;
+  padding-left: 15vw;
 }
 
-#intro-layer.fade-out {
+.chapter-copy {
+  position: absolute;
   opacity: 0;
-}
-
-.intro-name-container {
-  font-family: var(--font-logo);
-  font-size: 4rem; /* Scaled down slightly to fit full name */
-  font-weight: 700;
-  letter-spacing: 0.5rem;
-  display: flex;
-  gap: 8rem; /* Initially very far apart */
-  color: var(--text-main);
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-  align-items: center;
-}
-
-.word {
-  display: flex;
-  align-items: center;
-}
-
-.name-hidden {
-  opacity: 0;
-  width: 0;
-  overflow: hidden;
-  display: inline-block;
-  white-space: nowrap;
-  /* GSAP will animate width and opacity */
-}
-
-/* Optional cyan accent on the hidden letters */
-.name-hidden {
-  color: var(--cyan);
-  text-shadow: 0 0 15px var(--cyan-glow);
-}
-
-/* ========================================================
-   WEBGL CANVAS
-======================================================== */
-#webgl-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* ========================================================
-   SCROLL CONTENT
-======================================================== */
-#scroll-container {
-  position: relative;
-  z-index: 10;
-  width: 100%;
-  pointer-events: none; /* Let clicks pass through to canvas if needed, except on specific elements */
-}
-
-.chapter-spacer {
-  height: 100vh; /* gives room before first chapter */
-}
-
-#start-spacer {
-  height: 200vh; /* wait for launch sequence */
-}
-
-#end-spacer {
-  height: 150vh; /* breathing room at the bottom */
-}
-
-.chapter-content {
-  height: 150vh;
-  position: relative;
-  display: flex;
-  align-items: center;
-  padding: 0 10vw;
-}
-
-.copy-block {
-  width: 40%;
-  opacity: 0;
-  transform: translateY(30px);
-  /* GSAP will control opacity and transform */
-}
-
-.copy-block.right-side {
-  margin-left: auto; /* Push to right */
-  text-align: left;
-  border-left: 2px solid var(--cyan);
-  padding-left: 2rem;
-}
-
-.copy-block.center-bottom {
-  margin: 0 auto;
-  text-align: center;
-  width: 100%;
-  margin-top: 50vh;
-}
-
-.chapter-indicator {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  color: var(--cyan);
-  letter-spacing: 0.2rem;
-  margin-bottom: 1rem;
-}
-
-.chapter-content h2 {
-  font-family: var(--font-heading);
-  font-size: 2.5rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin-bottom: 1.5rem;
-  text-transform: uppercase;
-}
-
-.chapter-content p {
-  font-size: 1.1rem;
-  line-height: 1.6;
-  color: var(--text-muted);
+  visibility: hidden;
   max-width: 400px;
+  transform: translateY(20px);
 }
 
-.technical-label {
+.copy-index {
   font-family: var(--font-mono);
-  font-size: 1rem;
-  color: var(--blood-red-glow);
-  letter-spacing: 0.3rem;
-  margin-bottom: 1.5rem;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--color-accent);
+  display: block;
+  margin-bottom: 16px;
 }
 
-.final-statement {
-  font-family: var(--font-heading);
-  font-size: 4rem;
-  font-weight: 700;
-  line-height: 1.1;
+.chapter-copy h2 {
+  font-family: var(--font-condensed);
+  font-size: 5vw;
+  line-height: 0.85;
+  margin: 0 0 24px 0;
   text-transform: uppercase;
-  text-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+  color: #fff;
 }
 
-/* ========================================================
-   UI LAYER (BUTTONS / CTAS)
-======================================================== */
-#ui-layer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 20;
-  pointer-events: none;
+.chapter-copy h2 em {
+  font-style: normal;
+  color: var(--color-accent);
 }
 
-/* The red glowing button next to the pad */
-#repulsor-btn {
-  position: absolute;
-  top: 60%;
-  right: 25%;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: transparent;
-  border: 2px solid var(--blood-red);
-  cursor: pointer;
-  pointer-events: auto;
+.chapter-copy p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #a0aab2;
+  margin-bottom: 32px;
+}
+
+.copy-specs {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 15px var(--blood-red);
-  transform: translate(-50%, -50%);
-}
-
-#repulsor-btn:hover {
-  box-shadow: 0 0 30px var(--blood-red-glow);
-  transform: translate(-50%, -50%) scale(1.1);
-}
-
-#repulsor-btn:active {
-  transform: translate(-50%, -50%) scale(0.95);
-}
-
-.btn-core {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background-color: var(--blood-red-glow);
-  box-shadow: 0 0 20px var(--blood-red-glow);
-}
-
-#repulsor-btn.hidden {
-  display: none;
-  opacity: 0;
-}
-
-/* The final CTA */
-#vault-cta {
-  position: absolute;
-  bottom: 10%;
-  left: 50%;
-  transform: translateX(-50%);
+  gap: 24px;
   font-family: var(--font-mono);
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--cyan);
-  text-decoration: none;
-  letter-spacing: 0.2rem;
-  border: 1px solid var(--cyan);
-  padding: 1rem 3rem;
-  pointer-events: auto;
-  transition: all 0.3s ease;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(5px);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--color-hud-dim);
+  border-top: 1px solid var(--color-border);
+  padding-top: 16px;
 }
 
-#vault-cta:hover {
-  background: var(--cyan);
-  color: #000;
-  box-shadow: 0 0 20px var(--cyan-glow);
+.chapter-assembly-copy {
+  align-items: center;
+  text-align: center;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  width: 100%;
+  max-width: none;
 }
 
-#vault-cta.hidden {
-  display: none;
-  opacity: 0;
+.chapter-assembly-copy h1 {
+  font-family: var(--font-condensed);
+  font-size: 8vw;
+  line-height: 0.85;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.assembly-rule {
+  width: 2px;
+  height: 60px;
+  background: var(--color-accent);
+  margin: 40px auto;
+}
+
+/* Scroll mechanism */
+#scroll-rail {
+  position: fixed;
+  right: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 200px;
+  background: var(--color-border);
+  z-index: 50;
+}
+
+#scroll-rail-progress {
+  width: 100%;
+  height: 0%;
+  background: var(--color-accent);
+}
+
+#scroll-space {
+  position: relative;
+  z-index: 0;
+  width: 100%;
+}
+
+.scroll-block {
+  height: 100vh;
+  width: 100%;
 }

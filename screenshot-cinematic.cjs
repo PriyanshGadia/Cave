@@ -2,58 +2,71 @@ const { chromium } = require('playwright');
 
 (async () => {
   const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 1280, height: 720 }});
-  page.on('console', msg => console.log('BROWSER: ' + msg.text()));
-  
-  await page.goto('http://localhost:3000/about.html?cinematicTest=1', { timeout: 120000, waitUntil: 'domcontentloaded' });
-  
-  console.log("Waiting for cinematic to load...");
-  
-  // Wait for armor to be ready
-  await page.waitForFunction(() => window.__ARMOR_READY === true, { timeout: 60000 });
-  
-  // Wait at least 2 rAF cycles
-  await page.evaluate(() => new Promise(resolve => {
-    requestAnimationFrame(() => requestAnimationFrame(resolve));
-  }));
-  
-  await page.waitForTimeout(2000); // extra wait for shaders/animations to stabilize
-  
-  const shots = [
-    { name: '01_intro_0', p: 0 },
-    { name: '02_intro_name', p: 5 },
-    { name: '03_door', p: 10 },
-    { name: '04_workshop', p: 15 },
-    { name: '05_armor_activation', p: 20 },
-    { name: '06_flight_start', p: 30 },
-    { name: '07_flight_mid1', p: 40 },
-    { name: '08_flight_mid2', p: 50 },
-    { name: '09_flight_mid3', p: 60 },
-    { name: '10_flight_end1', p: 70 },
-    { name: '11_flight_end2', p: 80 },
-    { name: '12_all_flight', p: 85 },
-    { name: '13_descent', p: 90 },
-    { name: '14_assembly', p: 94 },
-    { name: '15_assembled', p: 96 },
-    { name: '16_landing_pad', p: 98 },
-    { name: '17_vault_entry', p: 100 }
+  const page = await browser.newPage({
+    viewport: { width: 1440, height: 900 },
+    deviceScaleFactor: 1
+  });
+
+  const errors = [];
+  const warnings = [];
+  page.on('console', msg => {
+    const line = `${msg.type().toUpperCase()}: ${msg.text()}`;
+    if (msg.type() === 'error') errors.push(line);
+    if (msg.type() === 'warning') warnings.push(line);
+    console.log(line);
+  });
+  page.on('pageerror', err => errors.push(`PAGEERROR: ${err.message}`));
+
+  await page.goto('http://localhost:3000/about.html?cinematicTest=1', {
+    waitUntil: 'domcontentloaded',
+    timeout: 120000
+  });
+  await page.waitForFunction(() => window.__ABOUT_READY__ === true, { timeout: 120000 });
+  await page.waitForFunction(() => window.__ARMOR_READY === true, { timeout: 120000 });
+
+  const checkpoints = [
+    ['00_void', 0.00],
+    ['01_identity', 0.05],
+    ['02_emergence', 0.10],
+    ['03_door', 0.16],
+    ['04_door_open', 0.22],
+    ['05_workshop', 0.30],
+    ['06_armor_wake', 0.38],
+    ['07_boots', 0.43],
+    ['08_legs', 0.49],
+    ['09_torso', 0.55],
+    ['10_arms', 0.61],
+    ['11_gauntlets', 0.67],
+    ['12_helmet', 0.72],
+    ['13_formation', 0.78],
+    ['14_flight', 0.83],
+    ['15_convergence', 0.88],
+    ['16_assembly', 0.91],
+    ['17_landing', 0.94],
+    ['18_observation', 0.97],
+    ['19_floor', 0.985],
+    ['20_end', 1.00]
   ];
-  
-  for (const shot of shots) {
-    console.log(`Capturing ${shot.name} at scroll ${shot.p}%`);
-    await page.evaluate((p) => {
-      // Direct GSAP control for perfect determinism without scroll physics
-      if (window.setCinematicProgress) {
-         window.setCinematicProgress(p / 100);
-      } else {
-         window.scrollTo(0, document.body.scrollHeight * (p / 100));
-      }
-    }, shot.p);
-    // Give GSAP time to update and WebGL to render
-    await page.waitForTimeout(1000); 
-    await page.screenshot({ path: `${shot.name}.png` });
+
+  for (const [name, progress] of checkpoints) {
+    await page.evaluate(p => window.setCinematicProgress(p), progress);
+    await page.waitForTimeout(180);
+    await page.screenshot({ path: `about-\${name}.png`, fullPage: false });
   }
 
+  const audit = await page.evaluate(() => ({
+    diagnostics: window.__ABOUT_DIAGNOSTICS__?.(),
+    validation: window.__ABOUT_VALIDATE__?.(),
+    armorTable: window.__ABOUT_ARMOR_TABLE__?.(),
+    cameraAudit: window.__ABOUT_CAMERA_AUDIT__?.(),
+    rasterImages: performance.getEntriesByType('resource')
+      .filter(r => /\\.(png|jpe?g|webp|gif)(\\?|$)/i.test(r.name)).map(r => r.name)
+  }));
+
+  console.log(JSON.stringify({ audit, errors, warnings }, null, 2));
+
+  if (errors.length) process.exitCode = 2;
+  if (audit.rasterImages?.length) process.exitCode = 3;
+
   await browser.close();
-  console.log('Screenshots saved');
 })();
