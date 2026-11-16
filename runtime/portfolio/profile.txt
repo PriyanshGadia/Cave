@@ -1,0 +1,33 @@
+Priyansh Gadia | The Realm of Mechanics & Quantitative AI
+Interactive 3D Portfolio of Priyansh Rajesh Gadia — B.Sc. (Hons) Data Science & AI at IIT Guwahati (CPI 9.3) & B.Tech (Hons) Mechanical & Robotics at DJSCE Mumbai.
+Academic Foundations
+IIT Guwahati — B.Sc (Hons) in Data Science & Artificial Intelligence · Cumulative Performance Index (CPI): 9.3 / 10.0 · OCI 2025 Certified Data Science Professional, Oracle University (October 2025).
+DJSCE Mumbai — B.Tech (Hons) in Mechanical & Robotics Engineering · Specialization in Physical Systems, Control Theory, and Mechatronics.
+Core Disciplines
+I · Stochastic Rigor : Random Matrix Theory, Marchenko-Pastur Denoising, Deflated Sharpe Ratio, Probability of Backtest Overfitting (PBO), Regime Detection.
+II · Deep Architectures : Spatio-Temporal Graph Neural Networks (ST-GCN), Causal Multi-Head Self-Attention Transformers (GPT-2 from scratch), Bi-directional LSTMs.
+III · Systems at Scale : Sub-millisecond execution pipelines, FastAPI, WebSockets, Next.js 14, WebGL2 procedural engines, Linux microservices.
+Key Production Architectures & Citadels
+Argus Quant OS
+11-package quantitative research and regulatory compliance monorepo. Implements Deflated Sharpe Ratio, PBO gating, multi-factor risk attribution, and strict SEBI 2026 compliance rules.
+CryptoGraph Analytics
+107-asset real-time spatio-temporal graph forecasting engine combining ST-GCN, LSTM, and NeuralProphet with local Llama 3.3 narrative intelligence.
+Respiratory AI Laboratory
+Clinical machine learning platform processing 200 Hz ICU physiological waveforms and esophageal pressure dynamics using Leave-One-Patient-Out (LOPO) cross-validation.
+Document Intelligence Forge
+Autonomous multi-model routing pipeline in FastAPI. Cascades TF-IDF, XGBoost, LayoutLMv3, and DistilBERT with a 150 MB idle memory footprint.
+GPT-2 Autoregressive Model from Scratch
+Engineered pure PyTorch causal self-attention transformer from base matrix algebra, custom BPE tokenizer, positional embeddings, and residual feed-forward layers.
+Network & Verified Dossiers
+GitHub (Public Code & Monorepos)
+LinkedIn (Direct Network)
+Email (Direct Inquiries)
+Resume (Verified Quant Dossier PDF)
+Scholar & Certifications (IITG CPI 9.3, DJSCE, Oracle OCI)
+
+Links
+GitHub (Public Code & Monorepos): https://github.com/PriyanshGadia
+LinkedIn (Direct Network): https://www.linkedin.com/in/priyansh-gadia-b7645320b
+Email (Direct Inquiries): mailto:gadiapriyansh@gmail.com
+Resume (Verified Quant Dossier PDF): ./Priyansh_Gadia_Resume_quant-research_verified.pdf
+Scholar & Certifications (IITG CPI 9.3, DJSCE, Oracle OCI): https://github.com/PriyanshGadia?tab=repositories

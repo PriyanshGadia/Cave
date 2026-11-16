@@ -1,0 +1,151 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "",
+  "installCommand": "",
+  "outputDirectory": "runtime",
+  "headers": [
+    {
+      "source": "/about",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "private, no-store"
+        },
+        {
+          "key": "Vary",
+          "value": "User-Agent"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin-allow-popups"
+        }
+      ]
+    },
+    {
+      "source": "/about.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "private, no-store"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin-allow-popups"
+        }
+      ]
+    },
+    {
+      "source": "/about/text",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, s-maxage=300, stale-while-revalidate=60"
+        }
+      ]
+    },
+    {
+      "source": "/portfolio/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300, s-maxage=86400, stale-while-revalidate=3600"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        }
+      ]
+    },
+    {
+      "source": "/about/(fonts|vendor)/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300, s-maxage=86400, stale-while-revalidate=3600"
+        }
+      ]
+    },
+    {
+      "source": "/Cogs_and_Coronation.mp3",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300, s-maxage=86400, stale-while-revalidate=3600"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/about",
+      "has": [
+        {
+          "type": "query",
+          "key": "format",
+          "value": "text"
+        }
+      ],
+      "destination": "/about/text",
+      "permanent": false
+    },
+    {
+      "source": "/about",
+      "has": [
+        {
+          "type": "query",
+          "key": "ats",
+          "value": "1"
+        }
+      ],
+      "missing": [
+        {
+          "type": "query",
+          "key": "format",
+          "value": "visual"
+        }
+      ],
+      "destination": "/about/text",
+      "permanent": false
+    },
+    {
+      "source": "/about",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(GPTBot|GPTbot|gptbot|ChatGPT-User|ClaudeBot|Claude-Web|ClaudeBot|claudebot|PerplexityBot|Googlebot|googlebot|bingbot|LinkedInBot|Greenhouse|Lever|Workday|Ashby|Eightfold|iCIMS|DuckDuckBot|Applebot).*"
+        }
+      ],
+      "missing": [
+        {
+          "type": "query",
+          "key": "format",
+          "value": "visual"
+        }
+      ],
+      "destination": "/about/text",
+      "permanent": false
+    },
+    {
+      "source": "/",
+      "destination": "/about",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/about/text",
+      "destination": "/portfolio/about-text.html"
+    },
+    {
+      "source": "/about",
+      "destination": "/about.html"
+    }
+  ],
+  "trailingSlash": false
+}
