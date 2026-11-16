@@ -5,11 +5,13 @@ import { mountPrecisionControls } from './realm/precision-controls.js';
 import { createScore } from './realm/score.js';
 import { mountStations } from './realm/stations.js';
 import { clearLegacyGraphicsState } from './realm/smooth-flow.js';
+import { createCompassCursor } from './realm/cursor.js';
 
 clearLegacyGraphicsState();
 const key = 'portfolio:executive';
 
 async function initPortfolio() {
+  const cursor = createCompassCursor();
   const boot = createBoot();
   const score = createScore();
   const chapters = [...document.querySelectorAll('.chapter')];

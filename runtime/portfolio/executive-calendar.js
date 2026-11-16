@@ -61,13 +61,49 @@ export function initExecutiveCalendar({onChange=()=>{},onSound=()=>{}}={}){
  function adjustHandle(name,index){const start=name==='start'?index:Math.min(a,b),end=name==='end'?index:Math.max(a,b);if(start>end||!validSelection(slots,start,end)){rangeError('That adjustment crosses unavailable time. The previous range is preserved.');return}a=start;b=end;updateRange()}
  document.querySelectorAll('[data-duration]').forEach(el=>el.addEventListener('click',()=>{const length=Number(el.dataset.duration)*2,preferred=a!==null?Math.min(a,b):0,candidates=[preferred,...Array.from({length:48},(_,i)=>i).filter(i=>i!==preferred)],start=candidates.find(i=>i+length<=48&&validSelection(slots,i,i+length-1));if(status!=='ready'||start===undefined){rangeError(`No continuous ${el.dataset.duration}-hour window is available on this date. The previous selection is unchanged. Choose another day or duration.`);return}a=start;b=start+length-1;waiting=false;updateRange();onSound()}));
  function rangeError(message){$('#range-status').textContent=message;$('.standard-range').textContent=message}
- function selectSlot(i,extend=false){if(status!=='ready'||!slots[i]?.free){rangeError(status==='ready'?'That segment is unavailable. Choose a continuous free range.':'Availability is not connected. No time is marked free.');return}
-  if(extend&&a!==null){if(!validSelection(slots,a,i)){rangeError('The range crosses unavailable time. Choose adjacent free segments.');return}b=i;dragMoved=true}
-  else if(a!==null && (waiting || (a!==b && i===b+Math.sign(b-a)))){if(!validSelection(slots,a,i)){rangeError('The range crosses unavailable time. The previous selection is preserved.');return}b=i;waiting=false}
-  else{a=b=i;waiting=true}updateRange();onSound();
+ function deselectSlot(i){
+  if(a===null&&b===null)return;
+  const lo=Math.min(a,b),hi=Math.max(a,b);
+  if(i<lo||i>hi){clearRange();updateRange();onSound();return;}
+  if(lo===hi){clearRange()}
+  else if(i===hi){b=hi-1}
+  else if(i===lo){a=lo+1}
+  else{clearRange()}
+  updateRange();onSound();
+ }
+ function selectSlot(i,extend=false){
+  if(status!=='ready'){rangeError('Availability is not connected.');return}
+  if(slots[i]?.past){rangeError('Past times cannot be reserved.');return}
+  if(!slots[i]?.free){rangeError('That time is unavailable. Choose a continuous free range.');return}
+  if(a===null||b===null){a=b=i;updateRange();onSound();return}
+  const lo=Math.min(a,b),hi=Math.max(a,b);
+  if(extend){
+   if(!validSelection(slots,a,i)){rangeError('The range crosses unavailable time. Choose adjacent free segments.');return}
+   b=i;dragMoved=true;
+  }else if(i===hi+1&&validSelection(slots,lo,i)){a=lo;b=i;}
+  else if(i===lo-1&&validSelection(slots,i,hi)){a=i;b=hi;}
+  else if(i>hi&&validSelection(slots,lo,i)){a=lo;b=i;}
+  else if(i<lo&&validSelection(slots,i,hi)){a=i;b=hi;}
+  else if(i>=lo&&i<=hi){/* Within current selection: retain range so double-click unselects */}
+  else{a=b=i;}
+  updateRange();onSound();
  }
  function keyboard(event,i){if(['ArrowLeft','ArrowDown','ArrowRight','ArrowUp'].includes(event.key)){event.preventDefault();const next=(i+(['ArrowLeft','ArrowDown'].includes(event.key)?-1:1)+48)%48;if(event.shiftKey)selectSlot(next,true);const target=event.currentTarget.closest('svg')?$('#time-ring').querySelector(`[data-slot="${next}"]`):$('#standard-times').querySelector(`[data-slot="${next}"]`);target?.focus({preventScroll:true})}else if(event.key===' '||event.key==='Enter'){event.preventDefault();selectSlot(i)}}
- function bindSlot(el,i){el.dataset.slot=i;el.addEventListener('keydown',e=>keyboard(e,i));el.addEventListener('pointerdown',e=>{if(!slots[i]?.free)return;dragging=true;dragMoved=false;if(e.pointerType==='mouse')e.preventDefault();selectSlot(i);el.focus({preventScroll:true})});el.addEventListener('pointerenter',()=>{if(dragging&&a!==i)selectSlot(i,true);else preview(i)});el.addEventListener('pointerleave',()=>{if(!dragging)preview(null)});el.addEventListener('click',e=>{if(e.detail===0)selectSlot(i)})}
+ function bindSlot(el,i){
+  el.dataset.slot=i;
+  el.addEventListener('keydown',e=>keyboard(e,i));
+  el.addEventListener('pointerdown',e=>{
+   if(slots[i]?.past){rangeError('Past times cannot be reserved.');return}
+   if(!slots[i]?.free)return;
+   dragging=true;dragMoved=false;
+   if(e.pointerType==='mouse')e.preventDefault();
+   selectSlot(i);el.focus({preventScroll:true});
+  });
+  el.addEventListener('dblclick',e=>{e.preventDefault();e.stopPropagation();deselectSlot(i);});
+  el.addEventListener('pointerenter',()=>{if(dragging&&a!==i)selectSlot(i,true);else preview(i)});
+  el.addEventListener('pointerleave',()=>{if(!dragging)preview(null)});
+  el.addEventListener('click',e=>{if(e.detail===0)selectSlot(i)});
+ }
  $('#month-ring').addEventListener('pointerdown',e=>{monthDrag={x:e.clientX,y:e.clientY};suppressMonthClick=false});
  const pointerMove=e=>{if(monthDrag){const dx=e.clientX-monthDrag.x,dy=e.clientY-monthDrag.y;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)){suppressMonthClick=true;monthDrag={x:e.clientX,y:e.clientY};chooseMonth(month+(dx>0?1:-1))}}if(handleDrag){const r=$('#horologium').getBoundingClientRect(),angle=Math.atan2(e.clientX-r.left-r.width/2,-(e.clientY-r.top-r.height/2)),i=Math.floor(((angle+Math.PI*2)%(Math.PI*2))/(Math.PI*2)*48);adjustHandle(handleDrag,i);return}if(!dragging)return;const el=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-slot]');if(el&&+el.dataset.slot!==b)selectSlot(+el.dataset.slot,true)};
  const pointerUp=()=>{monthDrag=null;handleDrag=null;setTimeout(()=>suppressMonthClick=false,50);if(dragMoved)waiting=false;dragging=false};addEventListener('pointermove',pointerMove);addEventListener('pointerup',pointerUp);addEventListener('pointercancel',pointerUp);
@@ -154,7 +190,7 @@ export function initExecutiveCalendar({onChange=()=>{},onSound=()=>{}}={}){
  document.querySelectorAll('[data-reserve]').forEach(b=>activate(b,beginBooking));
  $('#booking-form').addEventListener('submit',async event=>{event.preventDefault();if(!chosen||!credential||!event.target.reportValidity())return;const device=browserBookingId();if(!device){$('#booking-status').textContent='Enable browser storage to reserve online, or email to arrange a meeting.';return}const form=new FormData(event.target),button=$('#confirm-booking');button.disabled=true;$('#booking-status').textContent='Confirming the full time range…';try{const response=await fetch('/api/portfolio-calendar',{method:'POST',headers:{'Content-Type':'application/json','Idempotency-Key':idempotency,Authorization:'Bearer '+credential,'X-Booking-Device':device},body:JSON.stringify({action:'book',...chosen,note:form.get('note'),consent:form.get('consent')==='on'}),signal:AbortSignal.timeout(20000)}),body=await response.json();if(response.status===401){await showGoogleSignIn();throw Error('Sign in with Google again to continue.')}if(response.status===429)throw Error(body.error==='booking_quota_exceeded'?'This Google account or browser has reached its daily booking limit.':'Too many requests. Try again later.');if(!response.ok||body.status!=='confirmed')throw Error(response.status===409?'Part of this range has just been taken. Choose another range.':'The reservation could not be confirmed. Retry or email me.');credential=null;identityMount.replaceChildren();reservation=body;stamp(body.id);saved=saved.filter(s=>s.id!==body.id);saved.push(body);persist();$('#booking-form').hidden=true;$('#booking-confirmation').hidden=false;$('#cancel-booking').hidden=false;$('#booking-confirmation p').textContent='The full selected range is reserved. Google Calendar will send your invitation.';$('#booking-status').textContent='';cache.clear();await load(true)}catch(e){$('#booking-status').textContent=e.message}finally{button.disabled=!credential}});
  $('#booking-dialog').addEventListener('close',()=>{credential=null;identityMount.replaceChildren();confirmBooking.disabled=true});
- function stamp(id){let seal=$('#booking-confirmation .wax-seal');if(!seal){seal=document.createElement('div');seal.className='wax-seal';seal.setAttribute('aria-hidden','true');seal.textContent='PG';$('#booking-confirmation').prepend(seal)}let reference=$('#booking-confirmation .reservation-reference');if(!reference){reference=document.createElement('p');reference.className='reservation-reference';$('#booking-confirmation').append(reference)}reference.textContent='Reservation reference: '+id}
+ function stamp(id){let seal=$('#booking-confirmation .wax-seal');if(!seal){seal=document.createElement('div');seal.className='wax-seal';seal.setAttribute('aria-hidden','true');seal.innerHTML='<svg viewBox="0 0 160 48" width="60" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 38V16c0-6 6-8 12-8 9 0 15 12 22 12s13-12 22-12c7 0 11 3 11 9 0 8-11 11-18 11-7 0-14-4-18-9L39 33c-3 8-10 11-16 11-6 0-9-3-9-6" stroke="#f0d29d"/><path d="M74 27c-5-6-10-8-15-8-7 0-12 5-12 11 0 7 6 10 12 10 9 0 15-11 21-11s13 11 21 11c7 0 12-4 12-12V6" stroke="#f0d29d"/><path d="M113 22v17c0 2 2 3 5 3M121 28c3-7 8-9 14-9 7 0 12 4 12 10 0 8-7 13-14 13-6 0-11-3-12-8 0-6 6-9 14-9 6 0 11 2 13 4v7c0 4 3 6 7 6" stroke="#f0d29d"/><circle cx="113" cy="13" r="2.2" fill="#f0d29d"/></svg>';$('#booking-confirmation').prepend(seal)}let reference=$('#booking-confirmation .reservation-reference');if(!reference){reference=document.createElement('p');reference.className='reservation-reference';$('#booking-confirmation').append(reference)}reference.textContent='Reservation reference: '+id}
  function renderSaved(){const root=$('#reservation-management');root.replaceChildren();for(const ref of saved){const b=document.createElement('button');b.className='text-link';b.dataset.reservation=ref.id;b.textContent='Manage reservation · '+new Intl.DateTimeFormat('en-GB',{timeZone:timezone,dateStyle:'medium',timeStyle:'short'}).format(new Date(ref.start));b.addEventListener('click',()=>{reservation=ref;stamp(ref.id);$('#booking-form').hidden=true;$('#booking-confirmation').hidden=false;$('#cancel-booking').hidden=false;$('#booking-confirmation p').textContent='This range is reserved. Cancel below if your plans change.';$('#booking-time').textContent=new Intl.DateTimeFormat('en-GB',{timeZone:timezone,dateStyle:'full',timeStyle:'short'}).format(new Date(ref.start));open($('#booking-dialog'))});root.append(b)}}
  $('#cancel-booking').addEventListener('click',async()=>{if(!reservation)return;const b=$('#cancel-booking');b.disabled=true;try{const response=await fetch('/api/portfolio-calendar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'cancel',id:reservation.id,token:reservation.cancelToken}),signal:AbortSignal.timeout(15000)}),body=await response.json();if(!response.ok||body.status!=='cancelled')throw Error();saved=saved.filter(s=>s.id!==reservation.id);persist();$('#booking-confirmation p').textContent='The reservation is cancelled.';b.hidden=true;cache.clear();await load(true)}catch{$('#booking-confirmation p').textContent='Cancellation could not be confirmed. Retry or email gadiapriyansh@gmail.com.'}finally{b.disabled=false}});
  render();const observer=new IntersectionObserver(([e])=>{if(e.isIntersecting){observer.disconnect();load()}},{rootMargin:'400px'});observer.observe($('#schedule'));

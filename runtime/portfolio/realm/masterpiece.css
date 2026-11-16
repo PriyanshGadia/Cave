@@ -59,11 +59,11 @@
 #standard-calendar #dial-events { margin: .6rem 0; }
 #standard-calendar #calendar-status { color: inherit; }
 #standard-calendar #range-status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-.citadel-lock #main #throne > .artifact { grid-column: 1 / -1; }
-.citadel-lock #main #throne > .station-copy { align-self: end; z-index: 2; }
-.citadel-lock #main #throne .station-right { justify-self: end; width: max-content; }
-.citadel-lock #main #throne .station-copy h2 { font-size: clamp(20px,2.4vw,34px); }
-.citadel-lock #main #throne .camera-help { display: none; }
+
+
+
+
+
 .citadel-lock .artifact .artifact-poi {
   display: grid;
   place-items: center;
@@ -87,17 +87,17 @@
 }
 .citadel-lock .artifact .artifact-poi:is(:focus-visible,:hover)::before { background: #ffe2a6; }
 @media (max-width:1099px) {
-  .citadel-lock #main #throne > .artifact { grid-area: 1 / 1 / -1 / -1; }
-  .citadel-lock #main #throne > .station-copy { grid-area: 3 / 1; width: max-content; align-self: end; }
-  .citadel-lock #main #throne .station-right { text-align: right; }
-  .citadel-lock #main #throne .station-right .text-link { margin-left: auto; }
+  
+  
+  
+  
 }
 @media (max-width:480px) {
   #horologium .dial-standard text { font-size: 30px; }
   #horologium .dial-action rect { stroke-width: 3px; }
 }
-.citadel-lock #main #throne .artifact-drag { left: 50%; right: auto; bottom: 0; transform: translateX(-50%); }
-.citadel-lock #main #throne .artifact-drag:not(:focus-visible) { opacity: 0; }
+
+
 
 #booking-dialog,
 #standard-calendar,
@@ -114,4 +114,444 @@
 }
 #booking-identity {
   margin-block: .25rem .75rem;
+}
+
+
+/* =====================================================================
+   GLOBAL SCROLLBAR ERADICATION (Zero scrollbars across entire application)
+   ===================================================================== */
+html, body, dialog, pre, div, ul, textarea, * {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* =====================================================================
+   CITADEL ASTROLABE DIALOGS & CALENDAR SOPHISTICATION OVERHAUL
+   ===================================================================== */
+dialog::backdrop {
+  background: rgba(3, 6, 5, 0.88) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+}
+
+#booking-dialog,
+#standard-calendar,
+#day-agenda {
+  box-sizing: border-box;
+  max-inline-size: min(44rem, calc(100vw - 2rem)) !important;
+  max-block-size: calc(100dvh - 2.5rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  background: linear-gradient(168deg, rgba(16, 21, 18, 0.98) 0%, rgba(8, 11, 9, 0.99) 100%) !important;
+  border: 1px solid rgba(223, 185, 116, 0.38) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.92), 0 0 0 1px rgba(250, 235, 197, 0.12), inset 0 1px 0 rgba(250, 235, 197, 0.22) !important;
+  color: #faebc5 !important;
+  font-family: 'Cinzel', 'Times New Roman', serif !important;
+  padding: 32px 36px !important;
+}
+
+.dialog-heading {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  border-bottom: 1px solid rgba(223, 185, 116, 0.22) !important;
+  padding-bottom: 18px !important;
+  margin-bottom: 24px !important;
+}
+.dialog-heading h2 {
+  font-family: 'Cinzel Decorative', 'Cinzel', serif !important;
+  font-size: clamp(22px, 3vw, 30px) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  color: #faebc5 !important;
+  text-shadow: 0 0 20px rgba(223, 185, 116, 0.3) !important;
+  margin: 0 !important;
+}
+.dialog-heading button[data-close],
+.dialog-heading button[data-close-dialog],
+.close-dialog {
+  background: rgba(32, 25, 17, 0.8) !important;
+  border: 1px solid rgba(223, 185, 116, 0.45) !important;
+  border-radius: 50% !important;
+  width: 38px !important;
+  height: 38px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #dfb974 !important;
+  font-size: 22px !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
+}
+.dialog-heading button[data-close]:hover,
+.dialog-heading button[data-close-dialog]:hover,
+.close-dialog:hover {
+  background: rgba(223, 185, 116, 0.28) !important;
+  border-color: #faebc5 !important;
+  color: #fff !important;
+  transform: scale(1.08) !important;
+}
+
+/* Month navigation & Year */
+.standard-month-nav {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 18px !important;
+}
+.standard-month-nav h3 {
+  font-family: 'Cinzel', serif !important;
+  font-size: 20px !important;
+  letter-spacing: 0.08em !important;
+  color: #faebc5 !important;
+  margin: 0 !important;
+}
+.standard-month-nav button {
+  background: rgba(32, 26, 17, 0.7) !important;
+  border: 1px solid rgba(223, 185, 116, 0.35) !important;
+  border-radius: 10px !important;
+  color: #dfb974 !important;
+  padding: 8px 18px !important;
+  font-family: 'Cinzel', serif !important;
+  font-size: 13px !important;
+  letter-spacing: 0.06em !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+}
+.standard-month-nav button:hover {
+  background: rgba(223, 185, 116, 0.22) !important;
+  border-color: #faebc5 !important;
+  color: #fff !important;
+}
+.standard-year-label {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  font-size: 13px !important;
+  letter-spacing: 0.08em !important;
+  color: #c9bfab !important;
+  margin-bottom: 16px !important;
+}
+.standard-year-label input {
+  background: rgba(18, 23, 20, 0.85) !important;
+  border: 1px solid rgba(223, 185, 116, 0.35) !important;
+  border-radius: 8px !important;
+  color: #faebc5 !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  padding: 6px 12px !important;
+  font-size: 14px !important;
+}
+
+/* Weekday Labels & Days Grid */
+.weekday-labels {
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
+  gap: 6px !important;
+  text-align: center !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.12em !important;
+  color: rgba(223, 185, 116, 0.65) !important;
+  text-transform: uppercase !important;
+  margin-bottom: 10px !important;
+}
+.standard-days {
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
+  gap: 6px !important;
+  margin-bottom: 22px !important;
+}
+.standard-days button {
+  aspect-ratio: 1 !important;
+  min-height: 42px !important;
+  border-radius: 50% !important;
+  background: rgba(24, 29, 26, 0.5) !important;
+  border: 1px solid rgba(223, 185, 116, 0.12) !important;
+  color: #dfd7c6 !important;
+  font-family: 'Cinzel', serif !important;
+  font-size: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
+}
+.standard-days button:hover {
+  background: rgba(223, 185, 116, 0.18) !important;
+  border-color: rgba(223, 185, 116, 0.55) !important;
+  color: #fff !important;
+  transform: scale(1.06) !important;
+}
+.standard-days button[data-free="true"]::after {
+  content: '';
+  position: absolute;
+  bottom: 5px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #dfb974;
+  box-shadow: 0 0 6px #dfb974;
+}
+.standard-days button[aria-pressed="true"] {
+  background: linear-gradient(135deg, #dfb974 0%, #b6893e 100%) !important;
+  border-color: #faebc5 !important;
+  color: #0b0f0d !important;
+  font-weight: 700 !important;
+  box-shadow: 0 0 16px rgba(223, 185, 116, 0.65) !important;
+  transform: scale(1.08) !important;
+}
+
+/* Timezone & Status */
+#standard-calendar label {
+  color: #c9bfab !important;
+  font-size: 13px !important;
+  letter-spacing: 0.05em !important;
+}
+#standard-calendar select {
+  background: rgba(18, 23, 20, 0.88) !important;
+  border: 1px solid rgba(223, 185, 116, 0.38) !important;
+  border-radius: 10px !important;
+  color: #faebc5 !important;
+  font-family: 'Cinzel', serif !important;
+  padding: 8px 14px !important;
+  font-size: 13px !important;
+}
+#calendar-status {
+  color: #dfb974 !important;
+  font-size: 14px !important;
+  letter-spacing: 0.04em !important;
+  margin: 12px 0 16px !important;
+}
+.standard-date-label {
+  font-family: 'Cinzel Decorative', 'Cinzel', serif !important;
+  font-size: 22px !important;
+  color: #faebc5 !important;
+  letter-spacing: 0.06em !important;
+  margin: 22px 0 10px !important;
+}
+
+/* Duration Presets */
+.duration-presets {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+  margin: 14px 0 18px !important;
+}
+.duration-presets span {
+  font-size: 13px !important;
+  color: #c9bfab !important;
+  letter-spacing: 0.06em !important;
+}
+.duration-presets button {
+  background: rgba(24, 29, 26, 0.65) !important;
+  border: 1px solid rgba(223, 185, 116, 0.3) !important;
+  border-radius: 20px !important;
+  color: #dfd7c6 !important;
+  padding: 6px 16px !important;
+  font-family: 'Cinzel', serif !important;
+  font-size: 13px !important;
+  letter-spacing: 0.04em !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+.duration-presets button:hover {
+  background: rgba(223, 185, 116, 0.2) !important;
+  border-color: rgba(223, 185, 116, 0.65) !important;
+  color: #fff !important;
+}
+.duration-presets button[aria-pressed="true"] {
+  background: linear-gradient(135deg, #dfb974 0%, #b6893e 100%) !important;
+  border-color: #faebc5 !important;
+  color: #0b0f0d !important;
+  font-weight: 700 !important;
+  box-shadow: 0 0 12px rgba(223, 185, 116, 0.5) !important;
+}
+
+/* Time Slots Grid */
+.standard-times {
+  display: grid !important;
+  grid-template-columns: repeat(6, 1fr) !important;
+  gap: 8px !important;
+  margin: 16px 0 22px !important;
+}
+@media (max-width: 640px) {
+  .standard-times {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+.standard-times button {
+  min-height: 42px !important;
+  border-radius: 10px !important;
+  background: rgba(22, 27, 24, 0.7) !important;
+  border: 1px solid rgba(223, 185, 116, 0.25) !important;
+  color: #faebc5 !important;
+  font-family: 'JetBrains Mono', monospace, sans-serif !important;
+  font-size: 13px !important;
+  letter-spacing: 0.02em !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.18s cubic-bezier(0.2, 0, 0, 1) !important;
+}
+.standard-times button:not(:disabled):hover,
+.standard-times button[data-preview="true"] {
+  background: rgba(223, 185, 116, 0.24) !important;
+  border-color: rgba(223, 185, 116, 0.75) !important;
+  color: #fff !important;
+  transform: translateY(-1px) !important;
+}
+.standard-times button[aria-pressed="true"] {
+  background: linear-gradient(135deg, #dfb974 0%, #b6893e 100%) !important;
+  border-color: #faebc5 !important;
+  color: #0b0f0d !important;
+  font-weight: 700 !important;
+  box-shadow: 0 0 16px rgba(223, 185, 116, 0.65) !important;
+  transform: translateY(-2px) !important;
+}
+.standard-times button:disabled {
+  background: rgba(14, 17, 15, 0.4) !important;
+  border-color: rgba(60, 50, 40, 0.25) !important;
+  color: rgba(160, 150, 135, 0.35) !important;
+  cursor: not-allowed !important;
+  opacity: 0.45 !important;
+  text-decoration: line-through rgba(180, 80, 60, 0.4) !important;
+}
+.standard-range {
+  font-size: 17px !important;
+  color: #faebc5 !important;
+  margin: 12px 0 18px !important;
+  font-family: 'Cinzel', serif !important;
+  min-height: 26px !important;
+}
+
+/* Booking Dialog & Form */
+#booking-dialog {
+  max-width: min(560px, calc(100vw - 32px)) !important;
+}
+.booking-time {
+  font-family: 'Cinzel', serif !important;
+  font-size: 17px !important;
+  color: #faebc5 !important;
+  margin: 8px 0 18px !important;
+  padding: 12px 18px !important;
+  background: rgba(223, 185, 116, 0.08) !important;
+  border: 1px solid rgba(223, 185, 116, 0.25) !important;
+  border-radius: 12px !important;
+}
+#booking-form label {
+  display: block !important;
+  font-size: 13px !important;
+  color: #c9bfab !important;
+  letter-spacing: 0.04em !important;
+  margin-top: 14px !important;
+}
+#booking-form textarea {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  background: rgba(16, 20, 18, 0.8) !important;
+  border: 1px solid rgba(223, 185, 116, 0.35) !important;
+  border-radius: 12px !important;
+  color: #faebc5 !important;
+  font-family: 'Cinzel', serif !important;
+  font-size: 14px !important;
+  padding: 12px 16px !important;
+  margin-top: 6px !important;
+  resize: vertical !important;
+}
+#booking-form .consent {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 12px !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+  color: #c9bfab !important;
+  margin: 18px 0 !important;
+}
+#booking-form .consent input[type="checkbox"] {
+  accent-color: #dfb974 !important;
+  width: 18px !important;
+  height: 18px !important;
+  margin-top: 2px !important;
+}
+#booking-status {
+  font-size: 13px !important;
+  color: #dfb974 !important;
+  min-height: 20px !important;
+}
+#confirm-booking,
+.button-gold,
+[data-reserve]:not(g) {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: 50px !important;
+  padding: 14px 28px !important;
+  background: linear-gradient(135deg, #dfb974 0%, #b6893e 100%) !important;
+  border: 1px solid #faebc5 !important;
+  border-radius: 12px !important;
+  color: #0b0f0d !important;
+  font-family: 'Cinzel', serif !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 20px rgba(182, 137, 62, 0.35) !important;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
+}
+#confirm-booking:hover:not(:disabled),
+.button-gold:hover:not(:disabled),
+[data-reserve]:not(g):hover:not(:disabled) {
+  background: linear-gradient(135deg, #faebc5 0%, #dfb974 100%) !important;
+  box-shadow: 0 6px 24px rgba(223, 185, 116, 0.55) !important;
+  transform: translateY(-2px) !important;
+}
+#confirm-booking:disabled,
+[data-reserve]:not(g):disabled {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Side button */
+.calendar-side-trigger {
+  margin-top: 24px !important;
+}
+.standard-side-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 12px 24px !important;
+  background: rgba(22, 27, 24, 0.8) !important;
+  border: 1px solid rgba(223, 185, 116, 0.45) !important;
+  border-radius: 12px !important;
+  color: #faebc5 !important;
+  font-family: 'Cinzel', serif !important;
+  font-size: 13px !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(250, 235, 197, 0.15) !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+.standard-side-btn:hover {
+  background: rgba(223, 185, 116, 0.22) !important;
+  border-color: #faebc5 !important;
+  color: #fff !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(223, 185, 116, 0.35) !important;
+}
+.standard-side-btn svg {
+  color: #dfb974 !important;
 }

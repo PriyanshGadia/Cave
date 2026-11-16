@@ -36,6 +36,7 @@
   "portfolio/realm/camera-director.js",
   "portfolio/realm/citadel-lock.css",
   "portfolio/realm/compositor.js",
+  "portfolio/realm/cursor.js",
   "portfolio/realm/great-hall.js",
   "portfolio/realm/inspector.js",
   "portfolio/realm/masterpiece.css",

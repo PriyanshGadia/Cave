@@ -73,15 +73,10 @@ export async function createExecutiveScene({calendar,score,stations,motion=true,
   ['argus','argus-eye','ARGUS iris',[0,3.25,0]],
   ...kit.satellites.map((dial,index)=>['nexus',dial.root.userData.poi,['CryptoGraph Analytics','Document Intelligence','Respiratory AI'][index],[dial.root.position.x,.65,dial.root.position.z]]),
   ['twins','twins','Twin foundations',[0,.7,0]],
-  ['throne','throne','The throne',[0,4.8,1]],
-  ['throne','table','Painted table',hallFocusPoints.table],
-  ['throne','orrery','Citadel orrery',hallFocusPoints.orrery],
-  ['throne','compiler','Compiler monolith',hallFocusPoints.compiler],
-  ['throne','chronometer','Chronometer',hallFocusPoints.chronometer],
-  ['throne','window','Rose window',[0,10.2,-7.7]],
  ];
  for (const [id,name,label,position] of poiDefinitions) {
   const entry = entries.find(candidate => candidate.id === id);
+  if (!entry) continue;
   const marker = new T.Object3D();
   marker.position.fromArray(position);
   entry.model.root.add(marker);
@@ -147,15 +142,12 @@ export async function createExecutiveScene({calendar,score,stations,motion=true,
     e.chapter.style.setProperty('--formed', e.formation);
    }
    if (!e.model.root.visible) continue;
-   const canExplode = e.id !== 'calendar' && e.id !== 'throne';
+   const canExplode = e.id !== 'calendar';
    const exploded = canExplode ? (e.el.dataset.inspecting === 'true' ? 1 : motion && e.hovered ? .18 : 0) : 0;
    e.explode = motion ? T.MathUtils.damp(e.explode, exploded, 6, dt) : exploded;
    if (e.id === 'seal') {
     e.model.update(time, motion ? bands.bass : 0, false, motion, e.formation, e.explode, introMaterial);
     observatory.update(1);
-   } else if (e.id === 'throne') {
-    hall.update(time, motion ? bands.bass : 0, e.formation, rig.inside);
-    relics.update(time, motion ? pointer : {x:0,y:0});
    } else if (e.id === 'calendar') {
     e.model.rings.forEach((ring,n) => {
      const spread = T.MathUtils.smoothstep(Math.abs(rig.progress - i), .06, .55);

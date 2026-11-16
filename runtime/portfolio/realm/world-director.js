@@ -36,27 +36,31 @@ export function createWorldDirector(){
    progress = clamp(next, Math.min(progress,wanted), Math.max(progress,wanted));
   }
   initialized = true;
-  const index=Math.min(4,Math.floor(progress)),f=progress>=5?1:progress-index,traveling=f>0&&f<1;
-  if(!traveling&&wasTraveling){
-   const view=entries[Math.round(progress)].view;
-   for(const key of ['fx','fy','fz','ox','oy','oz'])delete view[key];
+  const maxIdx = Math.max(0, entries.length - 2);
+  const index = Math.min(maxIdx, Math.floor(progress));
+  const f = progress >= entries.length - 1 ? 1 : progress - index;
+  const traveling = f > 0 && f < 1;
+  if (!traveling && wasTraveling) {
+   const view = entries[Math.round(progress)]?.view;
+   if (view) for (const key of ['fx','fy','fz','ox','oy','oz']) delete view[key];
   }
-  wasTraveling=traveling;
-  const a=pose(entries[index],{width,height,time,motion,dt},traveling),b=pose(entries[index+1],{width,height,time,motion,dt},traveling);
-  const transition=Math.sin(f*Math.PI),hallTransition=index===4?Math.pow(Math.sin(f*Math.PI),2):0;
-  if(f<.0001){eye.copy(a.eye);target.copy(a.look);up.copy(a.up)}else if(f>.9999){eye.copy(b.eye);target.copy(b.look);up.copy(b.up)}else{
-   const p1=spineCurve.getPoint((index+.3)/5),p2=spineCurve.getPoint((index+.72)/5);curveEye.points[0].copy(a.eye);curveEye.points[1].copy(p1).add(new T.Vector3(0,3.5,9));curveEye.points[2].copy(p2).add(new T.Vector3(0,2.7,8));curveEye.points[3].copy(b.eye);curveLook.points[0].copy(a.look);curveLook.points[1].copy(p1).add(new T.Vector3(0,0,-10));curveLook.points[2].copy(p2).add(new T.Vector3(0,0,-12));curveLook.points[3].copy(b.look);
-   if(index===4){curveEye.points[1].set(2,1,-216);curveEye.points[2].set(0,1,-235);curveLook.points[1].set(0,-1,-238);curveLook.points[2].set(0,0,-266)}
-   curveEye.getPoint(f,eye);curveLook.getPoint(f,target);
-   if(index===4){
-    // Ordered endpoints make depth monotone even when the XY approach banks.
-    eye.z=T.MathUtils.lerp(a.eye.z,b.eye.z,T.MathUtils.smoothstep(f,0,1));
-    target.z=T.MathUtils.lerp(a.look.z,b.look.z,f);
-   }up.copy(a.up).lerp(b.up,f).lerp(worldUp,transition*.9).normalize();
+  wasTraveling = traveling;
+  const nextEntry = entries[Math.min(entries.length - 1, index + 1)] || entries[index];
+  const a = pose(entries[index], {width, height, time, motion, dt}, traveling);
+  const b = pose(nextEntry, {width, height, time, motion, dt}, traveling);
+  const transition = Math.sin(f * Math.PI);
+  if (f < .0001) { eye.copy(a.eye); target.copy(a.look); up.copy(a.up); }
+  else if (f > .9999) { eye.copy(b.eye); target.copy(b.look); up.copy(b.up); }
+  else {
+   const denom = Math.max(1, entries.length - 1);
+   const p1 = spineCurve.getPoint((index + .3) / denom);
+   const p2 = spineCurve.getPoint((index + .72) / denom);
+   curveEye.points[0].copy(a.eye); curveEye.points[1].copy(p1).add(new T.Vector3(0, 3.5, 9)); curveEye.points[2].copy(p2).add(new T.Vector3(0, 2.7, 8)); curveEye.points[3].copy(b.eye);
+   curveLook.points[0].copy(a.look); curveLook.points[1].copy(p1).add(new T.Vector3(0, 0, -10)); curveLook.points[2].copy(p2).add(new T.Vector3(0, 0, -12)); curveLook.points[3].copy(b.look);
+   curveEye.getPoint(f, eye); curveLook.getPoint(f, target);
+   up.copy(a.up).lerp(b.up, f).lerp(worldUp, transition * .9).normalize();
   }
-  const hallOrigin=entries[5].model.root.position,inside=progress>4.4&&eye.z<hallOrigin.z+38.5;
-  if(inside){const {x:sx,y:sy}=entries[5].model.root.scale,x=clamp(eye.x-hallOrigin.x,-7*sx,7*sx),ceiling=(7.6+6.4*Math.pow(1-Math.abs(x/(7.7*sx)),.72)-.5)*sy;eye.x=hallOrigin.x+x;eye.y=hallOrigin.y+clamp(eye.y-hallOrigin.y,.75,ceiling);eye.z=hallOrigin.z+clamp(eye.z-hallOrigin.z,-7.2,38);}
-  camera.position.copy(eye);camera.up.copy(up);camera.aspect=width/height;camera.fov=clamp(T.MathUtils.lerp(a.fov,b.fov,f)+transition*6,25,115);camera.near=.15;camera.far=1000;camera.lookAt(target);camera.setViewOffset(width,height,T.MathUtils.lerp(a.ox,b.ox,f)*(1-transition*.7),T.MathUtils.lerp(a.oy,b.oy,f)*(1-transition*.7),width,height);camera.updateProjectionMatrix();camera.updateMatrixWorld();
-  return {progress,wanted,index:Math.round(progress),transition,hallTransition,inside,velocity:local.step(dt),target:target.clone(),localHallCamera:inside?eye.clone().sub(hallOrigin).toArray():null};
+  camera.position.copy(eye); camera.up.copy(up); camera.aspect = width / height; camera.fov = clamp(T.MathUtils.lerp(a.fov, b.fov, f) + transition * 6, 25, 115); camera.near = .15; camera.far = 1000; camera.lookAt(target); camera.setViewOffset(width, height, T.MathUtils.lerp(a.ox, b.ox, f) * (1 - transition * .7), T.MathUtils.lerp(a.oy, b.oy, f) * (1 - transition * .7), width, height); camera.updateProjectionMatrix(); camera.updateMatrixWorld();
+  return {progress, wanted, index: Math.round(progress), transition, hallTransition: 0, inside: false, velocity: local.step(dt), target: target.clone(), localHallCamera: null};
  }};
 }
