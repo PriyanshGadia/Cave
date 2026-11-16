@@ -14,3 +14,23 @@ You can use a separate Google Web OAuth client for visitors by setting GOOGLE_BO
 - **Render** uses a Node web service with start command node hosting/serve.mjs. Set the same variables using the Render HTTPS origin for PUBLIC_ORIGIN. A free web service can sleep after inactivity, so expect a slower first request after it wakes. [Render free service limits](https://render.com/docs/free)
 
 Use the provider dashboard or CLI secret prompts for credentials. After both sites are deployed and authorized, verify one booking and cancellation with a designated test account and calendar.
+
+## Cave LS3 Shared Backend Adapter
+
+Cave's 3D workstation (LS3) interfaces with calendar services via two legacy routes:
+- `GET /api/calendar/freebusy`: Returns `{ configured: boolean, busy: [{ start, end }], events: [{ id, summary, start, end, ... }] }`.
+- `POST /api/calendar/request`: Accepts `{ name, email, location, description, startIso, endIso }` and returns `{ ok: true, id, event }`.
+
+In contrast, `/about` interfaces with the dedicated Cloudflare Worker (`/api/portfolio-calendar`):
+- `GET /api/portfolio-calendar?month=YYYY-MM&timezone=TZ`: Returns `{ status: "ready", slots: [...], busy: [...], bookingClientId }`.
+- `POST /api/portfolio-calendar`: Requires `{ action: "book" | "cancel", start, end, note, consent: true }`, with Google Sign-In `Authorization: Bearer <ID_TOKEN>`, `Idempotency-Key`, and `X-Booking-Device` headers.
+
+To connect Cave LS3 to the shared `portfolio-calendar` Cloudflare Worker without exposing owner credentials or modifying LS3's frontend contract:
+1. **Server-Side Reverse Gateway**: In Cave's deployment backend or hosting functions, implement server-side route adapters for `/api/calendar/freebusy` and `/api/calendar/request` that forward internally to `https://portfolio-calendar.gadiapriyansh.workers.dev/api/portfolio-calendar`.
+2. **Contract Translation**:
+   - For `GET /api/calendar/freebusy`: The adapter queries the Worker's `GET /api/portfolio-calendar` for the active month, extracting `data.busy` and mapping it to `{ configured: data.status === 'ready', busy: data.busy, events: [] }`. This protects calendar event summaries and visitor privacy while providing LS3 with real-time busy intervals.
+   - For `POST /api/calendar/request`: The adapter synthesizes an idempotency key and converts `{ startIso, endIso, name, email, location, description }` into the Worker's booking format. If visitor Google ID token validation is bypassed for LS3 terminal submissions, the adapter signs an internal server assertion or uses a privileged shared secret header (`X-Internal-Caller: ls3`) authorized in the Worker to book directly on the shared `Portfolio Bookings` calendar.
+3. **Unified D1 Safeguards**:
+   - All bookings—whether initiated from `/about` or LS3—pass through the same D1 `portfolio_calendar_slots` and `portfolio_booking_quota` triggers.
+   - Prevents overlapping reservations across interfaces (`calendar_overlap` SQL trigger).
+   - Enforces the universal quota of 8 half-hour blocks (4 hours) per day.
