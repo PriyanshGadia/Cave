@@ -2,7 +2,7 @@ import * as T from '../../about/vendor/three.module.js';
 
 export const landmarks = [
   ['seal', [0, 2.85, 0]], ['argus', [-8, 0, -48]], ['nexus', [6, -1, -98]],
-  ['twins', [-5, -1, -148]], ['calendar', [3, -2, -198]],
+  ['twins', [-5, -1, -148]], ['calendar', [3, -2, -198]], ['throne', [0, -4, -275]],
 ];
 const nodes = landmarks.map(([, [x, y, z]]) => new T.Vector3(x, y + 2, z));
 export const spineCurve = new T.CatmullRomCurve3(nodes, false, 'catmullrom', .5);
@@ -11,12 +11,12 @@ const spineEnd = .90;
 const segments = 320;
 
 const curveGLSL = `
-uniform vec3 uNodes[5];
+uniform vec3 uNodes[6];
 vec3 curve(float t) {
-  float q=clamp(t,0.,.999999)*4.;
+  float q=clamp(t,0.,.999999)*5.;
   int i=int(floor(q));
   float f=fract(q);
-  vec3 a=uNodes[max(0,i-1)], b=uNodes[i], c=uNodes[i+1], d=uNodes[min(4,i+2)];
+  vec3 a=uNodes[max(0,i-1)], b=uNodes[i], c=uNodes[i+1], d=uNodes[min(5,i+2)];
   return .5*((2.*b)+(-a+c)*f+(2.*a-5.*b+4.*c-d)*f*f+(-a+3.*b-3.*c+d)*f*f*f);
 }`;
 

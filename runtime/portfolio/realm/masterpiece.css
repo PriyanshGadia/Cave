@@ -46,7 +46,7 @@
 #horologium .range-handle { touch-action: none; }
 #horologium [role=button]:not([aria-disabled=true]) { cursor: pointer; }
 #horologium [role=button]:focus-visible,
-#horologium [role=slider]:focus-visible { outline: 3px solid #f9d594; outline-offset: 1px; }
+
 #horologium #seal-date { font-size: 30px; letter-spacing: 2px; }
 #horologium #seal-range { font-size: 36px; }
 #horologium :is(#seal-duration,#seal-status) {
@@ -553,5 +553,66 @@ dialog::backdrop {
   box-shadow: 0 6px 20px rgba(223, 185, 116, 0.35) !important;
 }
 .standard-side-btn svg {
+  color: #dfb974 !important;
+}
+
+
+
+
+/* UNIVERSAL CURSOR HIDING & COMPASS MULTI-ACTION STATES */
+*, *::before, *::after, html, body, a, button, input, select, textarea, canvas, svg, [role="button"], [data-slot] {
+  cursor: none !important;
+}
+
+#horologium, #horologium *, #time-ring, #time-ring *, svg, svg * {
+  outline: none !important;
+  -webkit-focus-ring-color: transparent !important;
+}
+
+#horologium [role=slider],
+#horologium [role=slider]:focus,
+#horologium [role=slider]:focus-visible,
+#horologium [data-slot]:focus,
+#horologium [data-slot]:focus-visible {
+  outline: none !important;
+}
+
+#horologium #time-ring [data-slot]:focus-visible {
+  stroke: #ffe2a2 !important;
+  stroke-width: 2.2px !important;
+  outline: none !important;
+}
+
+#horologium .range-handle:focus-visible {
+  stroke: #fff6d8 !important;
+  stroke-width: 3.5px !important;
+  filter: drop-shadow(0 0 8px rgba(250, 235, 197, 0.9)) !important;
+  outline: none !important;
+}
+
+.signature {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  text-decoration: none !important;
+}
+
+.signature-monogram {
+  display: inline-flex !important;
+  align-items: center !important;
+  line-height: 1 !important;
+}
+
+.sig-pgadia {
+  display: block !important;
+  height: 38px !important;
+  width: auto !important;
+  vertical-align: middle !important;
+}
+
+.signature .sig-name {
+  font-family: 'Cinzel', 'Georgia', serif !important;
+  font-size: 13px !important;
+  letter-spacing: 0.16em !important;
   color: #dfb974 !important;
 }

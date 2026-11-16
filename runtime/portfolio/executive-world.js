@@ -73,6 +73,12 @@ export async function createExecutiveScene({calendar,score,stations,motion=true,
   ['argus','argus-eye','ARGUS iris',[0,3.25,0]],
   ...kit.satellites.map((dial,index)=>['nexus',dial.root.userData.poi,['CryptoGraph Analytics','Document Intelligence','Respiratory AI'][index],[dial.root.position.x,.65,dial.root.position.z]]),
   ['twins','twins','Twin foundations',[0,.7,0]],
+  ['throne','throne','The throne',[0,4.8,1]],
+  ['throne','table','Painted table',hallFocusPoints.table],
+  ['throne','orrery','Citadel orrery',hallFocusPoints.orrery],
+  ['throne','compiler','Compiler monolith',hallFocusPoints.compiler],
+  ['throne','chronometer','Chronometer',hallFocusPoints.chronometer],
+  ['throne','window','Rose window',[0,10.2,-7.7]],
  ];
  for (const [id,name,label,position] of poiDefinitions) {
   const entry = entries.find(candidate => candidate.id === id);

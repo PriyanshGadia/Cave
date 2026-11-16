@@ -60,7 +60,7 @@ export function engraveCalendar(calendar, materials) {
    ctx.textBaseline='middle';
    const radius=[dialRadii.month,dialRadii.day,dialRadii.time][track]*1024/11.2;
    const items=entries[track];
-   ctx.font=`bold ${[25,21,17][track]}px Georgia`;
+   ctx.font = `bold 700 ${[29, 25, 21][track]}px "Cinzel", "Georgia", serif`;
    items.forEach(({label,active,free},index)=>{
     const angle=(index+(track===2?.5:0))/items.length*fullTurn;
     ctx.save();
@@ -74,15 +74,15 @@ export function engraveCalendar(calendar, materials) {
      ctx.lineWidth=3.5;
      ctx.strokeStyle='#241407';
      ctx.strokeText(label,0,1);
-     ctx.fillStyle=active?'#fff1c9':'#33200f';
+     ctx.lineWidth=3.8; ctx.strokeStyle='#0d0803'; ctx.strokeText(label,0,0); ctx.fillStyle=active?'#fffce8':'#f7e5be';
      if(!active) {
       ctx.shadowColor='#ffdfa2';
       ctx.shadowOffsetY=1;
      }
      ctx.fillText(label,0,0);
     } else {
-     ctx.fillStyle='#38230f';
-     ctx.fillRect(-1,-8,2,16);
+     ctx.fillStyle=active||free?'#f9d695':'#a68048';
+     ctx.fillRect(-1.5,-8,3,16);
     }
     ctx.restore();
    });
